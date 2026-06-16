@@ -200,12 +200,23 @@ function step(d){const it=filtered();const i=it.findIndex(q=>keyOf(q)===curKey);
 function mark(t){marks[curKey]=marks[curKey]===t?undefined:t;if(!marks[curKey])delete marks[curKey];
   localStorage.setItem(LS,JSON.stringify(marks));renderList();}
 
-function speak(t){const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.rate=.95;
-  const v=speechSynthesis.getVoices().find(v=>/zh|TW|Chinese|Mei|Ting/i.test(v.lang+v.name));if(v)u.voice=v;
+function cleanForSpeech(t){
+  return t
+    .replace(/§\s*(\d+)\s*-\s*(\d+)/g,'第$1條之$2')   // §131-1 → 第131條之1
+    .replace(/§\s*(\d+)/g,'第$1條')                    // §158 → 第158條
+    .replace(/Ⅰ/g,'第一項').replace(/Ⅱ/g,'第二項').replace(/Ⅲ/g,'第三項')
+    .replace(/\p{Extended_Pictographic}/gu,' ')         // 去掉所有 emoji（語音引擎會卡住）
+    .replace(/[【】→•·▶◀↺✔（）()]/g,' ')
+    .replace(/\n+/g,'。').replace(/\s+/g,' ').trim();
+}
+function speak(t){
+  t=cleanForSpeech(t); if(!t) return;
+  const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.rate=.92;
+  const v=speechSynthesis.getVoices().find(v=>/zh|TW|Chinese|Mei|Ting|Han/i.test(v.lang+v.name));if(v)u.voice=v;
   speechSynthesis.cancel();speechSynthesis.speak(u);}
 function readQ(){const q=window._q,L=["A","B","C","D"];
   speak("第"+q.num+"題。"+q.stem+" "+q.options.map((o,i)=>"選項"+L[i]+"，"+o).join("。"));}
-function readNote(){const n=window._note;speak(n.concept+"。"+n.body.replace(/[【】📌📝✔🖊️]/g,""));}
+function readNote(){const n=window._note;speak(n.concept+"。"+n.body);}
 
 document.getElementById("search").oninput=e=>{search=e.target.value.trim();renderList();};
 hideAns.onchange=()=>{if(curKey)showQ(curKey);};
