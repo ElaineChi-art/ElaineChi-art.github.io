@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的學習中心</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+       background:linear-gradient(160deg,#2b2b33,#3a3a45);color:#fff;min-height:100vh;
+       display:flex;flex-direction:column;align-items:center;padding:48px 20px}
+  h1{font-size:30px;margin-bottom:6px}
+  .sub{color:#b9b3a3;margin-bottom:34px;font-size:16px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;width:100%;max-width:920px}
+  a.card{display:block;background:#fffdf7;color:#26262b;text-decoration:none;border-radius:20px;
+         padding:28px 26px;box-shadow:0 10px 26px rgba(0,0,0,.25);transition:.18s;border-top:6px solid var(--c)}
+  a.card:hover{transform:translateY(-5px);box-shadow:0 16px 34px rgba(0,0,0,.35)}
+  .ic{font-size:46px;margin-bottom:12px}
+  .ti{font-size:22px;font-weight:bold;margin-bottom:8px}
+  .de{font-size:15px;color:#666;line-height:1.6}
+  .badge{display:inline-block;margin-top:14px;font-size:13px;color:#fff;background:var(--c);border-radius:20px;padding:3px 12px}
+  footer{margin-top:40px;color:#8a8576;font-size:13px;text-align:center;line-height:1.8}
+</style>
+</head>
+<body>
+  <h1>🏠 我的學習中心</h1>
+  <div class="sub">考試複習 ・ 研究情報 ・ 投資觀察，一個入口全部到位</div>
+  <div class="cards">
+    <a class="card" style="--c:#d6a32e" href="./judicial/">
+      <div class="ic">📚</div>
+      <div class="ti">司法官・律師一試複習</div>
+      <div class="de">109–114 六年全科官方考題（刑事／公法／民事／商事，1800 題），依考試當天節次排列，可遮答案自測、念給你聽。</div>
+      <span class="badge">點我複習</span>
+    </a>
+    <a class="card" style="--c:#2f6fb0" href="https://elainechi-art.github.io/taiwan-stock-dashboard/">
+      <div class="ic">📈</div>
+      <div class="ti">台股 AI 儀表板</div>
+      <div class="de">LSTM 每日預測＋新聞情緒，台股／美股／加密貨幣即時圖，每工作日自動更新。</div>
+      <span class="badge">查看儀表板</span>
+    </a>
+    <a class="card" style="--c:#2e9e5b" href="https://elainechi-art.github.io/research-radar/">
+      <div class="ic">🔬</div>
+      <div class="ti">研究雷達</div>
+      <div class="de">智財／區塊鏈／AI／金融犯罪 × 新聞＋論文＋判決全文，每日自動聚合你的研究領域情報。</div>
+      <span class="badge">開啟雷達</span>
+    </a>
+  </div>
+  <footer>
+    最近更新：2026-06-17　·　全部自動運行<br>
+    司法官複習題庫來源：考選部考畢試題（官方正確版）
+  </footer>
+</body>
+</html>
