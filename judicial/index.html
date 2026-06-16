@@ -10,6 +10,10 @@
   *{box-sizing:border-box}
   body{margin:0;font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
        background:var(--bg);color:var(--ink);font-size:18px;line-height:1.6}
+  .topnav{display:flex;gap:6px;background:#0b0d12;padding:8px 16px;border-bottom:1px solid #262b36;position:sticky;top:0;z-index:50;overflow-x:auto}
+  .topnav a{color:#9aa4b2;text-decoration:none;font-size:14px;font-weight:600;padding:7px 16px;border-radius:8px;white-space:nowrap}
+  .topnav a:hover{background:#161922;color:#e6e6e6}
+  .topnav a.active{background:#1f2e3a;color:#7fb5ff}
   header{background:#26262b;color:#fff;padding:10px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
   header h1{font-size:19px;margin:0}
   .count{margin-left:auto;display:flex;gap:14px;font-size:13px;text-align:center}
@@ -22,7 +26,7 @@
   .controls button.on{background:#26262b;color:#fff}
   #search{padding:7px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;width:150px}
   .toggle{margin-left:auto;font-size:14px;color:#555}
-  .wrap{display:flex;height:calc(100vh - 150px)}
+  .wrap{display:flex;height:calc(100vh - 190px)}
   #list{width:350px;overflow:auto;border-right:1px solid var(--line);background:#faf7ef}
   .secthead{position:sticky;top:0;background:#26262b;color:#fff;padding:7px 14px;font-size:13px;z-index:2}
   .secthead .t{color:var(--gold)}
@@ -64,6 +68,12 @@
 </style>
 </head>
 <body>
+<nav class="topnav">
+  <a href="https://elainechi-art.github.io/">🏠 首頁</a>
+  <a href="https://elainechi-art.github.io/taiwan-stock-dashboard/">📈 股市儀表板</a>
+  <a href="https://elainechi-art.github.io/research-radar/">📡 研究雷達</a>
+  <a class="active" href="https://elainechi-art.github.io/judicial/">📚 司法官・律師複習</a>
+</nav>
 <header>
   <h1>📚 司法官・律師一試 歷屆全科複習</h1>
   <div class="count">
