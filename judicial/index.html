@@ -65,6 +65,33 @@
   .nav{display:flex;justify-content:space-between;margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
   .nav button{background:#26262b;color:#fff;border:none;border-radius:24px;padding:9px 20px;font-size:15px;cursor:pointer}
   .empty{color:var(--muted);padding:40px;text-align:center}
+  /* ===== 考點統整模式 ===== */
+  .modebar{display:flex;gap:4px;background:#26262b;border-radius:10px;padding:3px}
+  .modebar button{color:#cdb86a;background:transparent;font-weight:bold}
+  .modebar button.on{background:var(--gold);color:#26262b}
+  #subjbar{display:none;gap:8px;padding:9px 18px;background:#fffdf7;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
+  #summary{display:none;height:calc(100vh - 240px);overflow:auto;padding:18px 22px;max-width:1000px;margin:0 auto}
+  .sumtitle{font-size:15px;color:#9a7b16;font-weight:bold;margin:18px 0 8px;border-bottom:2px solid var(--gold);padding-bottom:5px;position:sticky;top:-18px;background:var(--bg);z-index:2}
+  .sumtitle:first-child{margin-top:0}
+  /* 法條速記表 */
+  .lawrow{background:#fff;border:1px solid var(--line);border-left:5px solid var(--gold);border-radius:10px;padding:11px 14px;margin:9px 0}
+  .lawrow .law{font-weight:bold;color:#9a6a16;font-size:16px}
+  .lawrow .cpt{color:var(--blue);font-weight:bold;font-size:15px;margin-left:6px}
+  .lawrow .key{display:block;margin-top:5px;color:#333;font-size:15.5px;line-height:1.7}
+  .lawrow .key b{color:var(--red)}
+  .qchips{margin-top:7px;display:flex;gap:5px;flex-wrap:wrap}
+  .qchip{background:#efe9da;border-radius:14px;padding:1px 9px;font-size:12px;color:#555;cursor:pointer;border:none;font-family:inherit}
+  .qchip:hover{background:var(--gold);color:#26262b}
+  /* 易錯觀念卡 */
+  .trapcard{background:#fff;border:2px solid var(--line);border-radius:12px;padding:13px 15px;margin:10px 0;cursor:pointer}
+  .trapcard .qtag{font-size:12px;color:var(--muted);margin-bottom:4px}
+  .trapcard .trap{font-size:16px;line-height:1.7}
+  .trapcard .trap .x{color:var(--red);font-weight:bold}
+  .trapcard .ans{display:none;margin-top:11px;padding-top:10px;border-top:1px dashed var(--gold);font-size:15.5px;line-height:1.75}
+  .trapcard.open{border-color:var(--green);background:#f6fdf8}
+  .trapcard.open .ans{display:block}
+  .trapcard .flip{font-size:12px;color:var(--blue);margin-top:6px}
+  .sumcount{font-size:13px;color:#888;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -92,16 +119,31 @@
 </div>
 
 <div class="controls">
+  <div class="modebar" id="modebar">
+    <button data-m="study" class="on">📖 逐題複習</button>
+    <button data-m="summary">📋 考點統整</button>
+  </div>
   <div class="grp" id="years"></div>
   <div class="grp" id="sections"></div>
   <input id="search" placeholder="🔍 搜尋關鍵字…">
   <label class="toggle"><input type="checkbox" id="hideAns"> 遮答案自測</label>
 </div>
 
-<div class="wrap">
+<div id="subjbar">
+  <span style="font-size:13px;color:#9a7b16;font-weight:bold">科目</span>
+  <div class="grp" id="subjs"></div>
+  <div class="grp" id="sumviews">
+    <button data-v="law" class="on">⚖️ 法條速記表</button>
+    <button data-v="trap">⚠️ 易錯觀念卡</button>
+  </div>
+</div>
+
+<div class="wrap" id="wrap">
   <div id="list"></div>
   <div id="detail"><div class="empty">← 左邊點一題開始複習；預設依當天節次排列</div></div>
 </div>
+
+<div id="summary"></div>
 
 <script src="data.js"></script>
 <script src="notes.js"></script>
@@ -127,7 +169,11 @@ function buildTabs(){
   years_el.querySelectorAll("button").forEach(b=>b.onclick=()=>{curYear=+b.dataset.y;buildTabs();renderList();});
   const secs=["全部",...secOrder];
   sections_el.innerHTML = secs.map(s=>`<button data-s="${s}" class="${s==curSec?'on':''}">${secLabel[s]}</button>`).join("");
-  sections_el.querySelectorAll("button").forEach(b=>b.onclick=()=>{curSec=b.dataset.s;buildTabs();renderList();});
+  sections_el.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    curSec=b.dataset.s; buildTabs();
+    if(mode==="summary"){ if(curSec==="全部"||!SUBJ[curSec]){curSec="刑事組";buildTabs();} buildSubjBar(); renderSummary(); }
+    else renderList();
+  });
 }
 const years_el=document.getElementById("years"), sections_el=document.getElementById("sections");
 
@@ -222,6 +268,98 @@ function readNote(){const n=window._note;speak(n.concept+"。"+n.body);}
 
 document.getElementById("search").oninput=e=>{search=e.target.value.trim();renderList();};
 hideAns.onchange=()=>{if(curKey)showQ(curKey);};
+
+/* ===================== 考點統整模式 ===================== */
+let mode="study", sumView="law", curSub=null;
+const SUBJ={
+  刑事組:["刑法","刑訴"],
+  公法組:["憲法","行政法","國際公法","國際私法"],
+  民事組:["民法","民訴"],
+  商事組:["公司法","保險法","票據法","證交法","強制執行","法學英文"]
+};
+function subOf(q){
+  const n=q.num, sec=q.section;
+  if(sec==="刑事組") return n<=35?"刑法":"刑訴";
+  if(sec==="民事組") return n<=50?"民法":"民訴";
+  if(sec==="商事組") return n<=15?"公司法":n<=25?"保險法":n<=35?"票據法":n<=45?"證交法":n<=55?"強制執行":"法學英文";
+  if(sec==="公法組"){
+    const law=((NOTES[keyOf(q)]||{}).body||"").split("\n").find(l=>l.trim().startsWith("⚖️"))||"";
+    if(/涉外|國際私法|準據法|反致|法律適用法/.test(law)) return "國際私法";
+    if(/國際公法|條約|公約|海洋法|聯合國|領海|引渡|戰爭|國際法院|外交/.test(law)) return "國際公法";
+    if(/行政/.test(law)) return "行政法";
+    return "憲法";
+  }
+  return q.subject;
+}
+function parseNote(note){
+  const lines=(note.body||"").split("\n");
+  const grab=e=>{const m=lines.find(l=>l.trim().startsWith(e));return m?m.replace(e,"").replace(/^法條：/,"").trim():"";};
+  return {law:grab("⚖️"), key:grab("🔑"), ans:grab("✅"), trap:grab("❌"), concept:note.concept||""};
+}
+function sumItems(){
+  return Q.filter(q=> q.section===curSec && NOTES[keyOf(q)] && (!curSub||subOf(q)===curSub))
+          .sort((a,b)=> a.num-b.num || a.year-b.year)
+          .map(q=>({q, p:parseNote(NOTES[keyOf(q)]), k:keyOf(q)}));
+}
+function renderSummary(){
+  const items=sumItems(); let html="";
+  if(sumView==="law"){
+    const map=new Map();
+    items.forEach(it=>{const c=it.p.concept;
+      if(!map.has(c)) map.set(c,{law:it.p.law,key:it.p.key,ks:[]});
+      if(!map.get(c).key && it.p.key) map.get(c).key=it.p.key;
+      map.get(c).ks.push(it);});
+    html=`<div class="sumcount">⚖️ <b>${curSub}</b>　共 <b>${map.size}</b> 個考點（去重）｜這些就是會考的範圍，點題號可跳到該題</div>`;
+    for(const [c,v] of map){
+      const chips=v.ks.map(it=>`<button class="qchip" data-k="${it.k}">${it.q.year}·${it.q.num}</button>`).join("");
+      html+=`<div class="lawrow"><span class="law">${v.law||""}</span><span class="cpt">${c}</span>
+        ${v.key?`<span class="key">🔑 ${v.key}</span>`:""}
+        <div class="qchips">${chips}</div></div>`;
+    }
+  }else{
+    const cards=items.filter(it=>it.p.trap);
+    html=`<div class="sumcount">⚠️ <b>${curSub}</b>　共 <b>${cards.length}</b> 張易混淆卡｜先看陷阱說法，<b>點卡片翻開</b>看正解記憶</div>`;
+    cards.forEach(it=>{
+      html+=`<div class="trapcard" data-k="${it.k}">
+        <div class="qtag">${it.q.year}年第${it.q.num}題｜${it.p.concept}</div>
+        <div class="trap"><span class="x">⚠️ 常考易混淆：</span>${it.p.trap}</div>
+        <div class="flip">👆 點開看正解＋法條</div>
+        <div class="ans">✅ ${it.p.ans}${it.p.law?`<br><span style="color:#9a6a16">⚖️ ${it.p.law}</span>`:""}
+          ${it.p.key?`<br>🔑 ${it.p.key}`:""}</div></div>`;
+    });
+  }
+  summary.innerHTML=html||`<div class="empty">此科目尚無資料</div>`;
+  summary.querySelectorAll(".qchip").forEach(c=>c.onclick=e=>{e.stopPropagation();switchMode("study");showQ(c.dataset.k);});
+  summary.querySelectorAll(".trapcard").forEach(card=>card.onclick=()=>card.classList.toggle("open"));
+}
+function buildSubjBar(){
+  const subs=SUBJ[curSec]||[curSec];
+  if(!subs.includes(curSub)) curSub=subs[0];
+  subjs_el.innerHTML=subs.map(s=>`<button data-su="${s}" class="${s===curSub?'on':''}">${s}</button>`).join("");
+  subjs_el.querySelectorAll("button").forEach(b=>b.onclick=()=>{curSub=b.dataset.su;buildSubjBar();renderSummary();});
+  sumviews_el.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===sumView));
+}
+function switchMode(m){
+  mode=m;
+  modebar_el.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+  const sum=(m==="summary");
+  document.getElementById("wrap").style.display=sum?"none":"flex";
+  summary.style.display=sum?"block":"none";
+  subjbar_el.style.display=sum?"flex":"none";
+  years_el.style.display=sum?"none":"flex";
+  document.getElementById("search").style.display=sum?"none":"block";
+  hideAns.parentElement.style.display=sum?"none":"inline-flex";
+  if(sum){
+    if(curSec==="全部"||!SUBJ[curSec]){curSec="刑事組";buildTabs();}
+    buildSubjBar(); renderSummary();
+  }
+}
+const subjs_el=document.getElementById("subjs"), sumviews_el=document.getElementById("sumviews"),
+      modebar_el=document.getElementById("modebar"), subjbar_el=document.getElementById("subjbar"),
+      summary=document.getElementById("summary");
+modebar_el.querySelectorAll("button").forEach(b=>b.onclick=()=>switchMode(b.dataset.m));
+sumviews_el.querySelectorAll("button").forEach(b=>b.onclick=()=>{sumView=b.dataset.v;buildSubjBar();renderSummary();});
+
 buildTabs(); renderList();
 </script>
 </body>
