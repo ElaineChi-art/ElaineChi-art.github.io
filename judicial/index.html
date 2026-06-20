@@ -132,8 +132,12 @@
   .leaf-body .qh{font-size:13px;color:var(--muted);margin:9px 0 5px}
   .leaf-body .qchips{display:flex;flex-wrap:wrap;gap:6px}
   /* 正誤對照成對 */
-  .vp{border-top:1px solid #20252f;padding:10px 0}
-  .vp:first-of-type{border-top:none}
+  .vp{border:1px solid var(--line);border-radius:10px;margin:8px 0;background:#13171f;overflow:hidden}
+  .vp-h{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer}
+  .vp-h:hover{background:#1a1f2a}
+  .vp .exp{margin-left:6px;font-size:13px;color:#9fc3f0;font-weight:bold;flex:none}
+  .vp-c{display:none;padding:11px 13px;border-top:1px dashed var(--line)}
+  .vp.open .vp-c{display:block}
   .vp .vpn{display:inline-block;background:#262b36;color:#cfe0ff;border-radius:10px;font-size:11.5px;padding:1px 8px;margin-right:7px;vertical-align:middle}
   .vp .vpc{font-size:13px;color:var(--muted)}
   .vp .bad{color:#ff8a8a;margin:5px 0;font-size:15.5px;line-height:1.65}
@@ -182,8 +186,9 @@
           align-items:center;justify-content:center;font-size:18px;background:#fff;margin-top:2px}
   .sk-text{font-size:22px;line-height:1.45;padding-top:3px}
   .sk-down{color:#c08038;font-size:20px;margin:1px 0 1px 14px;letter-spacing:2px}
-  .sk-point{margin-top:18px;background:#fff3a8;border-radius:10px;padding:13px 16px;font-size:23px;color:#7a4a10;
-            border:1px dashed #c9a94e;transform:rotate(-.4deg);box-shadow:3px 4px 0 rgba(0,0,0,.07);line-height:1.45}
+  .sk-point{margin-top:12px;background:#fff3a8;border-radius:10px;padding:11px 14px;font-size:18px;color:#7a4a10;
+            border:1px dashed #c9a94e;box-shadow:2px 3px 0 rgba(0,0,0,.08);line-height:1.5;font-weight:600}
+  #demo .sk-point{font-size:22px;transform:rotate(-.4deg)}
   .sk-opts{margin-top:18px;border-top:2px dashed #d9cda8;padding-top:12px}
   .sk-ol{font-size:14px;color:#9b8f70;font-family:"PingFang TC",sans-serif;margin-bottom:6px}
   .sk-opt{font-size:19px;line-height:1.55;margin:7px 0;display:flex;gap:9px;align-items:flex-start}
@@ -259,6 +264,7 @@
 <script src="data.js"></script>
 <script src="notes.js"></script>
 <script src="scenarios.js"></script>
+<script src="diagrams.js"></script>
 <script>
 const Q = window.QUESTIONS || [];
 const NOTES = window.NOTES || {};
@@ -612,18 +618,43 @@ function fullHTML(q){
   const nb=(NOTES[keyOf(q)]||{}).body||"";
   return `<div class="full"><div class="fnote">${nb.replace(/\n/g,"<br>")}</div></div>`;
 }
+/* 當事人關係圖：自動排版(依節點數) */
+const POS={1:[[50,27]],2:[[24,27],[76,27]],3:[[16,40],[50,14],[84,40]],
+  4:[[18,16],[82,16],[18,44],[82,44]],5:[[50,10],[13,40],[37,50],[63,50],[88,40]]};
+function diagFromDIAG(d){
+  const ns=d.n.map(s=>{const a=s.split("|");return {id:a[0],label:a[0],sub:a[1]||""};});
+  const pos=POS[ns.length]||POS[5], nm={};
+  ns.forEach((n,i)=>{const pp=pos[i]||[50,27];n.x=pp[0];n.y=pp[1];nm[n.id]=n;});
+  const edges=d.e.map(s=>{
+    const a=s.split("|"), ft=a[0].split(">"), e={from:ft[0].trim(),to:ft[1].trim(),label:a[1]||"",curve:a[2]?+a[2]:0};
+    const A=nm[e.from],B=nm[e.to]; if(!A||!B) return "";
+    const mx=(A.x+B.x)/2, my=(A.y+B.y)/2+e.curve;
+    return `<path d="M ${A.x} ${A.y} Q ${mx} ${my} ${B.x} ${B.y}" fill="none" stroke="#3a3326" stroke-width="0.7" marker-end="url(#ah)"/>
+      <text x="${mx}" y="${my-1.2}" class="el" text-anchor="middle">${e.label}</text>`;
+  }).join("");
+  const nodes=ns.map(n=>`<circle cx="${n.x}" cy="${n.y}" r="5.4" fill="#fff" stroke="#2a2418" stroke-width="0.9"/>
+    <text x="${n.x}" y="${n.y+1.6}" class="nl" text-anchor="middle">${n.label}</text>
+    ${n.sub?`<text x="${n.x}" y="${n.y+9}" class="ns" text-anchor="middle">${n.sub}</text>`:""}`).join("");
+  return `<svg class="relsvg" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet">
+    <defs><marker id="ah" markerWidth="5" markerHeight="5" refX="4.3" refY="2.5" orient="auto">
+      <path d="M0,0 L5,2.5 L0,5 z" fill="#3a3326"/></marker></defs>${edges}${nodes}</svg>`;
+}
+function qCardHTML(q){
+  const k=keyOf(q), p=parseNote(NOTES[k]||{}), d=(window.DIAG||{})[k];
+  const top=(d&&d.n&&d.e)?diagFromDIAG(d):`<div class="sit">📖 ${scenOf(q)}</div>`;
+  const point=(d&&d.p)?d.p:(p.key||p.concept);
+  return `${top}<div class="sk-point">📌 ${point}</div>
+    <div class="opts">${optsHTML(q)}</div>
+    ${p.ans?`<div class="fixnote"><span class="lb">✏️ 訂正：</span>${p.ans}</div>`:""}`;
+}
 function vpairs(qs){
-  // 每題全攤開：📖情境 → 四選項(錯的劃掉/對的打勾) → ✏️訂正成正確觀念
+  // 每題一條，點開＝關係圖＋📌重點＋選項筆記(錯的劃掉訂正)
   return qs.map(q=>{
-    const p=parseNote(NOTES[keyOf(q)]||{}); const k=keyOf(q);
+    const p=parseNote(NOTES[keyOf(q)]||{}), k=keyOf(q);
     return `<div class="vp" data-k="${k}">
-      <div class="vptop"><span class="vpn">${q.year}·${q.num}</span><span class="vpc">${p.concept}</span>
-        <button class="hear" title="點我聽">🔊</button></div>
-      <div class="sit">📖 ${scenOf(q)}</div>
-      <div class="opts">${optsHTML(q)}</div>
-      ${p.ans?`<div class="fixnote"><span class="lb">✏️ 訂正成正確觀念：</span>${p.ans}</div>`:""}
-      <button class="more">🔍 看法條詳解</button>
-      <div class="full-wrap"></div></div>`;
+      <div class="vp-h"><span class="vpn">${q.year}·${q.num}</span><span class="vpc">${p.concept}</span>
+        <button class="hear" title="聽">🔊</button><span class="exp">＋ 展開</span></div>
+      <div class="vp-c"></div></div>`;
   }).join("");
 }
 function renderTree(){
@@ -655,12 +686,11 @@ function renderTree(){
   });
   tree.innerHTML=html;
   tree.querySelectorAll(".leaf-head").forEach(h=>h.onclick=()=>document.getElementById(h.dataset.t).classList.toggle("open"));
-  // 🔍 就地展開完整題目（不離開知識樹、不用重點）
-  tree.querySelectorAll(".more").forEach(b=>b.onclick=e=>{
-    e.stopPropagation();
-    const vp=b.closest(".vp"), fw=vp.querySelector(".full-wrap");
-    if(fw.innerHTML){fw.innerHTML="";b.textContent="🔍 就地展開完整題目";}
-    else{fw.innerHTML=fullHTML(qByKey(vp.dataset.k));b.textContent="🔼 收起完整題目";}
+  // 點一題 → 展開：關係圖＋📌重點＋選項訂正
+  tree.querySelectorAll(".vp-h").forEach(h=>h.onclick=()=>{
+    const vp=h.closest(".vp"), c=vp.querySelector(".vp-c"), ex=h.querySelector(".exp");
+    if(vp.classList.toggle("open")){ if(!c.innerHTML) c.innerHTML=qCardHTML(qByKey(vp.dataset.k)); ex.textContent="－ 收合"; }
+    else ex.textContent="＋ 展開";
   });
   // 🔊 點我聽：先念情境，再念易混與正確
   tree.querySelectorAll(".hear").forEach(b=>b.onclick=e=>{
