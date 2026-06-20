@@ -36,8 +36,23 @@
   #search{padding:7px 12px;border:1px solid var(--line);border-radius:999px;font-size:15px;width:150px;background:#0f1219;color:var(--ink)}
   #search::placeholder{color:#5b6472}
   .toggle{margin-left:auto;font-size:14px;color:var(--muted)}
-  .wrap{display:flex;height:calc(100vh - 190px)}
-  #list{width:350px;overflow:auto;border-right:1px solid var(--line);background:#0f1219}
+  .wrap{display:flex;position:relative;height:calc(100vh - 118px)}
+  /* 上方控制面板：平常收起，滑到頂條才滑出(覆蓋，不擠版面) */
+  #ctrlzone{position:relative;z-index:42}
+  #ctrl-tab{background:#11151c;border-bottom:1px solid var(--line);color:#9aa4b2;font-size:13px;text-align:center;padding:7px;letter-spacing:1px;cursor:default}
+  #ctrl-tab .ctrl-hint{color:#5b6472;font-size:11px}
+  #panel{position:absolute;top:100%;left:0;right:0;z-index:42;background:#0c0e13;border-bottom:1px solid var(--line);
+         box-shadow:0 16px 40px rgba(0,0,0,.6);visibility:hidden;opacity:0;transform:translateY(-8px);transition:.22s}
+  #ctrlzone:hover #panel{visibility:visible;opacity:1;transform:none}
+  /* 左側題目清單：滑到左緣才滑出(抽屜) */
+  #list-tab{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:36;writing-mode:vertical-rl;
+            background:#161922;border:1px solid var(--line);border-left:none;border-radius:0 12px 12px 0;
+            padding:20px 9px;color:#9aa4b2;font-size:15px;letter-spacing:5px;cursor:pointer;box-shadow:4px 0 16px rgba(0,0,0,.35)}
+  #list-tab:hover{color:#fff;background:#1f2937}
+  #list{position:absolute;left:0;top:0;height:100%;width:370px;z-index:37;transform:translateX(-100%);
+        transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:12px 0 44px rgba(0,0,0,.55);
+        overflow:auto;border-right:1px solid var(--line);background:#0f1219}
+  #list-tab:hover + #list,#list:hover{transform:translateX(0)}
   .secthead{position:sticky;top:0;background:#1b2030;color:#fff;padding:7px 14px;font-size:13px;z-index:2;border-bottom:1px solid var(--line)}
   .secthead .t{color:var(--gold)}
   .subhead{background:#11151c;padding:4px 14px 4px 22px;font-size:13px;color:#9aa4b2;font-weight:bold}
@@ -48,7 +63,8 @@
   .qrow .s{font-size:13.5px;color:#9aa4b2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .dot{width:9px;height:9px;border-radius:50%;margin-left:auto;margin-top:5px;flex:none}
   .dot.ok{background:var(--green)} .dot.review{background:var(--red)}
-  #detail{flex:1;overflow:auto;padding:24px 32px}
+  #detail{position:absolute;inset:0;overflow:auto;padding:28px max(40px,5vw);z-index:1}
+  #detail>*{max-width:1000px;margin-left:auto;margin-right:auto}
   .tags{display:flex;gap:7px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
   .tag{background:#1f2430;border-radius:20px;padding:3px 11px;font-size:13px;color:#c3cad6}
   .tag.subj{background:var(--grad);color:#fff}
@@ -80,7 +96,7 @@
   .modebar button{color:#cdb86a;background:transparent;font-weight:bold;border-radius:999px}
   .modebar button.on{background:var(--grad);color:#fff;box-shadow:0 6px 18px rgba(80,90,255,.3)}
   #subjbar{display:none;gap:8px;padding:9px 18px;background:#11151c;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
-  #summary{display:none;height:calc(100vh - 240px);overflow:auto;padding:18px 22px;max-width:1000px;margin:0 auto}
+  #summary{display:none;height:calc(100vh - 118px);overflow:auto;padding:18px 22px;max-width:1000px;margin:0 auto}
   .sumtitle{font-size:15px;color:#e0c060;font-weight:bold;margin:18px 0 8px;border-bottom:2px solid var(--gold);padding-bottom:5px;position:sticky;top:-18px;background:var(--bg);z-index:2}
   .sumtitle:first-child{margin-top:0}
   /* 法條速記表 */
@@ -103,7 +119,7 @@
   .trapcard .flip{font-size:12px;color:var(--blue);margin-top:6px}
   .sumcount{font-size:13px;color:#888;margin-bottom:12px}
   /* ===== 知識樹 ===== */
-  #tree{display:none;height:calc(100vh - 240px);overflow:auto;padding:16px;max-width:1060px;margin:0 auto}
+  #tree{display:none;height:calc(100vh - 118px);overflow:auto;padding:16px;max-width:1060px;margin:0 auto}
   .treehint{background:rgba(20,26,40,.7);border:1px dashed var(--gold);border-radius:10px;padding:11px 14px;font-size:14.5px;color:#d9c98c;margin-bottom:16px;line-height:1.7}
   .branch{border-radius:16px;padding:14px 16px;margin-bottom:18px;border:1px solid var(--line)}
   .branch.zong{background:linear-gradient(180deg,#141d2c,#10141c);border-color:#2a3a55}
@@ -179,7 +195,7 @@
   .treetools button{font-family:inherit;font-size:14px;padding:7px 15px;border:1px solid var(--gold);background:#1a1d16;border-radius:20px;cursor:pointer;color:#e0c060;font-weight:bold}
   .treetools button:hover{background:#262411}
   /* ===== ✏️ 手寫圖解（試做） ===== */
-  #demo{display:none;height:calc(100vh - 240px);overflow:auto;padding:18px}
+  #demo{display:none;height:calc(100vh - 118px);overflow:auto;padding:18px}
   .demohint{max-width:780px;margin:0 auto 18px;background:rgba(20,26,40,.7);border:1px dashed var(--gold);border-radius:10px;padding:11px 14px;font-size:14.5px;color:#d9c98c;line-height:1.7}
   .sk-wrap{max-width:780px;margin:0 auto}
   .sketch{background:#fbf6e9;color:#2a2418;border-radius:16px;padding:20px 24px;margin-bottom:28px;
@@ -229,39 +245,43 @@
   </div>
 </header>
 
-<div class="sched">
-  <span>📅 <b>當天試程（一天4節）</b></span>
-  <span><b>第1節</b> 09:00 綜一·刑事(刑法/刑訴/倫理)</span>
-  <span><b>第2節</b> 11:10 綜一·公法(憲/行政/國公/國私)</span>
-  <span><b>第3節</b> 14:00 綜二·民事(民法/民訴)</span>
-  <span><b>第4節</b> 16:20 綜二·商事(公司/保險/票據/證交/強執/法英)</span>
-</div>
-
-<div class="controls">
-  <div class="modebar" id="modebar">
-    <button data-m="study" class="on">📖 逐題複習</button>
-    <button data-m="summary">📋 考點統整</button>
-    <button data-m="tree">🌳 知識樹</button>
-    <button data-m="demo">✏️ 圖解(試做)</button>
-  </div>
-  <div class="grp" id="years"></div>
-  <div class="grp" id="sections"></div>
-  <input id="search" placeholder="🔍 搜尋關鍵字…">
-  <label class="toggle"><input type="checkbox" id="hideAns"> 遮答案自測</label>
-</div>
-
-<div id="subjbar">
-  <span style="font-size:13px;color:#9a7b16;font-weight:bold">科目</span>
-  <div class="grp" id="subjs"></div>
-  <div class="grp" id="sumviews">
-    <button data-v="law" class="on">⚖️ 法條速記表</button>
-    <button data-v="trap">⚠️ 易錯觀念卡</button>
+<div id="ctrlzone">
+  <div id="ctrl-tab">⚙ 模式 ‧ 年份 ‧ 設定　<span class="ctrl-hint">（滑鼠移到這條就展開）</span></div>
+  <div id="panel">
+    <div class="sched">
+      <span>📅 <b>當天試程（一天4節）</b></span>
+      <span><b>第1節</b> 09:00 綜一·刑事(刑法/刑訴/倫理)</span>
+      <span><b>第2節</b> 11:10 綜一·公法(憲/行政/國公/國私)</span>
+      <span><b>第3節</b> 14:00 綜二·民事(民法/民訴)</span>
+      <span><b>第4節</b> 16:20 綜二·商事(公司/保險/票據/證交/強執/法英)</span>
+    </div>
+    <div class="controls">
+      <div class="modebar" id="modebar">
+        <button data-m="study" class="on">📖 逐題複習</button>
+        <button data-m="summary">📋 考點統整</button>
+        <button data-m="tree">🌳 知識樹</button>
+        <button data-m="demo">✏️ 圖解(試做)</button>
+      </div>
+      <div class="grp" id="years"></div>
+      <div class="grp" id="sections"></div>
+      <input id="search" placeholder="🔍 搜尋關鍵字…">
+      <label class="toggle"><input type="checkbox" id="hideAns"> 遮答案自測</label>
+    </div>
+    <div id="subjbar">
+      <span style="font-size:13px;color:#9a7b16;font-weight:bold">科目</span>
+      <div class="grp" id="subjs"></div>
+      <div class="grp" id="sumviews">
+        <button data-v="law" class="on">⚖️ 法條速記表</button>
+        <button data-v="trap">⚠️ 易錯觀念卡</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <div class="wrap" id="wrap">
+  <div id="list-tab">☰&nbsp;題目清單</div>
   <div id="list"></div>
-  <div id="detail"><div class="empty">← 左邊點一題開始複習；預設依當天節次排列</div></div>
+  <div id="detail"><div class="empty">滑到左邊「☰ 題目清單」選一題，或用題目下方的 上一題／下一題</div></div>
 </div>
 
 <div id="summary"></div>
