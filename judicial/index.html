@@ -152,6 +152,15 @@
   .o-right .cm{font-weight:700;color:#5fe39b}
   .o-pick{color:#ffd9a8;font-size:15px;line-height:1.6;margin:4px 0;padding:3px 9px;border-radius:7px;background:rgba(180,120,40,.16)}
   .o-pick .pm{font-weight:700;color:#ffb454}
+  .o-wrong .why{color:#ffd0c2;text-decoration:none}
+  .o-right b{color:#dff5e7}
+  /* 簡單文字關係圖 */
+  .reldiag{background:#fffdf5;color:#2a2418;border:1px solid #e6dcc0;border-radius:10px;padding:9px 13px;margin:2px 0 8px;font-family:'Ma Shan Zheng',"PingFang TC",sans-serif}
+  .rel-line{font-size:19px;line-height:1.95}
+  .rel-line .ra{color:#b04a22;font-size:14px;margin:0 5px;font-family:"PingFang TC",sans-serif}
+  /* 逐題模式：選項下方插入的關係圖區 */
+  .studydiag{margin:14px 0;padding:12px 15px;background:#10141c;border:1px solid var(--line);border-radius:12px}
+  .studydiag .sd-h{font-size:13px;color:#9fc3f0;margin-bottom:8px;font-weight:bold;letter-spacing:.5px}
   .fixnote{margin-top:8px;color:#7ff0b0;font-weight:600;font-size:15.5px;background:rgba(40,140,90,.12);border-left:3px solid var(--green);padding:8px 12px;border-radius:8px;line-height:1.7}
   .fixnote .lb{color:#5fe39b;font-weight:700}
   .pickwrong{font-size:12px;color:#ffb454;margin-left:4px}
@@ -336,6 +345,12 @@ function autoNote(q){
     body:`📌 ${q.volume}・${q.section}（${q.subject}）${laws}\n📝 題型：這題要你${qType(q.stem)}\n✔ 官方答案：${ansTxt}\n\n（白話詳解之後補。）`};
 }
 
+function studyDiagram(q){
+  // 選項下方、詳解上方：簡單關係圖＋📌要記的重點
+  const d=(window.DIAG||{})[keyOf(q)];
+  if(!(d&&d.n&&d.e)) return "";
+  return `<div class="studydiag"><div class="sd-h">🖼️ 關係圖（圖像記憶）</div>${diagText(d)}${d.p?`<div class="sk-point">📌 要記：${d.p}</div>`:""}</div>`;
+}
 function showQ(k){
   curKey=k; const q=qByKey(k); const note=NOTES[k]||autoNote(q);
   document.body.classList.toggle("hideAns", hideAns.checked);
@@ -349,6 +364,7 @@ function showQ(k){
       <span class="tag">${q.year}年 第${q.num}題</span>${laws}</div>
     <div class="stem">${q.stem}</div>${opts}
     ${q.ansLetter==="#"?'<div style="margin:10px 0;padding:8px 14px;background:#fff3cd;border:2px solid var(--gold);border-radius:10px;font-weight:bold">⭐ 本題官方一律給分（送分題）</div>':''}
+    ${studyDiagram(q)}
     <div class="note ${note.auto?'auto':''}"><h3>🖊️ ${note.concept}</h3>${note.body}</div>
     <div class="btns">
       <button class="play" onclick="readQ()">🔊 念題目</button>
@@ -358,7 +374,9 @@ function showQ(k){
     <div class="nav"><button onclick="step(-1)">◀ 上一題</button>
       <button onclick="step(1)">下一題 ▶</button></div>`;
   detail.querySelectorAll(".opt").forEach(o=>o.onclick=()=>o.classList.add("reveal"));
-  window._q=q; window._note=note; renderList(); detail.scrollTop=0;
+  window._q=q; window._note=note; renderList();
+  const sel=list.querySelector(".qrow.sel"); if(sel) list.scrollTop=Math.max(0,sel.offsetTop-44); // 選到的題自動移到最上面
+  detail.scrollTop=0;
 }
 const detail=document.getElementById("detail"), hideAns=document.getElementById("hideAns");
 
@@ -618,34 +636,31 @@ function fullHTML(q){
   const nb=(NOTES[keyOf(q)]||{}).body||"";
   return `<div class="full"><div class="fnote">${nb.replace(/\n/g,"<br>")}</div></div>`;
 }
-/* 當事人關係圖：自動排版(依節點數) */
-const POS={1:[[50,27]],2:[[24,27],[76,27]],3:[[16,40],[50,14],[84,40]],
-  4:[[18,16],[82,16],[18,44],[82,44]],5:[[50,10],[13,40],[37,50],[63,50],[88,40]]};
-function diagFromDIAG(d){
-  const ns=d.n.map(s=>{const a=s.split("|");return {id:a[0],label:a[0],sub:a[1]||""};});
-  const pos=POS[ns.length]||POS[5], nm={};
-  ns.forEach((n,i)=>{const pp=pos[i]||[50,27];n.x=pp[0];n.y=pp[1];nm[n.id]=n;});
-  const edges=d.e.map(s=>{
-    const a=s.split("|"), ft=a[0].split(">"), e={from:ft[0].trim(),to:ft[1].trim(),label:a[1]||"",curve:a[2]?+a[2]:0};
-    const A=nm[e.from],B=nm[e.to]; if(!A||!B) return "";
-    const mx=(A.x+B.x)/2, my=(A.y+B.y)/2+e.curve;
-    return `<path d="M ${A.x} ${A.y} Q ${mx} ${my} ${B.x} ${B.y}" fill="none" stroke="#3a3326" stroke-width="0.7" marker-end="url(#ah)"/>
-      <text x="${mx}" y="${my-1.2}" class="el" text-anchor="middle">${e.label}</text>`;
+/* 簡單一行文字關係圖：（甲）──行為──▶（乙），一個關係一行 */
+function diagText(d){
+  const sub={}; (d.n||[]).forEach(s=>{const a=s.split("|"); if(a[1])sub[a[0]]=a[1];});
+  const nl=id=> sub[id]?`${id}·${sub[id]}`:id;
+  const lines=d.e.map(s=>{
+    const a=s.split("|"), ft=a[0].split(">");
+    return `<div class="rel-line"><b>（${nl(ft[0].trim())}）</b><span class="ra">──${a[1]||""}──▶</span><b>（${nl(ft[1].trim())}）</b></div>`;
   }).join("");
-  const nodes=ns.map(n=>`<circle cx="${n.x}" cy="${n.y}" r="5.4" fill="#fff" stroke="#2a2418" stroke-width="0.9"/>
-    <text x="${n.x}" y="${n.y+1.6}" class="nl" text-anchor="middle">${n.label}</text>
-    ${n.sub?`<text x="${n.x}" y="${n.y+9}" class="ns" text-anchor="middle">${n.sub}</text>`:""}`).join("");
-  return `<svg class="relsvg" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet">
-    <defs><marker id="ah" markerWidth="5" markerHeight="5" refX="4.3" refY="2.5" orient="auto">
-      <path d="M0,0 L5,2.5 L0,5 z" fill="#3a3326"/></marker></defs>${edges}${nodes}</svg>`;
+  return `<div class="reldiag">${lines}</div>`;
+}
+function optNotes(q){
+  // 有手寫選項筆記就用(短描述＋為什麼)，否則退回原選項劃掉
+  const d=(window.DIAG||{})[keyOf(q)];
+  if(d&&d.o) return d.o.map(x=> x.y
+    ? `<div class="o-right"><span class="cm">✔</span> <b>${x.t}</b>${x.why?` → ${x.why}`:""}</div>`
+    : `<div class="o-wrong"><span class="xm">✘</span> <s>${x.t}</s>${x.why?` <span class="why">→ ${x.why}</span>`:""}</div>`
+  ).join("");
+  return optsHTML(q);
 }
 function qCardHTML(q){
   const k=keyOf(q), p=parseNote(NOTES[k]||{}), d=(window.DIAG||{})[k];
-  const top=(d&&d.n&&d.e)?diagFromDIAG(d):`<div class="sit">📖 ${scenOf(q)}</div>`;
+  const top=(d&&d.n&&d.e)?diagText(d):`<div class="sit">📖 ${scenOf(q)}</div>`;
   const point=(d&&d.p)?d.p:(p.key||p.concept);
-  return `${top}<div class="sk-point">📌 ${point}</div>
-    <div class="opts">${optsHTML(q)}</div>
-    ${p.ans?`<div class="fixnote"><span class="lb">✏️ 訂正：</span>${p.ans}</div>`:""}`;
+  const fix=(d&&d.o)?"":(p.ans?`<div class="fixnote"><span class="lb">✏️ 訂正：</span>${p.ans}</div>`:"");
+  return `${top}<div class="sk-point">📌 ${point}</div><div class="opts">${optNotes(q)}</div>${fix}`;
 }
 function vpairs(qs){
   // 每題一條，點開＝關係圖＋📌重點＋選項筆記(錯的劃掉訂正)
