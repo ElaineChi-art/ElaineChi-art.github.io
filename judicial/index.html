@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>司法官・律師一試｜歷屆全科複習（依當天考試節次）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#0c0e13;--paper:#171b24;--ink:#e6e6e6;--muted:#7c8696;--line:#262b36;
         --green:#3ddc84;--greenbg:#10271c;--red:#ff6b6b;--blue:#7fb5ff;--gold:#e0c060;
@@ -162,6 +165,32 @@
   .treetools{display:flex;gap:8px;margin-bottom:12px;position:sticky;top:-16px;background:var(--bg);padding:8px 0;z-index:5}
   .treetools button{font-family:inherit;font-size:14px;padding:7px 15px;border:1px solid var(--gold);background:#1a1d16;border-radius:20px;cursor:pointer;color:#e0c060;font-weight:bold}
   .treetools button:hover{background:#262411}
+  /* ===== ✏️ 手寫圖解（試做） ===== */
+  #demo{display:none;height:calc(100vh - 240px);overflow:auto;padding:18px}
+  .demohint{max-width:780px;margin:0 auto 18px;background:rgba(20,26,40,.7);border:1px dashed var(--gold);border-radius:10px;padding:11px 14px;font-size:14.5px;color:#d9c98c;line-height:1.7}
+  .sk-wrap{max-width:780px;margin:0 auto}
+  .sketch{background:#fbf6e9;color:#2a2418;border-radius:16px;padding:20px 24px;margin-bottom:28px;
+          box-shadow:0 12px 34px rgba(0,0,0,.45);border:2px solid #d9cda8;transform:rotate(-.5deg);
+          font-family:'Ma Shan Zheng',"PingFang TC",sans-serif;position:relative}
+  .sketch:nth-child(even){transform:rotate(.6deg)}
+  .sk-top{display:flex;align-items:center;gap:10px;margin-bottom:3px}
+  .sk-title{font-size:27px;color:#b85c2e;margin:0;flex:1}
+  .sk-hear{background:#7c5cff;color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;flex:none;box-shadow:0 4px 12px rgba(124,92,255,.4)}
+  .sk-q{font-size:14px;color:#9b8f70;font-family:"PingFang TC",sans-serif;margin-bottom:16px}
+  .sk-step{display:flex;gap:13px;align-items:flex-start;margin:4px 0}
+  .sk-num{flex:none;width:32px;height:32px;border-radius:50%;border:2.5px solid #2a2418;display:flex;
+          align-items:center;justify-content:center;font-size:18px;background:#fff;margin-top:2px}
+  .sk-text{font-size:22px;line-height:1.45;padding-top:3px}
+  .sk-down{color:#c08038;font-size:20px;margin:1px 0 1px 14px;letter-spacing:2px}
+  .sk-point{margin-top:18px;background:#fff3a8;border-radius:10px;padding:13px 16px;font-size:23px;color:#7a4a10;
+            border:1px dashed #c9a94e;transform:rotate(-.4deg);box-shadow:3px 4px 0 rgba(0,0,0,.07);line-height:1.45}
+  .sk-opts{margin-top:18px;border-top:2px dashed #d9cda8;padding-top:12px}
+  .sk-ol{font-size:14px;color:#9b8f70;font-family:"PingFang TC",sans-serif;margin-bottom:6px}
+  .sk-opt{font-size:19px;line-height:1.55;margin:7px 0;display:flex;gap:9px;align-items:flex-start}
+  .sk-opt .mk{flex:none;font-size:23px;font-family:"PingFang TC",sans-serif;font-weight:bold;line-height:1.2}
+  .sk-opt.y{color:#1c5c33} .sk-opt.y .mk{color:#1f8a4c}
+  .sk-opt.n{color:#9a4636} .sk-opt.n .mk{color:#c0392b}
+  .sk-opt.n .ot{text-decoration:line-through;text-decoration-color:#d98b7a;text-decoration-thickness:2px}
 </style>
 </head>
 <body>
@@ -193,6 +222,7 @@
     <button data-m="study" class="on">📖 逐題複習</button>
     <button data-m="summary">📋 考點統整</button>
     <button data-m="tree">🌳 知識樹</button>
+    <button data-m="demo">✏️ 圖解(試做)</button>
   </div>
   <div class="grp" id="years"></div>
   <div class="grp" id="sections"></div>
@@ -217,6 +247,8 @@
 <div id="summary"></div>
 
 <div id="tree"></div>
+
+<div id="demo"></div>
 
 <script src="data.js"></script>
 <script src="notes.js"></script>
@@ -419,10 +451,11 @@ function switchMode(m){
   document.getElementById("wrap").style.display = m==="study"?"flex":"none";
   summary.style.display = m==="summary"?"block":"none";
   document.getElementById("tree").style.display = m==="tree"?"block":"none";
+  document.getElementById("demo").style.display = m==="demo"?"block":"none";
   subjbar_el.style.display = m==="summary"?"flex":"none";
-  // 卷別/年份/搜尋/遮答案：知識樹模式全部隱藏（樹自己就是導覽）
+  // 卷別/年份/搜尋/遮答案：知識樹、圖解模式全部隱藏
   years_el.style.display = m==="study"?"flex":"none";
-  sections_el.style.display = m==="tree"?"none":"flex";
+  sections_el.style.display = (m==="tree"||m==="demo")?"none":"flex";
   document.getElementById("search").style.display = m==="study"?"block":"none";
   hideAns.parentElement.style.display = m==="study"?"inline-flex":"none";
   if(m==="summary"){
@@ -430,6 +463,7 @@ function switchMode(m){
     buildSubjBar(); renderSummary();
   }
   if(m==="tree") renderTree();
+  if(m==="demo") renderDemo();
 }
 const subjs_el=document.getElementById("subjs"), sumviews_el=document.getElementById("sumviews"),
       modebar_el=document.getElementById("modebar"), subjbar_el=document.getElementById("subjbar"),
@@ -568,10 +602,9 @@ function optsHTML(q){
   }).join("");
 }
 function fullHTML(q){
+  // 只補「法條詳解」，不再重複情境與選項(卡片已有)
   const nb=(NOTES[keyOf(q)]||{}).body||"";
-  return `<div class="full"><div class="fstem">${q.stem}</div>
-    <div class="opts">${optsHTML(q)}</div>
-    <div class="fnote">${nb.replace(/\n/g,"<br>")}</div></div>`;
+  return `<div class="full"><div class="fnote">${nb.replace(/\n/g,"<br>")}</div></div>`;
 }
 function vpairs(qs){
   // 每題全攤開：📖情境 → 四選項(錯的劃掉/對的打勾) → ✏️訂正成正確觀念
@@ -634,6 +667,47 @@ function renderTree(){
   document.getElementById("colAll").onclick=()=>tree.querySelectorAll(".leaf").forEach(l=>l.classList.remove("open"));
 }
 function jumpTo(k){const p=k.split("-");curYear=+p[0];curSec=p[1];buildTabs();switchMode("study");showQ(k);}
+
+/* ===================== ✏️ 手寫圖解（試做：先做2題） ===================== */
+const DEMO=[
+ {title:"因果歷程錯誤 → 殺人既遂 §271", q:"114年 刑法第1題・錯誤論",
+  story:["甲 起殺意，緊緊勒住乙的脖子","乙 昏迷不動，甲「誤以為乙已經死了」","甲 把乙埋進土裡","真相：乙是被土蓋住口鼻、窒息才死的"],
+  point:"因果跑掉一點點 ⇒ 不重要！甲仍成立「殺人既遂」",
+  opts:[
+    {y:1,t:"B 勒昏→誤以為死→埋土→窒息死，仍負殺人既遂（本題答案）"},
+    {y:0,t:"A 推下橋卻撞橋墩死 → 不能因此否定殺人故意"},
+    {y:0,t:"C 一顆炸彈炸死同房3人 → 對丙丁也是故意（不是過失）"},
+    {y:0,t:"D 路上埋地雷炸死路人 → 不能否定殺人故意"}],
+  read:"甲起殺意緊勒乙脖子，乙昏迷，甲誤以為乙死了，把乙埋進土裡，乙其實是被土蓋住口鼻窒息死的。重點，因果跑掉一點點不重要，甲仍成立殺人既遂。"},
+ {title:"有義務遺棄罪 §294", q:"109年 刑法第2題・遺棄罪",
+  story:["甲女 在醫院生下一個嬰兒","丈夫乙 長年在外地工作（不在場）","甲 怕養不起 ⇒ 連夜離開醫院，丟下嬰兒","嬰兒暫時由醫師、護士照顧"],
+  point:"醫師護士「沒有」扶養義務 ⇒ 當媽的甲有義務卻離開 ⇒ 成立§294有義務遺棄罪",
+  opts:[
+    {y:1,t:"C 醫師護士無扶養義務，甲離開即成立§294有義務遺棄罪（本題答案）"},
+    {y:0,t:"A 有人照顧就不成立 → 錯，甲的遺棄已造成危險"},
+    {y:0,t:"B 成立§293「無義務」遺棄罪 → 錯，母親是「有義務」§294"},
+    {y:0,t:"D 因丈夫也有義務就不成立 → 錯，不能因此免責"}],
+  read:"甲女在醫院生下嬰兒，丈夫長年在外，甲怕養不起就連夜離開醫院丟下嬰兒，嬰兒暫由醫師護士照顧。重點，醫師護士沒有扶養義務，當媽的甲有義務卻離開，成立有義務遺棄罪。"},
+];
+function renderDemo(){
+  const d=document.getElementById("demo");
+  let html=`<div class="demohint">✏️ <b>手寫圖解・試做版（先畫2題給妳看）</b><br>
+    把題目變成「一步一步的故事關係圖」＋手寫選項筆記，錯的劃掉、對的留下。<br>
+    👉 如果這種「畫出來、像手寫筆記」的方式對了，跟我說，我就把刑法每一題都畫成這樣。</div><div class="sk-wrap">`;
+  DEMO.forEach((c,i)=>{
+    const steps=c.story.map((s,j)=>`<div class="sk-step"><div class="sk-num">${j+1}</div><div class="sk-text">${s}</div></div>${j<c.story.length-1?'<div class="sk-down">↓</div>':''}`).join("");
+    const opts=c.opts.map(o=>`<div class="sk-opt ${o.y?'y':'n'}"><span class="mk">${o.y?'✔':'✘'}</span><span class="ot">${o.t}</span></div>`).join("");
+    html+=`<div class="sketch">
+      <div class="sk-top"><h3 class="sk-title">${c.title}</h3><button class="sk-hear" data-i="${i}">🔊</button></div>
+      <div class="sk-q">${c.q}</div>
+      ${steps}
+      <div class="sk-point">📌 ${c.point}</div>
+      <div class="sk-opts"><div class="sk-ol">選項筆記：</div>${opts}</div>
+    </div>`;
+  });
+  d.innerHTML=html+`</div>`;
+  d.querySelectorAll(".sk-hear").forEach(b=>b.onclick=()=>speak(DEMO[b.dataset.i].read));
+}
 
 buildTabs(); renderList();
 </script>
