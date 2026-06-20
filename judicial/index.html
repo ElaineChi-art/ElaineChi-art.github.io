@@ -129,7 +129,17 @@
   .vp .bad{color:#c0392b;margin:5px 0;font-size:15.5px;line-height:1.65}
   .vp .good{color:#1c7a43;margin:3px 0;font-size:15.5px;line-height:1.65;font-weight:500}
   .vp .bad b,.vp .good b{font-weight:700}
-  .vp .more{font-size:12.5px;color:var(--blue);background:none;border:none;cursor:pointer;padding:0;font-family:inherit;margin-top:2px}
+  .vp .vptop{display:flex;align-items:center;gap:7px}
+  .vp .hear{margin-left:auto;background:#7a5cd0;color:#fff;border:none;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer;flex:none}
+  .vp .hear:active{transform:scale(.9)}
+  .vp .sit{margin:6px 0;font-size:16px;line-height:1.6;color:#1d3a5f;background:#eef4fb;border-left:4px solid var(--blue);border-radius:8px;padding:7px 11px}
+  .vp .more{font-size:13px;color:var(--blue);background:#eef4fb;border:1px solid #cfe0f2;border-radius:16px;cursor:pointer;padding:4px 12px;font-family:inherit;margin-top:7px}
+  .full{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .full .fstem{font-size:16px;line-height:1.7;margin-bottom:9px;font-weight:500}
+  .opt2{border:1.5px solid var(--line);border-radius:9px;padding:8px 11px;margin:6px 0;font-size:15px;line-height:1.6}
+  .opt2.cor{border-color:var(--green);background:var(--greenbg)}
+  .opt2.cor::after{content:" ✔正解";color:var(--green);font-size:13px}
+  .full .fnote{margin-top:10px;border-top:1px dashed var(--gold);padding-top:9px;font-size:14.5px;line-height:1.8;color:#444}
   .treetools{display:flex;gap:8px;margin-bottom:12px;position:sticky;top:-16px;background:var(--bg);padding:8px 0;z-index:5}
   .treetools button{font-family:inherit;font-size:14px;padding:7px 15px;border:1px solid var(--gold);background:#fff;border-radius:20px;cursor:pointer;color:#7a5a10;font-weight:bold}
   .treetools button:hover{background:#fff4d8}
@@ -191,6 +201,7 @@
 
 <script src="data.js"></script>
 <script src="notes.js"></script>
+<script src="scenarios.js"></script>
 <script>
 const Q = window.QUESTIONS || [];
 const NOTES = window.NOTES || {};
@@ -503,14 +514,37 @@ function matchQs(pat){
       && re.test((NOTES[keyOf(q)].concept||"")+(NOTES[keyOf(q)].body||"")))
     .sort((a,b)=>a.year-b.year);
 }
+function scenOf(q){
+  const s=(window.SCEN||{})[keyOf(q)];
+  if(s) return s;
+  // 還沒手寫情境時的暫代：取題幹前段
+  let t=q.stem;
+  for(const mk of ["下列","試問","問甲","則甲","關於上述","依上述","上述","以下敘述","請問","何者"]){
+    const i=t.indexOf(mk); if(i>6){t=t.slice(0,i);break;}
+  }
+  t=t.replace(/[，。、:：]\s*$/,"");
+  if(t.length<6) return "（觀念題）"+((NOTES[keyOf(q)]||{}).concept||"");
+  return t.length>42 ? t.slice(0,40)+"…" : t;
+}
+function fullHTML(q){
+  const L=["A","B","C","D"];
+  const opts=q.options.map((o,i)=>`<div class="opt2 ${i===q.ansIndex?'cor':''}">${L[i]}. ${o}</div>`).join("");
+  const nb=(NOTES[keyOf(q)]||{}).body||"";
+  return `<div class="full"><div class="fstem">${q.stem}</div>${opts}
+    <div class="fnote">${nb.replace(/\n/g,"<br>")}</div></div>`;
+}
 function vpairs(qs){
-  // 把每題詳解轉成「❌易混 → ✅正確」成對(全攤開)
+  // 每題：📖情境 → ❌易混 → ✅正確，全攤開；🔊可聽、🔍就地展開完整題
   return qs.map(q=>{
     const p=parseNote(NOTES[keyOf(q)]||{}); const k=keyOf(q);
-    return `<div class="vp"><span class="vpn">${q.year}·${q.num}</span><span class="vpc">${p.concept}</span>
+    return `<div class="vp" data-k="${k}">
+      <div class="vptop"><span class="vpn">${q.year}·${q.num}</span><span class="vpc">${p.concept}</span>
+        <button class="hear" title="點我聽">🔊</button></div>
+      <div class="sit">📖 ${scenOf(q)}</div>
       ${p.trap?`<div class="bad">❌ 易混：${p.trap}</div>`:""}
       ${p.ans?`<div class="good">✅ 正確：${p.ans}</div>`:""}
-      <button class="more" data-k="${k}">🔍 看完整題目／選項</button></div>`;
+      <button class="more">🔍 就地展開完整題目</button>
+      <div class="full-wrap"></div></div>`;
   }).join("");
 }
 function renderTree(){
@@ -542,7 +576,19 @@ function renderTree(){
   });
   tree.innerHTML=html;
   tree.querySelectorAll(".leaf-head").forEach(h=>h.onclick=()=>document.getElementById(h.dataset.t).classList.toggle("open"));
-  tree.querySelectorAll(".more").forEach(c=>c.onclick=e=>{e.stopPropagation();jumpTo(c.dataset.k);});
+  // 🔍 就地展開完整題目（不離開知識樹、不用重點）
+  tree.querySelectorAll(".more").forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const vp=b.closest(".vp"), fw=vp.querySelector(".full-wrap");
+    if(fw.innerHTML){fw.innerHTML="";b.textContent="🔍 就地展開完整題目";}
+    else{fw.innerHTML=fullHTML(qByKey(vp.dataset.k));b.textContent="🔼 收起完整題目";}
+  });
+  // 🔊 點我聽：先念情境，再念易混與正確
+  tree.querySelectorAll(".hear").forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const q=qByKey(b.closest(".vp").dataset.k), p=parseNote(NOTES[keyOf(q)]||{});
+    speak("情境，"+scenOf(q)+"。容易搞混的說法，"+(p.trap||"")+"。正確是，"+(p.ans||""));
+  });
   document.getElementById("expAll").onclick=()=>tree.querySelectorAll(".leaf").forEach(l=>{if(!l.classList.contains("cold"))l.classList.add("open");});
   document.getElementById("colAll").onclick=()=>tree.querySelectorAll(".leaf").forEach(l=>l.classList.remove("open"));
 }
