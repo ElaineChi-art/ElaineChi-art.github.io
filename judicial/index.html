@@ -365,11 +365,28 @@ function autoNote(q){
     body:`📌 ${q.volume}・${q.section}（${q.subject}）${laws}\n📝 題型：這題要你${qType(q.stem)}\n✔ 官方答案：${ansTxt}\n\n（白話詳解之後補。）`};
 }
 
+function autoActors(s){
+  const r=[];
+  "甲乙丙丁戊己庚辛壬癸".split("").forEach(a=>{if(s.includes(a))r.push(a);});
+  ["A","B","C","D","X","Y"].forEach(a=>{ if(new RegExp(a+"(女|男|公司|銀行|地|屋|店|機關|車|藥|畫|船|廠)").test(s)&&!r.includes(a)) r.push(a); });
+  return r;
+}
 function studyDiagram(q){
-  // 選項下方、詳解上方：簡單關係圖＋📌要記的重點
-  const d=(window.DIAG||{})[keyOf(q)];
-  if(!(d&&d.n&&d.e)) return "";
-  return `<div class="studydiag"><div class="sd-h">🖼️ 關係圖（圖像記憶）</div>${diagText(d)}${d.p?`<div class="sk-point">📌 要記：${d.p}</div>`:""}</div>`;
+  // 每一題都有圖：有手繪精準關係圖就用它，否則自動用當事人＋情境畫成箭頭圖
+  const k=keyOf(q), d=(window.DIAG||{})[k], p=parseNote(NOTES[k]||{});
+  let body, tag;
+  if(d&&d.n&&d.e){ body=diagText(d); tag="🖼️ 關係圖"; }
+  else{
+    const ac=autoActors(q.stem), sc=scenOf(q); tag="🖼️ 快速理解";
+    if(ac.length===2)
+      body=`<div class="reldiag"><div class="rel-line"><b>（${ac[0]}）</b><span class="ra">──${sc}──▶</span><b>（${ac[1]}）</b></div></div>`;
+    else if(ac.length>=3)
+      body=`<div class="reldiag"><div class="rel-line">${ac.map(a=>`<b>（${a}）</b>`).join('　')}</div><div class="rel-line" style="font-size:16px">📖 ${sc}</div></div>`;
+    else
+      body=`<div class="reldiag"><div class="rel-line" style="font-size:17px">📖 ${sc}</div></div>`;
+  }
+  const key=(d&&d.p)||p.key||p.concept||"";
+  return `<div class="studydiag"><div class="sd-h">${tag}</div>${body}${key?`<div class="sk-point">📌 要記：${key}</div>`:""}</div>`;
 }
 function showQ(k){
   curKey=k; const q=qByKey(k); const note=NOTES[k]||autoNote(q);
