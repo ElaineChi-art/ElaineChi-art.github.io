@@ -191,6 +191,12 @@
   .sk-opt.y{color:#1c5c33} .sk-opt.y .mk{color:#1f8a4c}
   .sk-opt.n{color:#9a4636} .sk-opt.n .mk{color:#c0392b}
   .sk-opt.n .ot{text-decoration:line-through;text-decoration-color:#d98b7a;text-decoration-thickness:2px}
+  /* 王澤鑑式當事人關係圖 */
+  .relsvg{width:100%;aspect-ratio:100/54;display:block;margin:6px 0 4px;background:#fffdf5;border-radius:10px;border:1px solid #e6dcc0}
+  .relsvg text{font-family:'Ma Shan Zheng',"PingFang TC",sans-serif}
+  .relsvg .nl{font-size:4.2px;fill:#2a2418;font-weight:bold;paint-order:stroke fill;stroke:#fffdf5;stroke-width:.7}
+  .relsvg .ns{font-size:2.3px;fill:#9b6b3a;font-family:"PingFang TC",sans-serif}
+  .relsvg .el{font-size:2.7px;fill:#b04a22;font-family:"PingFang TC",sans-serif;paint-order:stroke fill;stroke:#fffdf5;stroke-width:.95}
 </style>
 </head>
 <body>
@@ -668,39 +674,68 @@ function renderTree(){
 }
 function jumpTo(k){const p=k.split("-");curYear=+p[0];curSec=p[1];buildTabs();switchMode("study");showQ(k);}
 
-/* ===================== ✏️ 手寫圖解（試做：先做2題） ===================== */
+/* ===================== ✏️ 當事人關係圖（王澤鑑式・試做3題） ===================== */
 const DEMO=[
- {title:"因果歷程錯誤 → 殺人既遂 §271", q:"114年 刑法第1題・錯誤論",
-  story:["甲 起殺意，緊緊勒住乙的脖子","乙 昏迷不動，甲「誤以為乙已經死了」","甲 把乙埋進土裡","真相：乙是被土蓋住口鼻、窒息才死的"],
+ {title:"教唆竊盜＋收贓 §321", q:"113年 刑法第35題",
+  nodes:[{id:"甲",label:"甲",x:16,y:40},{id:"乙",label:"乙",x:50,y:15},{id:"丙",label:"丙",sub:"鄰居(被害)",x:84,y:40}],
+  edges:[{from:"甲",to:"乙",label:"①教唆:去偷丙家",curve:-7},
+         {from:"乙",to:"丙",label:"②侵入竊盜(相機/電腦)",curve:-7},
+         {from:"乙",to:"甲",label:"③送相機(贓物)感謝",curve:16,dash:1}],
+  point:"甲＝加重竊盜的【教唆犯】§321；事後收下自己教唆來的相機＝不另罰(不罰後行為)",
+  opts:[{y:1,t:"B 甲成立§321加重竊盜教唆犯（本題答案）"},
+        {y:0,t:"A 只成立收受贓物罪 → 錯，甲是教唆竊盜的主角"},
+        {y:0,t:"C 教唆犯＋贓物罪 數罪併罰 → 錯，收贓是不罰後行為"},
+        {y:0,t:"D 教唆犯＋贓物罪 想像競合 → 錯，同上"}],
+  read:"甲教唆乙去偷鄰居丙家，乙侵入竊取相機電腦，得手後送相機給甲，甲收下。重點，甲是加重竊盜的教唆犯，事後收下自己教唆來的贓物不另罰，只成立教唆加重竊盜。"},
+ {title:"共謀殺人・脫離 vs 中止 §271", q:"109年 刑法第9題（找錯）",
+  nodes:[{id:"丁",label:"丁",sub:"出錢請託",x:50,y:11},{id:"甲",label:"甲",sub:"偷鑰匙",x:13,y:40},
+         {id:"乙",label:"乙",sub:"買槍",x:36,y:50},{id:"丙",label:"丙",sub:"開槍",x:62,y:50},{id:"A",label:"A",sub:"被害人",x:88,y:40}],
+  edges:[{from:"丁",to:"丙",label:"①請託殺A·各30萬"},
+         {from:"甲",to:"丙",label:"②當天放棄·取回鑰匙槍",curve:17,dash:1},
+         {from:"丙",to:"A",label:"③3日後丙自己持刀殺A",curve:-8}],
+  point:"甲乙取回貢獻＝【脫離】共同正犯（不是中止未遂！）；丙自己殺A＝既遂；丁＝丙的教唆犯",
+  opts:[{y:0,t:"A 甲乙要回鑰匙槍＝殺人中止未遂 ←這題要選它（此敘述錯）。正解:是「脫離共同正犯」非中止未遂"},
+        {y:1,t:"B 乙取回槍，丙3日後殺人與乙無關（正確）"},
+        {y:1,t:"C 丙侵入住居＋殺人既遂，想像競合從重（正確）"},
+        {y:1,t:"D 丁是丙殺人既遂的教唆犯（正確）"}],
+  read:"丁出錢請託甲乙丙三人殺A，甲偷鑰匙乙買槍丙開槍。當天A出門，甲乙放棄並要回鑰匙和槍，丙不甘心，三天後自己持刀殺了A。重點，甲乙要回貢獻是脫離共同正犯，不是中止未遂；丙自己殺A是既遂；丁是丙的教唆犯。這題要選錯的，答案是A。"},
+ {title:"因果歷程錯誤→殺人既遂 §271", q:"114年 刑法第1題",
+  nodes:[{id:"甲",label:"甲",x:22,y:28},{id:"乙",label:"乙",sub:"被害",x:76,y:28}],
+  edges:[{from:"甲",to:"乙",label:"勒昏→誤以為死→埋土→窒息死"}],
   point:"因果跑掉一點點 ⇒ 不重要！甲仍成立「殺人既遂」",
-  opts:[
-    {y:1,t:"B 勒昏→誤以為死→埋土→窒息死，仍負殺人既遂（本題答案）"},
-    {y:0,t:"A 推下橋卻撞橋墩死 → 不能因此否定殺人故意"},
-    {y:0,t:"C 一顆炸彈炸死同房3人 → 對丙丁也是故意（不是過失）"},
-    {y:0,t:"D 路上埋地雷炸死路人 → 不能否定殺人故意"}],
-  read:"甲起殺意緊勒乙脖子，乙昏迷，甲誤以為乙死了，把乙埋進土裡，乙其實是被土蓋住口鼻窒息死的。重點，因果跑掉一點點不重要，甲仍成立殺人既遂。"},
- {title:"有義務遺棄罪 §294", q:"109年 刑法第2題・遺棄罪",
-  story:["甲女 在醫院生下一個嬰兒","丈夫乙 長年在外地工作（不在場）","甲 怕養不起 ⇒ 連夜離開醫院，丟下嬰兒","嬰兒暫時由醫師、護士照顧"],
-  point:"醫師護士「沒有」扶養義務 ⇒ 當媽的甲有義務卻離開 ⇒ 成立§294有義務遺棄罪",
-  opts:[
-    {y:1,t:"C 醫師護士無扶養義務，甲離開即成立§294有義務遺棄罪（本題答案）"},
-    {y:0,t:"A 有人照顧就不成立 → 錯，甲的遺棄已造成危險"},
-    {y:0,t:"B 成立§293「無義務」遺棄罪 → 錯，母親是「有義務」§294"},
-    {y:0,t:"D 因丈夫也有義務就不成立 → 錯，不能因此免責"}],
-  read:"甲女在醫院生下嬰兒，丈夫長年在外，甲怕養不起就連夜離開醫院丟下嬰兒，嬰兒暫由醫師護士照顧。重點，醫師護士沒有扶養義務，當媽的甲有義務卻離開，成立有義務遺棄罪。"},
+  opts:[{y:1,t:"B 勒昏→誤死→埋土→窒息死，仍負殺人既遂（本題答案）"},
+        {y:0,t:"A 推下橋卻撞橋墩死 → 不能否定殺人故意"},
+        {y:0,t:"C 炸彈炸死同房3人 → 對丙丁也是故意（不是過失）"},
+        {y:0,t:"D 路上埋地雷炸死路人 → 不能否定殺人故意"}],
+  read:"甲起殺意緊勒乙脖子，乙昏迷，甲誤以為乙死了把乙埋進土裡，乙其實是被土蓋住口鼻窒息死的。重點，因果跑掉一點點不重要，甲仍成立殺人既遂。"},
 ];
+function diagramSVG(c){
+  const nm={}; c.nodes.forEach(n=>nm[n.id]=n);
+  const edges=c.edges.map(e=>{
+    const a=nm[e.from], b=nm[e.to], cv=e.curve||0;
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2+cv;
+    return `<path d="M ${a.x} ${a.y} Q ${mx} ${my} ${b.x} ${b.y}" fill="none" stroke="#3a3326" stroke-width="0.7"
+      marker-end="url(#ah)" ${e.dash?'stroke-dasharray="2 1.6"':''}/>
+      <text x="${mx}" y="${my-1.2}" class="el" text-anchor="middle">${e.label}</text>`;
+  }).join("");
+  const nodes=c.nodes.map(n=>`<circle cx="${n.x}" cy="${n.y}" r="5.4" fill="#fff" stroke="#2a2418" stroke-width="0.9"/>
+    <text x="${n.x}" y="${n.y+1.6}" class="nl" text-anchor="middle">${n.label}</text>
+    ${n.sub?`<text x="${n.x}" y="${n.y+9}" class="ns" text-anchor="middle">${n.sub}</text>`:''}`).join("");
+  return `<svg class="relsvg" viewBox="0 0 100 54" preserveAspectRatio="xMidYMid meet">
+    <defs><marker id="ah" markerWidth="5" markerHeight="5" refX="4.3" refY="2.5" orient="auto">
+      <path d="M0,0 L5,2.5 L0,5 z" fill="#3a3326"/></marker></defs>${edges}${nodes}</svg>`;
+}
 function renderDemo(){
   const d=document.getElementById("demo");
-  let html=`<div class="demohint">✏️ <b>手寫圖解・試做版（先畫2題給妳看）</b><br>
-    把題目變成「一步一步的故事關係圖」＋手寫選項筆記，錯的劃掉、對的留下。<br>
-    👉 如果這種「畫出來、像手寫筆記」的方式對了，跟我說，我就把刑法每一題都畫成這樣。</div><div class="sk-wrap">`;
+  let html=`<div class="demohint">✏️ <b>當事人關係圖・試做（王澤鑑那種畫法，先做3題）</b><br>
+    甲乙丙＝圈圈，他們之間的法律關係＝標號碼的箭頭線（①教唆②竊盜③送贓…），一看就懂誰對誰做了什麼。<br>
+    👉 這種「關係圖」對了跟我說，我就把刑法每題都畫成這樣（之後民法更適合這種圖）。</div><div class="sk-wrap">`;
   DEMO.forEach((c,i)=>{
-    const steps=c.story.map((s,j)=>`<div class="sk-step"><div class="sk-num">${j+1}</div><div class="sk-text">${s}</div></div>${j<c.story.length-1?'<div class="sk-down">↓</div>':''}`).join("");
     const opts=c.opts.map(o=>`<div class="sk-opt ${o.y?'y':'n'}"><span class="mk">${o.y?'✔':'✘'}</span><span class="ot">${o.t}</span></div>`).join("");
     html+=`<div class="sketch">
       <div class="sk-top"><h3 class="sk-title">${c.title}</h3><button class="sk-hear" data-i="${i}">🔊</button></div>
       <div class="sk-q">${c.q}</div>
-      ${steps}
+      ${diagramSVG(c)}
       <div class="sk-point">📌 ${c.point}</div>
       <div class="sk-opts"><div class="sk-ol">選項筆記：</div>${opts}</div>
     </div>`;
