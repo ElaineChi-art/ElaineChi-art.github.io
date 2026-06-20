@@ -136,6 +136,18 @@
   .vp .bad{color:#ff8a8a;margin:5px 0;font-size:15.5px;line-height:1.65}
   .vp .good{color:#5fe39b;margin:3px 0;font-size:15.5px;line-height:1.65;font-weight:500}
   .vp .bad b,.vp .good b{font-weight:700;color:#fff}
+  /* 選項訂正：錯的劃掉、對的打勾 */
+  .opts{margin:7px 0}
+  .o-wrong{color:#ff9a9a;font-size:15px;line-height:1.6;margin:4px 0;padding:3px 9px;border-radius:7px;background:rgba(160,50,50,.12)}
+  .o-wrong s{opacity:.7;text-decoration-color:#ff6b6b;text-decoration-thickness:2px}
+  .o-wrong .xm{font-weight:700;color:#ff6b6b}
+  .o-right{color:#c9efd7;font-size:15px;line-height:1.6;margin:4px 0;padding:3px 9px;border-radius:7px;background:rgba(40,140,90,.14)}
+  .o-right .cm{font-weight:700;color:#5fe39b}
+  .o-pick{color:#ffd9a8;font-size:15px;line-height:1.6;margin:4px 0;padding:3px 9px;border-radius:7px;background:rgba(180,120,40,.16)}
+  .o-pick .pm{font-weight:700;color:#ffb454}
+  .fixnote{margin-top:8px;color:#7ff0b0;font-weight:600;font-size:15.5px;background:rgba(40,140,90,.12);border-left:3px solid var(--green);padding:8px 12px;border-radius:8px;line-height:1.7}
+  .fixnote .lb{color:#5fe39b;font-weight:700}
+  .pickwrong{font-size:12px;color:#ffb454;margin-left:4px}
   .vp .vptop{display:flex;align-items:center;gap:7px}
   .vp .hear{margin-left:auto;background:linear-gradient(135deg,#7c5cff,#a06bff);color:#fff;border:none;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer;flex:none;box-shadow:0 4px 12px rgba(124,92,255,.35)}
   .vp .hear:active{transform:scale(.9)}
@@ -533,24 +545,45 @@ function scenOf(q){
   if(t.length<6) return "（觀念題）"+((NOTES[keyOf(q)]||{}).concept||"");
   return t.length>42 ? t.slice(0,40)+"…" : t;
 }
+function qKind(stem){
+  // right=找對(答案正確) / wrong=找錯(答案是錯敘述) / exclude=排除型(何者不構成、例外)
+  if(/不構成|不該當|何者不是|不是刑法|無.{0,4}(我國|中華民國)?刑法之適用|無.{0,4}之適用/.test(stem)) return "exclude";
+  if(/錯誤|不正確|何者非|非屬|不屬|不包括|尚非|不成立|不違反|未違反|不符合|錯誤者/.test(stem)) return "wrong";
+  return "right";
+}
+function optsHTML(q){
+  // 錯的觀念劃掉(紅)、對的打勾(綠)；排除型答案標例外(橘)
+  const L=["A","B","C","D"], k=qKind(q.stem);
+  return q.options.map((o,i)=>{
+    const isAns=i===q.ansIndex;
+    if(k==="exclude"){
+      return isAns
+        ? `<div class="o-pick"><span class="pm">◉</span> ${L[i]}. ${o}<span class="pickwrong">←答案（此項屬例外／不構成）</span></div>`
+        : `<div class="o-right"><span class="cm">✔</span> ${L[i]}. ${o}</div>`;
+    }
+    const wrong = k==="wrong" ? isAns : !isAns;
+    return wrong
+      ? `<div class="o-wrong"><span class="xm">✘</span> <s>${L[i]}. ${o}</s>${k==="wrong"&&isAns?'<span class="pickwrong">←這題要選它（此敘述本身是錯的）</span>':''}</div>`
+      : `<div class="o-right"><span class="cm">✔</span> ${L[i]}. ${o}${k==="right"&&isAns?'<span class="pickwrong" style="color:#5fe39b">←正解</span>':''}</div>`;
+  }).join("");
+}
 function fullHTML(q){
-  const L=["A","B","C","D"];
-  const opts=q.options.map((o,i)=>`<div class="opt2 ${i===q.ansIndex?'cor':''}">${L[i]}. ${o}</div>`).join("");
   const nb=(NOTES[keyOf(q)]||{}).body||"";
-  return `<div class="full"><div class="fstem">${q.stem}</div>${opts}
+  return `<div class="full"><div class="fstem">${q.stem}</div>
+    <div class="opts">${optsHTML(q)}</div>
     <div class="fnote">${nb.replace(/\n/g,"<br>")}</div></div>`;
 }
 function vpairs(qs){
-  // 每題：📖情境 → ❌易混 → ✅正確，全攤開；🔊可聽、🔍就地展開完整題
+  // 每題全攤開：📖情境 → 四選項(錯的劃掉/對的打勾) → ✏️訂正成正確觀念
   return qs.map(q=>{
     const p=parseNote(NOTES[keyOf(q)]||{}); const k=keyOf(q);
     return `<div class="vp" data-k="${k}">
       <div class="vptop"><span class="vpn">${q.year}·${q.num}</span><span class="vpc">${p.concept}</span>
         <button class="hear" title="點我聽">🔊</button></div>
       <div class="sit">📖 ${scenOf(q)}</div>
-      ${p.trap?`<div class="bad">❌ 易混：${p.trap}</div>`:""}
-      ${p.ans?`<div class="good">✅ 正確：${p.ans}</div>`:""}
-      <button class="more">🔍 就地展開完整題目</button>
+      <div class="opts">${optsHTML(q)}</div>
+      ${p.ans?`<div class="fixnote"><span class="lb">✏️ 訂正成正確觀念：</span>${p.ans}</div>`:""}
+      <button class="more">🔍 看法條詳解</button>
       <div class="full-wrap"></div></div>`;
   }).join("");
 }
@@ -593,8 +626,9 @@ function renderTree(){
   // 🔊 點我聽：先念情境，再念易混與正確
   tree.querySelectorAll(".hear").forEach(b=>b.onclick=e=>{
     e.stopPropagation();
-    const q=qByKey(b.closest(".vp").dataset.k), p=parseNote(NOTES[keyOf(q)]||{});
-    speak("情境，"+scenOf(q)+"。容易搞混的說法，"+(p.trap||"")+"。正確是，"+(p.ans||""));
+    const q=qByKey(b.closest(".vp").dataset.k), p=parseNote(NOTES[keyOf(q)]||{}), k=qKind(q.stem);
+    const lead = k==="wrong" ? "這題要選錯的，答案是" : k==="exclude" ? "這題要選例外的，答案是" : "正確答案是";
+    speak("情境，"+scenOf(q)+"。"+lead+["A","B","C","D"][q.ansIndex]+"。訂正成正確觀念，"+(p.ans||""));
   });
   document.getElementById("expAll").onclick=()=>tree.querySelectorAll(".leaf").forEach(l=>{if(!l.classList.contains("cold"))l.classList.add("open");});
   document.getElementById("colAll").onclick=()=>tree.querySelectorAll(".leaf").forEach(l=>l.classList.remove("open"));
