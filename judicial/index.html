@@ -174,6 +174,16 @@
   .reldiag{background:#fffdf5;color:#2a2418;border:1px solid #e6dcc0;border-radius:10px;padding:9px 13px;margin:2px 0 8px;font-family:'Ma Shan Zheng',"PingFang TC",sans-serif}
   .rel-line{font-size:19px;line-height:1.95}
   .rel-line .ra{color:#b04a22;font-size:14px;margin:0 5px;font-family:"PingFang TC",sans-serif}
+  /* 直式樹狀關係圖(像手畫的) */
+  .vtree{display:flex;justify-content:center;padding:8px 4px 4px;overflow-x:auto}
+  .vt-col{display:flex;flex-direction:column;align-items:center}
+  .vt-box{border:2px solid #2a2418;border-radius:9px;padding:5px 13px;background:#fffdf5;color:#2a2418;font-weight:bold;font-size:17px;white-space:nowrap}
+  .vt-box.vt-ref{border-style:dashed;opacity:.85}
+  .vt-conn{display:flex;flex-direction:column;align-items:center;padding:1px 0}
+  .vt-conn .vt-l{font-size:13px;color:#b04a22;font-family:"PingFang TC",sans-serif;line-height:1.25;max-width:180px;text-align:center}
+  .vt-conn .vt-a{color:#3a3326;font-size:15px;line-height:.9}
+  .vt-branch{display:flex;gap:24px;align-items:flex-start}
+  .vt-gap{width:26px}
   /* 逐題模式：選項下方插入的關係圖區 */
   .studydiag{margin:14px 0;padding:12px 15px;background:#10141c;border:1px solid var(--line);border-radius:12px}
   .studydiag .sd-h{font-size:13px;color:#9fc3f0;margin-bottom:8px;font-weight:bold;letter-spacing:.5px}
@@ -378,15 +388,11 @@ function studyDiagram(q){
   if(d&&d.n&&d.e){ body=diagText(d); tag="🖼️ 關係圖"; }
   else{
     const ac=autoActors(q.stem), sc=scenOf(q); tag="🖼️ 快速理解";
-    if(ac.length===2)
-      body=`<div class="reldiag"><div class="rel-line"><b>（${ac[0]}）</b><span class="ra">──${sc}──▶</span><b>（${ac[1]}）</b></div></div>`;
-    else if(ac.length>=3)
-      body=`<div class="reldiag"><div class="rel-line">${ac.map(a=>`<b>（${a}）</b>`).join('　')}</div><div class="rel-line" style="font-size:16px">📖 ${sc}</div></div>`;
-    else
-      body=`<div class="reldiag"><div class="rel-line" style="font-size:17px">📖 ${sc}</div></div>`;
+    if(ac.length===2) body=diagText({n:ac,e:[`${ac[0]}>${ac[1]}|${sc}`]});
+    else body=`<div class="reldiag">${ac.length?`<div class="rel-line">👥 ${ac.map(a=>`（${a}）`).join(" ")}</div>`:""}<div class="rel-line" style="font-size:16px">📖 ${sc}</div></div>`;
   }
-  const key=(d&&d.p)||p.key||p.concept||"";
-  return `<div class="studydiag"><div class="sd-h">${tag}</div>${body}${key?`<div class="sk-point">📌 要記：${key}</div>`:""}</div>`;
+  const key=memPoint(q,d,p);
+  return `<div class="studydiag"><div class="sd-h">${tag}</div>${body}${key?`<div class="sk-point">📌 要記(觀念)：${key}</div>`:""}</div>`;
 }
 function showQ(k){
   curKey=k; const q=qByKey(k); const note=NOTES[k]||autoNote(q);
@@ -675,13 +681,35 @@ function fullHTML(q){
 }
 /* 簡單一行文字關係圖：（甲）──行為──▶（乙），一個關係一行 */
 function diagText(d){
-  const sub={}; (d.n||[]).forEach(s=>{const a=s.split("|"); if(a[1])sub[a[0]]=a[1];});
-  const nl=id=> sub[id]?`${id}·${sub[id]}`:id;
-  const lines=d.e.map(s=>{
-    const a=s.split("|"), ft=a[0].split(">");
-    return `<div class="rel-line"><b>（${nl(ft[0].trim())}）</b><span class="ra">──${a[1]||""}──▶</span><b>（${nl(ft[1].trim())}）</b></div>`;
-  }).join("");
-  return `<div class="reldiag">${lines}</div>`;
+  // 直式樹狀關係圖：當事人由上往下，邊上標短標籤，會分岔
+  const nm={}; (d.n||[]).forEach(s=>{const a=s.split("|");nm[a[0]]=a[1]?`${a[0]}·${a[1]}`:a[0];});
+  const lab=id=>nm[id]||id;
+  const adj={}, tos=new Set(), froms=new Set();
+  (d.e||[]).forEach(s=>{const a=s.split("|"); const ft=a[0].split(">"); const f=ft[0].trim(),t=ft[1].trim();
+    (adj[f]=adj[f]||[]).push({t,l:a[1]||""}); froms.add(f); tos.add(t);});
+  let roots=[...froms].filter(f=>!tos.has(f));
+  if(!roots.length) roots=[(d.n&&d.n[0])?d.n[0].split("|")[0]:[...froms][0]];
+  const seen=new Set();
+  function node(id){
+    seen.add(id);
+    const ch=adj[id]||[];
+    const render1=e=>{
+      const conn=`<div class="vt-conn"><span class="vt-l">${e.l}</span><div class="vt-a">▼</div></div>`;
+      const child=seen.has(e.t)?`<div class="vt-box vt-ref">（${lab(e.t)}）</div>`:node(e.t);
+      return `<div class="vt-col">${conn}${child}</div>`;
+    };
+    let inner = ch.length===1 ? render1(ch[0]) : ch.length>1 ? `<div class="vt-branch">${ch.map(render1).join("")}</div>` : "";
+    return `<div class="vt-col"><div class="vt-box">（${lab(id)}）</div>${inner}</div>`;
+  }
+  const trees=roots.map(r=>node(r)).join('<div class="vt-gap"></div>');
+  return `<div class="reldiag"><div class="vtree">${trees}</div></div>`;
+}
+function memPoint(q,d,p){
+  // 觀念記憶點：手繪重點 > 構成要件 > 答案規則 > 概念名
+  if(d&&d.p) return d.p;
+  if(p.key) return p.key;
+  if(p.ans) return p.ans.replace(/^答案[#A-D]+（?[^：:]*）?[：:]/,"").trim();
+  return p.concept||"";
 }
 function optNotes(q){
   // 有手寫選項筆記就用(短描述＋為什麼)，否則退回原選項劃掉
@@ -695,7 +723,7 @@ function optNotes(q){
 function qCardHTML(q){
   const k=keyOf(q), p=parseNote(NOTES[k]||{}), d=(window.DIAG||{})[k];
   const top=(d&&d.n&&d.e)?diagText(d):`<div class="sit">📖 ${scenOf(q)}</div>`;
-  const point=(d&&d.p)?d.p:(p.key||p.concept);
+  const point=memPoint(q,d,p);
   const fix=(d&&d.o)?"":(p.ans?`<div class="fixnote"><span class="lb">✏️ 訂正：</span>${p.ans}</div>`:"");
   return `${top}<div class="sk-point">📌 ${point}</div><div class="opts">${optNotes(q)}</div>${fix}`;
 }
