@@ -92,6 +92,35 @@
   .trapcard.open .ans{display:block}
   .trapcard .flip{font-size:12px;color:var(--blue);margin-top:6px}
   .sumcount{font-size:13px;color:#888;margin-bottom:12px}
+  /* ===== 知識樹 ===== */
+  #tree{display:none;height:calc(100vh - 240px);overflow:auto;padding:16px;max-width:1060px;margin:0 auto}
+  .treehint{background:#fffdf2;border:1px dashed var(--gold);border-radius:10px;padding:11px 14px;font-size:14.5px;color:#7a5a10;margin-bottom:16px;line-height:1.7}
+  .branch{border-radius:16px;padding:14px 16px;margin-bottom:18px;border:1px solid var(--line)}
+  .branch.zong{background:#eef5fc;border-color:#bcd6f0}
+  .branch.fen{background:#fdf0ea;border-color:#f0cdba}
+  .branch>h2{margin:0 0 6px;font-size:21px;display:flex;align-items:center;gap:9px}
+  .branch.zong>h2{color:#1f5896} .branch.fen>h2{color:#b0532c}
+  .branch>.sub{font-size:13px;color:#888;margin-bottom:12px}
+  .grp2{margin:14px 0 4px}
+  .grp2>h3{margin:0 0 7px;font-size:15px;color:#444;display:flex;align-items:center;gap:7px}
+  .grp2.zong>h3{border-left:5px solid #2f6fb0;padding-left:9px}
+  .grp2.fen>h3{border-left:5px solid #c0613a;padding-left:9px}
+  .leaf{border:1px solid var(--line);border-radius:11px;margin:6px 0;background:#fff;overflow:hidden}
+  .leaf-head{padding:10px 13px;cursor:pointer;display:flex;align-items:center;gap:9px;font-size:16px}
+  .leaf-head:hover{background:#faf7ef}
+  .leaf-head .ic{font-size:17px}
+  .leaf .bdg{margin-left:auto;background:#efe9da;border-radius:13px;padding:1px 10px;font-size:12.5px;color:#555;font-weight:bold;flex:none}
+  .leaf.hot .leaf-head{background:#fff4ec}
+  .leaf.hot .bdg{background:#e0894e;color:#fff}
+  .leaf.cold .leaf-head{opacity:.55}
+  .leaf.cold .bdg{background:#ddd;color:#888}
+  .leaf.open{border-color:var(--blue);box-shadow:0 1px 6px rgba(47,111,176,.12)}
+  .leaf-body{display:none;padding:12px 15px;border-top:1px dashed var(--gold);background:#fffdf6;line-height:1.8}
+  .leaf.open .leaf-body{display:block}
+  .leaf-body .k{color:#333;font-size:15.5px}
+  .leaf-body .k b{color:var(--red)}
+  .leaf-body .qh{font-size:13px;color:#888;margin:9px 0 5px}
+  .leaf-body .qchips{display:flex;flex-wrap:wrap;gap:6px}
 </style>
 </head>
 <body>
@@ -122,6 +151,7 @@
   <div class="modebar" id="modebar">
     <button data-m="study" class="on">📖 逐題複習</button>
     <button data-m="summary">📋 考點統整</button>
+    <button data-m="tree">🌳 知識樹</button>
   </div>
   <div class="grp" id="years"></div>
   <div class="grp" id="sections"></div>
@@ -144,6 +174,8 @@
 </div>
 
 <div id="summary"></div>
+
+<div id="tree"></div>
 
 <script src="data.js"></script>
 <script src="notes.js"></script>
@@ -329,7 +361,7 @@ function renderSummary(){
     });
   }
   summary.innerHTML=html||`<div class="empty">此科目尚無資料</div>`;
-  summary.querySelectorAll(".qchip").forEach(c=>c.onclick=e=>{e.stopPropagation();switchMode("study");showQ(c.dataset.k);});
+  summary.querySelectorAll(".qchip").forEach(c=>c.onclick=e=>{e.stopPropagation();jumpTo(c.dataset.k);});
   summary.querySelectorAll(".trapcard").forEach(card=>card.onclick=()=>card.classList.toggle("open"));
 }
 function buildSubjBar(){
@@ -342,23 +374,155 @@ function buildSubjBar(){
 function switchMode(m){
   mode=m;
   modebar_el.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  const sum=(m==="summary");
-  document.getElementById("wrap").style.display=sum?"none":"flex";
-  summary.style.display=sum?"block":"none";
-  subjbar_el.style.display=sum?"flex":"none";
-  years_el.style.display=sum?"none":"flex";
-  document.getElementById("search").style.display=sum?"none":"block";
-  hideAns.parentElement.style.display=sum?"none":"inline-flex";
-  if(sum){
+  document.getElementById("wrap").style.display = m==="study"?"flex":"none";
+  summary.style.display = m==="summary"?"block":"none";
+  document.getElementById("tree").style.display = m==="tree"?"block":"none";
+  subjbar_el.style.display = m==="summary"?"flex":"none";
+  // 卷別/年份/搜尋/遮答案：知識樹模式全部隱藏（樹自己就是導覽）
+  years_el.style.display = m==="study"?"flex":"none";
+  sections_el.style.display = m==="tree"?"none":"flex";
+  document.getElementById("search").style.display = m==="study"?"block":"none";
+  hideAns.parentElement.style.display = m==="study"?"inline-flex":"none";
+  if(m==="summary"){
     if(curSec==="全部"||!SUBJ[curSec]){curSec="刑事組";buildTabs();}
     buildSubjBar(); renderSummary();
   }
+  if(m==="tree") renderTree();
 }
 const subjs_el=document.getElementById("subjs"), sumviews_el=document.getElementById("sumviews"),
       modebar_el=document.getElementById("modebar"), subjbar_el=document.getElementById("subjbar"),
       summary=document.getElementById("summary");
 modebar_el.querySelectorAll("button").forEach(b=>b.onclick=()=>switchMode(b.dataset.m));
 sumviews_el.querySelectorAll("button").forEach(b=>b.onclick=()=>{sumView=b.dataset.v;buildSubjBar();renderSummary();});
+
+/* ===================== 🌳 刑法知識樹（示範科目） ===================== */
+// 每個葉節點: n=名稱 ic=圖示 pat=掛題關鍵字(法條/概念) key=構成要件一句話(可省略)
+const CRIM_TREE=[
+ {name:"刑法總則",cls:"zong",icon:"📘",sub:"先判斷「成不成立犯罪」：構成要件→違法性→罪責，再看未遂、共犯、競合、刑罰",groups:[
+   {name:"① 構成要件該當",leaves:[
+     {n:"故意",ic:"🎯",pat:"§13|故意",key:"<b>直接故意</b>=明知並有意使其發生；<b>間接故意</b>=預見發生且其發生不違背本意。"},
+     {n:"過失",ic:"⚠️",pat:"§14|過失",key:"<b>無認識過失</b>=應注意能注意而不注意；<b>有認識過失</b>=預見能發生但確信不發生。"},
+     {n:"因果關係與客觀歸責",ic:"🔗",pat:"因果|客觀歸責|條件理論|相當因果",key:"條件理論(若無前者即無後者)→相當因果→客觀可歸責(製造並實現法所不容許之風險)。"},
+     {n:"不作為犯",ic:"🚫",pat:"§15|保證人|不作為犯|防止結果",key:"不純正不作為犯須有<b>保證人地位</b>(防止結果發生之作為義務)＋不為防止。"},
+   ]},
+   {name:"② 違法性（有無阻卻違法）",leaves:[
+     {n:"正當防衛",ic:"🛡️",pat:"§23|正當防衛|防衛過當",key:"對<b>現在不法</b>之侵害，出於防衛意思之必要排除行為；過當得減免。"},
+     {n:"緊急避難",ic:"🆘",pat:"§24|緊急避難|避難過當",key:"避免自己或他人<b>緊急危難</b>，出於不得已且未過當之行為。"},
+     {n:"得承諾／其他阻卻",ic:"✍️",pat:"得.*承諾|得被害人同意|依法令|業務.*正當|超法規",key:"得被害人有效承諾、依法令、業務上正當行為等，阻卻違法。"},
+   ]},
+   {name:"③ 罪責（有無責任）",leaves:[
+     {n:"責任能力",ic:"🧠",pat:"§18|§19|§20|責任能力|精神障礙|原因自由行為|未滿|瘖啞",key:"未滿14歲無責任能力；精神障礙不能辨識者不罰。<b>原因自由行為</b>不得主張免責。"},
+     {n:"錯誤論",ic:"❓",pat:"§16|禁止錯誤|構成要件錯誤|容許.*錯誤|打擊錯誤|客體錯誤|因果歷程|違法性認識",key:"<b>構成要件錯誤</b>阻卻故意；<b>禁止錯誤</b>(不知法)無法避免免責、可避免減輕。"},
+     {n:"期待可能性",ic:"⚖️",pat:"期待可能",key:"無期待行為人為合法行為之可能時，阻卻或減輕罪責。"},
+   ]},
+   {name:"④ 未遂與既遂",leaves:[
+     {n:"普通(障礙)未遂",ic:"🏃",pat:"§25|障礙未遂|著手",key:"已<b>著手</b>於犯罪行為之實行而不遂；得按既遂犯減輕。"},
+     {n:"不能未遂",ic:"🥅",pat:"§26|不能未遂|重大無知",key:"行為不能發生結果<b>又無危險</b>者，不罰(99年改採客觀危險)。"},
+     {n:"中止未遂",ic:"↩️",pat:"§27|中止犯|中止未遂|己意中止|準中止",key:"<b>己意</b>中止或防止結果發生，減輕或免除其刑；準中止=已盡真摯努力。"},
+     {n:"預備犯",ic:"🌱",pat:"預備犯|陰謀|預備罪",key:"著手前之準備行為，<b>以法律有處罰明文者為限</b>。"},
+   ]},
+   {name:"⑤ 正犯與共犯",leaves:[
+     {n:"間接正犯",ic:"🎭",pat:"間接正犯|利用.*工具|利用.*無故意",key:"利用他人(無故意/無責任之工具)實現犯罪，仍為正犯。"},
+     {n:"共同正犯",ic:"🤝",pat:"§28|共同正犯|犯意聯絡|行為分擔|共謀|相續共同",key:"二人以上有<b>犯意聯絡＋行為分擔</b>，各負全部責任(一部行為全部責任)。"},
+     {n:"教唆犯",ic:"🗣️",pat:"§29|教唆",key:"<b>使本無犯意之人</b>萌生犯意；依其所教唆之罪處罰。"},
+     {n:"幫助犯",ic:"🫱",pat:"§30|幫助犯|從犯|幫助",key:"對已決意犯罪者給予助力；得按正犯減輕其刑。"},
+     {n:"身分犯",ic:"🎫",pat:"§31|身分犯|純正身分|不純正身分",key:"§31Ⅰ無身分者共同實行<b>仍以共犯論</b>；Ⅱ因身分致刑有重輕者，無身分科通常之刑。"},
+   ]},
+   {name:"⑥ 競合論（幾罪）",leaves:[
+     {n:"想像競合",ic:"💫",pat:"§55|想像競合",key:"<b>一行為</b>觸犯數罪名，從一重處斷。"},
+     {n:"法條競合",ic:"📐",pat:"法條競合|吸收關係|補充關係|特別關係",key:"一行為形式該當數法條，依特別/補充/吸收關係只論一罪。"},
+     {n:"數罪併罰",ic:"➕",pat:"§50|§51|數罪併罰|併合處罰|定應執行",key:"裁判確定前犯數罪，分別宣告後定應執行刑(§51)。"},
+     {n:"接續犯/包括一罪",ic:"🔁",pat:"接續犯|集合犯|包括一罪|繼續犯|實質一罪",key:"數舉動於密接時空侵害同一法益，包括評價為一罪。"},
+   ]},
+   {name:"⑦ 刑罰與處分",leaves:[
+     {n:"易刑處分",ic:"💵",pat:"易科罰金|易服勞役|易服社會勞動",key:"6月以下得易科罰金；罰金未繳易服勞役。"},
+     {n:"累犯",ic:"🔂",pat:"§47|§48|累犯",key:"執行完畢/赦免後<b>5年內</b>再犯有期徒刑以上之罪，加重本刑至1/2。"},
+     {n:"緩刑",ic:"⏸️",pat:"§74|緩刑",key:"2年以下宣告刑＋未曾/逾5年未受徒刑宣告，得緩刑2-5年。"},
+     {n:"沒收",ic:"🧺",pat:"§38|沒收|犯罪所得|追徵",key:"犯罪所得、供犯罪之物得沒收；全部或一部不能沒收時追徵其價額。"},
+     {n:"自首／量刑／加減",ic:"🙋",pat:"§62|自首|§57|§59|§67|§68|量刑|酌減|主刑加減",key:"未發覺前自首得減輕；§57量刑審酌一切情狀；§59犯罪情狀可憫得酌減。"},
+     {n:"保安處分",ic:"🏥",pat:"保安處分|強制治療|強制工作|監護|釋字799|刑後",key:"監護、強制治療等，針對危險性而非報應(刑後強制治療見釋字799)。"},
+     {n:"追訴/行刑權時效",ic:"⏳",pat:"追訴權時效|行刑權時效",key:"逾時效期間不得追訴或執行(本範圍6年未單獨命題)。",cold:1},
+   ]},
+ ]},
+ {name:"刑法分則",cls:"fen",icon:"📕",sub:"按「侵害的法益」分類：生命身體 / 自由性自主 / 財產 / 名譽 / 公共安全 / 公信(偽造) / 國家(瀆職妨害公務)",groups:[
+   {name:"侵害生命、身體",leaves:[
+     {n:"殺人罪 §271-275",ic:"🔪",pat:"§271|§272|§273|§274|§275|殺人|義憤|生母殺嬰|加工自殺|教唆.*自殺",key:"普通殺人§271；義憤§273；母殺嬰§274；加工自殺§275。"},
+     {n:"傷害罪 §277-282",ic:"🩹",pat:"§277|§278|§279|傷害|重傷|§281|§282",key:"普通傷害§277；重傷§278(§10Ⅳ重傷定義)；加重結果犯。"},
+     {n:"遺棄罪 §293-295",ic:"🏚️",pat:"§293|§294|§295|遺棄",key:"無義務遺棄§293；有扶助義務遺棄§294。"},
+     {n:"過失致死／致傷 §276",ic:"💢",pat:"§276|過失致死|過失傷害",key:"違反注意義務致死/傷；業務過失已刪除(改一體適用)。"},
+   ]},
+   {name:"侵害自由、性自主",leaves:[
+     {n:"妨害性自主 §221-229",ic:"🚷",pat:"§221|§222|§224|§225|§227|§228|§229|強制性交|猥褻|性自主|乘機",key:"強制性交§221；加重§222；強制猥褻§224；乘機§225；與幼§227。"},
+     {n:"妨害自由 §302-308",ic:"⛓️",pat:"§302|§304|§305|§306|妨害自由|強制罪|恐嚇危安|私行拘禁|剝奪行動",key:"剝奪行動自由§302；強制罪§304；恐嚇危安§305；侵入住居§306。"},
+     {n:"擄人勒贖／略誘 §347-348",ic:"💰",pat:"§347|§348|擄人勒贖|略誘|和誘",key:"意圖勒贖而擄人§347；結合犯加重。"},
+   ]},
+   {name:"侵害財產",leaves:[
+     {n:"竊盜罪 §320-321",ic:"🤏",pat:"§320|§321|竊盜",key:"破壞他人持有、建立自己持有＋<b>不法所有意圖</b>；§321加重竊盜。"},
+     {n:"搶奪、強盜 §325-330",ic:"💪",pat:"§325|§326|§328|§329|§330|搶奪|強盜|準強盜",key:"乘人不備公然奪取=搶奪；強暴脅迫至不能抗拒=強盜；竊盜當場施強暴=準強盜§329。"},
+     {n:"侵占罪 §335-337",ic:"🫳",pat:"§335|§336|§337|侵占",key:"<b>易持有為所有</b>(持有他人之物變為己有)；業務侵占§336。"},
+     {n:"詐欺、背信 §339-342",ic:"🎣",pat:"§339|§340|§341|§342|詐欺|背信|不法所有|準詐欺|電腦詐欺",key:"施詐術→陷錯誤→處分財產→損害；背信§342=為他人處理事務違背任務。"},
+     {n:"恐嚇取財 §346",ic:"😨",pat:"§346|恐嚇取財|恐嚇得利",key:"以惡害通知使生畏懼而交付財物(未至不能抗拒，否則為強盜)。"},
+     {n:"贓物罪 §349",ic:"📦",pat:"§349|贓物",key:"收受、搬運、寄藏、故買、媒介贓物。"},
+     {n:"毀損罪 §352-354",ic:"🔨",pat:"§352|§353|§354|毀損",key:"毀棄損壞他人之物足生損害；毀損文書§352。"},
+     {n:"妨害電腦使用 §358-363",ic:"💻",pat:"§358|§359|§360|§363|妨害電腦|無故取得.*電磁|入侵電腦",key:"無故入侵§358；無故取得/刪改電磁紀錄§359。"},
+   ]},
+   {name:"侵害名譽",leaves:[
+     {n:"公然侮辱／誹謗 §309-311",ic:"🗯️",pat:"§309|§310|§311|侮辱|誹謗",key:"公然侮辱§309；指摘足毀名譽之事§310；§311善意言論不罰。"},
+   ]},
+   {name:"公共危險",leaves:[
+     {n:"放火罪 §173-176",ic:"🔥",pat:"§173|§174|§175|§176|放火|失火",key:"放火燒燬現供人使用住宅§173(抽象危險犯)；失火。"},
+     {n:"交通與其他公危 §185",ic:"🚗",pat:"§185|公共危險|肇事逃逸|不能安全駕駛|酒駕",key:"不能安全駕駛§185-3；肇事逃逸§185-4。"},
+   ]},
+   {name:"偽造（公共信用）",leaves:[
+     {n:"偽造文書 §210-220",ic:"📝",pat:"§210|§211|§212|§213|§214|§215|§216|§217|§218|偽造.*文書|登載不實|印文|準文書",key:"偽造私文書§210；公文書§211；使公務員登載不實§214；行使§216。"},
+     {n:"偽造貨幣／有價證券",ic:"💴",pat:"§195|§196|§201|§202|偽造.*貨幣|有價證券|偽變造.*券",key:"偽造通用貨幣§195；偽造有價證券§201。"},
+     {n:"偽證、誣告 §168-169",ic:"🤥",pat:"§168|§169|偽證|誣告",key:"證人於審判/偵查就案情重要事項虛偽陳述§168；誣告§169。"},
+   ]},
+   {name:"妨害公務、瀆職（國家法益）",leaves:[
+     {n:"妨害公務 §135-140",ic:"👮",pat:"§135|§136|§138|§140|妨害公務",key:"對依法執行職務公務員施強暴脅迫§135。"},
+     {n:"賄賂、瀆職 §121-131",ic:"💼",pat:"§121|§122|§123|§125|§131|賄賂|瀆職|圖利|濫權追訴|職務上.*行為",key:"不違背職務受賄§121；違背職務受賄§122；圖利§131。"},
+     {n:"藏匿人犯／湮滅證據 §164-165",ic:"🙈",pat:"§164|§165|藏匿人犯|頂替|湮滅證據",key:"藏匿犯人或頂替§164；湮滅他人刑事證據§165。"},
+   ]},
+ ]},
+];
+function matchQs(pat){
+  const re=new RegExp(pat);
+  return Q.filter(q=>q.section==="刑事組" && q.num<=35 && NOTES[keyOf(q)]
+      && re.test((NOTES[keyOf(q)].concept||"")+(NOTES[keyOf(q)].body||"")))
+    .sort((a,b)=>a.year-b.year);
+}
+function renderTree(){
+  const tree=document.getElementById("tree");
+  let html=`<div class="treehint">🌳 <b>刑法知識樹（示範）</b>：照著「總則→分則」的體系往下展開，看得到觀念之間的關聯。<br>
+    每個方框＝一個考點，旁邊數字＝6年考過幾次（🔥=高頻必背）。<b>點方框</b>展開看構成要件＋跳到歷屆題。<br>
+    <span style="color:#b0532c">同一題會出現在多個相關方框（例如「殺人未遂」同時在殺人罪、未遂、故意）——這就是它們的連結。</span><br>
+    👉 覺得這種方式對了，跟我說，我再把憲法/民法/其他科都做成知識樹。</div>`;
+  CRIM_TREE.forEach((br,bi)=>{
+    html+=`<div class="branch ${br.cls}"><h2>${br.icon} ${br.name}</h2><div class="sub">${br.sub}</div>`;
+    br.groups.forEach((g,gi)=>{
+      html+=`<div class="grp2 ${br.cls}"><h3>${g.name}</h3>`;
+      g.leaves.forEach((lf,li)=>{
+        const qs=matchQs(lf.pat); const c=qs.length;
+        const cls=lf.cold||c===0?"cold":c>=15?"hot":"";
+        const id=`lf-${bi}-${gi}-${li}`;
+        const chips=qs.map(q=>`<button class="qchip" data-k="${keyOf(q)}">${q.year}·${q.num}</button>`).join("");
+        html+=`<div class="leaf ${cls}" id="${id}">
+          <div class="leaf-head" data-t="${id}"><span class="ic">${lf.ic}</span><span>${lf.n}</span>
+            <span class="bdg">${c===0?"未考過":c+"題"}</span></div>
+          <div class="leaf-body">
+            ${lf.key?`<div class="k">🔑 ${lf.key}</div>`:""}
+            ${c?`<div class="qh">📚 歷屆考過（點題號看完整詳解）：</div><div class="qchips">${chips}</div>`:`<div class="qh">這個觀念在 109–114 年沒單獨出過題，但屬於完整體系，仍建議了解。</div>`}
+          </div></div>`;
+      });
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  });
+  tree.innerHTML=html;
+  tree.querySelectorAll(".leaf-head").forEach(h=>h.onclick=()=>document.getElementById(h.dataset.t).classList.toggle("open"));
+  tree.querySelectorAll(".qchip").forEach(c=>c.onclick=e=>{e.stopPropagation();jumpTo(c.dataset.k);});
+}
+function jumpTo(k){const p=k.split("-");curYear=+p[0];curSec=p[1];buildTabs();switchMode("study");showQ(k);}
 
 buildTabs(); renderList();
 </script>
