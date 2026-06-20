@@ -121,6 +121,18 @@
   .leaf-body .k b{color:var(--red)}
   .leaf-body .qh{font-size:13px;color:#888;margin:9px 0 5px}
   .leaf-body .qchips{display:flex;flex-wrap:wrap;gap:6px}
+  /* 正誤對照成對 */
+  .vp{border-top:1px solid #f0ead8;padding:10px 0}
+  .vp:first-of-type{border-top:none}
+  .vp .vpn{display:inline-block;background:#26262b;color:#fff;border-radius:10px;font-size:11.5px;padding:1px 8px;margin-right:7px;vertical-align:middle}
+  .vp .vpc{font-size:13px;color:#999}
+  .vp .bad{color:#c0392b;margin:5px 0;font-size:15.5px;line-height:1.65}
+  .vp .good{color:#1c7a43;margin:3px 0;font-size:15.5px;line-height:1.65;font-weight:500}
+  .vp .bad b,.vp .good b{font-weight:700}
+  .vp .more{font-size:12.5px;color:var(--blue);background:none;border:none;cursor:pointer;padding:0;font-family:inherit;margin-top:2px}
+  .treetools{display:flex;gap:8px;margin-bottom:12px;position:sticky;top:-16px;background:var(--bg);padding:8px 0;z-index:5}
+  .treetools button{font-family:inherit;font-size:14px;padding:7px 15px;border:1px solid var(--gold);background:#fff;border-radius:20px;cursor:pointer;color:#7a5a10;font-weight:bold}
+  .treetools button:hover{background:#fff4d8}
 </style>
 </head>
 <body>
@@ -491,12 +503,22 @@ function matchQs(pat){
       && re.test((NOTES[keyOf(q)].concept||"")+(NOTES[keyOf(q)].body||"")))
     .sort((a,b)=>a.year-b.year);
 }
+function vpairs(qs){
+  // 把每題詳解轉成「❌易混 → ✅正確」成對(全攤開)
+  return qs.map(q=>{
+    const p=parseNote(NOTES[keyOf(q)]||{}); const k=keyOf(q);
+    return `<div class="vp"><span class="vpn">${q.year}·${q.num}</span><span class="vpc">${p.concept}</span>
+      ${p.trap?`<div class="bad">❌ 易混：${p.trap}</div>`:""}
+      ${p.ans?`<div class="good">✅ 正確：${p.ans}</div>`:""}
+      <button class="more" data-k="${k}">🔍 看完整題目／選項</button></div>`;
+  }).join("");
+}
 function renderTree(){
   const tree=document.getElementById("tree");
-  let html=`<div class="treehint">🌳 <b>刑法知識樹（示範）</b>：照著「總則→分則」的體系往下展開，看得到觀念之間的關聯。<br>
-    每個方框＝一個考點，旁邊數字＝6年考過幾次（🔥=高頻必背）。<b>點方框</b>展開看構成要件＋跳到歷屆題。<br>
-    <span style="color:#b0532c">同一題會出現在多個相關方框（例如「殺人未遂」同時在殺人罪、未遂、故意）——這就是它們的連結。</span><br>
-    👉 覺得這種方式對了，跟我說，我再把憲法/民法/其他科都做成知識樹。</div>`;
+  let html=`<div class="treehint">🌳 <b>刑法・按考點正誤對照</b>：照「總則→分則」找到考點，<b>點考點就直接攤開</b>那個觀念所有「❌易混 → ✅正確」，往下滑就複習完，不用一題題點。<br>
+    旁邊數字＝6年考幾次（🔥=高頻必背）。<span style="color:#b0532c">同一題會出現在多個相關考點（殺人未遂＝殺人罪＋未遂＋故意）。</span><br>
+    👉 這版對了跟我說，我把憲法/民法/其他科也照這樣做。</div>
+    <div class="treetools"><button id="expAll">🔽 全部展開（整科一路滑）</button><button id="colAll">🔼 全部收合</button></div>`;
   CRIM_TREE.forEach((br,bi)=>{
     html+=`<div class="branch ${br.cls}"><h2>${br.icon} ${br.name}</h2><div class="sub">${br.sub}</div>`;
     br.groups.forEach((g,gi)=>{
@@ -505,13 +527,13 @@ function renderTree(){
         const qs=matchQs(lf.pat); const c=qs.length;
         const cls=lf.cold||c===0?"cold":c>=15?"hot":"";
         const id=`lf-${bi}-${gi}-${li}`;
-        const chips=qs.map(q=>`<button class="qchip" data-k="${keyOf(q)}">${q.year}·${q.num}</button>`).join("");
         html+=`<div class="leaf ${cls}" id="${id}">
           <div class="leaf-head" data-t="${id}"><span class="ic">${lf.ic}</span><span>${lf.n}</span>
             <span class="bdg">${c===0?"未考過":c+"題"}</span></div>
           <div class="leaf-body">
-            ${lf.key?`<div class="k">🔑 ${lf.key}</div>`:""}
-            ${c?`<div class="qh">📚 歷屆考過（點題號看完整詳解）：</div><div class="qchips">${chips}</div>`:`<div class="qh">這個觀念在 109–114 年沒單獨出過題，但屬於完整體系，仍建議了解。</div>`}
+            ${lf.key?`<div class="k">🔑 <b>構成要件：</b>${lf.key}</div>`:""}
+            ${c?`<div class="qh">📚 這個考點歷屆「正誤對照」（${c}題，往下滑）：</div>${vpairs(qs)}`
+              :`<div class="qh">這個觀念在 109–114 年沒單獨出過題，但屬完整體系，仍建議了解。</div>`}
           </div></div>`;
       });
       html+=`</div>`;
@@ -520,7 +542,9 @@ function renderTree(){
   });
   tree.innerHTML=html;
   tree.querySelectorAll(".leaf-head").forEach(h=>h.onclick=()=>document.getElementById(h.dataset.t).classList.toggle("open"));
-  tree.querySelectorAll(".qchip").forEach(c=>c.onclick=e=>{e.stopPropagation();jumpTo(c.dataset.k);});
+  tree.querySelectorAll(".more").forEach(c=>c.onclick=e=>{e.stopPropagation();jumpTo(c.dataset.k);});
+  document.getElementById("expAll").onclick=()=>tree.querySelectorAll(".leaf").forEach(l=>{if(!l.classList.contains("cold"))l.classList.add("open");});
+  document.getElementById("colAll").onclick=()=>tree.querySelectorAll(".leaf").forEach(l=>l.classList.remove("open"));
 }
 function jumpTo(k){const p=k.split("-");curYear=+p[0];curSec=p[1];buildTabs();switchMode("study");showQ(k);}
 
