@@ -68,6 +68,9 @@
   #sumnav-list .snav.cur{border-left-color:var(--gold);background:#1c2435;color:#ffd86b;font-weight:bold}
   #sumnav-list .snav.top{color:#9db4ff;font-weight:bold;border-bottom:1px solid var(--line);margin-bottom:6px}
   #sumnav-list .snav .gn{color:#7a8298;font-size:11.5px;margin-left:5px}
+  #sumnav-list .snav-sys{position:sticky;top:0;background:#11151c;color:#ffd86b;font-size:12.5px;font-weight:bold;padding:6px 14px 5px;border-bottom:1px solid var(--line);z-index:1}
+  #sumnav-list .snav.sub{padding:7px 14px 7px 22px;font-size:13px;color:#aeb6c4}
+  #sumnav-list .snav.sub.cur{color:#ffd86b}
   /* 左側題目清單：滑到左緣才滑出(抽屜) */
   #list-tab{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:36;writing-mode:vertical-rl;
             background:#161922;border:1px solid var(--line);border-left:none;border-radius:0 12px 12px 0;
@@ -688,10 +691,12 @@ function renderSummary(){
       let inner="";for(const [c,cits] of byC) inner+=kptCardHTML(c,cits);
       html+=`<div class="sysgrp open" id="sg${i}"><div class="sysgrp-h">${g}<span class="gn">${byC.size} 考點</span></div><div class="sysgrp-body">${inner}</div></div>`;
     });
-  }else{ // law：去重平鋪
+  }else{ // law：去重平鋪，但內容＆目錄都按體系排好
     const byC=new Map();
     items.forEach(it=>{if(!byC.has(it.p.concept))byC.set(it.p.concept,[]);byC.get(it.p.concept).push(it);});
-    for(const [c,cits] of byC) html+=kptCardHTML(c,cits);
+    const arr=[...byC.entries()].map(([c,cits])=>({c,cits,sys:systemOf(cits[0].q)}));
+    arr.sort((a,b)=> a.sys<b.sys?-1:a.sys>b.sys?1:(a.c<b.c?-1:a.c>b.c?1:0));
+    arr.forEach(o=>{ html+=kptCardHTML(o.c,o.cits).replace('<div class="kpt">',`<div class="kpt" data-sys="${o.sys}">`); });
   }
   summary.innerHTML=html||`<div class="empty">此科目尚無資料</div>`;
   summary.querySelectorAll(".sysgrp-h").forEach(h=>h.onclick=()=>h.parentElement.classList.toggle("open"));
@@ -702,11 +707,11 @@ function renderSummary(){
   summary.onscroll=()=>{ if(window._spyRAF) return; window._spyRAF=requestAnimationFrame(()=>{window._spyRAF=0;updateSumSpy();}); };
 }
 function sumAnchors(){
-  // 有體系分組就用體系；沒有(依法條)就用每個考點當錨點
+  // 有體系分組(依體系/依年度)就用群組；沒有(依法條)就用每個考點，並帶其體系
   const gs=[...summary.querySelectorAll(".sysgrp")];
   let arr;
-  if(gs.length) arr=gs.map(g=>({el:g,grp:true,name:g.querySelector(".sysgrp-h").firstChild.textContent.trim(),cnt:(g.querySelector(".gn")||{}).textContent||""}));
-  else arr=[...summary.querySelectorAll(".kpt")].map(k=>({el:k,grp:false,name:(k.querySelector(".cpt")||{}).textContent||"考點",cnt:""}));
+  if(gs.length) arr=gs.map(g=>({el:g,grp:true,name:g.querySelector(".sysgrp-h").firstChild.textContent.trim(),sys:"",cnt:(g.querySelector(".gn")||{}).textContent||""}));
+  else arr=[...summary.querySelectorAll(".kpt")].map(k=>({el:k,grp:false,name:(k.querySelector(".cpt")||{}).textContent||"考點",sys:k.dataset.sys||"",cnt:""}));
   arr.forEach((a,i)=>{ if(!a.el.id) a.el.id="anc"+i; });
   return arr;
 }
@@ -714,7 +719,11 @@ function buildSumNav(){
   const list=document.getElementById("sumnav-list");
   const ancs=sumAnchors();
   let html=`<button class="snav top">⬆ 回到最上面</button>`;
-  ancs.forEach(a=>{ html+=`<button class="snav" data-t="${a.el.id}">${a.name}${a.cnt?`<span class="gn">${a.cnt}</span>`:""}</button>`; });
+  let lastSys=null;
+  ancs.forEach(a=>{
+    if(!a.grp && a.sys && a.sys!==lastSys){ html+=`<div class="snav-sys">${a.sys}</div>`; lastSys=a.sys; }
+    html+=`<button class="snav ${a.grp?"":"sub"}" data-t="${a.el.id}">${a.name}${a.cnt?`<span class="gn">${a.cnt}</span>`:""}</button>`;
+  });
   list.innerHTML=html;
   list.querySelector(".snav.top").onclick=()=>summary.scrollTo({top:0,behavior:"smooth"});
   list.querySelectorAll(".snav[data-t]").forEach(b=>b.onclick=()=>{
@@ -729,7 +738,7 @@ function updateSumSpy(){
   if(!ancs.length){cur.textContent="回頂端";return;}
   const sr=summary.getBoundingClientRect(); let a0=ancs[0];
   ancs.forEach(a=>{ if(a.el.getBoundingClientRect().top - sr.top <= 70) a0=a; });
-  cur.textContent=a0.name;
+  cur.textContent=a0.sys?a0.sys+"·"+a0.name:a0.name;
   document.querySelectorAll("#sumnav-list .snav").forEach(b=>b.classList.toggle("cur",b.dataset.t===a0.el.id));
 }
 function buildSubjBar(){
