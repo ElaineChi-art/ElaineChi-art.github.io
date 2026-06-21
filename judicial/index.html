@@ -701,31 +701,36 @@ function renderSummary(){
   buildSumNav();
   summary.onscroll=()=>{ if(window._spyRAF) return; window._spyRAF=requestAnimationFrame(()=>{window._spyRAF=0;updateSumSpy();}); };
 }
+function sumAnchors(){
+  // 有體系分組就用體系；沒有(依法條)就用每個考點當錨點
+  const gs=[...summary.querySelectorAll(".sysgrp")];
+  let arr;
+  if(gs.length) arr=gs.map(g=>({el:g,grp:true,name:g.querySelector(".sysgrp-h").firstChild.textContent.trim(),cnt:(g.querySelector(".gn")||{}).textContent||""}));
+  else arr=[...summary.querySelectorAll(".kpt")].map(k=>({el:k,grp:false,name:(k.querySelector(".cpt")||{}).textContent||"考點",cnt:""}));
+  arr.forEach((a,i)=>{ if(!a.el.id) a.el.id="anc"+i; });
+  return arr;
+}
 function buildSumNav(){
   const list=document.getElementById("sumnav-list");
-  const gs=[...summary.querySelectorAll(".sysgrp")];
+  const ancs=sumAnchors();
   let html=`<button class="snav top">⬆ 回到最上面</button>`;
-  gs.forEach(g=>{
-    const name=g.querySelector(".sysgrp-h").firstChild.textContent.trim();
-    const cnt=(g.querySelector(".gn")||{}).textContent||"";
-    html+=`<button class="snav" data-t="${g.id}">${name}<span class="gn">${cnt}</span></button>`;
-  });
+  ancs.forEach(a=>{ html+=`<button class="snav" data-t="${a.el.id}">${a.name}${a.cnt?`<span class="gn">${a.cnt}</span>`:""}</button>`; });
   list.innerHTML=html;
   list.querySelector(".snav.top").onclick=()=>summary.scrollTo({top:0,behavior:"smooth"});
   list.querySelectorAll(".snav[data-t]").forEach(b=>b.onclick=()=>{
-    const el=document.getElementById(b.dataset.t); el.classList.add("open");
+    const el=document.getElementById(b.dataset.t); if(el.classList.contains("sysgrp")) el.classList.add("open");
     el.scrollIntoView({behavior:"smooth",block:"start"});
   });
   updateSumSpy();
 }
 function updateSumSpy(){
   const cur=document.getElementById("sumnav-cur"); if(!cur) return;
-  const gs=[...summary.querySelectorAll(".sysgrp")];
-  if(!gs.length){cur.textContent="回頂端";return;}
-  const sr=summary.getBoundingClientRect(); let g0=gs[0];
-  gs.forEach(g=>{ if(g.getBoundingClientRect().top - sr.top <= 70) g0=g; });
-  cur.textContent=g0.querySelector(".sysgrp-h").firstChild.textContent.trim();
-  document.querySelectorAll("#sumnav-list .snav").forEach(b=>b.classList.toggle("cur",b.dataset.t===g0.id));
+  const ancs=sumAnchors();
+  if(!ancs.length){cur.textContent="回頂端";return;}
+  const sr=summary.getBoundingClientRect(); let a0=ancs[0];
+  ancs.forEach(a=>{ if(a.el.getBoundingClientRect().top - sr.top <= 70) a0=a; });
+  cur.textContent=a0.name;
+  document.querySelectorAll("#sumnav-list .snav").forEach(b=>b.classList.toggle("cur",b.dataset.t===a0.el.id));
 }
 function buildSubjBar(){
   const subs=SUBJ[curSec]||[curSec];
