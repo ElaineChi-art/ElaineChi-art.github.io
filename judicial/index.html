@@ -22,17 +22,11 @@
   .topnav a{color:#9aa4b2;text-decoration:none;font-size:14px;font-weight:600;padding:7px 16px;border-radius:8px;white-space:nowrap}
   .topnav a:hover{background:#161922;color:#e6e6e6}
   .topnav a.active{background:#1f2e3a;color:#7fb5ff}
-  /* 頂部標題：平常只剩細條，滑鼠移上才展開大標（跟控制列同樣的抽屜方式） */
-  #topzone{position:relative;z-index:44}
-  #top-tab{background:linear-gradient(135deg,#1b2030,#13161d 70%);color:#cfd6e2;font-size:12.5px;padding:6px 16px;display:flex;align-items:center;gap:14px;white-space:nowrap;overflow:hidden;border-bottom:1px solid var(--line)}
-  #top-tab .brand{font-weight:bold;color:#dcd2ff}
-  #top-tab .cd b{color:#ffd86b;margin:0 3px}
-  #top-tab .th{margin-left:auto;color:#5b6472;font-size:11px}
-  #toppanel{position:absolute;top:100%;left:0;right:0;z-index:44;background:linear-gradient(135deg,#1b2030,#13161d 70%);border-bottom:1px solid var(--line);
-            box-shadow:0 16px 40px rgba(0,0,0,.6);padding:14px 18px;visibility:hidden;opacity:0;transform:translateY(-8px);transition:.22s}
-  #topzone:hover #toppanel{visibility:visible;opacity:1;transform:none}
-  #toppanel h1{font-size:20px;margin:0;letter-spacing:.5px;background:linear-gradient(90deg,#cfe0ff,#e9d4ff);-webkit-background-clip:text;background-clip:text;color:transparent}
-  #toppanel .psub{color:#9aa4b2;font-size:12.5px;margin-top:5px}
+  /* 頂部細條：倒數＋每日進度（一直顯示，不展開不擋畫面） */
+  #topbar2{background:linear-gradient(135deg,#1b2030,#13161d 70%);color:#cfd6e2;font-size:12.5px;padding:6px 16px;display:flex;align-items:center;gap:14px;white-space:nowrap;overflow-x:auto;border-bottom:1px solid var(--line)}
+  #topbar2 .brand{font-weight:bold;color:#dcd2ff;flex:none}
+  #topbar2 .cd b{color:#ffd86b;margin:0 3px}
+  #topbar2 #today.hit{color:#7CFFB0}
   .count b{font-size:21px;color:var(--gold);display:block}
   .sched{background:#11151c;border-bottom:1px solid var(--line);padding:6px 18px;font-size:13px;color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
   .sched b{color:#c3cad6}
@@ -65,14 +59,14 @@
   #sprintbar b{color:#ffd86b;margin:0 2px}
   body.sprintMode #detail{padding-top:42px}
   /* 考點統整左側目錄抽屜：平常細條(顯示現在位置)，滑上去展開可跳 */
-  #sumnav{display:none;position:fixed;left:0;top:0;height:100vh;z-index:38;pointer-events:none}
+  #sumnav{display:none;position:fixed;left:0;top:96px;height:calc(100vh - 96px);z-index:47;pointer-events:none}
   body.sumMode #sumnav{display:block}
   #sumnav-tab{pointer-events:auto;position:absolute;left:0;top:50%;transform:translateY(-50%);
     writing-mode:vertical-rl;background:#1b2030;border:1px solid var(--line);border-left:none;border-radius:0 12px 12px 0;
-    padding:16px 9px;color:#ffd86b;font-size:14px;letter-spacing:3px;font-weight:bold;cursor:pointer;box-shadow:4px 0 16px rgba(0,0,0,.4);max-height:70vh;overflow:hidden}
+    padding:16px 9px;color:#ffd86b;font-size:14px;letter-spacing:3px;font-weight:bold;cursor:pointer;box-shadow:4px 0 16px rgba(0,0,0,.4);max-height:60vh;overflow:hidden}
   #sumnav-tab #sumnav-cur{color:#cfd6e2;font-size:13px}
-  #sumnav-list{pointer-events:auto;position:absolute;left:0;top:0;height:100vh;width:230px;background:#0f1219;border-right:1px solid var(--line);
-    transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:12px 0 44px rgba(0,0,0,.55);overflow:auto;padding:14px 0}
+  #sumnav-list{pointer-events:auto;position:absolute;left:0;top:0;height:100%;width:230px;background:#0f1219;border-right:1px solid var(--line);
+    transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:12px 0 44px rgba(0,0,0,.55);overflow:auto;padding:10px 0}
   #sumnav-tab:hover + #sumnav-list,#sumnav-list:hover{transform:translateX(0)}
   #sumnav-list .snav{display:block;width:100%;text-align:left;background:none;border:none;border-left:3px solid transparent;
     color:#c3cad6;font-family:inherit;font-size:14px;padding:9px 16px;cursor:pointer;line-height:1.4}
@@ -322,16 +316,9 @@
   <a class="active" href="https://elainechi-art.github.io/judicial/">📚 司法官・律師複習</a>
   <a href="https://elainechi-art.github.io/exam-radar/">⚖️ 申論實務雷達</a>
 </nav>
-<div id="topzone">
-  <div id="top-tab">
-    <span class="brand">📚 一試複習</span>
-    <span class="cd">⏱ 一試<b id="d1">–</b>　調查局<b id="d2">–</b>　✅ 已懂<b id="prog">0</b></span>
-    <span class="th">（滑鼠移上看大標）</span>
-  </div>
-  <div id="toppanel">
-    <h1>📚 司法官・律師一試 歷屆全科複習</h1>
-    <div class="psub">每天照當天考試節次複習：刑事／公法／民事／商事＋法律倫理</div>
-  </div>
+<div id="topbar2">
+  <span class="brand">📚 一試複習</span>
+  <span class="cd">⏱ 一試倒數<b id="d1">–</b>　<span class="d2w">調查局<b id="d2">–</b>　</span>📅 今日<b id="today">0</b>/<span id="goalN">50</span>題　🔥 連<b id="streakN">0</b>天　✅ 已懂<b id="prog">0</b></span>
 </div>
 
 <div id="ctrlzone">
@@ -399,6 +386,28 @@ let curKey = null, search = "";
 
 function daysTo(d){return Math.max(0,Math.ceil((new Date(d)-new Date())/86400000));}
 d1.textContent = daysTo("2026-08-01")+"天";
+
+/* ===== 每日進度：記錄今天複習了哪些題、連續幾天 ===== */
+const DLS="sjg_daily_v1", GOAL=50;
+let daily=JSON.parse(localStorage.getItem(DLS)||"{}");   // {日期:[題key]}
+function dstr(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+function recordStudied(k){
+  const t=dstr(new Date());
+  if(!daily[t]) daily[t]=[];
+  if(!daily[t].includes(k)){ daily[t].push(k); localStorage.setItem(DLS,JSON.stringify(daily)); }
+  updateDaily();
+}
+function streakDays(){
+  let s=0; const d=new Date();
+  if(!(daily[dstr(d)]||[]).length) d.setDate(d.getDate()-1); // 今天還沒做也算延續昨天
+  while((daily[dstr(d)]||[]).length){ s++; d.setDate(d.getDate()-1); }
+  return s;
+}
+function updateDaily(){
+  const n=(daily[dstr(new Date())]||[]).length;
+  const te=document.getElementById("today"); if(te){ te.textContent=n; te.classList.toggle("hit",n>=GOAL); }
+  const se=document.getElementById("streakN"); if(se) se.textContent=streakDays();
+}
 d2.textContent = daysTo("2026-08-08")+"天";
 
 const years = [...new Set(Q.map(q=>q.year))].sort();
@@ -507,7 +516,7 @@ function showQ(k){
     <div class="nav"><button onclick="step(-1)">◀ 上一題</button>
       <button onclick="step(1)">下一題 ▶</button></div>`;
   detail.querySelectorAll(".opt").forEach(o=>o.onclick=()=>o.classList.add("reveal"));
-  window._q=q; window._note=note; renderList();
+  window._q=q; window._note=note; recordStudied(k); renderList();
   const sel=list.querySelector(".qrow.sel"); if(sel) list.scrollTop=Math.max(0,sel.offsetTop-44); // 選到的題自動移到最上面
   detail.scrollTop=0;
 }
@@ -1063,7 +1072,7 @@ function renderTree(){
   document.getElementById("colAll").onclick=()=>tree.querySelectorAll(".leaf").forEach(l=>l.classList.remove("open"));
 }
 function jumpTo(k){const p=k.split("-");curYear=+p[0];curSec=p[1];buildTabs();switchMode("study");showQ(k);}
-buildTabs(); renderList();
+buildTabs(); renderList(); updateDaily();
 </script>
 </body>
 </html>
