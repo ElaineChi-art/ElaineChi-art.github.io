@@ -22,9 +22,17 @@
   .topnav a{color:#9aa4b2;text-decoration:none;font-size:14px;font-weight:600;padding:7px 16px;border-radius:8px;white-space:nowrap}
   .topnav a:hover{background:#161922;color:#e6e6e6}
   .topnav a.active{background:#1f2e3a;color:#7fb5ff}
-  header{background:linear-gradient(135deg,#1b2030,#13161d 70%);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
-  header h1{font-size:20px;margin:0;letter-spacing:.5px;background:linear-gradient(90deg,#cfe0ff,#e9d4ff);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .count{margin-left:auto;display:flex;gap:14px;font-size:13px;text-align:center}
+  /* 頂部標題：平常只剩細條，滑鼠移上才展開大標（跟控制列同樣的抽屜方式） */
+  #topzone{position:relative;z-index:44}
+  #top-tab{background:linear-gradient(135deg,#1b2030,#13161d 70%);color:#cfd6e2;font-size:12.5px;padding:6px 16px;display:flex;align-items:center;gap:14px;white-space:nowrap;overflow:hidden;border-bottom:1px solid var(--line)}
+  #top-tab .brand{font-weight:bold;color:#dcd2ff}
+  #top-tab .cd b{color:#ffd86b;margin:0 3px}
+  #top-tab .th{margin-left:auto;color:#5b6472;font-size:11px}
+  #toppanel{position:absolute;top:100%;left:0;right:0;z-index:44;background:linear-gradient(135deg,#1b2030,#13161d 70%);border-bottom:1px solid var(--line);
+            box-shadow:0 16px 40px rgba(0,0,0,.6);padding:14px 18px;visibility:hidden;opacity:0;transform:translateY(-8px);transition:.22s}
+  #topzone:hover #toppanel{visibility:visible;opacity:1;transform:none}
+  #toppanel h1{font-size:20px;margin:0;letter-spacing:.5px;background:linear-gradient(90deg,#cfe0ff,#e9d4ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  #toppanel .psub{color:#9aa4b2;font-size:12.5px;margin-top:5px}
   .count b{font-size:21px;color:var(--gold);display:block}
   .sched{background:#11151c;border-bottom:1px solid var(--line);padding:6px 18px;font-size:13px;color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
   .sched b{color:#c3cad6}
@@ -36,7 +44,7 @@
   #search{padding:7px 12px;border:1px solid var(--line);border-radius:999px;font-size:15px;width:150px;background:#0f1219;color:var(--ink)}
   #search::placeholder{color:#5b6472}
   .toggle{margin-left:auto;font-size:14px;color:var(--muted)}
-  .wrap{display:flex;position:relative;height:calc(100vh - 118px)}
+  .wrap{display:flex;position:relative;height:calc(100vh - 96px)}
   /* 上方控制面板：平常收起，滑到頂條才滑出(覆蓋，不擠版面) */
   #ctrlzone{position:relative;z-index:42}
   #ctrl-tab{background:#11151c;border-bottom:1px solid var(--line);color:#9aa4b2;font-size:13px;text-align:center;padding:7px;letter-spacing:1px;cursor:default}
@@ -96,7 +104,7 @@
   .modebar button{color:#cdb86a;background:transparent;font-weight:bold;border-radius:999px}
   .modebar button.on{background:var(--grad);color:#fff;box-shadow:0 6px 18px rgba(80,90,255,.3)}
   #subjbar{display:none;gap:8px;padding:9px 18px;background:#11151c;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
-  #summary{display:none;height:calc(100vh - 118px);overflow:auto;padding:18px 22px;max-width:1000px;margin:0 auto}
+  #summary{display:none;height:calc(100vh - 96px);overflow:auto;padding:18px 22px;max-width:1000px;margin:0 auto}
   .sumtitle{font-size:15px;color:#e0c060;font-weight:bold;margin:18px 0 8px;border-bottom:2px solid var(--gold);padding-bottom:5px;position:sticky;top:-18px;background:var(--bg);z-index:2}
   .sumtitle:first-child{margin-top:0}
   /* 法條速記表 */
@@ -158,7 +166,7 @@
   .sopt b{color:#e0c060;margin-right:4px}
   .qnote{margin-top:10px;padding-top:9px;border-top:1px dashed var(--gold);font-size:14.5px;line-height:1.8;color:#d9c98c}
   /* ===== 知識樹 ===== */
-  #tree{display:none;height:calc(100vh - 118px);overflow:auto;padding:16px;max-width:1060px;margin:0 auto}
+  #tree{display:none;height:calc(100vh - 96px);overflow:auto;padding:16px;max-width:1060px;margin:0 auto}
   .treehint{background:rgba(20,26,40,.7);border:1px dashed var(--gold);border-radius:10px;padding:11px 14px;font-size:14.5px;color:#d9c98c;margin-bottom:16px;line-height:1.7}
   .branch{border-radius:16px;padding:14px 16px;margin-bottom:18px;border:1px solid var(--line)}
   .branch.zong{background:linear-gradient(180deg,#141d2c,#10141c);border-color:#2a3a55}
@@ -283,14 +291,17 @@
   <a class="active" href="https://elainechi-art.github.io/judicial/">📚 司法官・律師複習</a>
   <a href="https://elainechi-art.github.io/exam-radar/">⚖️ 申論實務雷達</a>
 </nav>
-<header>
-  <h1>📚 司法官・律師一試 歷屆全科複習</h1>
-  <div class="count">
-    <div>一試倒數<b id="d1">–</b></div>
-    <div>調查局<b id="d2">–</b></div>
-    <div>已懂<b id="prog">0</b></div>
+<div id="topzone">
+  <div id="top-tab">
+    <span class="brand">📚 一試複習</span>
+    <span class="cd">⏱ 一試<b id="d1">–</b>　調查局<b id="d2">–</b>　✅ 已懂<b id="prog">0</b></span>
+    <span class="th">（滑鼠移上看大標）</span>
   </div>
-</header>
+  <div id="toppanel">
+    <h1>📚 司法官・律師一試 歷屆全科複習</h1>
+    <div class="psub">每天照當天考試節次複習：刑事／公法／民事／商事＋法律倫理</div>
+  </div>
+</div>
 
 <div id="ctrlzone">
   <div id="ctrl-tab">⚙ 模式 ‧ 年份 ‧ 設定　<span class="ctrl-hint">（滑鼠移到這條就展開）</span></div>
