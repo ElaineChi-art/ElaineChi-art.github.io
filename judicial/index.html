@@ -117,7 +117,46 @@
   .trapcard.open{border-color:var(--green);background:#10241b}
   .trapcard.open .ans{display:block}
   .trapcard .flip{font-size:12px;color:var(--blue);margin-top:6px}
-  .sumcount{font-size:13px;color:#888;margin-bottom:12px}
+  .sumcount{font-size:13.5px;color:#b9b0c8;margin-bottom:14px;line-height:1.7;background:rgba(20,26,40,.6);border:1px dashed var(--gold);border-radius:10px;padding:10px 14px}
+  .sumcount b{color:#e0c060}
+  /* 抽屜地圖 */
+  .sysmap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;align-items:center}
+  .sysmap::before{content:"";}
+  .mapbtn{font-family:inherit;font-size:13px;font-weight:bold;padding:5px 12px;border-radius:16px;border:1.5px solid var(--blue);background:#161b28;color:#9db4ff;cursor:pointer}
+  .mapbtn:hover{background:var(--blue);color:#fff}
+  /* 體系群組 */
+  .sysgrp{margin-bottom:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0f131b}
+  .sysgrp-h{font-size:17px;font-weight:bold;color:#ffd86b;padding:12px 16px;cursor:pointer;background:linear-gradient(90deg,#1b2030,#12151d);display:flex;align-items:center;gap:10px;user-select:none}
+  .sysgrp-h::before{content:"▾";font-size:14px;color:var(--gold);transition:transform .2s}
+  .sysgrp:not(.open) .sysgrp-h::before{transform:rotate(-90deg)}
+  .sysgrp-h .gn{margin-left:auto;font-size:12px;color:#8a8aa0;font-weight:normal;background:#1f2535;padding:2px 9px;border-radius:10px}
+  .sysgrp-body{padding:10px 14px 14px}
+  .sysgrp:not(.open) .sysgrp-body{display:none}
+  /* 考點卡 */
+  .kpt{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;padding:11px 14px;margin:9px 0}
+  .kpt-top{display:flex;align-items:flex-start;gap:7px;flex-wrap:wrap}
+  .kpt-top .law{font-weight:bold;color:#e0c060;font-size:15px}
+  .kpt-top .cpt{color:var(--blue);font-weight:bold;font-size:15.5px;flex:1}
+  .kpt-audio{flex:none;background:#7c5cff;color:#fff;border:none;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer;box-shadow:0 3px 9px rgba(124,92,255,.4)}
+  .kpt .key{margin-top:6px;color:#e7ebf2;font-size:15.5px;line-height:1.75;font-weight:600}
+  .kpt .key b{color:#ff8a8a}
+  .kpt .krules{margin-top:7px;color:#cdb0a0;font-size:13.5px;line-height:1.65;background:rgba(60,30,20,.35);border-radius:8px;padding:7px 10px}
+  .kpt .krules b{color:#ff9d6b}
+  .qchips{margin-top:9px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+  .qchips-lab{font-size:12px;color:#8a8aa0}
+  .qchip{background:#1f2430;border-radius:14px;padding:2px 10px;font-size:12.5px;color:#c3cad6;cursor:pointer;border:none;font-family:inherit}
+  .qchip:hover{background:var(--gold);color:#1b1b1b}
+  .qchip.on{background:var(--green);color:#fff}
+  /* 攤開的原題 */
+  .qopen:empty{display:none}
+  .qcard{margin-top:10px;background:#0c0f16;border:1px solid var(--blue);border-radius:10px;padding:12px 14px}
+  .qcard-h{font-size:13px;color:#9db4ff;font-weight:bold;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .qcard-audio{font-family:inherit;font-size:12px;background:#7c5cff;color:#fff;border:none;border-radius:14px;padding:3px 11px;cursor:pointer}
+  .qstem{font-size:15.5px;line-height:1.7;margin-bottom:9px}
+  .sopt{font-size:14.5px;line-height:1.6;padding:5px 9px;border-radius:7px;margin:3px 0;background:#141923;color:#c3cad6}
+  .sopt.cor{background:#13301f;color:#9af0bf;border:1px solid var(--green);font-weight:600}
+  .sopt b{color:#e0c060;margin-right:4px}
+  .qnote{margin-top:10px;padding-top:9px;border-top:1px dashed var(--gold);font-size:14.5px;line-height:1.8;color:#d9c98c}
   /* ===== 知識樹 ===== */
   #tree{display:none;height:calc(100vh - 118px);overflow:auto;padding:16px;max-width:1060px;margin:0 auto}
   .treehint{background:rgba(20,26,40,.7);border:1px dashed var(--gold);border-radius:10px;padding:11px 14px;font-size:14.5px;color:#d9c98c;margin-bottom:16px;line-height:1.7}
@@ -278,8 +317,10 @@
       <span style="font-size:13px;color:#9a7b16;font-weight:bold">科目</span>
       <div class="grp" id="subjs"></div>
       <div class="grp" id="sumviews">
-        <button data-v="law" class="on">⚖️ 法條速記表</button>
-        <button data-v="trap">⚠️ 易錯觀念卡</button>
+        <button data-v="sys" class="on">🗂️ 依體系（抽屜）</button>
+        <button data-v="law">⚖️ 依法條</button>
+        <button data-v="year">📅 依年度</button>
+        <button data-v="trap">⚠️ 易錯卡</button>
       </div>
     </div>
   </div>
@@ -444,7 +485,7 @@ document.getElementById("search").oninput=e=>{search=e.target.value.trim();rende
 hideAns.onchange=()=>{if(curKey)showQ(curKey);};
 
 /* ===================== 考點統整模式 ===================== */
-let mode="study", sumView="law", curSub=null;
+let mode="study", sumView="sys", curSub=null;
 const SUBJ={
   刑事組:["刑法","刑訴"],
   公法組:["憲法","行政法","國際公法","國際私法"],
@@ -465,6 +506,65 @@ function subOf(q){
   }
   return q.subject;
 }
+// ===== 體系分類（記憶抽屜）：把每題歸到正確的體系格子 =====
+function systemOf(q){
+  const su=subOf(q);
+  const c=(NOTES[keyOf(q)]||{}).concept||"";
+  const law=((NOTES[keyOf(q)]||{}).body||"").split("\n").find(l=>l.trim().startsWith("⚖️"))||"";
+  const t=c+" "+law;
+  const has=re=>re.test(t);
+  if(su==="刑法"){
+    if(has(/故意|過失|因果|結果加重|不作為|構成要件|錯誤|包攝|打擊|客體錯誤/)) return "刑總·構成要件/故意過失";
+    if(has(/正當防衛|緊急避難|承諾|阻卻違法|依法令|依命令|自助/)) return "刑總·阻卻違法";
+    if(has(/罪責|責任能力|原因自由|違法性錯誤|期待可能|精神|年齡|減輕其刑/)) return "刑總·罪責";
+    if(has(/未遂|中止|預備|著手|不能犯/)) return "刑總·未遂";
+    if(has(/正犯|共犯|教唆|幫助|共同正犯|間接正犯|結夥|脫離/)) return "刑總·正犯與共犯";
+    if(has(/競合|想像競合|數罪|吸收|不罰|罪數|牽連|接續/)) return "刑總·罪數競合";
+    if(has(/沒收|易科|易服|緩刑|累犯|自首|量刑|褫奪|保安處分|時效|追訴權|主刑|從刑|利得/)) return "刑總·刑罰與沒收";
+    if(has(/殺人|傷害|遺棄|墮胎|性交|猥褻|妨害自由|拘禁|強制|恐嚇|名譽|誹謗|侮辱|秘密|電腦|GPS|跟追/)) return "刑分·個人法益";
+    if(has(/竊盜|搶奪|強盜|詐欺|侵占|背信|恐嚇取財|贓物|毀損|重利|擄人勒贖|結合犯/)) return "刑分·財產犯罪";
+    if(has(/瀆職|受賄|行賄|圖利|濫權|洩.*秘密|妨害公務|脫逃|藏匿|頂替|湮滅|偽證|誣告|投票|賄選/)) return "刑分·國家法益";
+    if(has(/公共危險|放火|決水|往來|交通|酒駕|不能安全駕駛|偽造貨幣|偽造文書|有價證券|印章|署押|賭博|猥褻物品|風化|鴉片|毒品/)) return "刑分·社會法益";
+    return "刑分·其他";
+  }
+  if(su==="刑訴"){
+    if(has(/傳喚|拘提|逮捕|現行犯|通緝|羈押|具保|責付|搜索|扣押|監聽|通訊監察|身體檢查|強制處分/)) return "刑訴·強制處分";
+    if(has(/證據|自白|傳聞|補強|證據能力|證據排除|權衡|158|159|156|勘驗|鑑定|詰問|誘導|證人|具結/)) return "刑訴·證據法則";
+    if(has(/告訴|告發|自訴|不起訴|緩起訴|起訴|再議|准許提起自訴|偵查|卷證|辯護人指定/)) return "刑訴·偵查與起訴";
+    if(has(/管轄|迴避|簡式|簡易|協商|國民法官|一造辯論|準備程序|審判|判決|相牽連|追加起訴|變更起訴/)) return "刑訴·審判程序";
+    if(has(/上訴|抗告|再審|非常上訴|確定/)) return "刑訴·救濟程序";
+    return "刑訴·其他";
+  }
+  if(su==="憲法"){
+    if(has(/平等|自由|財產|工作|訴訟|人身|隱私|秘密通訊|集會|結社|宗教|受教育|生命|人格|遷徙|居住|基本權|釋字|憲判|比例原則|法律保留/)) return "憲法·基本權";
+    return "憲法·政府組織與釋憲";
+  }
+  if(su==="行政法"){
+    if(has(/組織|機關|管轄|公務員|委託|委任|行政法人|公物|地方自治|自治條例|自治規則/)) return "行政法·組織與自治";
+    if(has(/處分|命令|規則|契約|行政罰|事實行為|裁量|法律保留|信賴保護|比例|附款|程序|聽證|送達/)) return "行政法·行政作用";
+    if(has(/訴願|行政訴訟|國家賠償|國賠|損失補償|強制執行|暫時權利|審判權|救濟/)) return "行政法·行政救濟";
+    return "行政法·其他";
+  }
+  if(su==="國際公法") return "國際公法";
+  if(su==="國際私法") return "國際私法";
+  if(su==="民法"){
+    if(has(/行為能力|意思表示|法律行為|代理|消滅時效|條件|期日|期間|權利能力|人格|法人|住所|物之概念|誠信|權利濫用|監護宣告|輔助宣告|死亡宣告/)) return "民總";
+    if(has(/債|契約|侵權|不當得利|無因管理|買賣|租賃|承攬|委任|借貸|保證|債務不履行|給付|代位|撤銷|讓與|承擔|連帶|抵銷|定金|違約金|解除|擔保|瑕疵/)) return "債編";
+    if(has(/物權|所有權|共有|抵押|質權|留置|地上權|典權|役權|占有|善意取得|登記|相鄰|添附|流抵/)) return "物權";
+    if(has(/婚姻|結婚|離婚|夫妻|剩餘財產|親子|收養|認領|監護|扶養|親權|姻親|血親|婚生/)) return "親屬";
+    if(has(/繼承|遺產|遺囑|特留分|應繼分|拋棄繼承|限定|代位繼承|歸扣|遺贈/)) return "繼承";
+    return "民法·其他";
+  }
+  if(su==="民訴"){
+    if(has(/管轄|當事人|訴訟能力|選定當事人|訴訟標的|起訴|訴之變更|追加|反訴|重複起訴|當事人恆定|適格/)) return "民訴·主體與標的";
+    if(has(/言詞辯論|自認|舉證|證據|證人|調解|和解|爭點|審理|闡明/)) return "民訴·審理與證據";
+    if(has(/判決|既判力|確定|對世效|假執行|對待給付/)) return "民訴·裁判效力";
+    if(has(/上訴|抗告|再審|第三人撤銷|附帶上訴|飛躍/)) return "民訴·救濟";
+    if(has(/保全|假扣押|假處分|支付命令|公示催告|簡易|小額|家事|繫屬登記|保全證據/)) return "民訴·特別與保全程序";
+    return "民訴·其他";
+  }
+  return su; // 公司/保險/票據/證交/強執/法學英文 已是體系
+}
 function parseNote(note){
   const lines=(note.body||"").split("\n");
   const grab=e=>{const m=lines.find(l=>l.trim().startsWith(e));return m?m.replace(e,"").replace(/^法條：/,"").trim():"";};
@@ -475,22 +575,49 @@ function sumItems(){
           .sort((a,b)=> a.num-b.num || a.year-b.year)
           .map(q=>({q, p:parseNote(NOTES[keyOf(q)]), k:keyOf(q)}));
 }
+function aggRules(its){
+  const keys=[],traps=[],anss=[];
+  its.forEach(it=>{
+    if(it.p.key&&!keys.includes(it.p.key)) keys.push(it.p.key);
+    if(it.p.trap&&!traps.includes(it.p.trap)) traps.push(it.p.trap);
+    if(it.p.ans&&!anss.includes(it.p.ans)) anss.push(it.p.ans);
+  });
+  return {keys,traps,anss};
+}
+function kptCardHTML(concept,its){
+  const law=(its.find(x=>x.p.law)||{p:{}}).p.law||"";
+  const {keys,traps,anss}=aggRules(its);
+  const chips=its.sort((a,b)=>a.q.year-b.q.year).map(it=>`<button class="qchip" data-k="${it.k}">${it.q.year}·${it.q.num}</button>`).join("");
+  const keyHTML=keys.length?`<div class="key">${keys.map(k=>"🔑 "+k).join("<br>")}</div>`:
+                (anss.length?`<div class="key">${anss.map(a=>"✅ "+a).join("<br>")}</div>`:"");
+  const trapHTML=traps.length?`<div class="krules"><b>⚠️ 別搞混（其他選項也考過的規則）：</b>${traps.join("　｜　")}</div>`:"";
+  const speakTxt=concept+"。"+keys.concat(anss).join("。")+"。"+(traps.length?"要分清楚："+traps.join("。"):"");
+  return `<div class="kpt">
+    <div class="kpt-top"><span class="law">${law}</span><span class="cpt">${concept}</span>
+      <button class="kpt-audio" data-s="${encodeURIComponent(speakTxt)}" title="念這個考點">🔊</button></div>
+    ${keyHTML}${trapHTML}
+    <div class="qchips"><span class="qchips-lab">原題👉</span>${chips}</div>
+    <div class="qopen" data-k=""></div></div>`;
+}
+function sumQHTML(k){
+  const q=qByKey(k),note=NOTES[k]||{},L=["A","B","C","D"];
+  const opts=q.options.map((o,i)=>`<div class="sopt ${i===q.ansIndex?'cor':''}"><b>${L[i]}</b> ${o}</div>`).join("");
+  return `<div class="qcard">
+    <div class="qcard-h">📄 ${q.year}年 第${q.num}題　<button class="qcard-audio" data-k="${k}">🔊 念整題</button></div>
+    <div class="qstem">${q.stem}</div>${opts}
+    <div class="qnote"><b>🖊️ ${note.concept||""}</b><br>${(note.body||"").replace(/\n/g,"<br>")}</div></div>`;
+}
+function toggleQOpen(chip){
+  const kpt=chip.closest(".kpt"),open=kpt.querySelector(".qopen"),k=chip.dataset.k;
+  if(open.dataset.k===k){open.innerHTML="";open.dataset.k="";chip.classList.remove("on");return;}
+  kpt.querySelectorAll(".qchip").forEach(c=>c.classList.remove("on"));
+  chip.classList.add("on");open.innerHTML=sumQHTML(k);open.dataset.k=k;
+  const ab=open.querySelector(".qcard-audio");
+  ab.onclick=e=>{e.stopPropagation();window._q=qByKey(k);readQ();};
+}
 function renderSummary(){
   const items=sumItems(); let html="";
-  if(sumView==="law"){
-    const map=new Map();
-    items.forEach(it=>{const c=it.p.concept;
-      if(!map.has(c)) map.set(c,{law:it.p.law,key:it.p.key,ks:[]});
-      if(!map.get(c).key && it.p.key) map.get(c).key=it.p.key;
-      map.get(c).ks.push(it);});
-    html=`<div class="sumcount">⚖️ <b>${curSub}</b>　共 <b>${map.size}</b> 個考點（去重）｜這些就是會考的範圍，點題號可跳到該題</div>`;
-    for(const [c,v] of map){
-      const chips=v.ks.map(it=>`<button class="qchip" data-k="${it.k}">${it.q.year}·${it.q.num}</button>`).join("");
-      html+=`<div class="lawrow"><span class="law">${v.law||""}</span><span class="cpt">${c}</span>
-        ${v.key?`<span class="key">🔑 ${v.key}</span>`:""}
-        <div class="qchips">${chips}</div></div>`;
-    }
-  }else{
+  if(sumView==="trap"){
     const cards=items.filter(it=>it.p.trap);
     html=`<div class="sumcount">⚠️ <b>${curSub}</b>　共 <b>${cards.length}</b> 張易混淆卡｜先看陷阱說法，<b>點卡片翻開</b>看正解記憶</div>`;
     cards.forEach(it=>{
@@ -501,10 +628,39 @@ function renderSummary(){
         <div class="ans">✅ ${it.p.ans}${it.p.law?`<br><span style="color:#9a6a16">⚖️ ${it.p.law}</span>`:""}
           ${it.p.key?`<br>🔑 ${it.p.key}`:""}</div></div>`;
     });
+    summary.innerHTML=html||`<div class="empty">此科目尚無資料</div>`;
+    summary.querySelectorAll(".trapcard").forEach(card=>card.onclick=()=>card.classList.toggle("open"));
+    return;
+  }
+  const totalC=new Set(items.map(it=>it.p.concept)).size;
+  const hint=sumView==="sys"?"🗂️ <b>按『體系抽屜』分好了</b>：考到先想它屬於哪一格，再把規則往那一格擺，這樣才記得住。點 🔊 可念該考點、點原題號可直接攤開看那題。"
+            :sumView==="year"?"📅 <b>按年度排</b>：看每年各考了哪些考點。"
+            :"⚖️ <b>全部考點（去重）</b>：每個觀念該記的規則都列出來了。";
+  html=`<div class="sumcount">${hint}<br><b>${curSub}</b>　共 <b>${totalC}</b> 個考點</div>`;
+  if(sumView==="sys"||sumView==="year"){
+    const groups=new Map();
+    const gOf=sumView==="sys"?(it=>systemOf(it.q)):(it=>it.q.year+" 年");
+    items.forEach(it=>{const g=gOf(it);if(!groups.has(g))groups.set(g,[]);groups.get(g).push(it);});
+    const keys=[...groups.keys()].sort();
+    if(sumView==="sys"){
+      html+=`<div class="sysmap">📍 抽屜地圖：${keys.map((g,i)=>`<button class="mapbtn" data-i="${i}">${g}</button>`).join("")}</div>`;
+    }
+    keys.forEach((g,i)=>{
+      const its=groups.get(g),byC=new Map();
+      its.forEach(it=>{if(!byC.has(it.p.concept))byC.set(it.p.concept,[]);byC.get(it.p.concept).push(it);});
+      let inner="";for(const [c,cits] of byC) inner+=kptCardHTML(c,cits);
+      html+=`<div class="sysgrp open" id="sg${i}"><div class="sysgrp-h">${g}<span class="gn">${byC.size} 考點</span></div><div class="sysgrp-body">${inner}</div></div>`;
+    });
+  }else{ // law：去重平鋪
+    const byC=new Map();
+    items.forEach(it=>{if(!byC.has(it.p.concept))byC.set(it.p.concept,[]);byC.get(it.p.concept).push(it);});
+    for(const [c,cits] of byC) html+=kptCardHTML(c,cits);
   }
   summary.innerHTML=html||`<div class="empty">此科目尚無資料</div>`;
-  summary.querySelectorAll(".qchip").forEach(c=>c.onclick=e=>{e.stopPropagation();jumpTo(c.dataset.k);});
-  summary.querySelectorAll(".trapcard").forEach(card=>card.onclick=()=>card.classList.toggle("open"));
+  summary.querySelectorAll(".sysgrp-h").forEach(h=>h.onclick=()=>h.parentElement.classList.toggle("open"));
+  summary.querySelectorAll(".mapbtn").forEach(b=>b.onclick=()=>{const g=document.getElementById("sg"+b.dataset.i);g.classList.add("open");g.scrollIntoView({behavior:"smooth",block:"start"});});
+  summary.querySelectorAll(".kpt-audio").forEach(b=>b.onclick=e=>{e.stopPropagation();speak(decodeURIComponent(b.dataset.s));});
+  summary.querySelectorAll(".qchip").forEach(c=>c.onclick=e=>{e.stopPropagation();toggleQOpen(c);});
 }
 function buildSubjBar(){
   const subs=SUBJ[curSec]||[curSec];
