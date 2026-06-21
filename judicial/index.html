@@ -121,6 +121,12 @@
   .btns button{font-family:inherit;font-size:15px;padding:9px 16px;border:none;border-radius:24px;cursor:pointer}
   .play{background:#3a6ea5;color:#fff} .note-play{background:#7a5cd0;color:#fff}
   .ok-b{background:#1f8a4c;color:#fff} .rev-b{background:#d64b4b;color:#fff}
+  .btns button{transition:.12s}
+  /* 按下去的「壓下」感：內凹陰影＋亮環＋打勾標記 */
+  .ok-b.on,.rev-b.on{transform:translateY(1px);box-shadow:inset 0 4px 11px rgba(0,0,0,.55);filter:brightness(.82)}
+  .ok-b.on{outline:2.5px solid #9af0bf;outline-offset:1px}
+  .rev-b.on{outline:2.5px solid #ffb3b3;outline-offset:1px}
+  .ok-b.on::after{content:" ✓";font-weight:bold} .rev-b.on::after{content:" ✓";font-weight:bold}
   .nav{display:flex;justify-content:space-between;margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
   .nav button{background:#1f2430;color:#fff;border:1px solid var(--line);border-radius:24px;padding:9px 20px;font-size:15px;cursor:pointer}
   .empty{color:var(--muted);padding:40px;text-align:center}
@@ -171,6 +177,11 @@
   .kpt-top .law{font-weight:bold;color:#e0c060;font-size:15px}
   .kpt-top .cpt{color:var(--blue);font-weight:bold;font-size:15.5px;flex:1}
   .kpt-audio{flex:none;background:#7c5cff;color:#fff;border:none;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer;box-shadow:0 3px 9px rgba(124,92,255,.4)}
+  /* 考點卡上的「再看／我懂了」標記鈕，按下去會壓下變色 */
+  .km{flex:none;width:32px;height:28px;border-radius:9px;border:1px solid var(--line);background:#222834;color:#aeb6c4;font-size:14px;cursor:pointer;transition:.12s;padding:0}
+  .km:hover{filter:brightness(1.15)}
+  .km.rev.on{background:#d64b4b;color:#fff;border-color:#ff9d9d;box-shadow:inset 0 3px 7px rgba(0,0,0,.5);transform:translateY(1px)}
+  .km.ok.on{background:#1f8a4c;color:#fff;border-color:#9af0bf;box-shadow:inset 0 3px 7px rgba(0,0,0,.5);transform:translateY(1px)}
   .kpt .key{margin-top:6px;color:#e7ebf2;font-size:15.5px;line-height:1.75;font-weight:600}
   .kpt .key b{color:#ff8a8a}
   .kpt .krules{margin-top:7px;color:#cdb0a0;font-size:13.5px;line-height:1.65;background:rgba(60,30,20,.35);border-radius:8px;padding:7px 10px}
@@ -179,7 +190,9 @@
   .qchips-lab{font-size:12px;color:#8a8aa0}
   .qchip{background:#1f2430;border-radius:14px;padding:2px 10px;font-size:12.5px;color:#c3cad6;cursor:pointer;border:none;font-family:inherit}
   .qchip:hover{background:var(--gold);color:#1b1b1b}
-  .qchip.on{background:var(--green);color:#fff}
+  .qchip.on{outline:2px solid var(--blue);outline-offset:1px;background:#26314a;color:#fff}
+  .qchip.ok{background:#1f8a4c;color:#fff}
+  .qchip.review{background:#d64b4b;color:#fff}
   /* 攤開的原題 */
   .qopen:empty{display:none}
   .qcard{margin-top:10px;background:#0c0f16;border:1px solid var(--blue);border-radius:10px;padding:12px 14px}
@@ -511,8 +524,8 @@ function showQ(k){
     <div class="btns">
       <button class="play" onclick="readQ()">🔊 念題目</button>
       <button class="note-play" onclick="readNote()">🔊 念詳解</button>
-      <button class="ok-b" onclick="mark('ok')">✅ 我懂了</button>
-      <button class="rev-b" onclick="mark('review')">🔁 再看</button></div>
+      <button class="ok-b ${marks[k]==='ok'?'on':''}" onclick="mark('ok')">✅ 我懂了</button>
+      <button class="rev-b ${marks[k]==='review'?'on':''}" onclick="mark('review')">🔁 再看</button></div>
     <div class="nav"><button onclick="step(-1)">◀ 上一題</button>
       <button onclick="step(1)">下一題 ▶</button></div>`;
   detail.querySelectorAll(".opt").forEach(o=>o.onclick=()=>o.classList.add("reveal"));
@@ -532,6 +545,9 @@ function mark(t){
   const oldIdx=sprint?filtered().findIndex(q=>keyOf(q)===curKey):-1;
   marks[curKey]=marks[curKey]===t?undefined:t; if(!marks[curKey])delete marks[curKey];
   localStorage.setItem(LS,JSON.stringify(marks)); renderList();
+  const _o=detail.querySelector(".ok-b"),_r=detail.querySelector(".rev-b");
+  if(_o)_o.classList.toggle("on",marks[curKey]==="ok");
+  if(_r)_r.classList.toggle("on",marks[curKey]==="review");
   if(sprint){ updateSprintBanner();
     if(marks[curKey]!=="review"){ const pool=filtered();
       if(pool.length) showQ(keyOf(pool[Math.min(Math.max(oldIdx,0),pool.length-1)]));
@@ -683,17 +699,28 @@ function aggRules(its){
 function kptCardHTML(concept,its){
   const law=(its.find(x=>x.p.law)||{p:{}}).p.law||"";
   const {keys,traps,anss}=aggRules(its);
-  const chips=its.sort((a,b)=>a.q.year-b.q.year).map(it=>`<button class="qchip" data-k="${it.k}">${it.q.year}·${it.q.num}</button>`).join("");
+  const ks=its.map(it=>it.k);
+  const allOk=ks.length&&ks.every(k=>marks[k]==="ok"), anyRev=ks.some(k=>marks[k]==="review");
+  const chips=its.sort((a,b)=>a.q.year-b.q.year).map(it=>`<button class="qchip ${marks[it.k]||''}" data-k="${it.k}">${it.q.year}·${it.q.num}</button>`).join("");
   const keyHTML=keys.length?`<div class="key">${keys.map(k=>"🔑 "+k).join("<br>")}</div>`:
                 (anss.length?`<div class="key">${anss.map(a=>"✅ "+a).join("<br>")}</div>`:"");
   const trapHTML=traps.length?`<div class="krules"><b>⚠️ 別搞混（其他選項也考過的規則）：</b>${traps.join("　｜　")}</div>`:"";
   const speakTxt=concept+"。"+keys.concat(anss).join("。")+"。"+(traps.length?"要分清楚："+traps.join("。"):"");
   return `<div class="kpt">
     <div class="kpt-top"><span class="law">${law}</span><span class="cpt">${concept}</span>
+      <button class="km rev ${anyRev?'on':''}" title="再看(整個考點)">🔁</button>
+      <button class="km ok ${allOk?'on':''}" title="我懂了(整個考點)">✅</button>
       <button class="kpt-audio" data-s="${encodeURIComponent(speakTxt)}" title="念這個考點">🔊</button></div>
     ${keyHTML}${trapHTML}
     <div class="qchips"><span class="qchips-lab">原題👉</span>${chips}</div>
     <div class="qopen" data-k=""></div></div>`;
+}
+function refreshCardMark(card){
+  const ks=[...card.querySelectorAll(".qchip")].map(c=>c.dataset.k);
+  const allOk=ks.length&&ks.every(k=>marks[k]==="ok"), anyRev=ks.some(k=>marks[k]==="review");
+  card.querySelector(".km.rev").classList.toggle("on",anyRev);
+  card.querySelector(".km.ok").classList.toggle("on",allOk);
+  card.querySelectorAll(".qchip").forEach(c=>{c.classList.remove("ok","review");const m=marks[c.dataset.k];if(m&&!c.classList.contains("on"))c.classList.add(m);});
 }
 function sumQHTML(k){
   const q=qByKey(k),note=NOTES[k]||{},L=["A","B","C","D"];
@@ -759,6 +786,15 @@ function renderSummary(){
   summary.querySelectorAll(".mapbtn").forEach(b=>b.onclick=()=>{const g=document.getElementById("sg"+b.dataset.i);g.classList.add("open");g.scrollIntoView({behavior:"smooth",block:"start"});});
   summary.querySelectorAll(".kpt-audio").forEach(b=>b.onclick=e=>{e.stopPropagation();speak(decodeURIComponent(b.dataset.s));});
   summary.querySelectorAll(".qchip").forEach(c=>c.onclick=e=>{e.stopPropagation();toggleQOpen(c);});
+  summary.querySelectorAll(".km").forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const card=b.closest(".kpt"), type=b.classList.contains("ok")?"ok":"review";
+    const ks=[...card.querySelectorAll(".qchip")].map(c=>c.dataset.k);
+    const allThis=ks.length&&ks.every(k=>marks[k]===type);
+    ks.forEach(k=>{ if(allThis) delete marks[k]; else marks[k]=type; });
+    localStorage.setItem(LS,JSON.stringify(marks));
+    refreshCardMark(card); renderList();
+  });
   buildSumNav();
   summary.onscroll=()=>{ if(window._spyRAF) return; window._spyRAF=requestAnimationFrame(()=>{window._spyRAF=0;updateSumSpy();}); };
 }
