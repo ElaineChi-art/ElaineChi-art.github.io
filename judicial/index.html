@@ -52,6 +52,22 @@
   #panel{position:absolute;top:100%;left:0;right:0;z-index:42;background:#0c0e13;border-bottom:1px solid var(--line);
          box-shadow:0 16px 40px rgba(0,0,0,.6);visibility:hidden;opacity:0;transform:translateY(-8px);transition:.22s}
   #ctrlzone:hover #panel{visibility:visible;opacity:1;transform:none}
+  /* 考點統整左側目錄抽屜：平常細條(顯示現在位置)，滑上去展開可跳 */
+  #sumnav{display:none;position:fixed;left:0;top:0;height:100vh;z-index:38;pointer-events:none}
+  body.sumMode #sumnav{display:block}
+  #sumnav-tab{pointer-events:auto;position:absolute;left:0;top:50%;transform:translateY(-50%);
+    writing-mode:vertical-rl;background:#1b2030;border:1px solid var(--line);border-left:none;border-radius:0 12px 12px 0;
+    padding:16px 9px;color:#ffd86b;font-size:14px;letter-spacing:3px;font-weight:bold;cursor:pointer;box-shadow:4px 0 16px rgba(0,0,0,.4);max-height:70vh;overflow:hidden}
+  #sumnav-tab #sumnav-cur{color:#cfd6e2;font-size:13px}
+  #sumnav-list{pointer-events:auto;position:absolute;left:0;top:0;height:100vh;width:230px;background:#0f1219;border-right:1px solid var(--line);
+    transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:12px 0 44px rgba(0,0,0,.55);overflow:auto;padding:14px 0}
+  #sumnav-tab:hover + #sumnav-list,#sumnav-list:hover{transform:translateX(0)}
+  #sumnav-list .snav{display:block;width:100%;text-align:left;background:none;border:none;border-left:3px solid transparent;
+    color:#c3cad6;font-family:inherit;font-size:14px;padding:9px 16px;cursor:pointer;line-height:1.4}
+  #sumnav-list .snav:hover{background:#1a2030;color:#fff}
+  #sumnav-list .snav.cur{border-left-color:var(--gold);background:#1c2435;color:#ffd86b;font-weight:bold}
+  #sumnav-list .snav.top{color:#9db4ff;font-weight:bold;border-bottom:1px solid var(--line);margin-bottom:6px}
+  #sumnav-list .snav .gn{color:#7a8298;font-size:11.5px;margin-left:5px}
   /* 左側題目清單：滑到左緣才滑出(抽屜) */
   #list-tab{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:36;writing-mode:vertical-rl;
             background:#161922;border:1px solid var(--line);border-left:none;border-radius:0 12px 12px 0;
@@ -344,6 +360,10 @@
 </div>
 
 <div id="summary"></div>
+<div id="sumnav">
+  <div id="sumnav-tab">📑 <span id="sumnav-cur">目錄</span></div>
+  <div id="sumnav-list"></div>
+</div>
 
 <div id="tree"></div>
 
@@ -678,6 +698,34 @@ function renderSummary(){
   summary.querySelectorAll(".mapbtn").forEach(b=>b.onclick=()=>{const g=document.getElementById("sg"+b.dataset.i);g.classList.add("open");g.scrollIntoView({behavior:"smooth",block:"start"});});
   summary.querySelectorAll(".kpt-audio").forEach(b=>b.onclick=e=>{e.stopPropagation();speak(decodeURIComponent(b.dataset.s));});
   summary.querySelectorAll(".qchip").forEach(c=>c.onclick=e=>{e.stopPropagation();toggleQOpen(c);});
+  buildSumNav();
+  summary.onscroll=()=>{ if(window._spyRAF) return; window._spyRAF=requestAnimationFrame(()=>{window._spyRAF=0;updateSumSpy();}); };
+}
+function buildSumNav(){
+  const list=document.getElementById("sumnav-list");
+  const gs=[...summary.querySelectorAll(".sysgrp")];
+  let html=`<button class="snav top">⬆ 回到最上面</button>`;
+  gs.forEach(g=>{
+    const name=g.querySelector(".sysgrp-h").firstChild.textContent.trim();
+    const cnt=(g.querySelector(".gn")||{}).textContent||"";
+    html+=`<button class="snav" data-t="${g.id}">${name}<span class="gn">${cnt}</span></button>`;
+  });
+  list.innerHTML=html;
+  list.querySelector(".snav.top").onclick=()=>summary.scrollTo({top:0,behavior:"smooth"});
+  list.querySelectorAll(".snav[data-t]").forEach(b=>b.onclick=()=>{
+    const el=document.getElementById(b.dataset.t); el.classList.add("open");
+    el.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+  updateSumSpy();
+}
+function updateSumSpy(){
+  const cur=document.getElementById("sumnav-cur"); if(!cur) return;
+  const gs=[...summary.querySelectorAll(".sysgrp")];
+  if(!gs.length){cur.textContent="回頂端";return;}
+  const sr=summary.getBoundingClientRect(); let g0=gs[0];
+  gs.forEach(g=>{ if(g.getBoundingClientRect().top - sr.top <= 70) g0=g; });
+  cur.textContent=g0.querySelector(".sysgrp-h").firstChild.textContent.trim();
+  document.querySelectorAll("#sumnav-list .snav").forEach(b=>b.classList.toggle("cur",b.dataset.t===g0.id));
 }
 function buildSubjBar(){
   const subs=SUBJ[curSec]||[curSec];
@@ -691,6 +739,7 @@ function switchMode(m){
   modebar_el.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
   document.getElementById("wrap").style.display = m==="study"?"flex":"none";
   summary.style.display = m==="summary"?"block":"none";
+  document.body.classList.toggle("sumMode", m==="summary");
   document.getElementById("tree").style.display = m==="tree"?"block":"none";
   subjbar_el.style.display = m==="summary"?"flex":"none";
   // 卷別/年份/搜尋/遮答案：知識樹模式隱藏
