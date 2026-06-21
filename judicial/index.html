@@ -52,6 +52,18 @@
   #panel{position:absolute;top:100%;left:0;right:0;z-index:42;background:#0c0e13;border-bottom:1px solid var(--line);
          box-shadow:0 16px 40px rgba(0,0,0,.6);visibility:hidden;opacity:0;transform:translateY(-8px);transition:.22s}
   #ctrlzone:hover #panel{visibility:visible;opacity:1;transform:none}
+  /* 錯題衝刺資訊條 */
+  #sprintbar{display:none;position:absolute;top:0;left:0;right:0;z-index:35;
+    background:linear-gradient(90deg,#3a2a10,#2a1f0c);border-bottom:1px solid var(--gold);
+    color:#ffe7a8;font-size:13.5px;text-align:center;padding:8px}
+  #sprintbar b{color:#ffd86b;margin:0 2px}
+  body.sprintMode #detail{padding-top:42px}
+  /* 錯題衝刺資訊條 */
+  #sprintbar{display:none;position:absolute;top:0;left:0;right:0;z-index:35;
+    background:linear-gradient(90deg,#3a2a10,#2a1f0c);border-bottom:1px solid var(--gold);
+    color:#ffe7a8;font-size:13.5px;text-align:center;padding:8px}
+  #sprintbar b{color:#ffd86b;margin:0 2px}
+  body.sprintMode #detail{padding-top:42px}
   /* 考點統整左側目錄抽屜：平常細條(顯示現在位置)，滑上去展開可跳 */
   #sumnav{display:none;position:fixed;left:0;top:0;height:100vh;z-index:38;pointer-events:none}
   body.sumMode #sumnav{display:block}
@@ -335,6 +347,7 @@
     <div class="controls">
       <div class="modebar" id="modebar">
         <button data-m="study" class="on">📖 逐題複習</button>
+        <button data-m="sprint">🔁 錯題衝刺</button>
         <button data-m="summary">📋 考點統整</button>
         <button data-m="tree">🌳 知識樹</button>
       </div>
@@ -357,6 +370,7 @@
 </div>
 
 <div class="wrap" id="wrap">
+  <div id="sprintbar"></div>
   <div id="list-tab">☰&nbsp;題目清單</div>
   <div id="list"></div>
   <div id="detail"><div class="empty">滑到左邊「☰ 題目清單」選一題，或用題目下方的 上一題／下一題</div></div>
@@ -406,6 +420,12 @@ const years_el=document.getElementById("years"), sections_el=document.getElement
 
 function keyOf(q){return q.year+"-"+q.section+"-"+q.num;}
 function filtered(){
+  if(mode==="sprint"){
+    let r = Q.filter(q=> marks[keyOf(q)]==="review"
+        && (!search || (q.stem+q.options.join("")).includes(search)) );
+    r.sort((a,b)=> a.section.localeCompare(b.section) || a.year-b.year || a.num-b.num);
+    return r;
+  }
   let r = Q.filter(q=> q.year===curYear
       && (curSec==="全部"||q.section===curSec)
       && (!search || (q.stem+q.options.join("")).includes(search)) );
@@ -494,8 +514,35 @@ function showQ(k){
 const detail=document.getElementById("detail"), hideAns=document.getElementById("hideAns");
 
 function step(d){const it=filtered();const i=it.findIndex(q=>keyOf(q)===curKey);const n=it[i+d];if(n)showQ(keyOf(n));}
-function mark(t){marks[curKey]=marks[curKey]===t?undefined:t;if(!marks[curKey])delete marks[curKey];
-  localStorage.setItem(LS,JSON.stringify(marks));renderList();}
+function mark(t){
+  const sprint=mode==="sprint";
+  if(sprint && t==="review" && marks[curKey]==="review"){ // 衝刺中按再看：保留、跳下一題(下一輪再刷)
+    const pool=filtered(),i=pool.findIndex(q=>keyOf(q)===curKey),n=pool[i+1]||pool[0];
+    if(n&&keyOf(n)!==curKey) showQ(keyOf(n)); return;
+  }
+  const oldIdx=sprint?filtered().findIndex(q=>keyOf(q)===curKey):-1;
+  marks[curKey]=marks[curKey]===t?undefined:t; if(!marks[curKey])delete marks[curKey];
+  localStorage.setItem(LS,JSON.stringify(marks)); renderList();
+  if(sprint){ updateSprintBanner();
+    if(marks[curKey]!=="review"){ const pool=filtered();
+      if(pool.length) showQ(keyOf(pool[Math.min(Math.max(oldIdx,0),pool.length-1)]));
+      else showSprintDone();
+    }
+  }
+}
+function updateSprintBanner(){
+  const n=Q.filter(q=>marks[keyOf(q)]==="review").length;
+  const sb=document.getElementById("sprintbar");
+  sb.innerHTML=`🔁 <b>錯題衝刺</b>　還剩 <b>${n}</b> 題　·　按「✅ 我懂了」就從這裡消失；按「🔁 再看」留著下輪再刷`;
+}
+function showSprintDone(){
+  detail.innerHTML=`<div class="empty" style="font-size:18px;line-height:2.1">🎉 「🔁 再看」的題全清光了！<br>
+    <span style="font-size:14px;color:#9aa4b2">回「📖 逐題複習」做題，遇到不會的點「🔁 再看」，<br>它們就會自動進到這裡讓你反覆衝刺。</span></div>`;
+}
+function enterSprint(){
+  const pool=filtered(); renderList(); updateSprintBanner();
+  if(pool.length) showQ(keyOf(pool[0])); else showSprintDone();
+}
 
 function cleanForSpeech(t){
   return t
@@ -751,20 +798,24 @@ function buildSubjBar(){
 function switchMode(m){
   mode=m;
   modebar_el.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  document.getElementById("wrap").style.display = m==="study"?"flex":"none";
+  const wrapOn = (m==="study"||m==="sprint");
+  document.getElementById("wrap").style.display = wrapOn?"flex":"none";
+  document.body.classList.toggle("sprintMode", m==="sprint");
+  document.getElementById("sprintbar").style.display = m==="sprint"?"block":"none";
   summary.style.display = m==="summary"?"block":"none";
   document.body.classList.toggle("sumMode", m==="summary");
   document.getElementById("tree").style.display = m==="tree"?"block":"none";
   subjbar_el.style.display = m==="summary"?"flex":"none";
-  // 卷別/年份/搜尋/遮答案：知識樹模式隱藏
+  // 卷別/年份/搜尋/遮答案：依模式顯示
   years_el.style.display = m==="study"?"flex":"none";
-  sections_el.style.display = (m==="tree")?"none":"flex";
-  document.getElementById("search").style.display = m==="study"?"block":"none";
-  hideAns.parentElement.style.display = m==="study"?"inline-flex":"none";
+  sections_el.style.display = (m==="study"||m==="summary")?"flex":"none";
+  document.getElementById("search").style.display = wrapOn?"block":"none";
+  hideAns.parentElement.style.display = wrapOn?"inline-flex":"none";
   if(m==="summary"){
     if(curSec==="全部"||!SUBJ[curSec]){curSec="刑事組";buildTabs();}
     buildSubjBar(); renderSummary();
   }
+  if(m==="sprint") enterSprint();
   if(m==="tree") renderTree();
 }
 const subjs_el=document.getElementById("subjs"), sumviews_el=document.getElementById("sumviews"),
