@@ -163,6 +163,17 @@
   body.day #load{background:#eef2f7;color:#55617a}
   body.day #slotBar,body.day #fin .slotbar span{background:#2b6cb0}
   body.day .btns .sec{border-color:rgba(150,166,184,.6)}
+  /* ---- left panels slide out on hover (don't block the scene) ---- */
+  #kpis,#ctrl{transition:transform .38s cubic-bezier(.2,.8,.2,1)}
+  #kpis{transform:translateX(-115%)}#ctrl{transform:translateX(-115%)}
+  body.leftopen #kpis,body.leftopen #ctrl{transform:translateX(0)}
+  #leftEdge{position:fixed;left:0;top:56px;bottom:0;width:22px;z-index:17;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(90deg,rgba(54,226,255,.16),rgba(54,226,255,0));border-right:1px solid rgba(120,160,220,.2);transition:background .2s}
+  #leftEdge:hover{background:linear-gradient(90deg,rgba(54,226,255,.32),rgba(54,226,255,0))}
+  #leftEdge span{writing-mode:vertical-rl;font-size:11px;letter-spacing:.32em;color:var(--cyan);font-weight:600}
+  body.leftopen #leftEdge{opacity:0;pointer-events:none}
+  body.day #leftEdge{background:linear-gradient(90deg,rgba(43,108,176,.14),transparent);border-right-color:rgba(150,166,184,.4)}
+  body.day #leftEdge span{color:#0e7490}
 </style>
 </head>
 <body>
@@ -241,6 +252,8 @@
 
   <div id="feed" class="glass hud"><div class="h"><span>Live Event Feed · on-chain</span><span class="dot"></span></div><div id="feedList"></div></div>
   <div id="dive"><div class="dh"><b id="diveT">Deep Dive</b><span class="dsub" id="diveSub"></span><button id="diveX">✕ 返回生態系</button></div><iframe id="diveFrame" title="deep dive"></iframe></div>
+
+  <div id="leftEdge" class="hud"><span>指標 · 控制 ›</span></div>
 
   <div id="tip"></div>
 
@@ -629,6 +642,10 @@ function setTheme(d){day=d;document.body.classList.toggle('day',d);try{localStor
   const b=$('themeBtn');if(b)b.textContent=d?'☀️ 日間':'🌙 夜間';}
 $('themeBtn').onclick=()=>setTheme(!day);
 setTheme(day);
+// left panels: reveal on hover of the left edge, keep open while pointer is on them
+let leftT;function openL(){clearTimeout(leftT);document.body.classList.add('leftopen');}
+function closeL(){clearTimeout(leftT);leftT=setTimeout(()=>document.body.classList.remove('leftopen'),320);}
+[$('leftEdge'),$('kpis'),$('ctrl')].forEach(el=>{if(!el)return;el.addEventListener('mouseenter',openL);el.addEventListener('mouseleave',closeL);});
 const clock=new THREE.Clock();
 function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),0.05),t=clock.elapsedTime,sp=simSpeed;
   if(camTween){camTween.t=Math.min(1,camTween.t+dt/camTween.dur);const k=easeIO(camTween.t);camera.position.lerpVectors(camTween.fromP,camTween.toP,k);controls.target.lerpVectors(camTween.fromT,camTween.toT,k);camera.lookAt(controls.target);if(camTween.t>=1){controls.enabled=true;camTween=null;}}
