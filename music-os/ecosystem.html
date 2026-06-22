@@ -164,16 +164,19 @@
   body.day #slotBar,body.day #fin .slotbar span{background:#2b6cb0}
   body.day .btns .sec{border-color:rgba(150,166,184,.6)}
   /* ---- control panel tucks away; slides out on hover of its tab ---- */
-  #ctrl{transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+  #ctrl{transition:transform .4s cubic-bezier(.2,.8,.2,1),opacity .4s ease}
   #ctrl{transform:translateX(-118%)}
   body.ctrlopen #ctrl{transform:translateX(0)}
-  #ctrlEdge{position:fixed;left:0;bottom:22px;z-index:17;cursor:pointer;display:flex;align-items:center;gap:7px;
-    padding:11px 15px 11px 11px;border-radius:0 14px 14px 0;font-size:12.5px;font-weight:700;letter-spacing:.08em;color:var(--cyan);
-    background:linear-gradient(160deg,rgba(20,30,54,.92),rgba(9,14,28,.9));border:1px solid rgba(130,170,230,.34);border-left:0;
-    box-shadow:0 10px 30px rgba(0,0,0,.45);transition:.25s}
-  #ctrlEdge:hover{padding-right:20px;box-shadow:0 0 20px rgba(54,226,255,.3)}
-  body.ctrlopen #ctrlEdge{opacity:0;pointer-events:none;transform:translateX(-20px)}
+  #ctrlEdge{position:fixed;left:18px;bottom:18px;z-index:17;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:11px;
+    width:248px;height:42px;border-radius:12px;font-size:13px;font-weight:700;letter-spacing:.12em;color:var(--cyan);
+    background:linear-gradient(160deg,rgba(20,30,54,.92),rgba(9,14,28,.9));border:1px solid rgba(130,170,230,.36);
+    box-shadow:0 10px 30px rgba(0,0,0,.45);transition:transform .2s,box-shadow .2s,opacity .35s}
+  #ctrlEdge:hover{transform:translateY(-2px);box-shadow:0 0 22px rgba(54,226,255,.32)}
+  body.ctrlopen #ctrlEdge{opacity:0;pointer-events:none;transform:translateY(8px)}
   body.day #ctrlEdge{background:linear-gradient(160deg,rgba(255,255,255,.94),rgba(244,247,251,.9));border-color:rgba(150,166,184,.5);color:#0e7490;box-shadow:0 10px 30px rgba(40,60,110,.16)}
+  /* immersive / full-screen: hide all side panels during auto-tour & presentation */
+  #kpis,#right,#fin,#feed{transition:opacity .4s ease}
+  body.immersive #kpis,body.immersive #right,body.immersive #fin,body.immersive #feed,body.immersive #ctrl,body.immersive #ctrlEdge{opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
@@ -253,7 +256,7 @@
   <div id="feed" class="glass hud"><div class="h"><span>Live Event Feed · on-chain</span><span class="dot"></span></div><div id="feedList"></div></div>
   <div id="dive"><div class="dh"><b id="diveT">Deep Dive</b><span class="dsub" id="diveSub"></span><button id="diveX">✕ 返回生態系</button></div><iframe id="diveFrame" title="deep dive"></iframe></div>
 
-  <div id="ctrlEdge" class="hud">⚙ 控制 ›</div>
+  <div id="ctrlEdge" class="hud">⚙　控制面板　Controls　▸</div>
 
   <div id="tip"></div>
 
@@ -542,10 +545,11 @@ $('diveX').onclick=closeDive;
 $('dv1').onclick=()=>openDive('mechanism.html','版稅分配機制 · Execution Lab','calldata → storage → MUL/DIV → 分帳（可切 Storage 視角）');
 $('dv2').onclick=()=>openDive('index.html','智慧合約執行機制 · 9 階段','簽署→共識→EVM→Proxy→多簽→分潤→封存');
 $('dv3').onclick=()=>openDive('lifecycle.html','音樂 NFT 全生命週期','授權→IPFS→鑄造→轉售→分潤→VASP→治理');
-function presentSetup(){const p=presentMode;['gPlay','gMute','gLang'].forEach(id=>{const el=$(id);if(el)el.style.display=p?'none':'';});if(p){narrationOn=false;autoPlay=false;updAuto();}$('presentHint').style.display=p?'block':'none';}
+function setImmersive(on){document.body.classList.toggle('immersive',on);}
+function presentSetup(){const p=presentMode;['gPlay','gMute','gLang'].forEach(id=>{const el=$(id);if(el)el.style.display=p?'none':'';});if(p){narrationOn=false;autoPlay=false;updAuto();}$('presentHint').style.display=p?'block':'none';setImmersive(p);}
 function startTour(){activeSet=TOUR;gMode='tour';songAsset.visible=false;$('guide').classList.add('show');$('feed').classList.add('hide');controls.autoRotate=false;presentSetup();showStep(0);}
 function startStory(){activeSet=STORY;gMode='story';songAsset.visible=true;$('guide').classList.add('show');$('feed').classList.add('hide');controls.autoRotate=false;presentSetup();showStep(0);}
-function exitGuide(){$('guide').classList.remove('show');$('feed').classList.remove('hide');$('presentHint').style.display='none';hlOn=false;songAsset.visible=false;controls.enabled=true;autoPlay=false;updAuto();stopSeq();closeLab();stopAudio();}
+function exitGuide(){$('guide').classList.remove('show');$('feed').classList.remove('hide');$('presentHint').style.display='none';hlOn=false;songAsset.visible=false;controls.enabled=true;autoPlay=false;updAuto();setImmersive(false);stopSeq();closeLab();stopAudio();}
 function guideShown(){return $('guide').classList.contains('show');}
 function gAdvance(){if(!guideShown())return;if(autoPlay){autoPlay=false;updAuto();}stopSeq();const s=activeSet[gi];
   if(s.lab){const k=(typeof s.lab==='string')?s.lab:'dist';
@@ -561,7 +565,7 @@ addEventListener('keydown',e=>{if(!guideShown())return;if($('dive').classList.co
 let _pd=null;
 renderer.domElement.addEventListener('pointerdown',e=>{_pd={x:e.clientX,y:e.clientY,t:Date.now()};});
 renderer.domElement.addEventListener('pointerup',e=>{if(!_pd)return;const moved=Math.hypot(e.clientX-_pd.x,e.clientY-_pd.y),dt=Date.now()-_pd.t;_pd=null;if(presentMode&&guideShown()&&moved<6&&dt<350)gAdvance();});
-$('gPlay').onclick=()=>{autoPlay=!autoPlay;updAuto();if(autoPlay){narrationOn=true;$('gMute').textContent='🔊';narrate();}else stopAudio();};
+$('gPlay').onclick=()=>{autoPlay=!autoPlay;updAuto();setImmersive(autoPlay||presentMode);if(autoPlay){narrationOn=true;$('gMute').textContent='🔊';narrate();}else stopAudio();};
 $('gLang').onclick=()=>{narLang=narLang==='zh'?'en':'zh';$('gLang').textContent=narLang==='zh'?'🌐 中文':'🌐 EN';narrate();};
 $('gMute').onclick=()=>{narrationOn=!narrationOn;$('gMute').textContent=narrationOn?'🔊':'🔇';if(!narrationOn)stopAudio();else narrate();};
 $('btnTour').onclick=()=>{if($('guide').classList.contains('show')&&gMode==='tour')exitGuide();else startTour();};
@@ -667,6 +671,7 @@ animate();
 // screenshot/debug hook: ?shot or ?shot=day skips intro & fly-in to show the scene directly
 (function(){const Q=new URLSearchParams(location.search);if(!Q.has('shot'))return;
   if(Q.get('shot')==='day')setTheme(true);
+  if(Q.get('shot')==='imm')setImmersive(true);
   started=true;controls.enabled=true;camera.position.set(34,26,40);controls.target.set(0,0,0);camera.lookAt(0,0,0);
   $('intro').classList.add('gone');$('intro').style.display='none';$('bar').classList.add('on');document.querySelectorAll('.hud').forEach(h=>h.classList.add('on'));applyPersona();})();
 </script>
