@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Smart Contract Mechanism · Royalty Distribution | 姬政妤</title>
+<style>
+  :root{
+    --bg0:#fbfbfa; --bg1:#e9edf3; --ink:#1b2230; --ink2:#55617a; --line:#c2cad8;
+    --green:#2fae5e; --blue:#2b6cb0; --amber:#d99a1c; --purple:#7b54d6; --red:#e0556a;
+    --panel:rgba(255,255,255,.86);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;
+    background:radial-gradient(130% 120% at 70% 0%, var(--bg0) 0%, var(--bg1) 100%);
+    color:var(--ink);font-family:"Inter","Noto Sans TC","PingFang TC",-apple-system,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  canvas{display:block}
+  #stage{position:fixed;inset:0;z-index:0}
+
+  /* ---------- top bar ---------- */
+  #bar{position:fixed;z-index:20;top:0;left:0;right:0;height:54px;display:flex;align-items:center;
+    justify-content:space-between;padding:0 20px;
+    background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.55));
+    border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+  #bar .brand{display:flex;align-items:baseline;gap:10px}
+  #bar .brand b{font-size:15px;font-weight:800;letter-spacing:-.01em}
+  #bar .brand span{font-size:11.5px;color:var(--ink2);font-family:ui-monospace,Menlo,monospace}
+  #bar .right{display:flex;align-items:center;gap:18px}
+  .tech{display:flex;gap:6px;background:#eef1f6;border:1px solid var(--line);border-radius:9px;padding:3px}
+  .tech button{border:0;background:transparent;cursor:pointer;font:inherit;font-size:12px;
+    padding:5px 11px;border-radius:6px;color:var(--ink2);transition:.18s;white-space:nowrap}
+  .tech button.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(20,30,60,.12);font-weight:700}
+  .tech button:hover{color:var(--ink)}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);cursor:pointer;user-select:none}
+  .toggle .sw{width:34px;height:19px;border-radius:11px;background:#cdd5e2;position:relative;transition:.2s}
+  .toggle .sw::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:.2s}
+  .toggle.on .sw{background:var(--purple)}
+  .toggle.on .sw::after{transform:translateX(15px)}
+
+  /* ---------- left walkthrough ---------- */
+  #guide{position:fixed;z-index:18;top:54px;left:0;bottom:0;width:392px;max-width:42vw;
+    display:flex;flex-direction:column;border-right:1px solid var(--line);
+    background:var(--panel);backdrop-filter:blur(10px)}
+  #guideHead{padding:18px 24px 12px;border-bottom:1px solid var(--line)}
+  #guideHead .phase{font-size:11px;letter-spacing:.22em;color:var(--blue);font-weight:700;font-family:ui-monospace,monospace}
+  #guideHead h2{font-size:21px;font-weight:800;margin-top:6px;line-height:1.25;letter-spacing:-.01em}
+  #guideBody{flex:1;overflow-y:auto;padding:18px 24px 8px}
+  #guideBody p{font-size:14px;line-height:1.78;color:#2c3447;margin-bottom:14px}
+  #guideBody code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:#eef1f6;
+    border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#1d2b4d}
+  #guideBody .eq{font-family:ui-monospace,Menlo,monospace;font-size:13px;background:#0f1626;color:#bfe6ff;
+    border-radius:9px;padding:13px 15px;margin:4px 0 16px;line-height:1.7;overflow-x:auto}
+  #guideBody .eq b{color:#ffd479}
+  #guideBody .eq .c{color:#6fcf97}
+  .legalNote{display:none;margin:2px 0 16px;padding:12px 14px;border-left:3px solid var(--purple);
+    background:rgba(123,84,214,.07);border-radius:0 8px 8px 0}
+  .legalNote.show{display:block}
+  .legalNote .lk{font-size:10.5px;letter-spacing:.2em;color:var(--purple);font-weight:700;margin-bottom:5px}
+  .legalNote p{font-size:12.5px;line-height:1.7;color:#3a3357;margin:0}
+  #guideNav{display:flex;align-items:center;gap:10px;padding:13px 24px;border-top:1px solid var(--line)}
+  #guideNav button{flex:1;border:1px solid var(--line);background:#fff;cursor:pointer;font:inherit;
+    font-size:13px;font-weight:600;padding:9px;border-radius:9px;color:var(--ink);transition:.16s}
+  #guideNav button:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
+  #guideNav button:disabled{opacity:.4;cursor:default}
+  #guideNav .nx{background:var(--ink);color:#fff;border-color:var(--ink)}
+  #guideNav .nx:hover{background:#2b3650}
+  #steps{display:flex;gap:5px;padding:0 24px 16px;flex-wrap:wrap}
+  #steps .d{flex:1;min-width:14px;height:4px;border-radius:3px;background:#d3dae6;cursor:pointer;transition:.2s}
+  #steps .d.on{background:var(--blue)}
+  #steps .d.done{background:#9fb6d6}
+
+  /* legend + hint */
+  #legend{position:fixed;z-index:16;right:16px;bottom:14px;display:flex;flex-direction:column;gap:6px;
+    background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:11px;color:var(--ink2)}
+  #legend .row{display:flex;align-items:center;gap:7px}
+  #legend .sw{width:11px;height:11px;border-radius:3px}
+  #hint{position:fixed;z-index:16;right:16px;top:64px;font-size:11px;color:var(--ink2);
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 11px}
+
+  /* tooltip */
+  #tip{position:fixed;z-index:30;pointer-events:none;display:none;background:#0f1626;color:#eaf2ff;
+    border-radius:8px;padding:8px 11px;font-family:ui-monospace,Menlo,monospace;font-size:12px;
+    box-shadow:0 8px 24px rgba(10,18,40,.35);line-height:1.5;max-width:280px}
+  #tip b{color:#ffd479}
+  #tip .v{color:#7ee0a6}
+
+  /* loading */
+  #load{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+    background:var(--bg0);font-size:13px;color:var(--ink2);letter-spacing:.1em;transition:opacity .5s}
+  #load.off{opacity:0;pointer-events:none}
+
+  @media(max-width:720px){#guide{width:100%;max-width:100%;height:46vh;top:auto;bottom:0;border-right:0;border-top:1px solid var(--line)}
+    #legend,#hint{display:none}}
+</style>
+</head>
+<body>
+  <div id="stage"></div>
+
+  <div id="bar">
+    <div class="brand">
+      <b>⛓ Smart Contract Mechanism</b>
+      <span id="brandSub">Royalty Distribution · ERC-2981</span>
+    </div>
+    <div class="right">
+      <div class="tech" id="tech">
+        <button data-t="erc2981" class="on">ERC-2981 Royalty</button>
+        <button data-t="splitter">PaymentSplitter</button>
+        <button data-t="stream">Streaming</button>
+      </div>
+      <div class="toggle" id="lawToggle"><span class="sw"></span>論文視角</div>
+      <span style="font-size:12px;color:var(--ink2)"><a href="ecosystem.html" style="color:var(--ink2);text-decoration:none">生態系</a> · <a href="index.html" style="color:var(--ink2);text-decoration:none">執行機制</a> · <a href="lifecycle.html" style="color:var(--ink2);text-decoration:none">生命週期</a> ↗</span>
+    </div>
+  </div>
+
+  <div id="guide">
+    <div id="guideHead">
+      <div class="phase" id="phase">STEP 1 / 6</div>
+      <h2 id="gTitle">—</h2>
+    </div>
+    <div id="guideBody"></div>
+    <div id="steps"></div>
+    <div id="guideNav">
+      <button id="prev">← 上一步</button>
+      <button id="next" class="nx">下一步 →</button>
+    </div>
+  </div>
+
+  <div id="hint">拖曳旋轉 · 滾輪縮放 · 滑過方格看數值</div>
+  <div id="legend"></div>
+  <div id="tip"></div>
+  <div id="load">building scene…</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ===================== renderer / scene ===================== */
+const stage=document.getElementById('stage');
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setClearColor(0x000000,0);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,0.1,500);
+camera.position.set(0,2,34);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0xc7d0de,1.05));
+const dir=new THREE.DirectionalLight(0xffffff,1.15); dir.position.set(8,16,20); scene.add(dir);
+const dir2=new THREE.DirectionalLight(0xdfe7f5,0.5); dir2.position.set(-12,4,-8); scene.add(dir2);
+
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true; controls.dampingFactor=0.09;
+controls.target.set(0,1,0); controls.minDistance=4; controls.maxDistance=70;
+let userDriving=false, followCam=true;
+controls.addEventListener('start',()=>{userDriving=true;followCam=false;});
+
+/* ===================== palette / helpers ===================== */
+const COL={
+  base:0xd8dee6, green:0x2fae5e, greenLo:0xdaf2e2, blue:0x2b6cb0, blueLo:0xd6e4f5,
+  amber:0xe0a32a, amberLo:0xf7e9c8, purple:0x7b54d6, purpleLo:0xe6ddf8, red:0xe0556a,
+  ink:0x1b2230, line:0x9aa6b8, dim:0xe3e7ee
+};
+const _c=new THREE.Color();
+function lerpCol(loHex, hiHex, t){const a=new THREE.Color(loHex),b=new THREE.Color(hiHex);return a.lerp(b,Math.max(0,Math.min(1,t)));}
+
+let pickables=[];     // instanced grids for raycasting
+let tweens=[];        // active tweens
+let tickers=[];       // per-frame ambient fns
+let root=new THREE.Group(); scene.add(root);
+
+function tween(ms, onUpd, onDone){tweens.push({t:0,ms,onUpd,onDone});}
+function clearScene(){
+  scene.remove(root);
+  root.traverse(o=>{ if(o.geometry)o.geometry.dispose(); if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose());} });
+  root=new THREE.Group(); scene.add(root);
+  pickables=[]; tweens=[]; tickers=[];
+}
+
+/* ---- cell grid: rows x cols of cubes; each cell carries {value,label} ---- */
+function grid(rows,cols,opt={}){
+  const cw=opt.cell??0.5, gap=opt.gap??0.1, d=opt.depth??0.34;
+  const n=rows*cols;
+  const geo=new THREE.BoxGeometry(cw,cw,d);
+  const mat=new THREE.MeshStandardMaterial({roughness:0.82,metalness:0.02});
+  const mesh=new THREE.InstancedMesh(geo,mat,n);
+  mesh.frustumCulled=false;
+  const dummy=new THREE.Object3D();
+  const W=cols*(cw+gap)-gap, H=rows*(cw+gap)-gap;
+  const meta=[];
+  let i=0;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    const x=-W/2+c*(cw+gap)+cw/2, y=H/2-r*(cw+gap)-cw/2;
+    dummy.position.set(x,y,0); dummy.updateMatrix(); mesh.setMatrixAt(i,dummy.matrix);
+    mesh.setColorAt(i,_c.set(opt.base??COL.base));
+    meta.push({r,c,x,y,value:'',label:''}); i++;
+  }
+  mesh.instanceMatrix.needsUpdate=true; mesh.instanceColor.needsUpdate=true;
+  mesh.userData={rows,cols,cw,gap,W,H,meta};
+  pickables.push(mesh);
+  return mesh;
+}
+function setCell(mesh,r,c,o){const cols=mesh.userData.cols;const i=r*cols+c;const m=mesh.userData.meta[i];
+  if(o.color!=null){mesh.setColorAt(i,_c.set(o.color));mesh.instanceColor.needsUpdate=true;}
+  if(o.value!=null)m.value=o.value; if(o.label!=null)m.label=o.label;}
+function fillRow(mesh,r,o){for(let c=0;c<mesh.userData.cols;c++)setCell(mesh,r,c,o);}
+function fillAll(mesh,o){for(let r=0;r<mesh.userData.rows;r++)fillRow(mesh,r,o);}
+function flashRow(mesh,r,hi,lo,ms=700){const cols=mesh.userData.cols;
+  tween(ms,(t)=>{const k=Math.sin(t*Math.PI);for(let c=0;c<cols;c++){const i=r*cols+c;mesh.setColorAt(i,lerpCol(lo,hi,k));}mesh.instanceColor.needsUpdate=true;},
+  ()=>{for(let c=0;c<cols;c++){const i=r*cols+c;mesh.setColorAt(i,_c.set(lo));}mesh.instanceColor.needsUpdate=true;});}
+
+/* ---- text label (dark on translucent light plate; billboard) ---- */
+function label(text,opt={}){
+  const size=opt.size??42, lines=text.split('\n'), pad=opt.pad??16, lh=size*1.34;
+  const cv=document.createElement('canvas'),x=cv.getContext('2d');
+  x.font=`${opt.weight??700} ${size}px ${opt.mono?'ui-monospace,Menlo,monospace':'Inter,"Noto Sans TC",sans-serif'}`;
+  let w=0;lines.forEach(l=>w=Math.max(w,x.measureText(l).width));
+  cv.width=w+pad*2;cv.height=lh*lines.length+pad*1.1;
+  const c=cv.getContext('2d');
+  if(opt.plate!==false){c.fillStyle=opt.bg??'rgba(255,255,255,.9)';rr(c,0,0,cv.width,cv.height,12);c.fill();
+    c.strokeStyle=opt.border??'rgba(150,166,184,.6)';c.lineWidth=2;rr(c,1,1,cv.width-2,cv.height-2,12);c.stroke();}
+  c.font=`${opt.weight??700} ${size}px ${opt.mono?'ui-monospace,Menlo,monospace':'Inter,"Noto Sans TC",sans-serif'}`;
+  c.textBaseline='middle';c.fillStyle=opt.color??'#1b2230';
+  lines.forEach((l,i)=>c.fillText(l,pad,pad*0.55+lh*(i+0.5)));
+  const tex=new THREE.CanvasTexture(cv);tex.anisotropy=8;tex.colorSpace=THREE.SRGBColorSpace;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:opt.depthTest!==false}));
+  const s=opt.scale??1; sp.scale.set(cv.width/150*s,cv.height/150*s,1);
+  return sp;
+}
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function put(obj,x,y,z){obj.position.set(x,y,z);return obj;}
+
+/* ---- connector tube ---- */
+function link(a,b,color=COL.line){
+  const from=new THREE.Vector3(...a),to=new THREE.Vector3(...b);
+  const dir=new THREE.Vector3().subVectors(to,from),len=dir.length();
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,len,8),
+    new THREE.MeshStandardMaterial({color,roughness:.6}));
+  m.position.copy(from).lerp(to,.5);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());
+  const head=new THREE.Mesh(new THREE.ConeGeometry(.16,.42,12),new THREE.MeshStandardMaterial({color,roughness:.6}));
+  head.position.copy(to);head.quaternion.copy(m.quaternion);
+  const g=new THREE.Group();g.add(m);g.add(head);return g;
+}
+function caption(text,x,y,z,col){return put(label(text,{size:30,color:col?('#'+new THREE.Color(col).getHexString()):'#3a4760'}),x,y,z);}
+
+/* ===================== WALKTHROUGH STATE ===================== */
+let STEPS=[], cur=0, lawOn=false, technique='erc2981';
+const phaseEl=document.getElementById('phase'),gTitle=document.getElementById('gTitle'),
+      gBody=document.getElementById('guideBody'),stepsEl=document.getElementById('steps'),
+      prevBtn=document.getElementById('prev'),nextBtn=document.getElementById('next'),
+      brandSub=document.getElementById('brandSub'),legendEl=document.getElementById('legend');
+
+function renderSteps(){stepsEl.innerHTML='';STEPS.forEach((s,i)=>{const d=document.createElement('div');
+  d.className='d'+(i===cur?' on':i<cur?' done':'');d.onclick=()=>goto(i);stepsEl.appendChild(d);});}
+function goto(i){
+  cur=Math.max(0,Math.min(STEPS.length-1,i));
+  const s=STEPS[cur];
+  phaseEl.textContent=`STEP ${cur+1} / ${STEPS.length}`;
+  gTitle.textContent=s.title;
+  gBody.innerHTML=s.body + (s.legal?`<div class="legalNote ${lawOn?'show':''}"><div class="lk">論文視角 · 三層次</div><p>${s.legal}</p></div>`:'');
+  prevBtn.disabled=cur===0; nextBtn.textContent=cur===STEPS.length-1?'完成 ✓':'下一步 →';
+  renderSteps();
+  followCam=true; userDriving=false;
+  if(s.cam){camTargetPos.set(...s.cam.pos);camTargetTgt.set(...s.cam.tgt);}
+  if(s.enter)s.enter();
+}
+prevBtn.onclick=()=>goto(cur-1); nextBtn.onclick=()=>goto(cur+1);
+addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')goto(cur+1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')goto(cur-1);});
+
+const camTargetPos=new THREE.Vector3(0,2,34),camTargetTgt=new THREE.Vector3(0,1,0);
+
+/* law toggle */
+const lawToggle=document.getElementById('lawToggle');
+lawToggle.onclick=()=>{lawOn=!lawOn;lawToggle.classList.toggle('on',lawOn);goto(cur);};
+
+/* technique switch */
+document.getElementById('tech').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
+  technique=b.dataset.t; build(technique);
+});
+
+function setLegend(items){legendEl.innerHTML=items.map(([c,t])=>`<div class="row"><span class="sw" style="background:#${new THREE.Color(c).getHexString()}"></span>${t}</div>`).join('');}
+
+/* fmt: wei → ETH */
+function eth(wei){const v=wei/1e18; return (v>=1?v.toFixed(2):v.toFixed(3)).replace(/\.?0+$/,'')+' ETH';}
+
+/* ===================== TECHNIQUE BUILDERS ===================== */
+function build(t){
+  document.getElementById('load').classList.remove('off');
+  clearScene();
+  if(t==='erc2981') buildERC2981();
+  else if(t==='splitter') buildSplitter();
+  else buildStream();
+  cur=0; goto(0);
+  setTimeout(()=>document.getElementById('load').classList.add('off'),120);
+}
+
+/* ---------------- ERC-2981 ---------------- */
+function buildERC2981(){
+  brandSub.textContent='Royalty Distribution · ERC-2981';
+  setLegend([[COL.blue,'address / id'],[COL.amber,'value (wei)'],[COL.purple,'storage slot'],[COL.green,'result']]);
+
+  // CALLDATA  (top-left)
+  const cd=new THREE.Group(); put(cd,-11,7,0); root.add(cd);
+  cd.add(put(label('CALLDATA  ·  royaltyInfo(uint256,uint256)',{size:30,scale:1.1}),0,2.4,0));
+  const gCd=grid(3,8,{base:COL.dim}); cd.add(gCd);
+  // selector row
+  const sel=['2a','55','20','5a']; sel.forEach((h,c)=>setCell(gCd,0,c,{color:COL.blue,value:'0x'+h,label:'selector 0x2a55205a · royaltyInfo'}));
+  for(let c=4;c<8;c++)setCell(gCd,0,c,{color:COL.dim,value:'··',label:'selector (4 bytes)'});
+  fillRow(gCd,1,{color:COL.blueLo,value:'00',label:'arg0 tokenId = 1 (32-byte word)'});
+  setCell(gCd,1,7,{color:COL.blue,value:'01',label:'tokenId = 1'});
+  fillRow(gCd,2,{color:COL.amberLo,value:'00',label:'arg1 salePrice = 1e18 wei (1.0 ETH)'});
+  ['0d','e0','b6','b3','a7','64','00','00'].forEach((h,c)=>setCell(gCd,2,c,{color:c>=0?COL.amber:COL.amber,value:h,label:'salePrice 0xDE0B6B3A7640000 = 1.0 ETH'}));
+  cd.add(put(label('selector',{size:22,plate:false,color:'#2b6cb0'}),-3.4,0.95,0));
+  cd.add(put(label('tokenId = 1',{size:22,plate:false,color:'#2b6cb0'}),3.9,0.3,0));
+  cd.add(put(label('salePrice = 1.0 ETH',{size:22,plate:false,color:'#9a6a08'}),4.6,-0.6,0));
+
+  // STORAGE (left-mid)
+  const st=new THREE.Group(); put(st,-11,0.4,0); root.add(st);
+  st.add(put(label('CONTRACT STORAGE  ·  persistent state',{size:30,scale:1.1}),0,2.5,0));
+  const gSt=grid(3,8,{base:COL.purpleLo});
+  st.add(gSt);
+  // slot: _royalties[1] packed = receiver(20B addr) + royaltyFraction(uint96)
+  fillRow(gSt,0,{color:COL.blueLo,value:'a1',label:'_royalties[1].receiver = creator address (20 bytes)'});
+  for(let c=0;c<5;c++)setCell(gSt,0,c,{color:COL.blue,value:['c0','ffee','1234','beef','cafe'][c]||'··',label:'creator address (packed in slot)'});
+  fillRow(gSt,1,{color:COL.purpleLo,value:'00',label:'_royalties[1].royaltyFraction (uint96)'});
+  setCell(gSt,1,6,{color:COL.purple,value:'01',label:'royaltyFraction = 500'});
+  setCell(gSt,1,7,{color:COL.purple,value:'f4',label:'royaltyFraction = 500  (0x1F4)'});
+  fillRow(gSt,2,{color:COL.dim,value:'··',label:'_feeDenominator() = 10000 (constant)'});
+  setCell(gSt,2,7,{color:COL.purple,value:'2710',label:'_feeDenominator = 10000 (0x2710)'});
+  st.add(put(label('_royalties[1].receiver  (creator)',{size:21,plate:false,color:'#234e87'}),-1.0,0.95,0));
+  st.add(put(label('royaltyFraction = 500  (5.00%)',{size:21,plate:false,color:'#5b3aa8'}),-0.4,0.05,0));
+  st.add(put(label('_feeDenominator = 10000',{size:21,plate:false,color:'#5b3aa8'}),-0.9,-0.85,0));
+
+  // COMPUTE (center)  — the ALU: MUL then DIV
+  const cp=new THREE.Group(); put(cp,1.5,2.2,0); root.add(cp);
+  cp.add(put(label('royaltyInfo()  ·  arithmetic',{size:32,scale:1.18}),0,3.5,0));
+  // three operand cells stacked: salePrice, ×fraction, ÷denominator → result
+  const ops=grid(4,3,{base:COL.dim,cell:0.95,gap:0.18}); cp.add(ops);
+  setCell(ops,0,0,{color:COL.amber,value:'1e18',label:'salePrice = 1.0 ETH (1e18 wei)'});
+  setCell(ops,0,1,{color:COL.dim,value:'×',label:'MUL'});
+  setCell(ops,0,2,{color:COL.purple,value:'500',label:'royaltyFraction = 500'});
+  setCell(ops,1,0,{color:COL.dim,value:'=',label:''});
+  setCell(ops,1,1,{color:COL.amberLo,value:'5e20',label:'product = 5e20'});
+  setCell(ops,1,2,{color:COL.dim,value:'÷',label:'DIV'});
+  setCell(ops,2,0,{color:COL.purple,value:'1e4',label:'_feeDenominator = 10000'});
+  setCell(ops,2,1,{color:COL.dim,value:'→',label:''});
+  setCell(ops,2,2,{color:COL.green,value:'5e16',label:'royaltyAmount = 0.05 ETH (5e16 wei)'});
+  fillRow(ops,3,{color:COL.greenLo,value:'',label:'returns (receiver, royaltyAmount)'});
+  setCell(ops,3,0,{color:COL.blue,value:'rcv',label:'receiver = creator'});
+  setCell(ops,3,2,{color:COL.green,value:'0.05',label:'royaltyAmount = 0.05 ETH'});
+  cp.add(put(label('amount = salePrice × fraction ÷ 10000',{size:24,plate:false,color:'#2b3650'}),0,-2.6,0));
+
+  // SETTLEMENT (right)
+  const pay=new THREE.Group(); put(pay,12,2.2,0); root.add(pay);
+  pay.add(put(label('SETTLEMENT  ·  transfers',{size:30,scale:1.12}),0,3,0));
+  const gPay=grid(3,4,{base:COL.dim,cell:0.7,gap:0.14}); pay.add(gPay);
+  fillRow(gPay,0,{color:COL.greenLo,value:'',label:''});
+  setCell(gPay,0,0,{color:COL.blue,value:'cre',label:'creator'});
+  setCell(gPay,0,3,{color:COL.green,value:'0.05',label:'creator += royaltyAmount = 0.05 ETH'});
+  fillRow(gPay,1,{color:COL.amberLo,value:'',label:''});
+  setCell(gPay,1,0,{color:COL.blue,value:'sel',label:'seller'});
+  setCell(gPay,1,3,{color:COL.amber,value:'0.95',label:'seller += salePrice − royaltyAmount = 0.95 ETH'});
+  fillRow(gPay,2,{color:COL.blueLo,value:'',label:''});
+  setCell(gPay,2,0,{color:COL.blue,value:'buy',label:'buyer'});
+  setCell(gPay,2,3,{color:COL.blue,value:'#1',label:'_owners[1] = buyer (NFT transferred)'});
+  pay.add(put(label('creator 0.05 · seller 0.95 · buyer ← NFT',{size:21,plate:false,color:'#2b3650'}),0,-1.8,0));
+
+  // EVENTS (bottom center)
+  const ev=new THREE.Group(); put(ev,1.5,-6.2,0); root.add(ev);
+  ev.add(put(label('EVENT LOG  ·  on-chain receipt',{size:28,scale:1.05}),0,1.9,0));
+  const gEv=grid(2,6,{base:COL.greenLo,cell:0.62,gap:0.12}); ev.add(gEv);
+  fillRow(gEv,0,{color:COL.blueLo,value:'',label:'Transfer(seller, buyer, tokenId=1)'});
+  fillRow(gEv,1,{color:COL.greenLo,value:'',label:'RoyaltyPaid(creator, 5e16)'});
+  ev.add(put(label('Transfer(seller, buyer, 1)',{size:20,plate:false,color:'#234e87'}),0,0.45,0));
+  ev.add(put(label('RoyaltyPaid(creator, 0.05 ETH)',{size:20,plate:false,color:'#1e7a45'}),0,-0.5,0));
+
+  // connectors
+  root.add(link([-11,4.6,0],[-11,2.9,0]));               // calldata→storage region
+  root.add(link([-7.2,2,0],[-2.8,2.4,0]));               // storage→compute
+  root.add(link([-7.2,7,0],[-3,3.4,0],COL.line));        // calldata→compute (salePrice)
+  root.add(link([6.5,2.2,0],[8.6,2.2,0]));               // compute→settlement
+  root.add(link([1.5,-0.5,0],[1.5,-4.4,0]));             // compute→events
+
+  tickers.push((t)=>{});
+
+  STEPS=[
+    { title:'Overview — 一筆二手轉售的版稅分配', cam:{pos:[0,2,36],tgt:[0,1,0]},
+      body:`<p>追蹤一筆真實交易：音樂 NFT <code>#1</code> 在交易市場以 <code>1.0 ETH</code> 轉售，創作者設定 <b>5%</b> 版稅。</p>
+            <p>合約遵循 <code>ERC-2981</code> 標準。整條資料流：<b>Calldata → Storage → 算術 → 結算 → 事件</b>，每個方格都是真實的位元組 / 狀態 / 數值，滑過可看內容。</p>
+            <div class="eq"><span class="c">// 市場呼叫</span><br>(receiver, amount) = <b>royaltyInfo</b>(tokenId, salePrice)</div>`,
+      legal:'私法效力層：此自動分配是「履行階段」之技術實現，不改變契約成立基礎；ERC-2981 僅是介面，授權與分潤仍須回到著作權法與契約解釋。',
+      enter:()=>{} },
+    { title:'Calldata — 進入合約的呼叫', cam:{pos:[-11,7,15],tgt:[-11,7,0]},
+      body:`<p>市場以 ABI 編碼呼叫合約：<b>4-byte 函式選擇器</b> + 兩個 32-byte 參數。</p>
+            <div class="eq"><b>0x2a55205a</b>  <span class="c">// royaltyInfo selector</span><br>tokenId  = 0x…0001<br>salePrice= 0x…DE0B6B3A7640000  <span class="c">// 1e18</span></div>
+            <p>選擇器 <code>0x2a55205a</code> 正是 ERC-2981 的介面 ID。滑過位元組方格可看解碼後的值。</p>`,
+      legal:'證據法則：calldata 與其雜湊上鏈後可追溯、難篡改，具高度證據價值——但屬事實證明，非權利公信。',
+      enter:()=>{for(let c=0;c<8;c++)flashRow(gCd,2,COL.amber,COL.amberLo,800);} },
+    { title:'Storage — 合約的持久狀態', cam:{pos:[-11,0.4,14],tgt:[-11,0.4,0]},
+      body:`<p>合約用 <code>SLOAD</code> 讀取版稅設定。OpenZeppelin 把 <code>_royalties[tokenId]</code> 打包進<b>單一 32-byte 槽</b>：</p>
+            <div class="eq">struct RoyaltyInfo {<br>&nbsp; address <b>receiver</b>;        <span class="c">// 20 bytes</span><br>&nbsp; uint96  <b>royaltyFraction</b>; <span class="c">// = 500</span><br>}</div>
+            <p>另有常數 <code>_feeDenominator() = 10000</code>，所以 500 代表 <b>5.00%</b>。</p>`,
+      legal:'機制治理：版稅、授權比例寫入鏈上 storage 即公開透明，可能影響營業秘密；登錄與揭露制度應據此設計。',
+      enter:()=>{flashRow(gSt,0,COL.blue,COL.blueLo);flashRow(gSt,1,COL.purple,COL.purpleLo);} },
+    { title:'Compute — MUL 然後 DIV', cam:{pos:[1.5,2.2,12],tgt:[1.5,2,0]},
+      body:`<p>核心算術，等同一次定點數乘除：</p>
+            <div class="eq"><b>amount</b> = salePrice × royaltyFraction ÷ feeDenominator<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 1e18 × 500 ÷ 10000<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="c">5e20 ÷ 1e4</span> = <b>5e16</b> wei = <b>0.05 ETH</b></div>
+            <p>EVM 用 <code>MUL</code>、<code>DIV</code> 兩個 opcode 完成；先乘後除以避免整數除法精度損失。</p>`,
+      legal:'私法效力：自動化計算屬技術履行，若程式錯誤或與真意不符，當事人仍得依錯誤、不當得利請求救濟。',
+      enter:()=>{flashRow(ops,0,COL.amber,COL.dim);setTimeout(()=>flashRow(ops,1,COL.amber,COL.amberLo),350);setTimeout(()=>flashRow(ops,2,COL.green,COL.greenLo),700);} },
+    { title:'Settlement — 分帳與移轉', cam:{pos:[12,2.2,13],tgt:[12,2,0]},
+      body:`<p>市場依回傳值結算：</p>
+            <div class="eq">creator += <b>0.05 ETH</b>      <span class="c">// royaltyAmount</span><br>seller&nbsp; += <b>0.95 ETH</b>      <span class="c">// salePrice − amount</span><br>_owners[1] = <b>buyer</b>     <span class="c">// NFT 移轉</span></div>
+            <p>關鍵：分潤是市場依 <code>royaltyInfo()</code> 主動執行，<b>並非鏈上強制</b>；不支援 ERC-2981 的市場可繞過。</p>`,
+      legal:'監管 + 私法：版稅回流是契約義務、非著作權排他權。SEC v. Impact Theory 和解曾要求改碼停止收取二級版稅。',
+      enter:()=>{flashRow(gPay,0,COL.green,COL.greenLo);setTimeout(()=>flashRow(gPay,1,COL.amber,COL.amberLo),300);setTimeout(()=>flashRow(gPay,2,COL.blue,COL.blueLo),600);} },
+    { title:'Events — 鏈上收據', cam:{pos:[1.5,-6.2,12],tgt:[1.5,-6.2,0]},
+      body:`<p>合約 <code>emit</code> 事件，寫入交易收據供鏈下索引與審計：</p>
+            <div class="eq"><b>Transfer</b>(seller, buyer, 1)<br><b>RoyaltyPaid</b>(creator, 5e16)</div>
+            <p>到此，一筆音樂 NFT 二手交易的版稅分配在鏈上完整、可驗證地完成。切換右上角技術，看不同的分配機制。</p>`,
+      legal:'機制治理：事件日誌構成可關聯的鏈上證據鏈，是「技術即法遵」權利登錄平台的基礎。',
+      enter:()=>{flashRow(gEv,0,COL.blue,COL.blueLo);setTimeout(()=>flashRow(gEv,1,COL.green,COL.greenLo),300);} },
+  ];
+}
+
+/* ---------------- PaymentSplitter (matrix) ---------------- */
+function buildSplitter(){
+  brandSub.textContent='Revenue Split · OpenZeppelin PaymentSplitter';
+  setLegend([[COL.blue,'payee'],[COL.purple,'shares'],[COL.amber,'received'],[COL.green,'payout']]);
+
+  const names=['作詞 songwriter','作曲 composer','表演 performer','錄音 label'];
+  const shares=[40,30,20,10], total=100, received=1e18;
+
+  // SHARES matrix (left)
+  const sh=new THREE.Group(); put(sh,-9,1,0); root.add(sh);
+  sh.add(put(label('SHARES  ·  rights-holder allocation table',{size:30,scale:1.12}),0,3.6,0));
+  const gSh=grid(4,2,{base:COL.purpleLo,cell:0.9,gap:0.18}); sh.add(gSh);
+  names.forEach((nm,r)=>{
+    setCell(gSh,r,0,{color:COL.blue,value:'P'+(r+1),label:nm});
+    setCell(gSh,r,1,{color:lerpCol(COL.purpleLo,COL.purple,shares[r]/40),value:shares[r],label:`${nm} · shares = ${shares[r]} / ${total}`});
+    sh.add(put(label(nm+'  ·  '+shares[r],{size:19,plate:false,color:'#384a63'}),3.0,1.62-r*1.08,0));
+  });
+  sh.add(put(label('totalShares = 100',{size:22,plate:false,color:'#5b3aa8'}),0,-2.6,0));
+
+  // RECEIVED
+  const rc=new THREE.Group(); put(rc,1.5,5,0); root.add(rc);
+  rc.add(put(label('TOTAL RECEIVED',{size:28,scale:1.05}),0,1.5,0));
+  const gRc=grid(1,1,{base:COL.amber,cell:1.4}); rc.add(gRc);
+  setCell(gRc,0,0,{color:COL.amber,value:'1.0',label:'totalReceived = 1.0 ETH (1e18 wei)'});
+
+  // COMPUTE: payout_i = received * shares_i / total
+  const cp=new THREE.Group(); put(cp,2,0.5,0); root.add(cp);
+  cp.add(put(label('release()  ·  payout = received × shareᵢ ÷ total',{size:28,scale:1.08}),0,3.4,0));
+  const gOut=grid(4,3,{base:COL.dim,cell:0.85,gap:0.16}); cp.add(gOut);
+  const payouts=shares.map(s=>received*s/total);
+  names.forEach((nm,r)=>{
+    setCell(gOut,r,0,{color:COL.blue,value:'P'+(r+1),label:nm});
+    setCell(gOut,r,1,{color:COL.purpleLo,value:shares[r]+'/100',label:`shareᵢ = ${shares[r]} / 100`});
+    setCell(gOut,r,2,{color:COL.green,value:eth(payouts[r]).replace(' ETH',''),label:`${nm} payout = ${eth(payouts[r])}`});
+  });
+  cp.add(put(label('0.40 · 0.30 · 0.20 · 0.10 ETH',{size:22,plate:false,color:'#1e7a45'}),0,-2.6,0));
+
+  // PAYOUTS column (right)
+  const po=new THREE.Group(); put(po,11.5,0.5,0); root.add(po);
+  po.add(put(label('PAYOUTS  ·  pull pattern',{size:28,scale:1.05}),0,3.4,0));
+  const gPo=grid(4,1,{base:COL.greenLo,cell:1.0,gap:0.18}); po.add(gPo);
+  names.forEach((nm,r)=>setCell(gPo,r,0,{color:lerpCol(COL.greenLo,COL.green,shares[r]/40),value:eth(payouts[r]).replace(' ETH',''),label:`${nm} · released = ${eth(payouts[r])}`}));
+  po.add(put(label('released[account] tracked\n→ 防重複提領',{size:20,plate:false,color:'#1e7a45'}),0,-2.4,0));
+
+  root.add(link([-5.4,1,0],[-1.6,0.8,0]));      // shares→compute
+  root.add(link([1.5,3.6,0],[2,2.5,0]));         // received→compute
+  root.add(link([6,0.5,0],[8.8,0.5,0]));         // compute→payouts
+
+  STEPS=[
+    { title:'Overview — 一桶收入，多位權利人', cam:{pos:[1,1,34],tgt:[1,1,0]},
+      body:`<p><code>PaymentSplitter</code> 把單一收入按<b>股份比例</b>分給多位權利人——音樂作品的詞、曲、表演、錄音方常見的拆分。</p>
+            <p>這是一個真正的<b>向量縮放（matrix-vector）</b>運算：每位收款人拿到 <code>received × shareᵢ ÷ totalShares</code>。</p>`,
+      legal:'私法 + 監管：分潤須與既有著作權收益分配制度銜接；若分潤脫離授權鏈，整體架構可能因權利無效而崩解。',
+      enter:()=>{} },
+    { title:'Shares — 權利人股份表', cam:{pos:[-9,1,13],tgt:[-9,1,0]},
+      body:`<p>合約 constructor 寫入 <code>shares[account]</code> 與 <code>totalShares</code>：</p>
+            <div class="eq">P1 作詞 = 40<br>P2 作曲 = 30<br>P3 表演 = 20<br>P4 錄音 = 10<br><b>totalShares = 100</b></div>
+            <p>顏色深淺對應股份大小。滑過方格看每位的份額。</p>`,
+      legal:'著作權法 §37：各權利人之授權範圍與比例須明確；股份表即是鏈上化的分潤約定。',
+      enter:()=>{[0,1,2,3].forEach(r=>setTimeout(()=>flashRow(gSh,r,COL.purple,COL.purpleLo),r*180));} },
+    { title:'Received — 收入入帳', cam:{pos:[1.5,5,11],tgt:[1.5,5,0]},
+      body:`<p>串流平台或市場把 <code>1.0 ETH</code> 匯入 splitter 合約，累積為 <code>totalReceived</code>。</p>
+            <p>合約本身不主動推送，採<b>提領（pull）</b>模式等待各權利人 <code>release()</code>。</p>`,
+      legal:'機制治理：條件性執行——收益應在確認實際入帳後才分配，避免無條件自動分潤造成錯配。',
+      enter:()=>{flashRow(gRc,0,COL.amber,COL.amberLo,900);} },
+    { title:'Compute — 向量縮放', cam:{pos:[2,0.5,12],tgt:[2,0.5,0]},
+      body:`<p>每位權利人呼叫 <code>release(account)</code> 時計算：</p>
+            <div class="eq">payoutᵢ = totalReceived × <b>shareᵢ</b> ÷ totalShares</div>
+            <p>= 1.0 ETH × {40,30,20,10} ÷ 100 = <b>0.40 / 0.30 / 0.20 / 0.10 ETH</b>。逐列點亮即逐位結算。</p>`,
+      legal:'私法效力：自動分配屬技術履行；比例錯誤或授權變動時仍得依民法救濟與不當得利返還。',
+      enter:()=>{[0,1,2,3].forEach(r=>setTimeout(()=>flashRow(gOut,r,COL.green,COL.greenLo),r*220));} },
+    { title:'Payouts — 提領與防重入', cam:{pos:[11.5,0.5,12],tgt:[11.5,0.5,0]},
+      body:`<p>合約用 <code>released[account]</code> 記錄已領金額，<code>payment = owed − released</code>，避免重複提領；外部呼叫前置 <code>nonReentrant</code> 防重入。</p>
+            <p>切換右上角技術，比較 ERC-2981（單一創作者）與 Streaming（連續分流）。</p>`,
+      legal:'機制治理：released 記錄 + nonReentrant 是鏈上救濟與安全控制，呼應「技術即法遵」。',
+      enter:()=>{[0,1,2,3].forEach(r=>setTimeout(()=>flashRow(gPo,r,COL.green,COL.greenLo),r*180));} },
+  ];
+}
+
+/* ---------------- Streaming (continuous) ---------------- */
+function buildStream(){
+  brandSub.textContent='Continuous Royalty · Streaming (Superfluid-style)';
+  setLegend([[COL.blue,'payer'],[COL.amber,'flowRate'],[COL.green,'accrued'],[COL.purple,'time']]);
+
+  const N=12; // timeline cells
+  const tl=new THREE.Group(); put(tl,0,1.5,0); root.add(tl);
+  tl.add(put(label('STREAM  ·  balance(t) = flowRate × elapsed',{size:30,scale:1.15}),0,3.4,0));
+  const gT=grid(1,N,{base:COL.greenLo,cell:0.78,gap:0.12}); tl.add(gT);
+  for(let c=0;c<N;c++)setCell(gT,0,c,{color:COL.greenLo,value:'0',label:`t=${c}s · accrued = flowRate × ${c}`});
+  tl.add(put(label('flowRate = 1e15 wei/s   (0.001 ETH/s)',{size:22,plate:false,color:'#9a6a08'}),0,-2.2,0));
+
+  // payer / receiver
+  const pa=grid(1,1,{base:COL.blue,cell:1.1}); put(pa,-8,1.5,0); root.add(pa);
+  setCell(pa,0,0,{color:COL.blue,value:'pay',label:'payer (label / platform)'});
+  const re=grid(1,1,{base:COL.green,cell:1.1}); put(re,8.2,1.5,0); root.add(re);
+  setCell(re,0,0,{color:COL.green,value:'rcv',label:'receiver (artist) — balance accrues every second'});
+  root.add(link([-7,1.5,0],[-N*0.45/2-0.4,1.5,0]));
+  root.add(link([N*0.45/2+0.4,1.5,0],[7.2,1.5,0]));
+
+  let acc=0;
+  tickers.push((t)=>{
+    const phase=(t*0.6)%(N+2);
+    for(let c=0;c<N;c++){
+      const on=c<phase;
+      gT.setColorAt(c,on?lerpCol(COL.greenLo,COL.green,(c+1)/N):_c.set(COL.greenLo).clone());
+      gT.userData.meta[c].value=on?((c)*0.001).toFixed(3):'0';
+    }
+    gT.instanceColor.needsUpdate=true;
+  });
+
+  STEPS=[
+    { title:'Overview — 版稅「連續分流」', cam:{pos:[0,1.5,30],tgt:[0,1,0]},
+      body:`<p>不同於一次性分潤，<b>Streaming</b>（如 Superfluid）讓收款人的餘額<b>每秒連續累積</b>，適合訂閱式串流分潤。</p>
+            <div class="eq">balance(t) = balance₀ + <b>flowRate</b> × (t − t₀)</div>
+            <p>單一狀態（flowRate + 時間戳）即可表示無限多筆微支付，無需逐筆交易。</p>`,
+      legal:'私法效力：連續履行仍是契約給付；flowRate 之約定與終止應對應授權期間與終止權。',
+      enter:()=>{} },
+    { title:'flowRate — 每秒流速', cam:{pos:[0,1.5,16],tgt:[0,1.5,0]},
+      body:`<p>合約只存一個流速與起始時間：</p>
+            <div class="eq">flowRate = 1e15 wei/s  <span class="c">// 0.001 ETH/s</span></div>
+            <p>時間軸上每格代表 1 秒；綠色越深表示累積越多。</p>`,
+      legal:'機制治理：以最小狀態承載連續分配，呼應可更新性與低 gas 的技術治理目標。',
+      enter:()=>{} },
+    { title:'Accrual — 餘額隨時間成長', cam:{pos:[0,1.5,14],tgt:[0,1.5,0]},
+      body:`<p>收款人餘額無需任何交易即持續增加；提領（或關閉流）時才結算實際 token 轉移。</p>
+            <p>觀察時間軸自左向右點亮——這就是「實時版稅」的鏈上呈現。</p>
+            <p>切換右上角技術，回到 ERC-2981 或 PaymentSplitter。</p>`,
+      legal:'監管：連續、跨境之微支付對 VASP / 旅行規則構成挑戰，需 RegTech（ZKP/DID）配合。',
+      enter:()=>{} },
+  ];
+}
+
+/* ===================== HOVER / TOOLTIP ===================== */
+const ray=new THREE.Raycaster(); const ndc=new THREE.Vector2(); const tip=document.getElementById('tip');
+let hover={mesh:null,id:-1,prevColor:null};
+addEventListener('pointermove',e=>{
+  ndc.x=(e.clientX/innerWidth)*2-1; ndc.y=-(e.clientY/innerHeight)*2+1;
+  ray.setFromCamera(ndc,camera);
+  const hits=ray.intersectObjects(pickables,false);
+  if(hits.length){
+    const h=hits[0], m=h.object, id=h.instanceId, meta=m.userData.meta[id];
+    if(meta&&meta.label){
+      tip.style.display='block'; tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY+14)+'px';
+      tip.innerHTML = (meta.value!==''&&meta.value!=null? `<b>${meta.value}</b><br>`:'') + `<span class="v">${meta.label}</span>`;
+      renderer.domElement.style.cursor='crosshair'; return;
+    }
+  }
+  tip.style.display='none'; renderer.domElement.style.cursor='grab';
+});
+
+/* ===================== LOOP ===================== */
+const clock=new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=clock.getDelta(), t=clock.elapsedTime;
+  // tweens
+  for(let i=tweens.length-1;i>=0;i--){const tw=tweens[i];tw.t+=dt*1000;const k=Math.min(1,tw.t/tw.ms);tw.onUpd(k);if(k>=1){tw.onDone&&tw.onDone();tweens.splice(i,1);}}
+  tickers.forEach(fn=>fn(t));
+  if(followCam&&!userDriving){camera.position.lerp(camTargetPos,0.06);controls.target.lerp(camTargetTgt,0.06);}
+  controls.update();
+  renderer.render(scene,camera);
+}
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+
+build('erc2981');
+animate();
+</script>
+</body>
+</html>

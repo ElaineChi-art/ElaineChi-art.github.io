@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Music Royalty OS · Global Digital Twin v5.0 | 姬政妤</title>
+<style>
+  :root{--cyan:#36e2ff;--violet:#a78bfa;--gold:#ffd479;--green:#4ade80;--pink:#ff6fae;--blue:#4f8bff;--ink:#05080f;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:var(--ink);color:#e8eefb;font-family:"Inter","Noto Sans TC","PingFang TC",-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  #stage{position:fixed;inset:0;z-index:0}.mono{font-family:ui-monospace,Menlo,monospace}
+  .glass{background:linear-gradient(160deg,rgba(16,26,48,.74),rgba(7,12,24,.66));border:1px solid rgba(120,160,220,.18);border-radius:14px;backdrop-filter:blur(12px);box-shadow:0 18px 50px rgba(0,0,0,.5)}
+
+  #intro{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;
+    background:radial-gradient(120% 90% at 50% 45%,rgba(10,18,40,.2),rgba(3,5,11,.94));transition:opacity 1.1s ease;padding:20px}
+  #intro.gone{opacity:0;pointer-events:none}
+  #intro .tag{font-size:12px;letter-spacing:.5em;color:var(--cyan);opacity:.85}
+  #intro h1{font-size:clamp(24px,4.4vw,54px);font-weight:900;line-height:1.1;background:linear-gradient(100deg,#fff,var(--cyan) 50%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+  #intro .ver{font-size:13px;letter-spacing:.3em;color:#8aa0c4}
+  #intro .pre{display:flex;gap:28px;margin:10px 0 2px;flex-wrap:wrap;justify-content:center}
+  #intro .pre div{font-size:11px;color:#7d8caa}#intro .pre b{display:block;font-size:20px;font-weight:800;color:#dfe8fb;margin-top:2px}
+  .who{font-size:11px;letter-spacing:.18em;color:#8aa0c4;margin-top:8px}
+  #personas{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px;max-width:680px}
+  .persona{border:1px solid rgba(120,160,220,.25);background:rgba(20,30,52,.4);color:#cfe0ff;cursor:pointer;font:inherit;font-size:13px;
+    padding:11px 16px;border-radius:11px;transition:.18s;display:flex;flex-direction:column;align-items:center;gap:3px;width:104px}
+  .persona .i{font-size:22px}.persona small{font-size:9.5px;color:#8aa0c4;line-height:1.3}
+  .persona:hover{border-color:var(--cyan)}.persona.on{border-color:var(--cyan);background:rgba(54,226,255,.16);box-shadow:0 0 18px rgba(54,226,255,.25)}
+  .btns{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+  .btns button{border:1px solid var(--cyan);background:rgba(54,226,255,.12);color:#dffaff;cursor:pointer;font:inherit;font-size:13.5px;font-weight:700;letter-spacing:.08em;padding:12px 24px;border-radius:11px;transition:.25s}
+  .btns button:hover{background:rgba(54,226,255,.26);box-shadow:0 0 26px rgba(54,226,255,.3)}
+  .btns .sec{border-color:rgba(120,160,220,.4);background:rgba(20,30,52,.4);color:#aebcd6;font-weight:600}
+  #intro .src{margin-top:14px;font-size:10.5px;color:#5c6a86;max-width:620px;line-height:1.6}
+
+  #bar{position:fixed;z-index:20;top:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;
+    background:linear-gradient(180deg,rgba(5,8,15,.92),rgba(5,8,15,.3));border-bottom:1px solid rgba(120,160,220,.14);opacity:0;transition:opacity .8s}#bar.on{opacity:1}
+  #bar .brand b{font-size:15px;font-weight:800;background:linear-gradient(100deg,#fff,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  #bar .brand span{font-size:11px;color:#7d8caa;margin-left:9px}
+  #personaTag{font-size:11px;color:#8aa0c4;margin-left:14px;padding:3px 9px;border:1px solid rgba(120,160,220,.25);border-radius:7px}
+  #bar .nav{font-size:12px;color:#5f6e8c}#bar .nav a{color:#8ea0bd;text-decoration:none}#bar .nav a:hover{color:var(--cyan)}#bar .nav a.cur{color:var(--cyan);font-weight:700}
+
+  .hud{opacity:0;transition:opacity .9s}.hud.on{opacity:1}
+  #kpis{position:fixed;z-index:16;top:70px;left:18px;display:flex;flex-direction:column;gap:9px;width:236px}
+  .kpi{padding:11px 14px}.kpi .l{font-size:10px;letter-spacing:.15em;color:#8aa0c4;text-transform:uppercase}.kpi .v{font-size:21px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums}.kpi .d{font-size:10.5px;margin-top:2px;color:var(--green)}
+  .v.cyan{color:var(--cyan)}.v.gold{color:var(--gold)}.v.violet{color:var(--violet)}.v.green{color:var(--green)}.v.pink{color:var(--pink)}#ifpi{font-size:9.5px;color:#5c6a86;padding:0 4px}
+
+  #right{position:fixed;z-index:16;top:70px;right:18px;width:280px;padding:15px 16px}
+  #right .tabs{display:flex;gap:5px;margin-bottom:12px}#right .tabs button{flex:1;border:1px solid rgba(120,160,220,.2);background:rgba(20,30,52,.4);color:#9fb0cc;cursor:pointer;font:inherit;font-size:10.5px;padding:6px 3px;border-radius:7px}
+  #right .tabs button.on{border-color:var(--cyan);background:rgba(54,226,255,.14);color:#fff;font-weight:700}
+  #right h3{font-size:11px;letter-spacing:.13em;color:#aebcd6;text-transform:uppercase;margin:0 0 11px}
+  .srow{margin-bottom:10px}.srow .t{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}.srow .t b{color:#dde6f6}.srow .t i{font-style:normal;color:#8aa0c4}
+  .srow .bar{height:6px;border-radius:4px;background:rgba(120,150,200,.16);overflow:hidden}.srow .bar span{display:block;height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+  .rate{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;border-bottom:1px solid rgba(120,150,200,.1)}.rate b{color:var(--gold);font-variant-numeric:tabular-nums}
+  .note{font-size:11.5px;line-height:1.7;color:#c6d3ea;margin-bottom:9px}.note b{color:var(--cyan)}
+
+  #fin{position:fixed;z-index:16;right:18px;bottom:18px;width:280px;padding:13px 16px}
+  #fin h3{font-size:11px;letter-spacing:.13em;color:#aebcd6;text-transform:uppercase;margin-bottom:9px;display:flex;justify-content:space-between}#fin .lock{color:var(--green);font-weight:700}
+  #fin .slotbar{height:5px;border-radius:3px;background:rgba(120,150,200,.16);overflow:hidden;margin:6px 0 8px}#fin .slotbar span{display:block;height:100%;background:var(--cyan)}
+  #fin .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:11px;color:#9fb0cc}#fin .grid b{color:#dfe8fb;font-variant-numeric:tabular-nums}
+  #txlife{display:flex;gap:4px;margin-top:9px;font-size:9.5px}#txlife div{flex:1;text-align:center;padding:4px 2px;border-radius:5px;background:rgba(120,150,200,.1);color:#7d8caa;transition:.25s}#txlife div.on{background:rgba(54,226,255,.2);color:#dffaff;font-weight:700}
+
+  #ctrl{position:fixed;z-index:16;left:18px;bottom:18px;padding:11px 13px;display:flex;flex-direction:column;gap:8px;width:236px}
+  #ctrl .ct{font-size:10px;letter-spacing:.13em;color:#8aa0c4;text-transform:uppercase}#ctrl .grp{display:flex;gap:6px;flex-wrap:wrap}
+  #ctrl button{border:1px solid rgba(120,160,220,.22);background:rgba(20,30,52,.5);color:#cfe0ff;cursor:pointer;font:inherit;font-size:11px;padding:6px 7px;border-radius:7px;transition:.16s;flex:1;text-align:center;white-space:nowrap}
+  #ctrl button:hover{border-color:var(--cyan);color:#fff}#ctrl button.on{border-color:var(--cyan);background:rgba(54,226,255,.14);color:#fff;font-weight:700}
+  #ctrl .prime{border-color:var(--gold);color:var(--gold)}#ctrl .prime:hover{background:rgba(255,212,121,.14)}
+
+  #flyCap{position:fixed;z-index:38;left:50%;top:62%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .5s;pointer-events:none}
+  #flyCap .l{font-size:11px;letter-spacing:.35em;color:var(--cyan);margin-bottom:6px}#flyCap .m{font-size:clamp(18px,2.4vw,26px);font-weight:800;color:#fff}#flyCap.show{opacity:1}
+
+  #guide{position:fixed;z-index:24;left:50%;bottom:18px;transform:translateX(-50%);width:min(680px,82vw);padding:15px 20px;display:none}
+  #guide.show{display:block;animation:gup .5s}@keyframes gup{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translateX(-50%)}}
+  #guide .gh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  #guide .ai{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),var(--violet));display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 14px rgba(54,226,255,.4)}
+  #guide .gh .nm{font-size:11px;letter-spacing:.14em;color:#8aa0c4;text-transform:uppercase}#guide .gh .pg{margin-left:auto;font-size:11px;color:#7d8caa;font-variant-numeric:tabular-nums}
+  #guide h2{font-size:18px;font-weight:800;margin-bottom:3px}#guide .en{font-size:11.5px;color:#7fd6ff;margin-bottom:10px;font-style:italic}
+  #guide .qa{display:grid;grid-template-columns:1fr 1fr;gap:7px 18px;margin-bottom:11px}
+  #guide .qa .q{font-size:12.5px;line-height:1.6;color:#cdd9ee}#guide .qa .q b{display:block;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:2px;color:var(--cyan)}
+  #guide .qa .q.why b{color:var(--violet)}#guide .qa .q.how b{color:var(--green)}#guide .qa .q.live b{color:var(--gold)}#guide .qa .q.live{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#bfe6ff}
+  #guide .gn{display:flex;gap:9px;align-items:center}#guide .gn button{border:1px solid rgba(120,160,220,.25);background:rgba(20,30,52,.5);color:#cfe0ff;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;padding:8px 15px;border-radius:9px}
+  #guide .gn .nx{background:var(--cyan);color:#04121c;border-color:var(--cyan)}#guide .gn .lab{border-color:var(--gold);color:var(--gold)}#guide .gn .ex{margin-left:auto;color:#8aa0c4;border:0;background:transparent}
+  #guide .gn button:hover{filter:brightness(1.12)}#guide .gn button:disabled{opacity:.4;cursor:default}
+
+  /* EXECUTION LAB */
+  #lab{position:fixed;z-index:32;left:50%;top:50%;transform:translate(-50%,-50%);width:min(880px,94vw);max-height:86vh;display:none;flex-direction:column;padding:0;overflow:hidden}
+  #lab.show{display:flex;animation:gup .4s}
+  #lab .lh{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(120,160,220,.16)}
+  #lab .lh b{font-size:13px;letter-spacing:.06em;color:#dffaff}
+  #lab .levels{margin-left:auto;display:flex;gap:5px}#lab .levels button{border:1px solid rgba(120,160,220,.25);background:rgba(20,30,52,.5);color:#9fb0cc;cursor:pointer;font:inherit;font-size:11px;padding:6px 12px;border-radius:7px}
+  #lab .levels button.on{border-color:var(--cyan);background:rgba(54,226,255,.16);color:#fff;font-weight:700}
+  #lab .x{cursor:pointer;color:#8aa0c4;border:0;background:0;font-size:17px}
+  #lab .lbody{display:flex;min-height:300px;max-height:60vh}
+  #lab .lleft{width:300px;border-right:1px solid rgba(120,160,220,.14);overflow-y:auto;padding:10px}
+  #lab .op{display:flex;gap:9px;align-items:center;padding:7px 9px;border-radius:8px;cursor:pointer;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#9fb0cc;transition:.12s;margin-bottom:2px}
+  #lab .op:hover{background:rgba(120,160,220,.08)}#lab .op.on{background:rgba(54,226,255,.16);color:#fff}#lab .op.done{color:#cfe0ff}
+  #lab .op .n{width:20px;color:#5f6e8c;text-align:right}#lab .op .g{margin-left:auto;font-size:9.5px;color:#7d8caa}
+  #lab .op .biz0{color:var(--cyan)}#lab .op .biz1{color:var(--gold)}#lab .op .biz2{color:var(--green)}
+  #lab .lright{flex:1;padding:16px 18px;overflow-y:auto}
+  #lab h4{font-size:10.5px;letter-spacing:.16em;color:#8aa0c4;text-transform:uppercase;margin-bottom:10px}
+  .bizcard{padding:13px 15px;border-radius:11px;border:1px solid rgba(120,160,220,.16);margin-bottom:10px;transition:.25s}
+  .bizcard.on{border-color:var(--cyan);background:rgba(54,226,255,.08)}.bizcard .bt{font-size:14px;font-weight:700;color:#dfe8fb}.bizcard .bd{font-size:12px;color:#9fb0cc;margin-top:3px;line-height:1.6}
+  .techbox{font-family:ui-monospace,Menlo,monospace;font-size:13px}.techbox .opn{font-size:20px;font-weight:800;color:var(--cyan)}.techbox .od{font-size:12px;color:#c6d3ea;margin:6px 0 12px;font-family:Inter,sans-serif;line-height:1.6}
+  .stack{margin-top:10px}.stack .sl{display:flex;justify-content:space-between;font-size:12px;padding:5px 9px;border-radius:6px;background:rgba(120,150,200,.1);margin-bottom:4px;color:#bfe6ff}
+  .slots{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .slot{padding:10px 12px;border-radius:10px;border:1px solid rgba(120,160,220,.16);background:rgba(12,20,40,.5);transition:.3s}
+  .slot.read{border-color:var(--cyan);box-shadow:0 0 14px rgba(54,226,255,.3)}.slot.write{border-color:var(--gold);box-shadow:0 0 16px rgba(255,212,121,.4)}
+  .slot .k{font-size:10px;color:#8aa0c4;font-family:ui-monospace,Menlo,monospace}.slot .vv{font-size:15px;font-weight:700;margin-top:3px;font-family:ui-monospace,Menlo,monospace;color:#dfe8fb}.slot.write .vv{color:var(--gold)}
+  #lab .lctrl{display:flex;align-items:center;gap:9px;padding:11px 18px;border-top:1px solid rgba(120,160,220,.14)}
+  #lab .lctrl button{border:1px solid rgba(120,160,220,.25);background:rgba(20,30,52,.5);color:#cfe0ff;cursor:pointer;font:inherit;font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px}
+  #lab .lctrl .play{background:var(--gold);color:#1a1404;border-color:var(--gold)}#lab .lctrl button:hover{filter:brightness(1.12)}
+  #lab .lprog{margin-left:auto;font-size:11px;color:#8aa0c4}
+  #lab .lfoot{padding:11px 18px;border-top:1px solid rgba(120,160,220,.14);font-size:11.5px;color:#9fb0cc;line-height:1.6}
+
+  #feed{position:fixed;z-index:16;left:50%;transform:translateX(-50%);bottom:18px;width:min(520px,44vw);padding:9px 14px}#feed.hide{display:none}
+  #feed .h{font-size:9.5px;letter-spacing:.16em;color:#8aa0c4;text-transform:uppercase;display:flex;justify-content:space-between;margin-bottom:6px}#feed .h .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:bl 1.4s infinite}@keyframes bl{50%{opacity:.3}}
+  #feedList{font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.85;height:74px;overflow:hidden}#feedList div{opacity:0;animation:fin .4s forwards}@keyframes fin{to{opacity:1}}
+  #feedList .tm{color:#5f6e8c}.ev-roy{color:var(--gold)}.ev-mint{color:var(--cyan)}.ev-blk{color:var(--green)}.ev-lic{color:var(--violet)}.ev-inv{color:var(--pink)}.ev-gov{color:#9fb0cc}
+
+  #dive{position:fixed;inset:0;z-index:60;display:none;flex-direction:column;background:#05080f}
+  #dive.show{display:flex;animation:gup .35s}
+  #dive .dh{height:50px;display:flex;align-items:center;gap:12px;padding:0 18px;background:linear-gradient(180deg,rgba(8,12,22,.97),rgba(8,12,22,.8));border-bottom:1px solid rgba(120,160,220,.18)}
+  #dive .dh b{font-size:14px;color:#dffaff}#dive .dh .dsub{font-size:12px;color:#8aa0c4}
+  #dive .dh button{margin-left:auto;border:1px solid rgba(120,160,220,.3);background:rgba(20,30,52,.6);color:#cfe0ff;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:8px}
+  #dive .dh button:hover{border-color:var(--cyan);color:#fff}
+  #dive iframe{flex:1;border:0;width:100%;background:#05070d}
+  #tip{position:fixed;z-index:30;pointer-events:none;display:none;background:#0b1324;color:#eaf2ff;border:1px solid rgba(120,160,220,.3);border-radius:9px;padding:9px 12px;font-size:12px;line-height:1.5;max-width:300px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+  #tip b{color:var(--cyan)}#tip .s{color:#9fb4d6;font-size:11px}#tip .e{color:#7d8caa;font-size:10.5px;font-style:italic}
+  @media(max-width:1000px){#kpis,#right,#fin,#ctrl{display:none}#guide,#feed{width:92vw}#lab .lbody{flex-direction:column}#lab .lleft{width:100%;max-height:160px}}
+</style>
+</head>
+<body>
+  <div id="stage"></div>
+
+  <div id="intro">
+    <div class="tag">DECENTRALIZED MUSIC ECONOMY · LIVING DIGITAL TWIN</div>
+    <h1>MUSIC ROYALTY<br/>OPERATING SYSTEM</h1>
+    <div class="ver">— GLOBAL DIGITAL TWIN v5.0 —</div>
+    <div class="pre"><div>GLOBAL MUSIC REVENUE 2024<b>$29.6B</b></div><div>STREAMING SHARE<b>69.0%</b></div><div>PAID SUBSCRIBERS<b>752M</b></div><div>ETH FINALITY<b>~12.8 min</b></div></div>
+    <div class="who">選擇你的角色 · CHOOSE YOUR ROLE</div>
+    <div id="personas"></div>
+    <div class="btns"><button id="enterStory">🎵 Song Story</button><button id="enterTour">▶ Guided Tour</button><button id="enterPresent">🎤 演講模式（無聲）</button><button id="enterFree" class="sec">Free Explore →</button></div>
+    <div class="src">完整生命週期：創作 → 權利登錄 → IPFS → 鑄造份額 → 粉絲認購 → 串流收益 → 鏈上分配 → 提領 → 二級市場 → 治理。資料：IFPI GMR 2025 (FY2024) · Ethereum (ethereum.org)。　<button id="tts" style="background:none;border:0;color:var(--cyan);cursor:pointer;font:inherit;text-decoration:underline">🔊 測試語音</button> <span id="ttsStatus"></span></div>
+    <div class="src">A living operating system simulating the full lifecycle: creation → rights → smart contracts → NFT shares → streaming revenue → royalty execution → settlement → secondary market → governance. Data: IFPI GMR 2025 (FY2024) · per-stream rates 2024 · Ethereum consensus (ethereum.org).</div>
+  </div>
+
+  <div id="bar"><div class="brand"><b>♪ Music Royalty OS</b><span class="mono">Global Digital Twin v5.0</span><span id="personaTag">VIEW: —</span></div>
+    <div class="nav"><a id="homeBtn" style="cursor:pointer">⌂ 首頁</a> · <a href="mechanism.html">機制模擬</a> · <a href="index.html">執行機制</a> · <a href="lifecycle.html">生命週期</a> · <a class="cur">生態系</a></div></div>
+
+  <div id="kpis" class="hud">
+    <div class="kpi glass"><div class="l">Assets Under Management</div><div class="v gold mono" id="k_rum">$0</div><div class="d" id="k_rumd">▲ live</div></div>
+    <div class="kpi glass"><div class="l">Monthly Royalty Volume</div><div class="v cyan mono" id="k_pay">$0</div><div class="d">smart-contract settled</div></div>
+    <div class="kpi glass"><div class="l">Active Songs / NFTs</div><div class="v violet mono" id="k_nft">0</div><div class="d">ERC-721 · ERC-2981</div></div>
+    <div class="kpi glass"><div class="l">Active Investors</div><div class="v pink mono" id="k_hold">0</div><div class="d">fan shareholders</div></div>
+    <div class="kpi glass"><div class="l">Yield Index / Song</div><div class="v green mono" id="k_yld">0%</div><div class="d" id="k_vel">flow velocity —</div></div>
+    <div id="ifpi" class="mono">src · IFPI GMR 2025 (FY2024): $29.6B / streaming 69% / 752M subs</div>
+  </div>
+
+  <div id="right" class="glass hud">
+    <div class="tabs"><button data-m="fin" class="on">Financial</button><button data-m="legal">Legal</button><button data-m="tech">Technical</button><button data-m="risk">Risk</button></div>
+    <div id="rightBody"></div>
+  </div>
+
+  <div id="fin" class="glass hud">
+    <h3>Consensus / Finality Monitor <span class="lock" id="finLock">● FINALIZED</span></h3>
+    <div style="font-size:10.5px;color:#8aa0c4;display:flex;justify-content:space-between"><span>SLOT (12s)</span><span id="slotT" class="mono">0.0s</span></div>
+    <div class="slotbar"><span id="slotBar" style="width:0%"></span></div>
+    <div class="grid"><div>Epoch slot <b id="epSlot">0 / 32</b></div><div>Finality <b>2 ep · 12.8m</b></div><div>Validators <b id="vald">1,060,000</b></div><div>Gas/blk <b id="gas">30.0M</b></div><div>Base fee <b id="bfee" class="mono">— gwei</b></div><div>Consensus <b>Gasper</b></div></div>
+    <div id="txlife"><div data-s="0">submitted</div><div data-s="1">pending</div><div data-s="2">included</div><div data-s="3">finalized</div></div>
+  </div>
+
+  <div id="ctrl" class="glass hud">
+    <div class="ct">Role 角色（即時切換看不同指標）</div>
+    <div class="grp" id="roleSwitch"></div>
+    <div class="ct" style="margin-top:3px">Guided System</div>
+    <div class="grp"><button id="btnStory" class="prime">🎵 Song Story</button><button id="btnTour" class="prime">🎬 Tour</button><button id="btnTrace" class="prime">⚙ Exec Lab</button></div>
+    <div class="ct" style="margin-top:3px">View Controls</div>
+    <div class="grp"><button id="btnExplode" class="on">⤢ Exploded</button><button id="btnRotate" class="on">⟳ Orbit</button><button id="btnFocus">🔍 Focus</button></div>
+    <div class="ct" style="margin-top:3px">Layers</div>
+    <div class="grp"><button data-layer="0" class="on">App</button><button data-layer="1" class="on">Platform</button><button data-layer="2" class="on">Chain</button></div>
+    <div class="ct" style="margin-top:3px">Simulation Speed</div>
+    <div class="grp"><button data-sp="1" class="on">1×</button><button data-sp="4">4×</button><button data-sp="16">16×</button></div>
+    <div class="ct" style="margin-top:3px">Deep Dive 深入模組（內嵌）</div>
+    <div class="grp"><button id="dv1" class="prime">版稅機制</button><button id="dv2" class="prime">執行機制</button><button id="dv3" class="prime">生命週期</button></div>
+  </div>
+
+  <div id="flyCap"><div class="l" id="flyCapL">ENTERING</div><div class="m" id="flyCapM">—</div></div>
+  <div id="presentHint" style="position:fixed;z-index:25;top:64px;left:50%;transform:translateX(-50%);display:none;padding:7px 16px;border-radius:20px;font-size:12px;color:#cfe0ff;background:rgba(10,17,32,.8);border:1px solid rgba(120,160,220,.3);backdrop-filter:blur(8px)">🎤 演講模式 · <b style="color:var(--cyan)">← →</b> 方向鍵 / 點畫面 / 簡報筆 = 換頁　·　無聲</div>
+
+  <div id="guide" class="glass">
+    <div class="gh"><div class="ai">🧠</div><div class="nm" id="gMode">System Guide AI</div><div class="pg" id="gPg">1 / 8</div></div>
+    <h2 id="gT">—</h2><div class="en" id="gEn">—</div>
+    <div class="qa"><div class="q what"><b>What 是什麼</b><span id="gWhat">—</span></div><div class="q why"><b>Why／Who 為何·誰受益</b><span id="gWhy">—</span></div><div class="q how"><b>How／Contract 如何·哪個合約</b><span id="gHow">—</span></div><div class="q live"><b>Live 即時·狀態變化</b><span id="gLive">—</span></div></div>
+    <div class="gn"><button id="gPrev">←</button><button id="gNext" class="nx">下一步 →</button><button id="gPlay" class="lab">▶ 自動導覽</button><button id="gLang">🌐 中文</button><button id="gMute">🔊</button><button id="gLab" class="lab" style="display:none">⚙ Lab</button><button id="gDive" class="lab" style="display:none">🔬 深入</button><button id="gExit" class="ex">✕</button></div>
+  </div>
+
+  <div id="lab" class="glass">
+    <div class="lh"><b>⚙ SMART CONTRACT EXECUTION LAB · royaltyInfo + settle</b>
+      <span class="levels"><button data-lv="biz" class="on">Business</button><button data-lv="tech">Technical</button><button data-lv="store">Storage</button></span>
+      <button class="x" id="labX">✕</button></div>
+    <div class="lbody"><div class="lleft" id="opList"></div><div class="lright" id="labView"></div></div>
+    <div class="lctrl"><button id="labPrev">◀ Step</button><button id="labNext">Step ▶</button><button id="labPlay" class="play">▶ Run</button><span class="lprog" id="labProg">0 / 0 · gas 0</span></div>
+    <div class="lfoot" id="labFoot"></div>
+  </div>
+
+  <div id="feed" class="glass hud"><div class="h"><span>Live Event Feed · on-chain</span><span class="dot"></span></div><div id="feedList"></div></div>
+  <div id="dive"><div class="dh"><b id="diveT">Deep Dive</b><span class="dsub" id="diveSub"></span><button id="diveX">✕ 返回生態系</button></div><iframe id="diveFrame" title="deep dive"></iframe></div>
+
+  <div id="tip"></div>
+
+<script type="importmap">
+{ "imports":{ "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" }}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const DATA={eth:{slot:12,epoch:32}};
+const $=id=>document.getElementById(id);
+
+const stage=$('stage');const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;stage.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x05080f);scene.fog=new THREE.FogExp2(0x05080f,0.0072);
+const camera=new THREE.PerspectiveCamera(34,innerWidth/innerHeight,0.1,2000);camera.position.set(150,95,175);
+scene.add(new THREE.HemisphereLight(0x9fc2ff,0x0a1020,0.9));
+const d1=new THREE.DirectionalLight(0xbfe0ff,1.1);d1.position.set(20,40,30);scene.add(d1);
+const p1=new THREE.PointLight(0x36e2ff,1.0,140);p1.position.set(-22,6,18);scene.add(p1);
+const p2=new THREE.PointLight(0xa78bfa,0.9,140);p2.position.set(24,-4,-12);scene.add(p2);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=0.08;controls.target.set(0,0,0);controls.minDistance=14;controls.maxDistance=160;controls.autoRotate=true;controls.autoRotateSpeed=0.5;controls.maxPolarAngle=Math.PI*0.93;controls.enabled=false;
+
+const COL={cyan:0x36e2ff,violet:0xa78bfa,gold:0xffd479,green:0x4ade80,pink:0xff6fae,blue:0x4f8bff,white:0xdfe8fb};
+let pickables=[];
+function label(text,o={}){const size=o.size??42,lines=text.split('\n'),pad=o.pad??16,lh=size*1.3;const cv=document.createElement('canvas'),mm=cv.getContext('2d');const font=`${o.weight??700} ${size}px ${o.mono?'ui-monospace,Menlo,monospace':'Inter,"Noto Sans TC",sans-serif'}`;mm.font=font;let w=0;lines.forEach(l=>w=Math.max(w,mm.measureText(l).width));cv.width=w+pad*2;cv.height=lh*lines.length+pad;const c=cv.getContext('2d');if(o.plate!==false){c.fillStyle=o.bg??'rgba(10,17,32,.8)';rrct(c,0,0,cv.width,cv.height,12);c.fill();c.strokeStyle=o.border??'rgba(120,160,220,.4)';c.lineWidth=2;rrct(c,1,1,cv.width-2,cv.height-2,12);c.stroke();}c.font=font;c.textBaseline='middle';c.fillStyle=o.color??'#e8eefb';lines.forEach((l,i)=>c.fillText(l,pad,pad*0.5+lh*(i+0.5)));const tex=new THREE.CanvasTexture(cv);tex.anisotropy=8;tex.colorSpace=THREE.SRGBColorSpace;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:o.depthTest!==false,depthWrite:false}));const s=o.scale??1;sp.scale.set(cv.width/150*s,cv.height/150*s,1);return sp;}
+function rrct(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function put(o,x,y,z){o.position.set(x,y,z);return o;}function rgba(hex,a){return `rgba(${(hex>>16)&255},${(hex>>8)&255},${hex&255},${a})`;}
+function platform(w,d,color){const g=new THREE.Group();g.add(new THREE.Mesh(new THREE.BoxGeometry(w,0.4,d),new THREE.MeshPhysicalMaterial({color:0x0e1830,metalness:.3,roughness:.25,transmission:.55,transparent:true,opacity:.5,emissive:color,emissiveIntensity:.06,clearcoat:.6})));g.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w,0.4,d)),new THREE.LineBasicMaterial({color,transparent:true,opacity:.7})));const grid=new THREE.GridHelper(Math.max(w,d),Math.round(Math.max(w,d)/1.6),color,0x22324f);grid.material.transparent=true;grid.material.opacity=.15;grid.position.y=0.22;grid.scale.set(w/Math.max(w,d),1,d/Math.max(w,d));g.add(grid);return g;}
+function moduleBlock(parent,x,z,w,d,name,color,meta){const h=1.3;const box=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color:0x12203c,metalness:.4,roughness:.42,emissive:color,emissiveIntensity:.14,transparent:true,opacity:.94}));box.position.set(x,h/2+0.25,z);box.add(new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry),new THREE.LineBasicMaterial({color,transparent:true,opacity:.55})));box.userData={name,meta:meta||''};parent.add(box);pickables.push(box);parent.add(put(label(name,{size:30,scale:.6,color:'#eaf2ff',border:rgba(color,.5)}),x,h+1.0,z));return box;}
+function node(parent,pos,name,sub,color,shape){const geo=shape==='box'?new THREE.BoxGeometry(1.4,1.4,1.4):new THREE.IcosahedronGeometry(0.9,0);const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.5,metalness:.5,roughness:.3}));m.position.copy(pos);m.userData={name,meta:sub};parent.add(m);pickables.push(m);parent.add(put(label(name,{size:26,scale:.58,color:'#eaf2ff',border:rgba(color,.45)}),pos.x,pos.y+1.6,pos.z));return m;}
+const streams=[];
+function stream(from,to,color,o={}){const mid=new THREE.Vector3().lerpVectors(from,to,.5);mid.y+=o.arc??(4+Math.random()*3);const curve=new THREE.CatmullRomCurve3([from.clone(),mid,to.clone()]);scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getPoints(40)),new THREE.LineBasicMaterial({color,transparent:true,opacity:o.lineOp??.15})));const n=o.n??14;const pos=new Float32Array(n*3);const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(pos,3));scene.add(new THREE.Points(geo,new THREE.PointsMaterial({color,size:o.size??0.5,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false})));const offs=[];for(let i=0;i<n;i++)offs.push(Math.random());streams.push({curve,pos,geo,offs,speed:o.speed??0.14,acc:o.acc??0});}
+
+const LAYERS=[];const PW=30,PD=18;
+function makeLayer(yEx,yCol,color,title,sub){const g=new THREE.Group();g.position.y=yEx;scene.add(g);g.add(platform(PW,PD,color));g.add(put(label(title,{size:40,scale:1.0,color:'#fff',border:rgba(color,.6)}),-PW/2+0.5,1.4,-PD/2-1.2));g.add(put(label(sub,{size:24,scale:.62,plate:false,color:'#8aa0c4'}),-PW/2+0.5,0.2,-PD/2-1.2));LAYERS.push({group:g,yEx,yCol});return g;}
+const app=makeLayer(13,3.2,COL.cyan,'APPLICATION LAYER','User Economy · Artist & Investor SaaS');
+[['Artist Command Center',-11,-3,'上傳·鑄造·管理 ‖ upload, mint & manage'],['Licensing Studio',-5.5,-3,'授權＋合約參數 ‖ contract builder'],['NFT Marketplace',0,-3,'交易·碎片化持份 ‖ fractional trading'],['Fan Investor Portal',5.5,-3,'粉絲即股東·ROI ‖ fans as shareholders'],['Portfolio Analytics',11,-3,'收益·風險·alpha ‖ yield/risk/alpha'],['Real-time Market',-8,3,'二級交易·流動性 ‖ liquidity heatmap'],['Ownership Registry',-1,3,'版權 cap-table ‖ cap-table'],['Revenue Forecast AI',6,3,'預測串流＋版稅 ‖ predictive model']].forEach(([n,x,z,m])=>moduleBlock(app,x,z,4.2,3.0,n,COL.cyan,m));
+const plat=makeLayer(0,0,COL.violet,'PLATFORM LAYER','Financial · Legal · AI Orchestration');
+[['Royalty Engine',-11,-3,'revenue × ownership% × (1−cut) ‖ distribution'],['Licensing Mgmt',-5.5,-3,'draft→sign→deploy→execute→audit ‖ lifecycle'],['Payment Gateway',0,-3,'法幣＋加密結算 ‖ fiat+crypto settle'],['DRM Enforcement',5.5,-3,'數位權利保護 ‖ rights protection'],['AI Analytics',11,-3,'預測收益＋行為 ‖ predictive'],['Governance (DAO)',-8,3,'提案·投票·財庫 ‖ governance'],['Compliance AML/KYC',-1,3,'法遵監控 ‖ AML/KYC'],['Investor Relations',6,3,'報表＋稽核 ‖ reporting+audit']].forEach(([n,x,z,m])=>moduleBlock(plat,x,z,4.2,3.0,n,COL.violet,m));
+const ENGINE=new THREE.Vector3(-11,plat.position.y+1.2,-3),SPLITY=new THREE.Vector3(11,plat.position.y+1.2,-3);
+const chain=makeLayer(-13,-3.2,COL.green,'BLOCKCHAIN LAYER','Ethereum · Smart Contract Settlement');const cm={};
+[['ERC-721',-11.5,-4,'music NFT 所有權 ‖ ownership token'],['ERC-2981',-7,-4,'royaltyInfo(tokenId,price) ‖ royalty std'],['Proxy UUPS',-2.5,-4,'EIP-1967 可升級 ‖ upgradeable'],['Safe Multisig',2,-4,'4-of-7 財庫 ‖ treasury vault'],['EVM',6.5,-4,'opcode·stack·storage·gas'],['Mempool',11,-4,'pending/queued/basefee'],['Validators · Gasper',-9,2,'1.06M·LMD-GHOST+Casper-FFG'],['Finalized Blocks',-1.5,2,'2 epochs≈12.8min 不可逆'],['IPFS / Arweave',6,2,'去中心化儲存·CID']].forEach(([n,x,z,m])=>{cm[n]=moduleBlock(chain,x,z,4.2,3.0,n,COL.green,m);});
+function conduit(x,z){stream(new THREE.Vector3(x,14,z),new THREE.Vector3(x,1.2,z),COL.cyan,{arc:0,n:10,size:.42,speed:.16,lineOp:.12});stream(new THREE.Vector3(x,1.2,z),new THREE.Vector3(x,-12,z),COL.green,{arc:0,n:10,size:.42,speed:.16,lineOp:.12});stream(new THREE.Vector3(x+0.7,-12,z),new THREE.Vector3(x+0.7,14,z),COL.gold,{arc:0,n:8,size:.36,speed:.1,acc:.2,lineOp:.08});const pil=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,28,8),new THREE.MeshBasicMaterial({color:0x224466,transparent:true,opacity:.1}));pil.position.set(x,0,z);scene.add(pil);}
+[-10,-2,6,11].forEach(x=>conduit(x,4));
+const REV=[['Spotify',0x1db954,30,'$3.00 / 1,000 串流 (2024) ‖ largest DSP'],['Apple Music',0xfc3c44,17,'$6.20 / 1,000 串流 ‖ #3 DSP'],['Amazon Music',0x25d1da,12,'$8.80 / 1,000 串流 ‖ highest per-stream'],['YouTube',0xff4e45,11,'$4.80 / 1,000 串流 ‖ fastest growing'],['TikTok',0x25f4ee,8,'音樂使用授權 ‖ music-usage'],['Sync License',COL.gold,8,'同步授權 ‖ sync film/ads/games'],['Film & TV',0xffa94d,6,'影視置入 ‖ placement'],['Live Perf.',0xb794f6,5,'現場演出權 ‖ live'],['Publishing',0x4f8bff,3,'詞曲出版 ‖ publishing']];
+const revNodes=[];REV.forEach((r,i)=>{const ang=Math.PI*0.60+(i/(REV.length-1))*Math.PI*0.70;const R=27;const pos=new THREE.Vector3(Math.cos(ang)*R-7,3+(i%2)*3.6,Math.sin(ang)*R+2);revNodes.push(node(scene,pos,r[0],r[3],r[1]));stream(pos.clone(),ENGINE.clone(),r[1],{n:Math.max(6,Math.round(r[2]/1.8)),size:.5,speed:.11+Math.random()*0.05,arc:5});});
+const SPLIT=[['Artists',45,COL.cyan,'創作者 ‖ master rights'],['NFT Holders',25,COL.gold,'粉絲股東 ‖ fractional shareholders'],['Producers',12,COL.violet,'製作人 ‖ producers'],['Publishers',10,COL.green,'詞曲出版 ‖ publishers'],['Rights Orgs',5,COL.pink,'集管團體 ‖ societies'],['Treasury',3,COL.blue,'平台財庫 ‖ treasury']];
+SPLIT.forEach((s,i)=>{const pos=new THREE.Vector3(14+(i%2)*4.5,2+(i%3)*2,-7+i*2.6);node(scene,pos,s[0]+' '+s[1]+'%',s[3],s[2],'box');stream(SPLITY.clone(),pos.clone(),s[2],{n:Math.max(5,Math.round(s[1]/3)),size:.46,speed:.13,arc:4});});
+stream(ENGINE.clone(),SPLITY.clone(),COL.white,{n:18,size:.5,speed:.2,arc:2,lineOp:.2});
+const starN=1400;const sP=new Float32Array(starN*3);for(let i=0;i<starN;i++){sP[i*3]=(Math.random()-.5)*400;sP[i*3+1]=(Math.random()-.5)*400;sP[i*3+2]=(Math.random()-.5)*400;}
+const stars=new THREE.Points(new THREE.BufferGeometry().setAttribute('position',new THREE.BufferAttribute(sP,3)),new THREE.PointsMaterial({color:0x6f9fd8,size:.5,transparent:true,opacity:.6,blending:THREE.AdditiveBlending}));scene.add(stars);
+let focusOn=false;const focusAsset=new THREE.Mesh(new THREE.IcosahedronGeometry(0.7,1),new THREE.MeshStandardMaterial({color:COL.gold,emissive:COL.gold,emissiveIntensity:1.2,roughness:.2}));focusAsset.visible=false;scene.add(focusAsset);
+const songAsset=new THREE.Mesh(new THREE.IcosahedronGeometry(0.85,1),new THREE.MeshStandardMaterial({color:COL.gold,emissive:COL.gold,emissiveIntensity:1.3,roughness:.15}));songAsset.visible=false;scene.add(songAsset);
+let songY=13;
+const hl=new THREE.Mesh(new THREE.TorusGeometry(3.4,0.12,16,48),new THREE.MeshBasicMaterial({color:COL.cyan,transparent:true,opacity:0}));hl.rotation.x=Math.PI/2;scene.add(hl);let hlOn=false;
+
+/* ===== personas ===== */
+const PERSONAS=[['fan','👤','Fan','買碎片版稅·分享喜愛作品收益'],['investor','💰','Investor','建構音樂版稅投資組合·追蹤 ROI'],['artist','🎵','Artist','上傳鑄造·設定版稅·提前變現'],['label','🏢','Label','管理目錄·授權·財庫'],['regulator','⚖','Regulator','監看證券性/AML/著作權合規'],['developer','👨‍💻','Developer','檢視合約執行·storage·gas']];
+let persona=PERSONAS[0];
+const pWrap=$('personas');PERSONAS.forEach((p,i)=>{const b=document.createElement('button');b.className='persona'+(i===0?' on':'');b.innerHTML=`<span class="i">${p[1]}</span>${p[2]}<small>${p[3]}</small>`;b.onclick=()=>{document.querySelectorAll('.persona').forEach(x=>x.classList.remove('on'));b.classList.add('on');persona=p;};pWrap.appendChild(b);});
+// in-app role switcher (live)
+const rWrap=$('roleSwitch');PERSONAS.forEach((p,i)=>{const b=document.createElement('button');b.dataset.p=p[0];b.title=p[2]+' · '+p[3].split('‖')[0];b.style.flex='0 0 auto';b.style.fontSize='15px';b.style.padding='6px 8px';b.textContent=p[1];b.classList.toggle('on',i===0);b.onclick=()=>{persona=p;applyPersona();
+    document.querySelectorAll('.persona').forEach(x=>x.classList.toggle('on',x.querySelector('.i')&&x.querySelector('.i').textContent===p[1]));
+    if(started){if(!$('guide').classList.contains('show')){const lv=LAYVIEW[PCONF[p[0]].layer];if(lv)camGo([lv[0],lv[1],lv[2]],[lv[3],lv[4],lv[5]],1.5);}
+      if(narrationOn)playFile(`audio/brief_${p[0]}_${narLang}.m4a`);}};rWrap.appendChild(b);});
+
+/* ===== right analytics ===== */
+const rightBody=$('rightBody');let anaMode='fin';
+function renderRight(){
+  if(anaMode==='fin'){rightBody.innerHTML='<h3>Automated Royalty Split</h3>'+SPLIT.map(s=>`<div class="srow"><div class="t"><b>${s[0]}</b><i>${s[1]}%</i></div><div class="bar"><span style="width:0;background:#${new THREE.Color(s[2]).getHexString()}"></span></div></div>`).join('')+'<h3 style="margin-top:14px">Per-Stream · USD / 1,000</h3>'+[['Tidal',12.80],['Amazon',8.80],['Apple',6.20],['YouTube',4.80],['Spotify',3.00],['Global avg',3.41]].map(r=>`<div class="rate"><span>${r[0]}</span><b>$${r[1].toFixed(2)}</b></div>`).join('');setTimeout(()=>rightBody.querySelectorAll('.bar span').forEach((el,i)=>el.style.width=SPLIT[i][1]+'%'),60);}
+  else if(anaMode==='legal'){rightBody.innerHTML='<h3>三層次法律分析 · Legal</h3><div class="note"><b>App｜私法效力</b>　鏈上行為＝意思表示；著作權法 §37 授權要式；鑄造≠著作財產權讓與。</div><div class="note"><b style="color:var(--violet)">Platform｜監管</b>　收益型 NFT 適用 Howey/證交法；MiCA 實質重於形式；VASP/AML、SCSP 界分。</div><div class="note"><b style="color:var(--green)">Blockchain｜機制治理</b>　不可竄改 vs 可更新(proxy)；多簽/暫停＝鏈上救濟；權利登錄＝技術即法遵。</div>';}
+  else if(anaMode==='tech'){rightBody.innerHTML='<h3>Standards & Consensus</h3>'+[['ERC-721','NFT ownership'],['ERC-2981','royaltyInfo()'],['EIP-1967','proxy slots'],['EIP-1822','UUPS'],['Safe','M-of-N'],['IPFS/Arweave','storage']].map(r=>`<div class="rate"><span>${r[0]}</span><b style="color:var(--cyan)">${r[1]}</b></div>`).join('')+'<h3 style="margin-top:14px">Ethereum</h3>'+[['Slot','12 s'],['Epoch','32 · 6.4 min'],['Finality','2 ep · 12.8 min'],['Validators','~1.06M'],['Fork choice','LMD-GHOST'],['Finality','Casper-FFG']].map(r=>`<div class="rate"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('');}
+  else{rightBody.innerHTML='<h3>Risk View</h3><div class="note"><b>Securities risk</b>　收益型 NFT 若繫於他人努力 → 近投資契約(Howey)；SEC v. Impact Theory(2023)。</div><div class="note"><b style="color:var(--violet)">Liquidity</b>　二級市場深度不足 → 價格波動、退出風險。</div><div class="note"><b style="color:var(--gold)">Royalty enforcement</b>　ERC-2981 非鏈上強制，跨平台可能繞過。</div><div class="note"><b style="color:var(--green)">Smart-contract risk</b>　不可逆 + 程式漏洞 → 需審計、多簽、可升級救濟。</div>';}
+}
+document.querySelectorAll('#right .tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#right .tabs button').forEach(x=>x.classList.toggle('on',x===b));anaMode=b.dataset.m;renderRight();});
+renderRight();
+
+/* ===== KPI / consensus / feed ===== */
+const K={rum:0,pay:0,nft:0,hold:0,yld:0},KT={rum:1.842e9,pay:4.27e7,nft:184200,hold:1240000,yld:7.8};
+const f$=n=>'$'+(n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(1)+'M':Math.round(n).toLocaleString());const fN=n=>Math.round(n).toLocaleString('en-US');
+let slotT=0,epSlot=0,totalSlots=0,baseFee=14.2;
+function tickConsensus(dt,sp){slotT+=dt*sp;if(slotT>=DATA.eth.slot){slotT-=DATA.eth.slot;epSlot=(epSlot+1)%DATA.eth.epoch;totalSlots++;baseFee=Math.max(5,Math.min(80,baseFee+(Math.random()-0.48)*6));pushEvent('blk',`BlockFinalized #${(21500000+totalSlots).toLocaleString()} · Gasper`);if(epSlot===0)$('finLock').textContent='● FINALIZED ✓';}$('slotBar').style.width=(slotT/DATA.eth.slot*100).toFixed(1)+'%';$('slotT').textContent=slotT.toFixed(1)+'s';$('epSlot').textContent=epSlot+' / 32';$('bfee').textContent=baseFee.toFixed(1)+' gwei';$('gas').textContent=(28+Math.sin(totalSlots)*2).toFixed(1)+'M';}
+const feedList=$('feedList');const addr=()=>'0x'+Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0')+'…';
+function pushEvent(type,txt){const t=new Date();const tm=`${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}:${String(t.getSeconds()).padStart(2,'0')}`;const d=document.createElement('div');d.innerHTML=`<span class="tm">${tm}</span> <span class="ev-${type}">${txt}</span>`;feedList.prepend(d);while(feedList.children.length>6)feedList.lastChild.remove();}
+const EVENTS=[()=>['roy',`RoyaltyPaid · creator ${addr()} · ${(Math.random()*0.4+0.01).toFixed(3)} ETH`],()=>['mint',`Mint · Music NFT #${Math.floor(Math.random()*9000+1000)}`],()=>['lic',`License executed · ${['sync · film','sync · ad','sync · game','master · TV'][Math.floor(Math.random()*4)]}`],()=>['inv',`Trade · ${Math.floor(Math.random()*40+1)} shares · NFT #${Math.floor(Math.random()*9000+1000)}`],()=>['gov',`ProposalCreated · treasury reallocation #${Math.floor(Math.random()*90+1)}`],()=>['roy',`TreasuryUpdate · +${(Math.random()*0.2).toFixed(3)} ETH`]];
+let evAcc=0;
+
+/* ===== tooltip + controls ===== */
+const ray=new THREE.Raycaster();const ndc=new THREE.Vector2();const tip=$('tip');
+addEventListener('pointermove',e=>{ndc.x=(e.clientX/innerWidth)*2-1;ndc.y=-(e.clientY/innerHeight)*2+1;ray.setFromCamera(ndc,camera);const hit=ray.intersectObjects(pickables,false)[0];if(hit&&hit.object.userData.name){const u=hit.object.userData;const parts=(u.meta||'').split('‖');tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px';tip.innerHTML=`<b>${u.name}</b>`+(parts[0]?`<br><span class="s">${parts[0].trim()}</span>`:'')+(parts[1]?`<br><span class="e">${parts[1].trim()}</span>`:'');renderer.domElement.style.cursor='pointer';}else{tip.style.display='none';renderer.domElement.style.cursor='grab';}});
+let exploded=true,simSpeed=1;
+$('btnExplode').onclick=()=>{exploded=!exploded;$('btnExplode').classList.toggle('on',exploded);$('btnExplode').textContent=exploded?'⤢ Exploded':'⤡ Collapsed';};
+$('btnRotate').onclick=()=>{controls.autoRotate=!controls.autoRotate;$('btnRotate').classList.toggle('on',controls.autoRotate);};
+$('btnFocus').onclick=()=>{focusOn=!focusOn;focusAsset.visible=focusOn;$('btnFocus').classList.toggle('on',focusOn);};
+document.querySelectorAll('#ctrl .grp button[data-layer]').forEach(b=>b.onclick=()=>{const i=+b.dataset.layer;LAYERS[i].group.visible=!LAYERS[i].group.visible;b.classList.toggle('on',LAYERS[i].group.visible);});
+document.querySelectorAll('#ctrl .grp button[data-sp]').forEach(b=>b.onclick=()=>{document.querySelectorAll('#ctrl .grp button[data-sp]').forEach(x=>x.classList.toggle('on',x===b));simSpeed=+b.dataset.sp;});
+
+/* ===== camera tween ===== */
+let camTween=null;
+function camGo(pos,tgt,dur=1.7){camTween={t:0,dur,fromP:camera.position.clone(),toP:new THREE.Vector3(...pos),fromT:controls.target.clone(),toT:new THREE.Vector3(...tgt)};controls.enabled=false;controls.autoRotate=false;$('btnRotate').classList.remove('on');}
+function easeIO(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+
+/* ===== persona metrics pool ===== */
+const MET={
+ aum:{v:0,t:1.842e9,d:42000,f:f$}, royVol:{v:0,t:4.27e7,d:900,f:f$}, songs:{v:0,t:184200,d:0.5,f:fN}, investors:{v:0,t:1240000,d:1.6,f:fN}, yield:{v:0,t:7.8,d:0,f:n=>n.toFixed(1)+'%'},
+ myHold:{v:0,t:12480,d:0.5,f:f$}, myRoy:{v:0,t:342,d:0.06,f:f$}, owned:{v:0,t:14,d:0,f:n=>Math.round(n)}, roi:{v:0,t:7.8,d:0,f:n=>n.toFixed(1)+'%'}, risk:{v:0,t:42,d:0,f:n=>Math.round(n)+' / 100'},
+ catalogRev:{v:0,t:4.2e6,d:300,f:f$}, royRecv:{v:0,t:86400,d:6,f:f$}, minted:{v:0,t:32,d:0,f:n=>Math.round(n)}, fans:{v:0,t:5210,d:0.6,f:fN}, raised:{v:0,t:1.2e6,d:120,f:f$},
+ deals:{v:0,t:47,d:0,f:n=>Math.round(n)}, treasury:{v:0,t:9.63e7,d:120,f:f$}, flags:{v:0,t:23,d:0,f:n=>Math.round(n)}, aml:{v:0,t:51230,d:1.2,f:fN}, cross:{v:0,t:1840,d:0.2,f:fN}, comp:{v:0,t:94,d:0,f:n=>Math.round(n)+'%'},
+ contracts:{v:0,t:1240,d:0.1,f:fN}, gasS:{v:0,t:36500,d:0,f:n=>Math.round(n).toLocaleString()+' gas'}, tps:{v:0,t:14.2,d:0,f:n=>n.toFixed(1)+' tx/s'}, finality:{v:0,t:12.8,d:0,f:n=>n.toFixed(1)+' min'}
+};
+const PCONF={
+ fan:{ana:'fin',layer:0,lab:false,ev:['inv','roy'],obj:'買碎片版稅、分享喜愛作品收益 ‖ own a piece of the songs you love',kpis:[['myHold','My Holdings Value','▲ live','gold'],['myRoy','Royalty Earned','smart-contract paid','cyan'],['owned','Songs Owned','fractional','violet'],['roi','Portfolio ROI','annualized','green'],['investors','Fellow Fan-Shareholders','community','pink']]},
+ investor:{ana:'risk',layer:0,lab:true,ev:['inv','roy'],obj:'建構音樂版稅投資組合、追蹤 ROI ‖ build a music-royalty portfolio',kpis:[['aum','Portfolio AUM','▲ live','gold'],['yield','Monthly Yield Index','/ song','green'],['owned','Active Positions','songs','violet'],['roi','Avg ROI','annualized','cyan'],['risk','Risk Exposure','lower = safer','pink']]},
+ artist:{ana:'fin',layer:0,lab:true,ev:['mint','roy'],obj:'上傳鑄造、設定版稅、提前變現 ‖ mint, set royalties, raise capital',kpis:[['catalogRev','My Catalog Revenue','▲ live','gold'],['royRecv','Royalty Received','ERC-2981','cyan'],['minted','Songs Minted','ERC-721','violet'],['fans','Fans / Holders','shareholders','pink'],['raised','Upfront Capital Raised','via NFT sale','green']]},
+ label:{ana:'fin',layer:1,lab:true,ev:['lic','roy','gov'],obj:'管理目錄、授權與財庫 ‖ manage catalog, licensing & treasury',kpis:[['aum','Catalog AUM','▲ live','gold'],['royVol','Monthly Royalty Volume','settled','cyan'],['songs','Active Songs','catalog','violet'],['deals','Licensing Deals','active','green'],['treasury','Treasury (Safe 4/7)','multisig','pink']]},
+ regulator:{ana:'legal',layer:1,lab:false,ev:['lic','gov','blk'],obj:'監看證券性 / AML / 著作權合規 ‖ monitor securities, AML & copyright',kpis:[['songs','Songs Monitored','on-chain','cyan'],['flags','Securities-risk Flags','Howey review','pink'],['aml','AML / KYC Checks','travel rule','violet'],['cross','Cross-border Licenses','jurisdictions','gold'],['comp','Compliance Score','platform','green']]},
+ developer:{ana:'tech',layer:2,lab:true,ev:['blk','mint'],obj:'檢視合約執行、storage 與 gas ‖ inspect execution, storage & gas',kpis:[['contracts','Contracts Deployed','UUPS proxy','cyan'],['gasS','Gas / Royalty Tx','per settlement','gold'],['tps','Tx Throughput','simulated','violet'],['finality','Finality Time','Casper-FFG','green'],['minted','NFTs Minted','ERC-721','pink']]}
+};
+const LAYVIEW=[[0,26,34,0,13,0],[24,9,30,0,0,0],[0,-2,34,0,-13,0]];   // [camPos..., target...] per layer
+// store original opacities so we can dim non-focused layers
+let opStored=false;function storeOpacities(){if(opStored)return;opStored=true;LAYERS.forEach(L=>L.group.traverse(o=>{if(o.material&&o.material.opacity!==undefined){o.userData.op0=o.material.opacity;o.material.transparent=true;}}));}
+let layerFocus=null;
+function emphasizeLayer(idx){layerFocus=idx;storeOpacities();LAYERS.forEach((L,i)=>{const f=(idx==null||i===idx)?1:0.22;L.group.traverse(o=>{if(o.userData.op0!==undefined)o.material.opacity=o.userData.op0*f;});});}
+let evBias=null;
+let curCfg=null;
+function renderKpis(){curCfg=PCONF[persona[0]];$('kpis').innerHTML=curCfg.kpis.map((c,i)=>`<div class="kpi glass"><div class="l">${c[1]}</div><div class="v ${c[3]} mono" id="km${i}">—</div><div class="d">${c[2]}</div></div>`).join('')+'<div id="ifpi" class="mono">src · IFPI GMR 2025 (FY2024): $29.6B / streaming 69% / 752M subs</div>';}
+function applyPersona(){const cfg=PCONF[persona[0]];$('personaTag').textContent='VIEW: '+persona[1]+' '+persona[2];$('personaTag').title=cfg.obj.split('‖')[0].trim();
+  renderKpis();anaMode=cfg.ana;renderRight();document.querySelectorAll('#right .tabs button').forEach(x=>x.classList.toggle('on',x.dataset.m===anaMode));
+  const rs=$('roleSwitch');if(rs)rs.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.p===persona[0]));
+  emphasizeLayer(cfg.layer);evBias=cfg.ev||null;
+  // permissions: hide execution lab for non-technical roles (Fan / Regulator)
+  $('btnTrace').style.display=cfg.lab?'':'none';
+  const gl=$('gLab');if(gl)gl.style.display=(cfg.lab&&$('guide').classList.contains('show')&&activeSet[gi]&&activeSet[gi].lab)?'inline-block':'none';
+  $('btnTrace').title=cfg.lab?'open execution lab':'此角色為唯讀，不開放執行實驗室';}
+
+/* ===== audio narration (Web Speech · 中/EN) ===== */
+const synth=window.speechSynthesis;let voices=[];function loadVoices(){voices=synth?synth.getVoices():[];}
+if(synth){loadVoices();synth.onvoiceschanged=loadVoices;}
+let narrationOn=true,narLang='zh',autoPlay=false;
+const NE_TOUR=[
+ 'Welcome to a financial operating system that turns music rights into an investable, auto-distributing asset class.',
+ 'In the application layer, artists mint songs and fans buy fractional royalty NFTs, becoming shareholders.',
+ "The platform's royalty engine distributes income in real time by ownership percentage.",
+ 'Everything settles on Ethereum: the mempool, block production, and Casper finality in about twelve point eight minutes.',
+ 'Here a secondary sale executes inside the E-V-M: load the royalty rate, multiply, divide, then write balances and emit events.',
+ 'Nine global revenue sources stream in, each with real per-thousand-stream payout rates.',
+ 'Smart contracts split the income automatically and transparently among artists, holders, producers and the treasury.',
+ 'This is not a diagram. It is a guided system you operate to understand the entire music economy.'];
+const NE_STORY=[
+ 'An artist finishes a new song called Echoes, the origin of all value.',
+ 'Rights and licensing terms are registered, with a five percent royalty set on-chain.',
+ 'The audio is stored on I-P-F-S, and the token U-R-I points to its content address.',
+ 'The song is minted as an E-R-C seven twenty-one N-F-T with E-R-C twenty-nine eighty-one royalties. Open the lab to watch storage change.',
+ "Fans buy fractional shares and become shareholders in the song's future income.",
+ 'Streaming begins on Spotify, Apple Music and YouTube, generating real revenue.',
+ 'A secondary sale triggers the royalty contract. Watch it execute opcode by opcode.',
+ 'The contract splits the revenue automatically among all rights holders.',
+ 'The platform fee flows into the Safe multi-signature treasury.',
+ "Each holder's balance and yield update in real time.",
+ 'Strong performance pushes the secondary market price up.',
+ 'Holders raise a governance proposal to re-license the song.'];
+function pickVoice(lang){const vs=(synth&&synth.getVoices().length?synth.getVoices():voices)||[];const pref=lang==='zh'?['zh-tw','zh-hk','zh-cn','zh']:['en-us','en-gb','en'];for(const p of pref){const v=vs.find(v=>v.lang&&v.lang.toLowerCase().startsWith(p));if(v)return v;}return null;}
+// resolve to an actually-installed voice; fall back across languages so the engine never gets a lang it can't speak (which causes 'canceled')
+function resolveVoice(){let v=pickVoice(narLang);if(!v)v=pickVoice(narLang==='zh'?'en':'zh');if(!v){const all=(synth&&synth.getVoices())||[];v=all[0]||null;}return v;}
+/* ===== OFFLINE narration: pre-rendered .m4a files (no Web Speech) ===== */
+const narAudio=new Audio();narAudio.preload='auto';
+let seq=[],seqOn=false,seqDone=null;
+function playSeq(items,done){seq=items.slice();seqDone=done;seqOn=true;nextSeq();}
+function nextSeq(){if(!seqOn)return;if(!seq.length){seqOn=false;const d=seqDone;seqDone=null;if(d)d();return;}const it=seq.shift();if(it.before){try{it.before();}catch(e){}}if(it.src)playFile(it.src,null,()=>{if(seqOn)nextSeq();});else setTimeout(nextSeq,500);}
+function stopSeq(){seqOn=false;seq=[];seqDone=null;}
+function advanceStep(){if(gi<activeSet.length-1)setTimeout(()=>{if(autoPlay)showStep(gi+1);},450);else{autoPlay=false;updAuto();}}
+narAudio.addEventListener('ended',()=>{if(seqOn){nextSeq();return;}if(autoPlay)advanceStep();});
+function stopAudio(){try{narAudio.pause();narAudio.currentTime=0;}catch(e){}}
+function primeAudio(){try{narAudio.muted=true;narAudio.src=`audio/test_${narLang}.m4a`;const p=narAudio.play();if(p&&p.then)p.then(()=>{narAudio.pause();narAudio.currentTime=0;narAudio.muted=false;}).catch(()=>{narAudio.muted=false;});}catch(e){}}
+function playFile(src,onok,onerr){stopAudio();narAudio.src=src;narAudio.onplaying=onok||null;narAudio.onerror=()=>{if(onerr)onerr();};
+  const p=narAudio.play();if(p&&p.catch)p.catch(()=>{if(onerr)onerr();});}
+function narrate(){const s=activeSet[gi];if(!s)return;stopSeq();
+  const stepSrc=`audio/${gMode}_${narLang}_${gi}.m4a`;
+  if(!narrationOn){if(autoPlay){const ms=s.lab?5500:3200;setTimeout(()=>{if(autoPlay){if(s.lab)closeLab();advanceStep();}},ms);}return;}
+  if(autoPlay){
+    if(s.lab){const key=(typeof s.lab==='string')?s.lab:'dist';
+      const items=[{src:stepSrc},{before:()=>{openLab(key);setLabLevel('store');},src:`audio/alloc_${key}_${narLang}.m4a`}];
+      LABS[key].prog.forEach((p,i)=>items.push({before:()=>stepTo(i,true),src:`audio/${LABS[key].audio}_${narLang}_${i}.m4a`}));
+      playSeq(items,()=>{closeLab();advanceStep();});}
+    else playSeq([{src:stepSrc}],()=>advanceStep());
+  } else playFile(stepSrc);
+}
+function updAuto(){const b=$('gPlay');if(b){b.textContent=autoPlay?'⏸ 停止導覽':'▶ 自動導覽';b.classList.toggle('on',autoPlay);}}
+
+/* ===== fly-in ===== */
+let started=false,entryMode='free';
+const FLY=[{l:'MACRO',m:'進入全球音樂經濟 · Global music economy',pos:[120,80,150],tgt:[0,0,0],dur:1.0},{l:'INDUSTRY',m:'串流收益層 · Streaming revenue',pos:[60,40,80],tgt:[-6,4,0],dur:1.4},{l:'PROTOCOL',m:'區塊鏈結算層 · Blockchain settlement',pos:[18,-2,46],tgt:[0,-10,0],dur:1.6},{l:'MACHINE',m:'智能合約執行層 · Smart contract execution',pos:[-4,-6,22],tgt:[-4,-13,-4],dur:1.6},{l:'READY',m:'數位孿生就緒 · Digital twin ready',pos:[34,26,44],tgt:[0,0,0],dur:1.6}];
+function runFly(i){if(i>=FLY.length){$('flyCap').classList.remove('show');controls.enabled=true;controls.target.set(0,0,0);if(entryMode==='tour')startTour();else if(entryMode==='story')startStory();else{controls.autoRotate=true;$('btnRotate').classList.add('on');}return;}const w=FLY[i];$('flyCapL').textContent=w.l;$('flyCapM').textContent=w.m;$('flyCap').classList.add('show');camGo(w.pos,w.tgt,w.dur);setTimeout(()=>runFly(i+1),w.dur*1000+260);}
+let presentMode=false;
+function enter(mode){if(started)return;started=true;presentMode=(mode==='present');entryMode=(mode==='present')?'story':mode;
+  if(presentMode)narrationOn=false;
+  applyPersona();
+  primeAudio();            // unlock audio within the ENTER user-gesture
+  $('intro').classList.add('gone');setTimeout(()=>{$('bar').classList.add('on');document.querySelectorAll('.hud').forEach(h=>h.classList.add('on'));},700);runFly(0);}
+$('enterTour').onclick=()=>enter('tour');$('enterStory').onclick=()=>enter('story');$('enterFree').onclick=()=>enter('free');$('enterPresent').onclick=()=>enter('present');
+$('tts').onclick=()=>{
+  const st=$('ttsStatus');narrationOn=true;
+  st.style.color='#8aa0c4';st.textContent='▶ 載入離線語音檔…';
+  playFile(`audio/test_${narLang}.m4a`,
+    ()=>{st.textContent='▶ 播放中…離線語音正常！（已預先合成音檔）';st.style.color='#4ade80';},
+    ()=>{st.textContent='✗ 找不到或無法播放音檔。請確認 audio/ 資料夾存在、用本機伺服器開啟（http://localhost:8765）。';st.style.color='#ff8a9c';});
+};
+
+/* ===== guide engine (tour + story share it) ===== */
+const TOUR=[
+ {t:'歡迎使用音樂版稅作業系統',en:'A financial operating system for music rights',pos:[34,26,44],tgt:[0,0,0],hl:null,what:'把「音樂版權」變成可投資、可自動分潤的金融資產類別。',why:'傳統版稅中介多、不透明、結算慢；本系統用智慧合約取代中介。誰受益：創作者提前變現、粉絲分潤。',how:'三層：應用層(使用者)→平台層(財務/法務/AI)→區塊鏈層(結算)。',live:'AUM $1.84B · 184,200 songs · 752M global subs (IFPI 2024)'},
+ {t:'應用層 — 粉絲即股東',en:'Application layer',pos:[0,28,30],tgt:[0,13,0],hl:[0,14,0],what:'藝人上傳作品、設定版稅%；粉絲購買碎片化版稅 NFT。',why:'讓粉絲分享未來收益、創作者提前取得資金。受益：Fan + Artist。',how:'Artist Center 鑄造 → Marketplace 上架 → Investor Portal 追蹤 ROI。',live:'Investors 1,240,000 · Yield 7.8% / song'},
+ {t:'平台層 — 版稅引擎公式',en:'Royalty engine',pos:[-16,12,26],tgt:[-11,1,-3],hl:[-11,plat.position.y+1,-3],what:'平台大腦：即時按持份比例分配收入。',why:'分配若未連結實際授權收益會錯配侵權。合約：RoyaltyEngine。',how:'payout = revenue × ownership% × (1 − platform cut)，先確認入帳。',live:'Monthly Royalty Volume $42.7M'},
+ {t:'區塊鏈層 — 以太坊結算',en:'Ethereum settlement',pos:[0,-2,34],tgt:[0,-13,0],hl:[0,chain.position.y+1,0],what:'交易與分潤在以太坊結算：mempool→出塊→最終性。',why:'提供不可竄改、可追溯結算基礎(事實證據，非物權公信)。',how:'Slot 12s → Epoch 32 → Casper-FFG 2 epochs(≈12.8m)確認最終性。',live:'Validators ~1.06M · Gasper'},
+ {t:'智能合約執行 — royaltyInfo()',en:'Smart contract execution',pos:[-4,-6,20],tgt:[-4,-13,-4],hl:[-7,chain.position.y+1,-4],lab:true,what:'一筆二手轉售如何在 EVM 內逐步執行版稅計算與分帳。',why:'本研究核心：自動履行屬技術層，法律效力回到契約與著作權法。',how:'SLOAD→MUL→DIV→SSTORE→LOG，可點 ⚙ 開執行實驗室逐 opcode 看 storage。',live:'1.0 ETH × 500 ÷ 10000 = 0.05 ETH → creator (ERC-2981)'},
+ {t:'全球收益注入 — 真實費率',en:'Revenue ingestion',pos:[-32,14,32],tgt:[-12,2,2],hl:null,what:'九大收益來源以粒子流注入版稅引擎。',why:'各平台每千次串流分潤差異大，直接影響投資人收益。',how:'各來源帶 per-1000 費率、延遲、地區差異、平台抽成。',live:'Spotify $3.00 · Apple $6.20 · Amazon $8.80 / 1k (2024)'},
+ {t:'自動分潤輸出 — 可稽核',en:'Automated distribution',pos:[30,12,22],tgt:[12,1,-3],hl:[11,plat.position.y+1,-3],what:'合約依比例自動分給藝人、NFT 持有人、製作、出版等。',why:'資金流加密驗證、全程留痕，取代不透明人工結算。',how:'Artists 45% · NFT 25% · Producers 12% · Publishers 10% · Rights 5% · Treasury 3%。',live:'每筆 emit RoyaltyPaid → Live Event Feed'},
+ {t:'這不只是視覺化',en:'A guided financial OS',pos:[34,26,44],tgt:[0,0,0],hl:null,what:'同時是教育系統、金融模擬器、法律視覺化與協議瀏覽器。',why:'讓使用者邊操作邊理解音樂版權的金融與技術運作。',how:'切換右上 Financial/Legal/Technical/Risk，或自由探索。',live:'點 🎵 Song Story 跟著一首歌走完全生命週期'}];
+
+const STORY=[
+ {t:'① 創作 · Creation',en:'Song created · artist holds copyright',pos:[2,26,28],tgt:[-11,13,-3],hl:[-11,14,-3],song:13,
+  what:'藝人在 Artist Command Center 完成新歌《Echoes》，自始享有著作權。',why:'這是一切價值的源頭。誰受益：創作者（保有完整著作權）。',how:'作品與創作資訊備妥；合約尚未介入。',live:'asset: Echoes · status DRAFT'},
+ {t:'② 權利與授權登錄 · Rights',en:'Rights & licensing registered',pos:[2,24,28],tgt:[-5.5,13,-3],hl:[-5.5,14,-3],song:13,
+  what:'決定把哪些權利、多少比例代幣化，並依著作權法 §37 明確登錄詞曲/錄音/表演授權之範圍、方式、期間。',why:'授權鏈任一環缺口，分潤即自始無效。屬「私法效力」層。',how:'設定可代幣化比例與二級版稅率；off-chain 授權文件與鏈上對應。',live:'license chain ✓ · tokenize 10%'},
+ {t:'③ 鏈外儲存 · IPFS / Arweave',en:'Off-chain storage',pos:[2,-2,30],tgt:[6,-13,2],hl:[6,chain.position.y+1,2],song:-13,
+  what:'音檔與封面存入 IPFS / Arweave，產生內容定址 CID。',why:'鏈上只存指標；CID 失效＝事實上滅失（給付不能風險）。',how:'tokenURI 指向 CID；metadata 成為「法遵元資料」。',live:'ipfs://Qm…7xZ · pinned'},
+ {t:'④ 鑄造碎片化份額 · Mint',en:'Mint fractional shares (ERC-1155)',pos:[-6,-4,22],tgt:[-11.5,-13,-4],hl:[-11.5,chain.position.y+1,-4],song:-13,lab:'mint',
+  what:'以 ERC-1155 鑄造 10,000 份版稅份額，並寫入 ERC-2981 二級版稅率。',why:'關鍵：鑄造＝「創造份額」，並非分潤；份額一開始全在創作者名下。',how:'SSTORE：metadata → 版稅率 → 份額總量 → balances[creator]=10000。⚙ 看 storage。',live:'Mint · 10,000 shares · ERC-1155 + ERC-2981'},
+ {t:'⑤ 一級銷售 · 粉絲變股東',en:'Primary drop · fans become shareholders',pos:[2,26,28],tgt:[0,13,-3],hl:[0,14,-3],song:13,
+  what:'藝人發行中，粉絲認購份額，正式成為這首歌未來收益的股東。',why:'粉絲變股東就發生在這一步；藝人一次取得多年預付資金並保留多數權利。',how:'safeTransferFrom：份額由創作者移轉給粉絲；cap-table 反映各持有人%。',live:'4,000 / 10,000 shares sold · 120 holders'},
+ {t:'⑥ 串流收益累積（鏈外）· Revenue accrues',en:'Streaming revenue accrues off-chain',pos:[-30,14,30],tgt:[-12,2,2],hl:null,song:0,
+  what:'歌曲在 Spotify / Apple / YouTube 播放，收益依各平台費率在鏈外累積。',why:'真實費率差異大；由發行商按季（約 3–6 個月）結算。',how:'per-1,000 串流費率（Spotify $3.00 / Apple $6.20 / Amazon $8.80…）匯總。',live:'~1.2M streams → ≈ 10 ETH this quarter'},
+ {t:'⑦ 收益上鏈分配 · Distribution',en:'On-chain split by shares',pos:[-4,-6,20],tgt:[-4,-13,-4],hl:[-7,chain.position.y+1,-4],song:-13,lab:'dist',
+  what:'發行商把這季收益存入分潤合約，依每位持有人份額比例分配。',why:'核心：自動分配屬技術履行；效力仍回契約與著作權法。0xSplits 式分潤。',how:'SLOAD 份額 → 乘除算比例 → SSTORE pending[holder]。⚙ 看 storage。',live:'10 ETH → creator 6 / fans 4 (by shares)'},
+ {t:'⑧ 提領與收益更新 · Claim & yield',en:'Holders claim · yield updates',pos:[2,26,28],tgt:[5.5,13,-3],hl:[5.5,14,-3],song:13,
+  what:'持有人可隨時提領自己的版稅；投資組合餘額與年化報酬即時更新。',why:'採 pull 提領（Royal 模式）或 Superfluid 串流；粉絲股東看到實際 ROI。',how:'claim()：pending[holder] → 轉入錢包；Portfolio 重算 yield。',live:'holder ROI ≈ 7.8% APY'},
+ {t:'⑨ 二級市場 · Secondary market',en:'Secondary trading · ERC-2981',pos:[2,24,28],tgt:[-8,13,3],hl:[-8,14,3],song:13,
+  what:'持有人在二級市場買賣份額；收益表現越好、價格越高。',why:'音樂成為可交易金融資產；二級市場在「已有收益」後才有定價基礎。',how:'每筆轉售依 ERC-2981 自動把版稅回流給原創作者（🔬 深入看執行）。',live:'floor +12% · vol 38 ETH / 24h'},
+ {t:'⑩ 治理與新授權 · Governance',en:'Governance & new licensing',pos:[2,8,30],tgt:[-8,0,3],hl:[-8,plat.position.y+1,3],song:0,
+  what:'持有人發起治理提案：授權影視同步、調整分潤、財庫撥款。',why:'去中心化治理；惟 DAO 仍可能被視為可歸責主體（CFTC v. Ooki DAO）。',how:'DAO 投票 → 通過 → 合約升級（UUPS）／執行新授權。',live:'ProposalExecuted · re-license sync'}];
+
+// deep-dive links — integrate the other three visualizations at the right steps
+TOUR[4].dive=['mechanism.html','版稅機制 Lab','逐 opcode 看 storage 分配'];
+TOUR[6].dive=['mechanism.html','版稅分配','split 45/25/12/10/5/3'];
+STORY[3].dive=['lifecycle.html','音樂 NFT 生命週期','授權→鑄造→轉售→分潤'];
+STORY[6].dive=['mechanism.html','版稅分配 · PaymentSplitter','依份額拆分收益'];
+STORY[8].dive=['mechanism.html','二級版稅 · ERC-2981','轉售自動回流創作者'];
+let activeSet=TOUR,gMode='tour',gi=0;
+function showStep(i){const s=activeSet[i];gi=i;
+  $('gMode').textContent=gMode==='story'?'Song Story · '+persona[2]:'System Guide AI · '+persona[2];
+  $('gPg').textContent=`${i+1} / ${activeSet.length}`;$('gT').textContent=s.t;$('gEn').textContent=s.en;
+  $('gWhat').textContent=s.what;$('gWhy').textContent=s.why;$('gHow').textContent=s.how;$('gLive').textContent=s.live;
+  $('gPrev').disabled=i===0;$('gNext').textContent=i===activeSet.length-1?'完成 ✓':'下一步 →';
+  $('gLab').style.display=s.lab?'inline-block':'none';
+  if(s.lab){const k=(typeof s.lab==='string')?s.lab:'dist';$('gLab').textContent='⚙ 開啟 Lab';$('gLab').onclick=()=>{openLab(k);setLabLevel('store');if(narrationOn&&!autoPlay)playFile(`audio/alloc_${k}_${narLang}.m4a`);};}
+  exploded=true;$('btnExplode').classList.add('on');$('btnExplode').textContent='⤢ Exploded';
+  camGo(s.pos,s.tgt,1.6);
+  if(s.hl){hl.position.set(...s.hl);hlOn=true;}else hlOn=false;
+  if(s.song!==undefined){songAsset.visible=(gMode==='story');songY=s.song;}
+  // Lab no longer auto-opens — it would cover the intro. Opens on demand (next press / ⚙) or, in voiced autoplay, after the step narration.
+  if(!s.lab&&labOpen){closeLab();}
+  const gd=$('gDive');if(s.dive){gd.style.display='inline-block';gd.textContent='🔬 '+s.dive[1];gd.onclick=()=>openDive(s.dive[0],s.dive[1],s.dive[2]);}else gd.style.display='none';
+  narrate();
+}
+// deep-dive embedded sub-visualizations
+function openDive(file,t,sub){$('diveT').textContent=t;$('diveSub').textContent=sub||'';$('diveFrame').src=file;$('dive').classList.add('show');stopSeq();stopAudio();}
+function closeDive(){$('dive').classList.remove('show');$('diveFrame').src='about:blank';}
+$('diveX').onclick=closeDive;
+$('dv1').onclick=()=>openDive('mechanism.html','版稅分配機制 · Execution Lab','calldata → storage → MUL/DIV → 分帳（可切 Storage 視角）');
+$('dv2').onclick=()=>openDive('index.html','智慧合約執行機制 · 9 階段','簽署→共識→EVM→Proxy→多簽→分潤→封存');
+$('dv3').onclick=()=>openDive('lifecycle.html','音樂 NFT 全生命週期','授權→IPFS→鑄造→轉售→分潤→VASP→治理');
+function presentSetup(){const p=presentMode;['gPlay','gMute','gLang'].forEach(id=>{const el=$(id);if(el)el.style.display=p?'none':'';});if(p){narrationOn=false;autoPlay=false;updAuto();}$('presentHint').style.display=p?'block':'none';}
+function startTour(){activeSet=TOUR;gMode='tour';songAsset.visible=false;$('guide').classList.add('show');$('feed').classList.add('hide');controls.autoRotate=false;presentSetup();showStep(0);}
+function startStory(){activeSet=STORY;gMode='story';songAsset.visible=true;$('guide').classList.add('show');$('feed').classList.add('hide');controls.autoRotate=false;presentSetup();showStep(0);}
+function exitGuide(){$('guide').classList.remove('show');$('feed').classList.remove('hide');$('presentHint').style.display='none';hlOn=false;songAsset.visible=false;controls.enabled=true;autoPlay=false;updAuto();stopSeq();closeLab();stopAudio();}
+function guideShown(){return $('guide').classList.contains('show');}
+function gAdvance(){if(!guideShown())return;if(autoPlay){autoPlay=false;updAuto();}stopSeq();const s=activeSet[gi];
+  if(s.lab){const k=(typeof s.lab==='string')?s.lab:'dist';
+    if(!labOpen){openLab(k);setLabLevel('store');if(narrationOn)playFile(`audio/alloc_${k}_${narLang}.m4a`);return;}   // first press: open lab
+    if(li<LAB.prog.length-1){stepTo(li+1);return;}}                                                                       // then step opcodes
+  if(gi<activeSet.length-1)showStep(gi+1);else exitGuide();}
+function gBack(){if(!guideShown())return;if(autoPlay){autoPlay=false;updAuto();}stopSeq();const s=activeSet[gi];
+  if(s.lab&&labOpen){if(li>0){stepTo(li-1);return;}closeLab();return;}
+  if(gi>0)showStep(gi-1);}
+addEventListener('keydown',e=>{if(!guideShown())return;if($('dive').classList.contains('show'))return;
+  if(['ArrowRight','ArrowDown','PageDown',' ','Spacebar'].includes(e.key)){e.preventDefault();gAdvance();}
+  else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){e.preventDefault();gBack();}});
+let _pd=null;
+renderer.domElement.addEventListener('pointerdown',e=>{_pd={x:e.clientX,y:e.clientY,t:Date.now()};});
+renderer.domElement.addEventListener('pointerup',e=>{if(!_pd)return;const moved=Math.hypot(e.clientX-_pd.x,e.clientY-_pd.y),dt=Date.now()-_pd.t;_pd=null;if(presentMode&&guideShown()&&moved<6&&dt<350)gAdvance();});
+$('gPlay').onclick=()=>{autoPlay=!autoPlay;updAuto();if(autoPlay){narrationOn=true;$('gMute').textContent='🔊';narrate();}else stopAudio();};
+$('gLang').onclick=()=>{narLang=narLang==='zh'?'en':'zh';$('gLang').textContent=narLang==='zh'?'🌐 中文':'🌐 EN';narrate();};
+$('gMute').onclick=()=>{narrationOn=!narrationOn;$('gMute').textContent=narrationOn?'🔊':'🔇';if(!narrationOn)stopAudio();else narrate();};
+$('btnTour').onclick=()=>{if($('guide').classList.contains('show')&&gMode==='tour')exitGuide();else startTour();};
+$('btnStory').onclick=()=>{if($('guide').classList.contains('show')&&gMode==='story')exitGuide();else startStory();};
+$('gPrev').onclick=()=>gBack();
+$('gNext').onclick=()=>gAdvance();
+$('gExit').onclick=exitGuide;
+$('homeBtn').onclick=()=>location.reload();
+addEventListener('keydown',e=>{if(e.key==='Escape'){if($('dive').classList.contains('show'))closeDive();else if(labOpen)closeLab();else location.reload();}});
+
+/* ===== EXECUTION LAB (deep, mechanism-style) ===== */
+const OPDESC={CALL:'外部呼叫合約入口 ‖ external call into a contract',MLOAD:'從記憶體讀取 32 bytes ‖ read 32 bytes from memory',SLOAD:'讀取一個 storage slot（冷讀約 2100 gas）‖ read a storage slot',MUL:'整數乘法 ‖ integer multiply',DIV:'整數除法 ‖ integer divide',SSTORE:'寫入 storage slot — 改變鏈上狀態，gas 最貴 ‖ write storage (state change)',LOG:'寫入事件日誌供鏈下索引 ‖ emit event log'};
+// TWO distinct programs — Mint (create shares) vs Distribute (split streaming revenue by shares)
+const LABS={
+ mint:{key:'mint',audio:'labm',title:'Mint Fractional Royalty Shares · 鑄造碎片化版稅份額 (ERC-1155)',
+   biz:[['Mint Prepared 準備','藝人設定份額總量、二級版稅與 metadata。'],['State Written 寫入','把 metadata、版稅比例、份額總量寫入 storage。'],['Shares Issued 發行','把全部份額先記到創作者名下並發出事件。']],
+   slots:{uri:{k:'_tokenURI[1]',v:'(empty)'},royFrac:{k:'_royaltyFraction[1]',v:'0'},total:{k:'_totalShares[1]',v:'0'},balC:{k:'_balances[1][creator]',v:'0'}},
+   prog:[
+    {op:'CALL',biz:0,d:'mint(id=1, shares=10000, royalty=500, uri)',stack:['id=1','shares=10000','royalty=500'],gas:9000,reads:[],writes:[]},
+    {op:'SSTORE',biz:1,d:'_tokenURI[1] = ipfs://Qm…7xZ',stack:[],gas:20000,reads:[],writes:[{key:'uri',to:'ipfs://Qm…7xZ'}]},
+    {op:'SSTORE',biz:1,d:'_royaltyFraction[1] = 500  (ERC-2981 · 5%)',stack:[],gas:20000,reads:[],writes:[{key:'royFrac',to:'500 (5%)'}]},
+    {op:'SSTORE',biz:1,d:'_totalShares[1] = 10,000',stack:[],gas:20000,reads:[],writes:[{key:'total',to:'10,000'}]},
+    {op:'SSTORE',biz:2,d:'_balances[1][creator] = 10,000',stack:[],gas:20000,reads:[],writes:[{key:'balC',to:'10,000'}]},
+    {op:'LOG',biz:2,d:'emit TransferSingle(0x0 → creator, id=1, 10000)',stack:[],gas:2500,reads:[],writes:[]}]},
+ dist:{key:'dist',audio:'labd',title:'Royalty Distribution · 串流收益分配（依份額）',
+   biz:[['Revenue Deposited 收益入帳','發行商把這季串流收益存入分潤合約。'],['Shares Read & Computed 計算','依各持有人份額比例計算應得金額。'],['Allocated 分配','把款項寫入各持有人可提領餘額並記帳。']],
+   slots:{deposit:{k:'incoming deposit',v:'—'},total:{k:'_totalShares[1]',v:'10,000'},shC:{k:'shares[creator]',v:'6,000'},shF:{k:'shares[fans]',v:'4,000'},payC:{k:'pending[creator]',v:'0 ETH'},payF:{k:'pending[fans]',v:'0 ETH'},ledger:{k:'totalDistributed',v:'0 ETH'}},
+   prog:[
+    {op:'CALL',biz:0,d:'distribute(songId=1) { value: 10 ETH }',stack:['songId=1','msg.value=10e18'],gas:9000,reads:[],writes:[{key:'deposit',to:'10.0 ETH'}]},
+    {op:'SLOAD',biz:1,d:'_totalShares[1] → 10,000',stack:['10000'],gas:2100,reads:['total'],writes:[]},
+    {op:'SLOAD',biz:1,d:'shares[creator]=6,000 · shares[fans]=4,000',stack:['6000','4000'],gas:4200,reads:['shC','shF'],writes:[]},
+    {op:'MUL',biz:1,d:'10 ETH × 6,000 ÷ 10,000 = 6 ETH (creator)',stack:['6e18'],gas:10,reads:[],writes:[]},
+    {op:'SSTORE',biz:2,d:'pending[creator] += 6 ETH',stack:[],gas:20000,reads:[],writes:[{key:'payC',to:'6.0 ETH'}]},
+    {op:'SSTORE',biz:2,d:'pending[fans] += 4 ETH  (10 × 4,000 ÷ 10,000)',stack:[],gas:20000,reads:[],writes:[{key:'payF',to:'4.0 ETH'}]},
+    {op:'LOG',biz:2,d:'ledger += 10 ETH · emit RoyaltyDistributed',stack:[],gas:6500,reads:[],writes:[{key:'ledger',to:'10.0 ETH'}]}]}
+};
+let LAB=LABS.dist;
+let labLv='biz',li=0,labPlaying=null,labOpen=false;
+function labState(upto){const st=JSON.parse(JSON.stringify(LAB.slots));for(let i=0;i<=upto;i++){(LAB.prog[i].writes||[]).forEach(w=>{if(st[w.key])st[w.key].v=w.to;});}return st;}
+function renderOpList(){const el=$('opList');el.innerHTML=LAB.prog.map((p,i)=>`<div class="op${i===li?' on':i<li?' done':''}" data-i="${i}"><span class="n">${i}</span><span class="biz${p.biz}">${p.op}</span><span class="g">${p.gas?p.gas+'g':''}</span></div>`).join('');
+  el.querySelectorAll('.op').forEach(o=>o.onclick=()=>stepTo(+o.dataset.i));}
+function renderLabView(){const p=LAB.prog[li],st=labState(li);const v=$('labView');
+  if(labLv==='biz'){v.innerHTML='<h4>Business View · 商業視角</h4>'+LAB.biz.map((b,i)=>`<div class="bizcard${i===p.biz?' on':''}"><div class="bt">${i+1}. ${b[0]}</div><div class="bd">${b[1]}</div></div>`).join('');}
+  else if(labLv==='tech'){const od=OPDESC[p.op]||'';const parts=od.split('‖');v.innerHTML=`<h4>Technical View · opcode</h4><div class="techbox"><div class="opn">${p.op}</div><div class="od">${parts[0]||''}<br><span style="color:#7d8caa">${parts[1]||''}</span></div><div style="color:#9fb0cc;font-size:12px">${p.d}　<span style="color:var(--gold)">gas ${p.gas}</span></div><div class="stack"><h4 style="margin:12px 0 6px">Stack (top ↓)</h4>${(p.stack.length?p.stack:['(empty)']).map(s=>`<div class="sl"><span>${s}</span></div>`).join('')}</div></div>`;}
+  else{v.innerHTML='<h4>Storage View · 即時 slot 狀態</h4><div class="slots">'+Object.keys(st).map(k=>{const isR=(p.reads||[]).includes(k),isW=(p.writes||[]).some(w=>w.key===k);return `<div class="slot${isW?' write':isR?' read':''}"><div class="k">${st[k].k}</div><div class="vv">${st[k].v}</div></div>`;}).join('')+'</div>';}
+  let gas=0;for(let i=0;i<=li;i++)gas+=LAB.prog[i].gas;$('labProg').textContent=`${li+1} / ${LAB.prog.length} · gas ${gas.toLocaleString()}`;
+  $('labFoot').innerHTML=`<b style="color:#dfe8fb">${p.op}</b> — ${p.d}`;}
+function stepTo(i,silent){li=Math.max(0,Math.min(LAB.prog.length-1,i));renderOpList();renderLabView();const step=LAB.prog[li];setLife(step.biz===0?1:step.biz===1?2:3);
+  if(!silent&&narrationOn&&labOpen&&!seqOn&&!labPlaying)playFile(`audio/${LAB.audio}_${narLang}_${li}.m4a`);}
+function openLab(key){if(key&&LABS[key])LAB=LABS[key];labOpen=true;const t=$('lab').querySelector('.lh b');if(t)t.textContent='⚙ '+LAB.title;$('lab').classList.add('show');li=0;labLv='biz';document.querySelectorAll('#lab .levels button').forEach(x=>x.classList.toggle('on',x.dataset.lv==='biz'));setLife(0);renderOpList();renderLabView();}
+function closeLab(){labOpen=false;$('lab').classList.remove('show');if(labPlaying){clearInterval(labPlaying);labPlaying=null;$('labPlay').textContent='▶ Run';}if(seqOn){stopSeq();if(autoPlay)advanceStep();}}
+$('btnTrace').onclick=()=>openLab('dist');$('labX').onclick=closeLab;
+$('labPrev').onclick=()=>stepTo(li-1);$('labNext').onclick=()=>stepTo(li+1);
+$('labPlay').onclick=()=>{if(labPlaying){clearInterval(labPlaying);labPlaying=null;$('labPlay').textContent='▶ Run';return;}$('labPlay').textContent='⏸ Pause';if(li>=LAB.prog.length-1)li=0;labPlaying=setInterval(()=>{if(li>=LAB.prog.length-1){clearInterval(labPlaying);labPlaying=null;$('labPlay').textContent='▶ Run';return;}stepTo(li+1);},1100);};
+document.querySelectorAll('#lab .levels button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#lab .levels button').forEach(x=>x.classList.toggle('on',x===b));labLv=b.dataset.lv;renderLabView();});
+function setLabLevel(lv){labLv=lv;document.querySelectorAll('#lab .levels button').forEach(x=>x.classList.toggle('on',x.dataset.lv===lv));renderLabView();}
+function setLife(stage){document.querySelectorAll('#txlife div').forEach(d=>d.classList.toggle('on',+d.dataset.s<=stage));}
+
+/* ===== post / loop ===== */
+const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.72,0.6,0.7));composer.addPass(new OutputPass());
+const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),0.05),t=clock.elapsedTime,sp=simSpeed;
+  if(camTween){camTween.t=Math.min(1,camTween.t+dt/camTween.dur);const k=easeIO(camTween.t);camera.position.lerpVectors(camTween.fromP,camTween.toP,k);controls.target.lerpVectors(camTween.fromT,camTween.toT,k);camera.lookAt(controls.target);if(camTween.t>=1){controls.enabled=true;camTween=null;}}
+  stars.rotation.y+=dt*(started?0.02:0.06);
+  if(!started){const a=stars.geometry.attributes.position.array;for(let i=2;i<a.length;i+=3){a[i]+=dt*120;if(a[i]>200)a[i]-=400;}stars.geometry.attributes.position.needsUpdate=true;}else stars.material.opacity=Math.max(0.05,stars.material.opacity-dt*0.2);
+  LAYERS.forEach(L=>{const ty=exploded?L.yEx:L.yCol;L.group.position.y+=(ty-L.group.position.y)*0.06;});
+  streams.forEach(s=>{for(let i=0;i<s.offs.length;i++){let v=s.speed*(1+s.acc*Math.sin(s.offs[i]*Math.PI));s.offs[i]=(s.offs[i]+dt*v*sp)%1;const p=s.curve.getPoint(s.offs[i]);s.pos[i*3]=p.x;s.pos[i*3+1]=p.y;s.pos[i*3+2]=p.z;}s.geo.attributes.position.needsUpdate=true;});
+  revNodes.forEach((nd,i)=>{nd.material.emissiveIntensity=.4+Math.sin(t*2*sp+i)*.25;nd.rotation.y+=dt*.5;});
+  if(cm['Finalized Blocks'])cm['Finalized Blocks'].material.emissiveIntensity=.14+Math.abs(Math.sin(t*1.5))*.5;
+  if(focusOn){const cyc=(t*0.25*sp)%1;focusAsset.position.set(-2,13-cyc*26,4);focusAsset.rotation.y+=dt*2;focusAsset.material.emissiveIntensity=1+Math.sin(t*6)*.4;}
+  if(songAsset.visible){songAsset.position.x+=( -4 -songAsset.position.x)*0.05;songAsset.position.z+=(4-songAsset.position.z)*0.05;songAsset.position.y+=(songY-songAsset.position.y)*0.05;songAsset.rotation.y+=dt*1.6;songAsset.material.emissiveIntensity=1.1+Math.sin(t*5)*.4;}
+  hl.material.opacity+=((hlOn?.8:0)-hl.material.opacity)*0.1;hl.rotation.z+=dt*0.6;hl.scale.setScalar(1+Math.sin(t*3)*0.04);
+  if(started){for(const k in MET){const m=MET[k];m.t+=m.d*dt*sp;m.v+=(m.t-m.v)*0.05;}
+    if(curCfg)curCfg.kpis.forEach((c,i)=>{const el=$('km'+i);if(el)el.textContent=MET[c[0]].f(MET[c[0]].v);});
+    tickConsensus(dt,sp);evAcc+=dt*sp;if(evAcc>0.9){evAcc=0;let e=EVENTS[Math.floor(Math.random()*EVENTS.length)]();if(evBias&&!evBias.includes(e[0])&&Math.random()<0.7)e=EVENTS[Math.floor(Math.random()*EVENTS.length)]();pushEvent(e[0],e[1]);}}
+  controls.update();composer.render();}
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);});
+animate();
+</script>
+</body>
+</html>

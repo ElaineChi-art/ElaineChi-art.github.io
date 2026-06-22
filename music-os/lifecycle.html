@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>音樂 NFT 全生命週期 · 3D 互動走查 | 姬政妤</title>
+<style>
+  :root{
+    --cyan:#36e2ff; --violet:#a78bfa; --gold:#ffcf6b;
+    --red:#ff5d6c; --green:#4ade80; --ink:#06080f;
+    --panel:rgba(10,15,26,.72);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--ink);color:#e8edf7;
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",-apple-system,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  /* fixed 3D canvas */
+  #stage{position:fixed;inset:0;z-index:0;}
+  /* scroll driver: tall transparent column */
+  #scroll{position:relative;z-index:5;pointer-events:none;}
+  .spacer{height:100vh;}
+
+  /* ---------- intro ---------- */
+  #intro{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;gap:18px;
+    background:radial-gradient(120% 90% at 50% 30%,rgba(15,22,40,.35),rgba(4,6,12,.92));
+    transition:opacity .8s ease;pointer-events:none;}
+  #intro .kic{font-size:13px;letter-spacing:.4em;color:var(--cyan);opacity:.85}
+  #intro h1{font-size:clamp(26px,4.4vw,52px);font-weight:800;line-height:1.18;
+    background:linear-gradient(100deg,#fff 10%,var(--cyan) 55%,var(--violet) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.02em}
+  #intro h2{font-size:clamp(13px,1.6vw,18px);font-weight:400;color:#aab6cc;max-width:680px;line-height:1.8}
+  #intro .by{font-size:12px;color:#6f7c95;letter-spacing:.18em;margin-top:8px}
+  .hint{margin-top:26px;font-size:12px;color:#8ea3c4;letter-spacing:.18em;
+    display:flex;flex-direction:column;align-items:center;gap:8px;animation:bob 2.2s ease-in-out infinite}
+  .hint .wheel{width:22px;height:36px;border:1.5px solid #5f7297;border-radius:12px;position:relative}
+  .hint .wheel::after{content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    width:3px;height:7px;border-radius:2px;background:var(--cyan);animation:drop 1.6s ease-in-out infinite}
+  @keyframes drop{0%{opacity:0;transform:translate(-50%,0)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,12px)}}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+  /* ---------- HUD: stage panel ---------- */
+  #hud{position:fixed;z-index:15;left:0;right:0;bottom:0;
+    padding:26px clamp(18px,4vw,56px);pointer-events:none;
+    display:flex;justify-content:space-between;align-items:flex-end;gap:24px;
+    opacity:0;transition:opacity .6s ease;}
+  #hud.on{opacity:1}
+  .card{pointer-events:auto;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    background:var(--panel);border:1px solid rgba(120,150,200,.16);border-radius:16px;
+    box-shadow:0 18px 50px rgba(0,0,0,.5);transition:transform .5s cubic-bezier(.2,.8,.2,1),opacity .5s}
+  /* left: tech narrative */
+  #narr{max-width:560px;padding:20px 24px}
+  #narr .step{font-size:12px;letter-spacing:.32em;color:var(--cyan);opacity:.9}
+  #narr .ttl{font-size:clamp(20px,2.5vw,30px);font-weight:800;margin:7px 0 4px;letter-spacing:.01em}
+  #narr .sub{font-size:12.5px;color:#7fd6ff;font-family:"SF Mono",ui-monospace,Menlo,monospace;
+    letter-spacing:.04em;margin-bottom:12px;opacity:.9}
+  #narr .desc{font-size:14.5px;line-height:1.85;color:#cdd6e8}
+  #narr .cite{margin-top:11px;padding-top:9px;border-top:1px solid rgba(120,150,200,.14);
+    font-size:11px;line-height:1.6;color:#7d8aa6;font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  #narr .cite::before{content:"▮ 文獻依據　";color:var(--cyan);opacity:.8}
+  /* right: legal annotation */
+  #legal{max-width:360px;padding:18px 20px;border-color:rgba(167,139,250,.28);
+    background:linear-gradient(180deg,rgba(28,20,46,.78),rgba(12,10,24,.78))}
+  #legal .lh{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.28em;
+    color:var(--violet);margin-bottom:9px}
+  #legal .lh::before{content:"§";font-size:18px;line-height:1}
+  #legal .law{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:8px;line-height:1.5}
+  #legal .lt{font-size:13px;line-height:1.8;color:#d7d0ea}
+  .fade{opacity:0;transform:translateY(14px)}
+
+  /* progress dots */
+  #dots{position:fixed;z-index:15;right:18px;top:50%;transform:translateY(-50%);
+    display:flex;flex-direction:column;gap:11px;opacity:0;transition:opacity .6s}
+  #dots.on{opacity:1}
+  #dots button{pointer-events:auto;width:9px;height:9px;border-radius:50%;border:0;cursor:pointer;
+    background:rgba(150,170,210,.28);transition:all .3s;padding:0}
+  #dots button.active{background:var(--cyan);box-shadow:0 0 12px var(--cyan);transform:scale(1.5)}
+  #dots button:hover{background:rgba(150,170,210,.6)}
+
+  /* top bar */
+  #top{position:fixed;z-index:15;top:0;left:0;right:0;padding:16px clamp(18px,4vw,56px);
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:12px;color:#8b98b3;opacity:0;transition:opacity .6s;
+    background:linear-gradient(180deg,rgba(5,7,14,.6),transparent)}
+  #top.on{opacity:1}
+  #top b{color:#dbe3f3;font-weight:700;letter-spacing:.04em}
+  #top .prog{font-family:ui-monospace,monospace;color:var(--cyan)}
+  #refBtn{pointer-events:auto;cursor:pointer;border:1px solid rgba(120,150,200,.3);
+    background:rgba(20,28,46,.6);color:#b9c6df;font-size:11.5px;letter-spacing:.08em;
+    padding:5px 12px;border-radius:8px;transition:all .25s;font-family:inherit}
+  #refBtn:hover{border-color:var(--cyan);color:#fff;box-shadow:0 0 14px rgba(54,226,255,.25)}
+  #top .nav{font-size:11.5px;letter-spacing:.06em;color:#5f6e8c}
+  #top .nav a{pointer-events:auto;cursor:pointer;color:#8ea0bd;text-decoration:none;transition:color .2s}
+  #top .nav a:hover{color:var(--cyan)}
+  #top .nav a.cur{color:var(--cyan);font-weight:700}
+
+  /* references modal */
+  #refModal{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;
+    background:rgba(3,5,11,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:24px}
+  #refModal.on{display:flex}
+  #refModal .rbox{position:relative;max-width:760px;width:100%;max-height:84vh;overflow:auto;
+    background:linear-gradient(180deg,rgba(16,22,38,.96),rgba(9,12,22,.96));
+    border:1px solid rgba(120,150,200,.22);border-radius:18px;padding:30px 34px;
+    box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  #refModal h3{font-size:20px;color:#fff;letter-spacing:.04em;margin-bottom:6px}
+  #refModal .rnote{font-size:12.5px;color:#8ea0bd;margin-bottom:20px;line-height:1.7}
+  #refModal .rcol{margin-bottom:18px}
+  #refModal h4{font-size:12px;letter-spacing:.24em;color:var(--cyan);margin-bottom:10px}
+  #refModal ol{padding-left:20px;display:flex;flex-direction:column;gap:8px}
+  #refModal li{font-size:13px;line-height:1.7;color:#cdd6e8}
+  #refModal li i{color:#9fb4d6}
+  #refClose{position:absolute;top:16px;right:18px;cursor:pointer;border:0;background:transparent;
+    color:#8ea0bd;font-size:18px;transition:color .2s}
+  #refClose:hover{color:#fff}
+
+  @media(max-width:780px){
+    #hud{flex-direction:column;align-items:stretch}
+    #legal{max-width:none}
+    #narr{max-width:none}
+    #dots{display:none}
+  }
+</style>
+</head>
+<body>
+  <div id="stage"></div>
+
+  <div id="intro">
+    <div class="kic">MUSIC NFT · FULL LIFECYCLE</div>
+    <h1>一首歌如何上鏈？<br/>音樂 NFT 的完整生命週期</h1>
+    <h2>從授權鏈彙整、IPFS 鏈外儲存、鑄造、一級銷售，到二級轉售回流版稅、收益分潤、VASP 平台義務與權利登錄——<br/>每一步都疊上論文的三層次法律分析（私法效力 · 監管要求 · 機制治理）。</h2>
+    <div class="by">姬政妤 ·《智慧合約之法制整合與智慧財產權保障研究——以虛擬資產服務法與音樂NFT為中心》</div>
+    <div class="hint">
+      <div class="wheel"></div>
+      向下捲動開始 · 拖曳可微調視角
+    </div>
+  </div>
+
+  <div id="top">
+    <span style="display:flex;align-items:center;gap:14px">
+      <b>音樂 NFT 全生命週期</b>
+      <span class="nav"><a href="ecosystem.html">生態系</a> · <a href="mechanism.html">機制模擬</a> · <a href="index.html">執行機制</a> · <a class="cur">全生命週期</a></span>
+    </span>
+    <span style="display:flex;align-items:center;gap:16px">
+      <button id="refBtn">參考文獻 ▸</button>
+      <span class="prog" id="progNum">00 / 09</span>
+    </span>
+  </div>
+
+  <div id="refModal">
+    <div class="rbox">
+      <button id="refClose">✕</button>
+      <h3>參考文獻 · 技術與法律依據</h3>
+      <p class="rnote">本模型每一步驟均依下列權威技術規範與法律文獻製作，非泛論示意。</p>
+      <div class="rcol">
+        <h4>技術規範</h4>
+        <ol>
+          <li>Wood, G. <i>Ethereum: A Secure Decentralised Generalised Transaction Ledger</i>（Yellow Paper）.</li>
+          <li>ethereum.org Developer Docs — EVM · Transactions · Gas · Gasper.</li>
+          <li>Buterin, V. &amp; Griffith, V.（2020）<i>Combining GHOST and Casper</i>, arXiv:2003.03052.</li>
+          <li>EIP-1559 — Fee Market Change（base fee + priority fee）.</li>
+          <li>EIP-1967 — Standard Proxy Storage Slots.</li>
+          <li>EIP-1822 — Universal Upgradeable Proxy Standard（UUPS）.</li>
+          <li>OpenZeppelin Contracts Docs — Proxy · AccessControl · Pausable · ReentrancyGuard.</li>
+          <li>Safe（前 Gnosis Safe）Documentation — Multisig（M-of-N、approveHash / execTransaction）.</li>
+          <li>ERC-721 — Non-Fungible Token Standard（tokenURI）；ERC-2981 — NFT Royalty Standard（royaltyInfo）.</li>
+          <li>IPFS（內容定址 CID）／ Arweave（permaweb）去中心化儲存規範.</li>
+          <li>實證平台：Royal.io、Opulous、Sound.xyz、Audius（音樂 NFT 版稅／收益分潤模式）.</li>
+        </ol>
+      </div>
+      <div class="rcol">
+        <h4>法律文獻</h4>
+        <ol>
+          <li>SEC v. Impact Theory, LLC（2023）— 首件 NFT 認定為未登記證券之執法案；和解要求修改程式碼以停止收取二級市場版稅。</li>
+          <li>Regulation (EU) 2023/1114（MiCA）Recital 11；ESMA Guidelines — 「實質重於形式」、大量系列發行視為可替代之指標。</li>
+          <li>CFTC v. Ooki DAO（2022）— 去中心化自治組織（DAO）無法人格仍可能被視為可歸責主體。</li>
+          <li>我國《洗錢防制法》、金管會 VASP 指導原則；MiCA 之 CASP 定義（VASP / SCSP 界分）。</li>
+          <li>我國《電子簽章法》§2、§6；民法（要約承諾、錯誤、詐欺、不當得利）；著作權法 §37。</li>
+          <li>姬政妤，《智慧合約之法制整合與智慧財產權保障研究——以虛擬資產服務法與音樂NFT為中心》（碩士論文）.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div id="dots"></div>
+
+  <div id="hud">
+    <div class="card" id="narr">
+      <div class="step" id="nStep">STEP 01</div>
+      <div class="ttl" id="nTtl">—</div>
+      <div class="sub" id="nSub">—</div>
+      <div class="desc" id="nDesc">—</div>
+      <div class="cite" id="nCite">—</div>
+    </div>
+    <div class="card" id="legal">
+      <div class="lh">三層次法律分析</div>
+      <div class="law" id="lLaw">—</div>
+      <div class="lt" id="lText">—</div>
+    </div>
+  </div>
+
+  <!-- the scroll column; one spacer per stage + lead/​tail -->
+  <div id="scroll"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+/* ============================================================
+   CONTENT — 9 stages of smart-contract execution
+   each carries thesis三層次 legal annotation
+============================================================ */
+const C = { cyan:0x36e2ff, violet:0xa78bfa, gold:0xffcf6b, red:0xff5d6c, green:0x4ade80, dim:0x2a3550, white:0xdfe8fb };
+
+const STAGES = [
+  { id:0, color:C.gold, layer:'私法 · 授權要式',
+    step:'STEP 01', ttl:'授權鏈彙整', sub:'off-chain license · 詞曲 · 錄音 · 表演',
+    desc:'鑄造前須先在鏈下取得<b>完整授權鏈</b>：作詞、作曲、編曲、錄音著作權人、錄音製作人、表演人逐一授權，並以書面明確授權之範圍、方式、期間。',
+    cite:'著作權法 §37；本論文「實證分析與案例研究」§3.4',
+    law:'著作權法 §37｜授權鏈缺口風險',
+    ltext:'著作權法 §37 要求授權之範圍、方式、期間明確。授權鏈任一環缺口，即使 NFT 成功發行募資，分潤基礎仍可能因侵權而自始崩解——私法層之權利界定是整體制度設計之前提。' },
+
+  { id:1, color:C.cyan, layer:'私法 · 給付標的',
+    step:'STEP 02', ttl:'鏈外儲存', sub:'audio → IPFS CID / Arweave · tokenURI',
+    desc:'音檔與封面通常存於<b>去中心化儲存</b>（IPFS 內容定址 CID、或 Arweave 永久儲存），metadata 以 tokenURI 指向；鏈上只存指標，不存檔案本身。',
+    cite:'ERC-721（tokenURI）；IPFS / Arweave 規範；本論文「機制結構設計」',
+    law:'民法 給付不能 / 不完全給付',
+    ltext:'NFT 並非作品本身，僅是對其 metadata 之指示。若 tokenURI 連結失效、pinning 失敗或開發者擅改 metadata，鏈外內容事實上「滅失」，可能構成給付不能或不完全給付。' },
+
+  { id:2, color:C.cyan, layer:'私法 · 所有權≠著作權',
+    step:'STEP 03', ttl:'鑄造 Mint', sub:'_mint(creator, tokenId) · setRoyalty (ERC-2981)',
+    desc:'合約 <b>_mint</b> 產生唯一 tokenId，owner 記為創作者位址，並設定 ERC-2981 royaltyInfo（受款人＋比例）。此刻代幣誕生，但著作財產權並未隨之移轉。',
+    cite:'ERC-721；ERC-2981；本論文「私法效力分析」',
+    law:'著作權法｜鑄造 ≠ 授權 / 讓與',
+    ltext:'程式碼自動執行不應視為自動授權。購買 NFT 僅取得代幣所有權，不當然取得底層音樂之重製、公開傳輸或散布權；鑄造亦不等同著作財產權讓與，須與鏈下授權契約共同解釋。' },
+
+  { id:3, color:C.green, layer:'監管 · 分級揭露',
+    step:'STEP 04', ttl:'一級銷售 / 上架', sub:'list on marketplace · Sound.xyz / Royal.io',
+    desc:'NFT 上架交易市場（如 Sound.xyz、Royal.io）首次銷售。此時應區分<b>收藏型</b>與<b>收益型</b>：後者風險高，須強化揭露收益來源與授權文件。',
+    cite:'本論文「監管要求分析」；金管會 VASP 指導原則',
+    law:'監管｜收藏型 vs 收益型分級',
+    ltext:'收藏型 NFT 監理重點在授權範圍明確；收益型涉投資期待，應建立強化揭露與合規審核（收益來源證明、授權契約、分潤算法說明），避免一體適用嚴格金融監理，亦防無揭露而規避監理。' },
+
+  { id:4, color:C.gold, layer:'私法 · 轉售權之性質',
+    step:'STEP 05', ttl:'二級轉售 + 版稅回流', sub:'transfer → royaltyInfo() → creator wallet',
+    desc:'持有人轉售時，市場呼叫 <b>royaltyInfo()</b> 將設定比例自動回流創作者錢包，形成類似「轉售權」之效果；惟跨平台、跨鏈或不支援 ERC-2981 之市場<b>未必強制執行</b>。',
+    cite:'ERC-2981；EIP-2981 enforcement 討論；SEC v. Impact Theory (2023)',
+    law:'著作權｜轉售分潤屬契約義務非排他權',
+    ltext:'此回流乃契約義務，而非著作權法賦予之排他權；NFT 一旦脫離平台或跨鏈轉移，分潤未必能被強制執行。SEC v. Impact Theory 和解更要求修改程式碼停止收取二級版稅，凸顯其契約性與可受監理介入。' },
+
+  { id:5, color:C.red, layer:'監管 · 投資契約',
+    step:'STEP 06', ttl:'收益分潤 + 證券判斷', sub:'distribute revenue · Howey test · Royal.io / Opulous',
+    desc:'收益型平台（Royal.io、Opulous）將串流／版權收入<b>依比例分給代幣持有人</b>。若收益主要繫於他人努力，即接近「投資契約」，落入證券監理。',
+    cite:'SEC v. Impact Theory (2023)；Howey test；MiCA Recital 11（實質重於形式）',
+    law:'證交法 / Howey｜未登記證券風險',
+    ltext:'收益期待若建立於發行人後續行銷推廣之努力，依 Howey 測試即近於投資契約。SEC 已於 2023 年認定 Impact Theory 之 NFT 為未登記證券；歐盟 MiCA 雖排除 NFT，仍採「實質重於形式」，大量系列或具投資性者仍須納管。' },
+
+  { id:6, color:C.violet, layer:'監管 · VASP / 洗防',
+    step:'STEP 07', ttl:'平台義務：VASP / AML', sub:'VASP · AML/CFT · Travel Rule · SCSP 界分',
+    desc:'平台若涉及<b>資金收付、代幣保管</b>，即可能落入 VASP 範疇，須完成洗防登記、KYC 與旅行規則。應區分「具資產控制力者」與「純工具提供者（SCSP）」。',
+    cite:'洗錢防制法；金管會 VASP 指導原則；MiCA CASP；本論文 §4.2',
+    law:'洗錢防制法｜VASP / SCSP 界分',
+    ltext:'不應泛化將所有技術提供者視為 VASP。代客保管私鑰、控制資金流向、以平台名義執行合約者應納管；僅提供開源工具、不介入交易與資產控制者宜排除，與歐盟 MiCA 對 CASP 之定義趨於一致。' },
+
+  { id:7, color:C.red, layer:'私法 · 鏈上救濟',
+    step:'STEP 08', ttl:'權利變動與救濟', sub:'license expiry → pause · 錯帳 → 沖銷 · DAO 歸責',
+    desc:'授權終止／到期時，須以<b>可更新合約或 pause</b> 停止分潤，否則收益持續錯配侵權；鑄造錯帳以補償交易沖銷；DAO 雖無法人格仍可能被視為可歸責主體。',
+    cite:'民法（撤銷·不當得利）；CFTC v. Ooki DAO；本論文「機制結構設計」',
+    law:'民法 撤銷 / 不當得利｜DAO 歸責',
+    ltext:'智慧合約若完全不可改，授權消滅後仍持續分潤即生侵害，故須預留暫停／可更新模組。鏈上錯誤以新交易沖銷、依不當得利返還。CFTC 起訴 Ooki DAO 顯示去中心化組織仍可能負法律責任。' },
+
+  { id:8, color:C.cyan, layer:'機制 · 技術即法遵',
+    step:'STEP 09', ttl:'權利登錄平台', sub:'on-chain rights registry · license chain · DID / ZKP',
+    desc:'以標準化<b>權利登錄</b>與鏈下授權，使 metadata 成為「法遵元資料」（可否商用、可否改作、可否公開傳輸）；搭配 DID 驗證創作者身分、ZKP 兼顧 KYC 與隱私。',
+    cite:'本論文「技術治理與法遵設計規範建議」；FATF 旅行規則；DID / ZKP',
+    law:'機制治理｜技術即法遵、法遵即技術',
+    ltext:'公私協作之權利登錄平台，將授權鏈與權利來源以不可竄改方式登錄，使作品權利狀態「技術可讀、法律可執行」，協助法院迅速認定權利，把區塊鏈透明性化為公示效果之延伸——這正是本論文制度藍圖的收束。' },
+];
+
+/* ============================================================
+   THREE.JS SETUP
+============================================================ */
+const stageEl = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+stageEl.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05070d);
+scene.fog = new THREE.FogExp2(0x05070d, 0.014);
+
+const camera = new THREE.PerspectiveCamera(48, innerWidth/innerHeight, 0.1, 400);
+
+scene.add(new THREE.AmbientLight(0x8aa0c8, 0.55));
+const key = new THREE.PointLight(0x6fb7ff, 1.5, 200); key.position.set(14,18,22); scene.add(key);
+const rim = new THREE.PointLight(0xa78bfa, 1.2, 200); rim.position.set(-18,-6,14); scene.add(rim);
+const fill = new THREE.DirectionalLight(0xffffff, 0.35); fill.position.set(0,1,8); scene.add(fill);
+
+/* ---------- helpers ---------- */
+const GAP = 17;                              // vertical distance between stages
+const stageY = i => -i * GAP;                // stage center Y
+
+function rounded(w,h,d,r){                    // rounded box via shape extrude-ish (use Box for speed)
+  return new THREE.BoxGeometry(w,h,d);
+}
+function slab(w,h,d,color,opts={}){
+  const m = new THREE.Mesh(rounded(w,h,d),
+    new THREE.MeshStandardMaterial({ color, metalness:.35, roughness:.45,
+      emissive:color, emissiveIntensity:opts.emi??.18, transparent:true, opacity:opts.op??.92 }));
+  const e = new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry),
+    new THREE.LineBasicMaterial({ color:opts.edge??0x9fd4ff, transparent:true, opacity:.5 }));
+  m.add(e); return m;
+}
+function wire(w,h,d,color,op=.7){
+  const g = new THREE.BoxGeometry(w,h,d);
+  return new THREE.LineSegments(new THREE.EdgesGeometry(g),
+    new THREE.LineBasicMaterial({ color, transparent:true, opacity:op }));
+}
+function ring(rad,tube,color,emi=.6){
+  const m = new THREE.Mesh(new THREE.TorusGeometry(rad,tube,16,64),
+    new THREE.MeshStandardMaterial({ color, emissive:color, emissiveIntensity:emi, metalness:.4, roughness:.3 }));
+  return m;
+}
+function glowSphere(r,color){
+  return new THREE.Mesh(new THREE.SphereGeometry(r,24,24),
+    new THREE.MeshStandardMaterial({ color, emissive:color, emissiveIntensity:1.4, roughness:.2 }));
+}
+// canvas text label as camera-facing sprite (with dark plate for readability)
+function label(text, {size=46, color='#dfe8fb', accent=null, scale=1}={}){
+  const pad=18, lh=size*1.32;
+  const lines = text.split('\n');
+  const cv=document.createElement('canvas'); const ctx=cv.getContext('2d');
+  ctx.font=`700 ${size}px "SF Mono",ui-monospace,Menlo,monospace`;
+  let w=0; lines.forEach(l=>w=Math.max(w,ctx.measureText(l).width));
+  cv.width=w+pad*2; cv.height=lh*lines.length+pad*1.4;
+  const c=cv.getContext('2d');
+  c.fillStyle='rgba(8,12,22,.74)';
+  roundRect(c,0,0,cv.width,cv.height,16); c.fill();
+  c.strokeStyle = accent || 'rgba(120,160,220,.35)'; c.lineWidth=2;
+  roundRect(c,1,1,cv.width-2,cv.height-2,16); c.stroke();
+  c.font=`700 ${size}px "SF Mono",ui-monospace,Menlo,monospace`;
+  c.textBaseline='middle'; c.fillStyle=color;
+  lines.forEach((l,i)=>c.fillText(l, pad, pad*0.7 + lh*(i+0.5)));
+  const tex=new THREE.CanvasTexture(cv); tex.anisotropy=8; tex.colorSpace=THREE.SRGBColorSpace;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthWrite:false }));
+  sp.scale.set(cv.width/170*scale, cv.height/170*scale, 1);
+  return sp;
+}
+function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+
+function arrow(from,to,color){
+  const dir=new THREE.Vector3().subVectors(to,from); const len=dir.length();
+  const g=new THREE.Group();
+  const line=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,len-0.6,8),
+    new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.7}));
+  const head=new THREE.Mesh(new THREE.ConeGeometry(.18,.5,12),
+    new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.9}));
+  line.position.set(0,(len-0.6)/2-len/2+0.3,0); // center
+  const mid=new THREE.Group(); mid.add(line);
+  head.position.set(0,len/2-0.25,0); mid.add(head);
+  mid.position.copy(from);
+  mid.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+  mid.position.lerpVectors(from,to,0.5);
+  g.add(mid); return g;
+}
+
+/* ============================================================
+   BUILD EACH STAGE
+============================================================ */
+const groups = [];
+const flowAnchors = [];          // y-points the travelling pulse passes through (top→bottom per stage)
+const animators = [];            // per-frame fns(t, localActive)
+
+function stageColorHex(i){ return '#'+new THREE.Color(STAGES[i].color).getHexString(); }
+
+STAGES.forEach((S,i)=>{
+  const g=new THREE.Group(); g.position.y=stageY(i); scene.add(g); groups.push(g);
+  const col=S.color; const accent=stageColorHex(i);
+
+  // --- common: a faint platform disc + big stage number watermark behind ---
+  const disc=new THREE.Mesh(new THREE.CircleGeometry(11,64),
+    new THREE.MeshBasicMaterial({color:0x0c1424,transparent:true,opacity:.0}));
+  disc.rotation.x=-Math.PI/2; disc.position.y=-3.4; g.add(disc);
+
+  const tag=label((i+1<10?'0':'')+(i+1)+'  '+S.ttl, {size:40, color:'#eaf2ff', accent:rgbaFrom(col,.55), scale:1.15});
+  tag.position.set(0,4.6,0); g.add(tag);
+
+  // motif per stage — Music NFT lifecycle
+  if(i===0){ // license chain (off-chain)
+    const srcs=[['作詞',-6],['作曲',-2],['錄音',2],['表演',6]];
+    srcs.forEach(([txt,x],si)=>{const b=slab(2.2,1.6,.5,0x2a2410,{edge:C.gold,emi:.12}); b.position.set(x,2.6,0); g.add(b);
+      g.add(place(label(txt,{size:30,color:'#ffe7ad',accent:rgbaFrom(C.gold,.55)}),x,2.6,.4));
+      g.add(arrow(new THREE.Vector3(x,1.6,.3),new THREE.Vector3(0,-1.3,.3), si===2?C.red:C.gold));});
+    const lic=slab(3.6,2,.6,0x33270f,{edge:C.gold,emi:.2}); lic.position.set(0,-2.6,0); g.add(lic);
+    g.add(place(label('License\noff-chain',{size:28,color:'#ffe7ad',accent:rgbaFrom(C.gold,.6)}),0,-2.6,.4));
+    g.add(place(label('授權鏈缺口 ✗',{size:24,color:'#ffc6cd',accent:rgbaFrom(C.red,.55)}),3.4,.6,.6));
+    flowAnchors.push({top:3,bot:-3});
+  }
+  else if(i===1){ // off-chain storage IPFS/Arweave
+    const tok=slab(2.8,2.8,.6,0x16203a,{edge:col,emi:.15}); g.add(tok);
+    g.add(place(label('NFT\ntokenURI',{size:28,accent}),0,0,.5));
+    const cluster=new THREE.Group(); cluster.position.set(6.2,0,0); g.add(cluster);
+    for(let n=0;n<7;n++){const ang=n/7*Math.PI*2; const node=glowSphere(.36,C.cyan);
+      node.position.set(Math.cos(ang)*1.9,Math.sin(ang)*1.9,0); cluster.add(node);}
+    g.add(place(label('IPFS CID / Arweave',{size:26,color:'#cfeaff',accent}),6.2,-2.6,0));
+    g.add(arrow(new THREE.Vector3(1.6,0,.3),new THREE.Vector3(4.2,0,.3),col));
+    g.add(place(label('鏈上僅存指標 · 鏈外存檔',{size:24,accent}),0,-3.4,0));
+    animators.push((t)=>{cluster.rotation.z=t*.3;});
+    flowAnchors.push({top:3,bot:-3});
+  }
+  else if(i===2){ // mint
+    const contract=slab(3.4,3,.7,0x141f3a,{edge:col,emi:.15}); contract.position.set(-3.6,0,0); g.add(contract);
+    g.add(place(label('_mint()\nERC-721',{size:28,accent}),-3.6,-2.4,.5));
+    const token=new THREE.Mesh(new THREE.CylinderGeometry(1.3,1.3,.4,40),
+      new THREE.MeshStandardMaterial({color:C.gold,emissive:C.gold,emissiveIntensity:.5,metalness:.6,roughness:.2}));
+    token.rotation.x=Math.PI/2; token.position.set(2.6,.4,0); g.add(token);
+    g.add(place(label('tokenId #001',{size:26,color:'#ffe7ad',accent:rgbaFrom(C.gold,.6)}),2.6,-1.7,.5));
+    g.add(place(label('royaltyInfo set · ERC-2981',{size:24,accent}),0,3.4,0));
+    g.add(arrow(new THREE.Vector3(-1.7,.3,.4),new THREE.Vector3(1.1,.4,.4),C.gold));
+    animators.push((t)=>{token.rotation.z=t*1.2; token.material.emissiveIntensity=.4+Math.sin(t*3)*.3;});
+    flowAnchors.push({top:3,bot:-3});
+  }
+  else if(i===3){ // primary sale / listing
+    const market=slab(4.2,1.9,.6,0x12243e,{edge:C.green,emi:.15}); market.position.set(0,2.8,0); g.add(market);
+    g.add(place(label('marketplace · list',{size:26,color:'#c8f5d6',accent:rgbaFrom(C.green,.55)}),0,2.8,.4));
+    const types=[['收藏型\n揭露: 授權範圍',-3.6,C.cyan],['收益型\n揭露: 收益+審核',3.6,C.gold]];
+    types.forEach(([txt,x,c])=>{const b=slab(3.6,2,.6,0x14203a,{edge:c,emi:.15}); b.position.set(x,-1.6,0); g.add(b);
+      g.add(place(label(txt,{size:24,accent:rgbaFrom(c,.6)}),x,-1.6,.4));
+      g.add(arrow(new THREE.Vector3(0,1.7,.3),new THREE.Vector3(x,-.5,.3),c));});
+    g.add(place(label('⚠ 收益型 = 高風險',{size:22,color:'#ffc6cd',accent:rgbaFrom(C.red,.5)}),3.6,-3.3,.5));
+    flowAnchors.push({top:3,bot:-3});
+  }
+  else if(i===4){ // secondary sale + royalty
+    const seller=slab(2.4,1.7,.5,0x14203a,{edge:col,emi:.12}); seller.position.set(-5,1.6,0); g.add(seller);
+    g.add(place(label('seller',{size:24,accent}),-5,1.6,.4));
+    const buyer=slab(2.4,1.7,.5,0x14203a,{edge:col,emi:.12}); buyer.position.set(5,1.6,0); g.add(buyer);
+    g.add(place(label('buyer',{size:24,accent}),5,1.6,.4));
+    g.add(arrow(new THREE.Vector3(3.6,1.6,.3),new THREE.Vector3(-3.6,1.6,.3),col));
+    const creator=slab(2.8,1.6,.5,0x33270f,{edge:C.gold,emi:.18}); creator.position.set(0,-2.6,0); g.add(creator);
+    g.add(place(label('creator\nroyalty',{size:24,color:'#ffe7ad',accent:rgbaFrom(C.gold,.6)}),0,-2.6,.4));
+    g.add(arrow(new THREE.Vector3(0,1,.3),new THREE.Vector3(0,-1.6,.3),C.gold));
+    g.add(place(label('跨平台/跨鏈 ✗ 未必強制',{size:22,color:'#ffc6cd',accent:rgbaFrom(C.red,.5)}),5,-1.2,.5));
+    g.add(place(label('royaltyInfo() ↩',{size:24,color:'#ffe7ad',accent:rgbaFrom(C.gold,.55)}),0,3.2,0));
+    flowAnchors.push({top:3,bot:-3});
+  }
+  else if(i===5){ // revenue split + Howey
+    const rev=slab(3.2,1.7,.6,0x2a2410,{edge:C.gold,emi:.18}); rev.position.set(0,3,0); g.add(rev);
+    g.add(place(label('streaming / 版稅收入',{size:24,color:'#ffe7ad',accent:rgbaFrom(C.gold,.55)}),0,3,.4));
+    for(let h=0;h<4;h++){const x=-4.8+h*3.2; const b=slab(2.1,1.3,.5,0x14203a,{edge:col,emi:.12}); b.position.set(x,-2.6,0); g.add(b);
+      g.add(place(label('holder',{size:20,accent}),x,-2.6,.4));
+      g.add(arrow(new THREE.Vector3(0,2,.3),new THREE.Vector3(x,-1.9,.3),C.gold));}
+    const scale=ring(1.3,.12,C.red,.6); scale.position.set(0,.4,1.2); g.add(scale);
+    g.add(place(label('Howey? → 未登記證券',{size:24,color:'#ffc6cd',accent:rgbaFrom(C.red,.6)}),0,.4,1.6));
+    animators.push((t)=>{scale.rotation.z=Math.sin(t*1.5)*.35;});
+    flowAnchors.push({top:3,bot:-3});
+  }
+  else if(i===6){ // platform VASP duties
+    const plat=slab(3.8,3.2,.7,0x1c1840,{edge:C.violet,emi:.16}); g.add(plat);
+    g.add(place(label('platform',{size:28,color:'#e3d6ff',accent:rgbaFrom(C.violet,.55)}),0,0,.5));
+    const badges=[['KYC',-4.4,2.2],['AML/CFT',4.4,2.2],['Travel Rule',0,-3.4]];
+    badges.forEach(([txt,x,y])=>{const r=ring(.78,.1,C.violet,.5); r.position.set(x,y,0); g.add(r);
+      g.add(place(label(txt,{size:22,color:'#e3d6ff',accent:rgbaFrom(C.violet,.6)}),x,y,.3));});
+    g.add(place(label('VASP  vs  SCSP（純工具）',{size:24,color:'#cfd0ff',accent}),0,3.6,0));
+    animators.push((t)=>{plat.material.emissiveIntensity=.12+Math.abs(Math.sin(t*1.4))*.25;});
+    flowAnchors.push({top:3,bot:-3});
+  }
+  else if(i===7){ // rights change & remedy
+    const lic=slab(3,1.7,.5,0x33270f,{edge:C.gold,emi:.15}); lic.position.set(-4.2,1.8,0); g.add(lic);
+    g.add(place(label('授權到期 ✗',{size:24,color:'#ffc6cd',accent:rgbaFrom(C.red,.5)}),-4.2,1.8,.4));
+    const pause=slab(3.6,1.2,.5,0x3a1620,{edge:C.red,emi:.25}); pause.position.set(0,-.4,0); g.add(pause);
+    g.add(place(label('⏸ pause 分潤',{size:26,color:'#ffc6cd',accent:rgbaFrom(C.red,.6)}),0,-.4,.4));
+    g.add(arrow(new THREE.Vector3(-2.6,1.5,.3),new THREE.Vector3(-.7,.2,.3),C.red));
+    const dao=glowSphere(.5,C.violet); dao.position.set(4.2,1.8,0); g.add(dao); dao.userData.on=true;
+    g.add(place(label('DAO 歸責\n(Ooki DAO)',{size:22,color:'#e3d6ff',accent:rgbaFrom(C.violet,.6)}),4.2,.5,.5));
+    g.add(arrow(new THREE.Vector3(4.2,-3,.5),new THREE.Vector3(4.2,1,.5),C.red));
+    g.add(place(label('沖銷式更正 · 不當得利返還',{size:22,accent}),0,-3.4,0));
+    animators.push((t)=>{g.children.forEach(ch=>{if(ch.userData.on)ch.material.emissiveIntensity=1+Math.sin(t*3)*.5;});});
+    flowAnchors.push({top:3,bot:-3});
+  }
+  else if(i===8){ // rights registry
+    const ledger=slab(5,4,.7,0x10182e,{edge:col,emi:.16}); g.add(ledger);
+    const rows=[];
+    for(let r=0;r<4;r++){const row=slab(4.2,.5,.2,C.cyan,{emi:.25}); row.position.set(0,1.2-r*.9,.45); ledger.add(row); rows.push(row);}
+    g.add(place(label('rights registry · license chain',{size:24,color:'#cfeaff',accent}),0,3.4,0));
+    const did=ring(.8,.11,C.cyan,.5); did.position.set(-4.4,0,.5); g.add(did);
+    g.add(place(label('DID',{size:24,accent}),-4.4,-1.5,.5));
+    const zkp=ring(.8,.11,C.violet,.5); zkp.position.set(4.4,0,.5); g.add(zkp);
+    g.add(place(label('ZKP',{size:24,color:'#e3d6ff',accent:rgbaFrom(C.violet,.6)}),4.4,-1.5,.5));
+    g.add(place(label('技術可讀 · 法律可執行',{size:24,color:'#bff5d0',accent:rgbaFrom(C.green,.5)}),0,-3.4,0));
+    animators.push((t)=>{rows.forEach((row,ci)=>{row.material.emissiveIntensity=.15+Math.abs(Math.sin(t*1.5+ci))*.4;});});
+    flowAnchors.push({top:3,bot:-3});
+  }
+});
+
+function place(obj,x,y,z){obj.position.set(x,y,z);return obj;}
+function rgbaFrom(hex,a){const c=new THREE.Color(hex);return `rgba(${Math.round(c.r*255)},${Math.round(c.g*255)},${Math.round(c.b*255)},${a})`;}
+
+/* ---------- travelling pulse (the transaction) ---------- */
+const pulse = glowSphere(.32, C.white);
+const pulseLight = new THREE.PointLight(0xbfe9ff, 1.1, 14); pulse.add(pulseLight);
+scene.add(pulse);
+// trail
+const trailN=26; const trailPos=new Float32Array(trailN*3);
+const trail=new THREE.Points(new THREE.BufferGeometry(),
+  new THREE.PointsMaterial({color:0x9fe6ff,size:.34,transparent:true,opacity:.55,depthWrite:false,blending:THREE.AdditiveBlending}));
+trail.geometry.setAttribute('position',new THREE.BufferAttribute(trailPos,3));
+scene.add(trail);
+const trailHist=[];
+
+/* ---------- ambient starfield ---------- */
+const starN=900; const sp=new Float32Array(starN*3);
+for(let i=0;i<starN;i++){sp[i*3]=(Math.random()-.5)*160;sp[i*3+1]=(Math.random()-.5)*(GAP*STAGES.length+40)- GAP*STAGES.length/2;sp[i*3+2]=(Math.random()-.5)*160;}
+const stars=new THREE.Points(new THREE.BufferGeometry(),
+  new THREE.PointsMaterial({color:0x4a6da0,size:.18,transparent:true,opacity:.5}));
+stars.geometry.setAttribute('position',new THREE.BufferAttribute(sp,3)); scene.add(stars);
+
+/* ============================================================
+   CAMERA KEYFRAMES (one per stage)
+============================================================ */
+const keys = STAGES.map((s,i)=>{
+  const tgt=new THREE.Vector3(0, stageY(i)+0.3, 0);
+  const ang=(i%2? 0.62 : -0.62) + (i*0.05);
+  const dist=18.5 - (i===3?2:0);
+  const pos=new THREE.Vector3(Math.sin(ang)*dist, stageY(i)+3.2, Math.cos(ang)*dist);
+  return {pos,tgt};
+});
+const tmpPos=new THREE.Vector3(), tmpTgt=new THREE.Vector3();
+function smooth(t){return t*t*(3-2*t);}
+
+/* ============================================================
+   SCROLL DRIVING
+============================================================ */
+const scrollEl=document.getElementById('scroll');
+// lead spacer + one per stage + tail
+const totalSpacers = STAGES.length + 1.5;
+for(let i=0;i<Math.ceil(totalSpacers);i++){const d=document.createElement('div');d.className='spacer';scrollEl.appendChild(d);}
+
+let progress=0;            // 0..(N-1)
+let targetProgress=0;
+function computeScroll(){
+  const max=document.body.scrollHeight - innerHeight;
+  const p=max>0? scrollY/max : 0;
+  targetProgress = p*(STAGES.length-1);
+}
+addEventListener('scroll',computeScroll,{passive:true});
+
+/* HUD elements */
+const hud=document.getElementById('hud'), top=document.getElementById('top'),
+      dotsEl=document.getElementById('dots'), intro=document.getElementById('intro');
+const nStep=document.getElementById('nStep'), nTtl=document.getElementById('nTtl'),
+      nSub=document.getElementById('nSub'), nDesc=document.getElementById('nDesc'),
+      nCite=document.getElementById('nCite'),
+      lLaw=document.getElementById('lLaw'), lText=document.getElementById('lText'),
+      progNum=document.getElementById('progNum');
+
+// references modal
+const refModal=document.getElementById('refModal');
+document.getElementById('refBtn').onclick=()=>refModal.classList.add('on');
+document.getElementById('refClose').onclick=()=>refModal.classList.remove('on');
+refModal.onclick=e=>{if(e.target===refModal)refModal.classList.remove('on');};
+addEventListener('keydown',e=>{if(e.key==='Escape')refModal.classList.remove('on');});
+const narr=document.getElementById('narr'), legal=document.getElementById('legal');
+
+// dots
+STAGES.forEach((s,i)=>{const b=document.createElement('button');b.title=s.ttl;
+  b.onclick=()=>{const max=document.body.scrollHeight-innerHeight;scrollTo({top:max*(i/(STAGES.length-1)),behavior:'smooth'});};
+  dotsEl.appendChild(b);});
+const dotBtns=[...dotsEl.children];
+
+let shown=-1;
+function setStage(i){
+  if(i===shown) return;
+  const S=STAGES[i]; shown=i;
+  // fade out then swap
+  narr.classList.add('fade'); legal.classList.add('fade');
+  setTimeout(()=>{
+    nStep.textContent=S.step; nTtl.textContent=S.ttl; nSub.textContent=S.sub;
+    nDesc.innerHTML=S.desc; nCite.textContent=S.cite; lLaw.textContent=S.law; lText.textContent=S.ltext;
+    const c=stageColorHex(i);
+    nStep.style.color=c; nTtl.style.color='#fff'; nSub.style.color=c;
+    narr.style.borderColor=rgbaFrom(S.color,.3);
+    narr.classList.remove('fade'); legal.classList.remove('fade');
+  },180);
+  progNum.textContent=`${(i+1<10?'0':'')+(i+1)} / 0${STAGES.length}`;
+  dotBtns.forEach((b,bi)=>b.classList.toggle('active',bi===i));
+}
+
+let started=false;
+function uiOn(on){
+  hud.classList.toggle('on',on); top.classList.toggle('on',on); dotsEl.classList.toggle('on',on);
+  intro.style.opacity = on? '0':'1';
+}
+
+/* ============================================================
+   RENDER LOOP + POST
+============================================================ */
+const composer=new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.62,0.7,0.78);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+let mx=0,my=0;
+addEventListener('pointermove',e=>{mx=(e.clientX/innerWidth-.5);my=(e.clientY/innerHeight-.5);});
+
+const clock=new THREE.Clock();
+function frame(){
+  requestAnimationFrame(frame);
+  const t=clock.getElapsedTime();
+  progress += (targetProgress-progress)*0.08;
+
+  // intro fade
+  if(!started && scrollY>40){started=true;uiOn(true);}
+  if(started && scrollY<=40){started=false;uiOn(false);}
+
+  // camera interpolation
+  const f=Math.max(0,Math.min(STAGES.length-1,progress));
+  const i0=Math.floor(f), i1=Math.min(STAGES.length-1,i0+1), tt=smooth(f-i0);
+  tmpPos.lerpVectors(keys[i0].pos,keys[i1].pos,tt);
+  tmpTgt.lerpVectors(keys[i0].tgt,keys[i1].tgt,tt);
+  // mouse parallax
+  tmpPos.x += mx*3.2; tmpPos.y += -my*2.4;
+  camera.position.lerp(tmpPos,0.12);
+  camera.lookAt(tmpTgt);
+
+  // active stage HUD (round)
+  setStage(Math.round(f));
+
+  // travelling pulse: glide down through pipeline continuously
+  const cyc=(t*0.16)%1;                       // 0..1 over full pipeline
+  const py = stageY(0)+3 - cyc*((STAGES.length-1)*GAP+6);
+  pulse.position.set(Math.sin(t*0.8)*0.6, py, Math.cos(t*0.8)*0.6+0.6);
+  // trail
+  trailHist.unshift(pulse.position.clone()); if(trailHist.length>trailN)trailHist.pop();
+  for(let k=0;k<trailHist.length;k++){trailPos[k*3]=trailHist[k].x;trailPos[k*3+1]=trailHist[k].y;trailPos[k*3+2]=trailHist[k].z;}
+  trail.geometry.attributes.position.needsUpdate=true;
+  pulse.material.emissiveIntensity=1.6+Math.sin(t*6)*.4;
+
+  // per-stage animators (run those near camera for perf)
+  animators.forEach(a=>a(t));
+  stars.rotation.y=t*0.01;
+
+  composer.render();
+}
+frame();
+computeScroll();
+setStage(0);
+
+addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);
+  computeScroll();
+});
+</script>
+</body>
+</html>
