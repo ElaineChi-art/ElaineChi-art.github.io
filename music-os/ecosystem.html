@@ -125,6 +125,28 @@
   #tip{position:fixed;z-index:30;pointer-events:none;display:none;background:#0b1324;color:#eaf2ff;border:1px solid rgba(120,160,220,.3);border-radius:9px;padding:9px 12px;font-size:12px;line-height:1.5;max-width:300px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
   #tip b{color:var(--cyan)}#tip .s{color:#9fb4d6;font-size:11px}#tip .e{color:#7d8caa;font-size:10.5px;font-style:italic}
   @media(max-width:1000px){#kpis,#right,#fin,#ctrl{display:none}#guide,#feed{width:92vw}#lab .lbody{flex-direction:column}#lab .lleft{width:100%;max-height:160px}}
+
+  /* ============ DAY (light) THEME ============ */
+  body.day{background:radial-gradient(130% 120% at 70% 0%,#fbfbfa,#e6eaf1);color:#2c3447}
+  body.day .glass{background:linear-gradient(160deg,rgba(255,255,255,.9),rgba(244,247,251,.82));border-color:rgba(150,166,184,.45);box-shadow:0 14px 40px rgba(40,60,110,.14)}
+  body.day #bar{background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.55));border-bottom-color:#cdd5e2}
+  body.day #bar .brand b{background:linear-gradient(100deg,#1b2230,#2b6cb0);-webkit-background-clip:text;background-clip:text;color:transparent}
+  body.day #intro{background:radial-gradient(120% 90% at 50% 45%,rgba(236,240,247,.5),rgba(250,251,253,.96))}
+  body.day #intro h1{background:linear-gradient(100deg,#1b2230,#2b6cb0 55%,#7b54d6);-webkit-background-clip:text;background-clip:text;color:transparent}
+  body.day #bar .brand span,body.day #personaTag,body.day #bar .nav,body.day #bar .nav a,body.day .kpi .l,body.day #ifpi,body.day #right h3,body.day #right .tabs button,body.day .srow .t i,body.day .note,body.day #fin h3,body.day #fin .grid,body.day #ctrl .ct,body.day #feed .h,body.day #guide .gh .nm,body.day #guide .gh .pg,body.day #guide .qa .q,body.day #lab .op,body.day #lab h4,body.day #lab .lfoot,body.day #lab .lprog,body.day #intro .pre div,body.day .who,body.day #intro .src,body.day #presentHint,body.day .rate,body.day .bizcard .bd,body.day #lab .slot .k,body.day .persona small,body.day #feedList .tm{color:#55617a}
+  body.day .srow .t b,body.day #fin .grid b,body.day #guide h2,body.day #lab .lh b,body.day #lab .bizcard .bt,body.day #lab .slot .vv,body.day #right .tabs button.on,body.day .btns button,body.day .persona{color:#1b2230}
+  body.day #ctrl button,body.day #right .tabs button,body.day #lab .levels button,body.day #lab .lctrl button,body.day #guide .gn button{background:rgba(235,239,246,.85);border-color:rgba(150,166,184,.5);color:#2c3447}
+  body.day #ctrl button.on,body.day #right .tabs button.on,body.day #lab .levels button.on{background:rgba(43,108,176,.14);border-color:#2b6cb0;color:#15324f}
+  body.day #ctrl .prime{border-color:#c8902a;color:#9a6a08}
+  body.day .slot{background:rgba(245,248,252,.92);border-color:rgba(150,166,184,.4)}
+  body.day .bizcard{border-color:rgba(150,166,184,.4)}
+  body.day .bizcard.on{background:rgba(43,108,176,.07);border-color:#2b6cb0}
+  body.day .stack .sl{background:rgba(235,239,246,.92);color:#15324f}
+  body.day .srow .bar{background:rgba(120,150,200,.2)}
+  body.day .persona{background:rgba(245,248,252,.85);border-color:rgba(150,166,184,.5)}
+  body.day .btns .sec{background:rgba(235,239,246,.85);color:#55617a}
+  body.day #guide .gn .nx{color:#04121c}
+  body.day #lab .lh,body.day #lab .lctrl,body.day #lab .lfoot,body.day #lab .lleft{border-color:rgba(150,166,184,.3)}
 </style>
 </head>
 <body>
@@ -143,7 +165,7 @@
   </div>
 
   <div id="bar"><div class="brand"><b>♪ Music Royalty OS</b><span class="mono">Global Digital Twin v5.0</span><span id="personaTag">VIEW: —</span></div>
-    <div class="nav"><a id="homeBtn" style="cursor:pointer">⌂ 首頁</a> · <a href="mechanism.html">機制模擬</a> · <a href="index.html">執行機制</a> · <a href="lifecycle.html">生命週期</a> · <a class="cur">生態系</a></div></div>
+    <div class="nav"><a id="themeBtn" style="cursor:pointer">🌙 夜間</a> · <a id="homeBtn" style="cursor:pointer">⌂ 首頁</a> · <a href="mechanism.html">機制模擬</a> · <a href="index.html">執行機制</a> · <a href="lifecycle.html">生命週期</a> · <a class="cur">生態系</a></div></div>
 
   <div id="kpis" class="hud">
     <div class="kpi glass"><div class="l">Assets Under Management</div><div class="v gold mono" id="k_rum">$0</div><div class="d" id="k_rumd">▲ live</div></div>
@@ -559,7 +581,16 @@ function setLabLevel(lv){labLv=lv;document.querySelectorAll('#lab .levels button
 function setLife(stage){document.querySelectorAll('#txlife div').forEach(d=>d.classList.toggle('on',+d.dataset.s<=stage));}
 
 /* ===== post / loop ===== */
-const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.72,0.6,0.7));composer.addPass(new OutputPass());
+const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.72,0.6,0.7);composer.addPass(bloom);composer.addPass(new OutputPass());
+// ===== Day / Night theme =====
+let day=localStorage.getItem('mros-theme')==='day';
+function setTheme(d){day=d;document.body.classList.toggle('day',d);try{localStorage.setItem('mros-theme',d?'day':'night');}catch(e){}
+  const bg=d?0xeef1f6:0x05080f;scene.background.set(bg);scene.fog.color.set(bg);scene.fog.density=d?0.0055:0.0072;
+  bloom.strength=d?0.18:0.72;renderer.toneMappingExposure=d?1.15:1.0;
+  if(d){p1.intensity=0.5;p2.intensity=0.45;}else{p1.intensity=1.0;p2.intensity=0.9;}
+  const b=$('themeBtn');if(b)b.textContent=d?'☀️ 日間':'🌙 夜間';}
+$('themeBtn').onclick=()=>setTheme(!day);
+setTheme(day);
 const clock=new THREE.Clock();
 function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),0.05),t=clock.elapsedTime,sp=simSpeed;
   if(camTween){camTween.t=Math.min(1,camTween.t+dt/camTween.dur);const k=easeIO(camTween.t);camera.position.lerpVectors(camTween.fromP,camTween.toP,k);controls.target.lerpVectors(camTween.fromT,camTween.toT,k);camera.lookAt(controls.target);if(camTween.t>=1){controls.enabled=true;camTween=null;}}
