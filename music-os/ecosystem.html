@@ -12,7 +12,7 @@
   .glass{background:linear-gradient(160deg,rgba(20,30,54,.9),rgba(9,14,28,.86));border:1px solid rgba(130,170,230,.32);border-radius:14px;backdrop-filter:blur(13px);box-shadow:0 18px 50px rgba(0,0,0,.55)}
 
   #intro{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;
-    background:radial-gradient(120% 90% at 50% 45%,rgba(10,18,40,.2),rgba(3,5,11,.94));transition:opacity 1.1s ease;padding:20px}
+    background:radial-gradient(120% 90% at 50% 35%,#0a1224 0%,#05080f 70%);transition:opacity 1.1s ease;padding:20px}
   #intro.gone{opacity:0;pointer-events:none}
   #intro .tag{font-size:12px;letter-spacing:.5em;color:var(--cyan);opacity:.85}
   #intro h1{font-size:clamp(24px,4.4vw,54px);font-weight:900;line-height:1.1;background:linear-gradient(100deg,#fff,var(--cyan) 50%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -131,7 +131,7 @@
   body.day .glass{background:linear-gradient(160deg,rgba(255,255,255,.9),rgba(244,247,251,.82));border-color:rgba(150,166,184,.45);box-shadow:0 14px 40px rgba(40,60,110,.14)}
   body.day #bar{background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.55));border-bottom-color:#cdd5e2}
   body.day #bar .brand b{background:linear-gradient(100deg,#1b2230,#2b6cb0);-webkit-background-clip:text;background-clip:text;color:transparent}
-  body.day #intro{background:radial-gradient(120% 90% at 50% 45%,rgba(236,240,247,.5),rgba(250,251,253,.96))}
+  body.day #intro{background:radial-gradient(120% 90% at 50% 35%,#eef2f8 0%,#dfe5ef 75%)}
   body.day #intro h1{background:linear-gradient(100deg,#1b2230,#2b6cb0 55%,#7b54d6);-webkit-background-clip:text;background-clip:text;color:transparent}
   body.day #bar .brand span,body.day #personaTag,body.day #bar .nav,body.day #bar .nav a,body.day .kpi .l,body.day #ifpi,body.day #right h3,body.day #right .tabs button,body.day .srow .t i,body.day .note,body.day #fin h3,body.day #fin .grid,body.day #ctrl .ct,body.day #feed .h,body.day #guide .gh .nm,body.day #guide .gh .pg,body.day #guide .qa .q,body.day #lab .op,body.day #lab h4,body.day #lab .lfoot,body.day #lab .lprog,body.day #intro .pre div,body.day .who,body.day #intro .src,body.day #presentHint,body.day .rate,body.day .bizcard .bd,body.day #lab .slot .k,body.day .persona small,body.day #feedList .tm{color:#55617a}
   body.day .srow .t b,body.day #fin .grid b,body.day #guide h2,body.day #lab .lh b,body.day #lab .bizcard .bt,body.day #lab .slot .vv,body.day #right .tabs button.on,body.day .btns button,body.day .persona{color:#1b2230}
@@ -163,17 +163,17 @@
   body.day #load{background:#eef2f7;color:#55617a}
   body.day #slotBar,body.day #fin .slotbar span{background:#2b6cb0}
   body.day .btns .sec{border-color:rgba(150,166,184,.6)}
-  /* ---- left panels slide out on hover (don't block the scene) ---- */
-  #kpis,#ctrl{transition:transform .38s cubic-bezier(.2,.8,.2,1)}
-  #kpis{transform:translateX(-115%)}#ctrl{transform:translateX(-115%)}
-  body.leftopen #kpis,body.leftopen #ctrl{transform:translateX(0)}
-  #leftEdge{position:fixed;left:0;top:56px;bottom:0;width:22px;z-index:17;cursor:pointer;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(90deg,rgba(54,226,255,.16),rgba(54,226,255,0));border-right:1px solid rgba(120,160,220,.2);transition:background .2s}
-  #leftEdge:hover{background:linear-gradient(90deg,rgba(54,226,255,.32),rgba(54,226,255,0))}
-  #leftEdge span{writing-mode:vertical-rl;font-size:11px;letter-spacing:.32em;color:var(--cyan);font-weight:600}
-  body.leftopen #leftEdge{opacity:0;pointer-events:none}
-  body.day #leftEdge{background:linear-gradient(90deg,rgba(43,108,176,.14),transparent);border-right-color:rgba(150,166,184,.4)}
-  body.day #leftEdge span{color:#0e7490}
+  /* ---- control panel tucks away; slides out on hover of its tab ---- */
+  #ctrl{transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+  #ctrl{transform:translateX(-118%)}
+  body.ctrlopen #ctrl{transform:translateX(0)}
+  #ctrlEdge{position:fixed;left:0;bottom:22px;z-index:17;cursor:pointer;display:flex;align-items:center;gap:7px;
+    padding:11px 15px 11px 11px;border-radius:0 14px 14px 0;font-size:12.5px;font-weight:700;letter-spacing:.08em;color:var(--cyan);
+    background:linear-gradient(160deg,rgba(20,30,54,.92),rgba(9,14,28,.9));border:1px solid rgba(130,170,230,.34);border-left:0;
+    box-shadow:0 10px 30px rgba(0,0,0,.45);transition:.25s}
+  #ctrlEdge:hover{padding-right:20px;box-shadow:0 0 20px rgba(54,226,255,.3)}
+  body.ctrlopen #ctrlEdge{opacity:0;pointer-events:none;transform:translateX(-20px)}
+  body.day #ctrlEdge{background:linear-gradient(160deg,rgba(255,255,255,.94),rgba(244,247,251,.9));border-color:rgba(150,166,184,.5);color:#0e7490;box-shadow:0 10px 30px rgba(40,60,110,.16)}
 </style>
 </head>
 <body>
@@ -238,7 +238,7 @@
     <div class="gh"><div class="ai">🧠</div><div class="nm" id="gMode">System Guide AI</div><div class="pg" id="gPg">1 / 8</div></div>
     <h2 id="gT">—</h2><div class="en" id="gEn">—</div>
     <div class="qa"><div class="q what"><b>What 是什麼</b><span id="gWhat">—</span></div><div class="q why"><b>Why／Who 為何·誰受益</b><span id="gWhy">—</span></div><div class="q how"><b>How／Contract 如何·哪個合約</b><span id="gHow">—</span></div><div class="q live"><b>Live 即時·狀態變化</b><span id="gLive">—</span></div></div>
-    <div class="gn"><button id="gPrev">←</button><button id="gNext" class="nx">下一步 →</button><button id="gPlay" class="lab">▶ 自動導覽</button><button id="gLang">🌐 中文</button><button id="gMute">🔊</button><button id="gLab" class="lab" style="display:none">⚙ Lab</button><button id="gDive" class="lab" style="display:none">🔬 深入</button><button id="gExit" class="ex">✕</button></div>
+    <div class="gn"><button id="gPrev">←</button><button id="gNext" class="nx">下一步 →</button><button id="gPlay" class="lab">▶ 自動導覽</button><button id="gLang">🌐 EN</button><button id="gMute">🔊</button><button id="gLab" class="lab" style="display:none">⚙ Lab</button><button id="gDive" class="lab" style="display:none">🔬 深入</button><button id="gExit" class="ex">✕</button></div>
   </div>
 
   <div id="lab" class="glass">
@@ -253,7 +253,7 @@
   <div id="feed" class="glass hud"><div class="h"><span>Live Event Feed · on-chain</span><span class="dot"></span></div><div id="feedList"></div></div>
   <div id="dive"><div class="dh"><b id="diveT">Deep Dive</b><span class="dsub" id="diveSub"></span><button id="diveX">✕ 返回生態系</button></div><iframe id="diveFrame" title="deep dive"></iframe></div>
 
-  <div id="leftEdge" class="hud"><span>指標 · 控制 ›</span></div>
+  <div id="ctrlEdge" class="hud">⚙ 控制 ›</div>
 
   <div id="tip"></div>
 
@@ -409,7 +409,7 @@ function applyPersona(){const cfg=PCONF[persona[0]];$('personaTag').textContent=
 /* ===== audio narration (Web Speech · 中/EN) ===== */
 const synth=window.speechSynthesis;let voices=[];function loadVoices(){voices=synth?synth.getVoices():[];}
 if(synth){loadVoices();synth.onvoiceschanged=loadVoices;}
-let narrationOn=true,narLang='zh',autoPlay=false;
+let narrationOn=true,narLang='en',autoPlay=false;
 const NE_TOUR=[
  'Welcome to a financial operating system that turns music rights into an investable, auto-distributing asset class.',
  'In the application layer, artists mint songs and fans buy fractional royalty NFTs, becoming shareholders.',
@@ -533,7 +533,7 @@ function showStep(i){const s=activeSet[i];gi=i;
   // Lab no longer auto-opens — it would cover the intro. Opens on demand (next press / ⚙) or, in voiced autoplay, after the step narration.
   if(!s.lab&&labOpen){closeLab();}
   const gd=$('gDive');if(s.dive){gd.style.display='inline-block';gd.textContent='🔬 '+s.dive[1];gd.onclick=()=>openDive(s.dive[0],s.dive[1],s.dive[2]);}else gd.style.display='none';
-  narrate();
+  if(autoPlay)narrate();   // only narrate during auto-tour; entering/manual steps stay silent (press ▶ 自動導覽 for voice)
 }
 // deep-dive embedded sub-visualizations
 function openDive(file,t,sub){$('diveT').textContent=t;$('diveSub').textContent=sub||'';$('diveFrame').src=file;$('dive').classList.add('show');stopSeq();stopAudio();}
@@ -643,9 +643,9 @@ function setTheme(d){day=d;document.body.classList.toggle('day',d);try{localStor
 $('themeBtn').onclick=()=>setTheme(!day);
 setTheme(day);
 // left panels: reveal on hover of the left edge, keep open while pointer is on them
-let leftT;function openL(){clearTimeout(leftT);document.body.classList.add('leftopen');}
-function closeL(){clearTimeout(leftT);leftT=setTimeout(()=>document.body.classList.remove('leftopen'),320);}
-[$('leftEdge'),$('kpis'),$('ctrl')].forEach(el=>{if(!el)return;el.addEventListener('mouseenter',openL);el.addEventListener('mouseleave',closeL);});
+let leftT;function openL(){clearTimeout(leftT);document.body.classList.add('ctrlopen');}
+function closeL(){clearTimeout(leftT);leftT=setTimeout(()=>document.body.classList.remove('ctrlopen'),320);}
+[$('ctrlEdge'),$('ctrl')].forEach(el=>{if(!el)return;el.addEventListener('mouseenter',openL);el.addEventListener('mouseleave',closeL);});
 const clock=new THREE.Clock();
 function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),0.05),t=clock.elapsedTime,sp=simSpeed;
   if(camTween){camTween.t=Math.min(1,camTween.t+dt/camTween.dur);const k=easeIO(camTween.t);camera.position.lerpVectors(camTween.fromP,camTween.toP,k);controls.target.lerpVectors(camTween.fromT,camTween.toT,k);camera.lookAt(controls.target);if(camTween.t>=1){controls.enabled=true;camTween=null;}}
