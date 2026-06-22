@@ -147,6 +147,22 @@
   body.day .btns .sec{background:rgba(235,239,246,.85);color:#55617a}
   body.day #guide .gn .nx{color:#04121c}
   body.day #lab .lh,body.day #lab .lctrl,body.day #lab .lfoot,body.day #lab .lleft{border-color:rgba(150,166,184,.3)}
+  /* day accent colors — darken neon so text reads on white */
+  body.day .v.cyan{color:#0e7490}body.day .v.gold{color:#9a6a08}body.day .v.green{color:#15803d}body.day .v.violet{color:#6d28d9}body.day .v.pink{color:#be185d}
+  body.day .rate b{color:#9a6a08}body.day .note b{color:#0e7490}
+  body.day .tag,body.day #intro .tag{color:#0e7490}body.day #intro .ver{color:#55617a}body.day #intro .pre b{color:#1b2230}
+  body.day #bar .nav a:hover,body.day #bar .nav a.cur{color:#0e7490}
+  body.day #guide .en{color:#2b6cb0}
+  body.day #guide .qa .q.what b{color:#0e7490}body.day #guide .qa .q.why b{color:#6d28d9}body.day #guide .qa .q.how b{color:#15803d}body.day #guide .qa .q.live b{color:#9a6a08}body.day #guide .qa .q.live{color:#15324f}
+  body.day .ev-roy{color:#9a6a08}body.day .ev-mint{color:#0e7490}body.day .ev-blk{color:#15803d}body.day .ev-lic{color:#6d28d9}body.day .ev-inv{color:#be185d}
+  body.day #fin .lock{color:#15803d}body.day #feed .h .dot{background:#15803d;box-shadow:0 0 8px rgba(21,128,61,.5)}
+  body.day #lab .op .biz0{color:#0e7490}body.day #lab .op .biz1{color:#9a6a08}body.day #lab .op .biz2{color:#15803d}body.day #lab .techbox .opn{color:#0e7490}
+  body.day .slot.read{border-color:#0e7490;box-shadow:0 0 12px rgba(14,116,144,.25)}body.day .slot.write{border-color:#9a6a08;box-shadow:0 0 13px rgba(154,106,8,.3)}body.day .slot.write .vv{color:#9a6a08}
+  body.day #presentHint b{color:#0e7490}
+  body.day #tip{background:#fff;color:#1b2230;border-color:rgba(150,166,184,.5);box-shadow:0 8px 24px rgba(40,60,110,.18)}body.day #tip b{color:#0e7490}body.day #tip .s{color:#55617a}body.day #tip .e{color:#8a93a8}
+  body.day #load{background:#eef2f7;color:#55617a}
+  body.day #slotBar,body.day #fin .slotbar span{background:#2b6cb0}
+  body.day .btns .sec{border-color:rgba(150,166,184,.6)}
 </style>
 </head>
 <body>
@@ -247,7 +263,7 @@ const stage=$('stage');const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;stage.appendChild(renderer.domElement);
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x05080f);scene.fog=new THREE.FogExp2(0x05080f,0.0072);
 const camera=new THREE.PerspectiveCamera(34,innerWidth/innerHeight,0.1,2000);camera.position.set(150,95,175);
-scene.add(new THREE.HemisphereLight(0x9fc2ff,0x0a1020,0.9));
+const hemi=new THREE.HemisphereLight(0x9fc2ff,0x0a1020,0.9);scene.add(hemi);
 const d1=new THREE.DirectionalLight(0xbfe0ff,1.1);d1.position.set(20,40,30);scene.add(d1);
 const p1=new THREE.PointLight(0x36e2ff,1.0,140);p1.position.set(-22,6,18);scene.add(p1);
 const p2=new THREE.PointLight(0xa78bfa,0.9,140);p2.position.set(24,-4,-12);scene.add(p2);
@@ -258,11 +274,15 @@ let pickables=[];
 function label(text,o={}){const size=o.size??42,lines=text.split('\n'),pad=o.pad??16,lh=size*1.3;const cv=document.createElement('canvas'),mm=cv.getContext('2d');const font=`${o.weight??700} ${size}px ${o.mono?'ui-monospace,Menlo,monospace':'Inter,"Noto Sans TC",sans-serif'}`;mm.font=font;let w=0;lines.forEach(l=>w=Math.max(w,mm.measureText(l).width));cv.width=w+pad*2;cv.height=lh*lines.length+pad;const c=cv.getContext('2d');if(o.plate!==false){c.fillStyle=o.bg??'rgba(10,17,32,.8)';rrct(c,0,0,cv.width,cv.height,12);c.fill();c.strokeStyle=o.border??'rgba(120,160,220,.4)';c.lineWidth=2;rrct(c,1,1,cv.width-2,cv.height-2,12);c.stroke();}c.font=font;c.textBaseline='middle';c.fillStyle=o.color??'#e8eefb';lines.forEach((l,i)=>c.fillText(l,pad,pad*0.5+lh*(i+0.5)));const tex=new THREE.CanvasTexture(cv);tex.anisotropy=8;tex.colorSpace=THREE.SRGBColorSpace;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:o.depthTest!==false,depthWrite:false}));const s=o.scale??1;sp.scale.set(cv.width/150*s,cv.height/150*s,1);return sp;}
 function rrct(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
 function put(o,x,y,z){o.position.set(x,y,z);return o;}function rgba(hex,a){return `rgba(${(hex>>16)&255},${(hex>>8)&255},${hex&255},${a})`;}
-function platform(w,d,color){const g=new THREE.Group();g.add(new THREE.Mesh(new THREE.BoxGeometry(w,0.4,d),new THREE.MeshPhysicalMaterial({color:0x0e1830,metalness:.3,roughness:.25,transmission:.55,transparent:true,opacity:.5,emissive:color,emissiveIntensity:.06,clearcoat:.6})));g.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w,0.4,d)),new THREE.LineBasicMaterial({color,transparent:true,opacity:.7})));const grid=new THREE.GridHelper(Math.max(w,d),Math.round(Math.max(w,d)/1.6),color,0x22324f);grid.material.transparent=true;grid.material.opacity=.15;grid.position.y=0.22;grid.scale.set(w/Math.max(w,d),1,d/Math.max(w,d));g.add(grid);return g;}
+function platform(w,d,color){const g=new THREE.Group();const top=new THREE.Mesh(new THREE.BoxGeometry(w,0.4,d),new THREE.MeshPhysicalMaterial({color:0x0e1830,metalness:.3,roughness:.25,transmission:.55,transparent:true,opacity:.5,emissive:color,emissiveIntensity:.06,clearcoat:.6}));g.add(top);g.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w,0.4,d)),new THREE.LineBasicMaterial({color,transparent:true,opacity:.7})));const grid=new THREE.GridHelper(Math.max(w,d),Math.round(Math.max(w,d)/1.6),color,0x22324f);grid.material.transparent=true;grid.material.opacity=.15;grid.position.y=0.22;grid.scale.set(w/Math.max(w,d),1,d/Math.max(w,d));g.add(grid);platMats.push({top:top.material,grid});return g;}
 function moduleBlock(parent,x,z,w,d,name,color,meta){const h=1.3;const box=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color:0x12203c,metalness:.4,roughness:.42,emissive:color,emissiveIntensity:.14,transparent:true,opacity:.94}));box.position.set(x,h/2+0.25,z);box.add(new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry),new THREE.LineBasicMaterial({color,transparent:true,opacity:.55})));box.userData={name,meta:meta||''};parent.add(box);pickables.push(box);parent.add(put(label(name,{size:30,scale:.6,color:'#eaf2ff',border:rgba(color,.5)}),x,h+1.0,z));return box;}
 function node(parent,pos,name,sub,color,shape){const geo=shape==='box'?new THREE.BoxGeometry(1.4,1.4,1.4):new THREE.IcosahedronGeometry(0.9,0);const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.5,metalness:.5,roughness:.3}));m.position.copy(pos);m.userData={name,meta:sub};parent.add(m);pickables.push(m);parent.add(put(label(name,{size:26,scale:.58,color:'#eaf2ff',border:rgba(color,.45)}),pos.x,pos.y+1.6,pos.z));return m;}
-const streams=[];
-function stream(from,to,color,o={}){const mid=new THREE.Vector3().lerpVectors(from,to,.5);mid.y+=o.arc??(4+Math.random()*3);const curve=new THREE.CatmullRomCurve3([from.clone(),mid,to.clone()]);scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getPoints(40)),new THREE.LineBasicMaterial({color,transparent:true,opacity:o.lineOp??.15})));const n=o.n??14;const pos=new Float32Array(n*3);const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(pos,3));scene.add(new THREE.Points(geo,new THREE.PointsMaterial({color,size:o.size??0.5,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false})));const offs=[];for(let i=0;i<n;i++)offs.push(Math.random());streams.push({curve,pos,geo,offs,speed:o.speed??0.14,acc:o.acc??0});}
+const platMats=[];const streams=[];
+function stream(from,to,color,o={}){const mid=new THREE.Vector3().lerpVectors(from,to,.5);mid.y+=o.arc??(4+Math.random()*3);const curve=new THREE.CatmullRomCurve3([from.clone(),mid,to.clone()]);
+  const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getPoints(40)),new THREE.LineBasicMaterial({color,transparent:true,opacity:o.lineOp??.15}));scene.add(line);
+  const n=o.n??14;const pos=new Float32Array(n*3);const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const points=new THREE.Points(geo,new THREE.PointsMaterial({color,size:o.size??0.5,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false}));scene.add(points);
+  const offs=[];for(let i=0;i<n;i++)offs.push(Math.random());streams.push({curve,pos,geo,offs,speed:o.speed??0.14,acc:o.acc??0,pts:points,line,baseLineOp:o.lineOp??.15,baseSize:o.size??0.5});}
 
 const LAYERS=[];const PW=30,PD=18;
 function makeLayer(yEx,yCol,color,title,sub){const g=new THREE.Group();g.position.y=yEx;scene.add(g);g.add(platform(PW,PD,color));g.add(put(label(title,{size:40,scale:1.0,color:'#fff',border:rgba(color,.6)}),-PW/2+0.5,1.4,-PD/2-1.2));g.add(put(label(sub,{size:24,scale:.62,plate:false,color:'#8aa0c4'}),-PW/2+0.5,0.2,-PD/2-1.2));LAYERS.push({group:g,yEx,yCol});return g;}
@@ -585,9 +605,15 @@ const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scen
 // ===== Day / Night theme =====
 let day=localStorage.getItem('mros-theme')==='day';
 function setTheme(d){day=d;document.body.classList.toggle('day',d);try{localStorage.setItem('mros-theme',d?'day':'night');}catch(e){}
-  const bg=d?0xeef1f6:0x05080f;scene.background.set(bg);scene.fog.color.set(bg);scene.fog.density=d?0.0055:0.0072;
-  bloom.strength=d?0.18:0.72;renderer.toneMappingExposure=d?1.15:1.0;
-  if(d){p1.intensity=0.5;p2.intensity=0.45;}else{p1.intensity=1.0;p2.intensity=0.9;}
+  const bg=d?0xeef2f7:0x05080f;scene.background.set(bg);scene.fog.color.set(bg);scene.fog.density=d?0.0050:0.0072;
+  bloom.strength=d?0.12:0.72;renderer.toneMappingExposure=d?1.18:1.0;
+  hemi.intensity=d?1.2:0.9;hemi.color.set(d?0xffffff:0x9fc2ff);
+  if(d){p1.intensity=0.45;p2.intensity=0.4;}else{p1.intensity=1.0;p2.intensity=0.9;}
+  // data streams use additive blending → invisible on white; switch to solid + bump line opacity in day
+  streams.forEach(s=>{if(s.pts){s.pts.material.blending=d?THREE.NormalBlending:THREE.AdditiveBlending;s.pts.material.opacity=d?1:0.95;s.pts.material.size=d?s.baseSize*1.15:s.baseSize;s.pts.material.needsUpdate=true;}
+    if(s.line){s.line.material.opacity=d?Math.min(0.55,s.baseLineOp+0.34):s.baseLineOp;}});
+  if(stars){stars.material.blending=d?THREE.NormalBlending:THREE.AdditiveBlending;stars.material.opacity=d?0.14:0.6;stars.material.color.set(d?0xaab6c8:0x6f9fd8);stars.material.needsUpdate=true;}
+  platMats.forEach(p=>{if(d){p.top.color.set(0xe3eaf3);p.top.transmission=0.12;p.top.opacity=0.55;p.top.emissiveIntensity=0.03;}else{p.top.color.set(0x0e1830);p.top.transmission=0.55;p.top.opacity=0.5;p.top.emissiveIntensity=0.06;}p.top.needsUpdate=true;p.grid.material.opacity=d?0.3:0.15;});
   const b=$('themeBtn');if(b)b.textContent=d?'☀️ 日間':'🌙 夜間';}
 $('themeBtn').onclick=()=>setTheme(!day);
 setTheme(day);
