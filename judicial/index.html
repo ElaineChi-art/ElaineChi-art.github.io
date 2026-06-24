@@ -319,6 +319,30 @@
   .relsvg .nl{font-size:4.2px;fill:#2a2418;font-weight:bold;paint-order:stroke fill;stroke:#fffdf5;stroke-width:.7}
   .relsvg .ns{font-size:2.3px;fill:#9b6b3a;font-family:"PingFang TC",sans-serif}
   .relsvg .el{font-size:2.7px;fill:#b04a22;font-family:"PingFang TC",sans-serif;paint-order:stroke fill;stroke:#fffdf5;stroke-width:.95}
+  /* ===== 答題計時器（浮動） ===== */
+  #timer{position:fixed;right:16px;bottom:16px;z-index:60;background:#11151c;border:1px solid var(--gold);
+    border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.55);width:188px;overflow:hidden;font-family:inherit}
+  #timer-head{display:flex;align-items:center;gap:8px;padding:8px 10px;background:linear-gradient(135deg,#1b2030,#13161d)}
+  #timer-disp{font-size:30px;font-weight:bold;color:#ffd86b;letter-spacing:1px;font-variant-numeric:tabular-nums;flex:1;text-align:center}
+  #timer-min{flex:none;background:#2a2f3a;border:none;color:#cfd6e2;width:30px;height:30px;border-radius:8px;font-size:16px;cursor:pointer}
+  #timer.collapsed{width:auto}
+  #timer.collapsed #timer-body{display:none}
+  #timer.collapsed #timer-disp{font-size:20px;min-width:54px}
+  #timer-body{padding:9px 10px 11px}
+  .tpresets{display:flex;gap:6px;margin-bottom:8px}
+  .tp{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 0;border-radius:9px;border:1px solid var(--line);
+    background:#1c2330;color:#dfe5ef;font-family:inherit;font-size:13px;font-weight:bold;cursor:pointer;line-height:1.1}
+  .tp small{font-size:10.5px;color:#9aa4b2;font-weight:normal}
+  .tp.on{background:var(--grad);color:#fff;border-color:transparent}
+  .tp.on small{color:#e8e8ff}
+  .tctrl{display:flex;gap:6px}
+  .tctrl button{flex:1;padding:8px 0;border-radius:9px;border:none;font-family:inherit;font-size:14px;font-weight:bold;cursor:pointer}
+  #t-start{background:#1f8a4c;color:#fff} #t-reset{background:#2a2f3a;color:#cfd6e2}
+  .tauto{display:flex;align-items:center;gap:6px;margin-top:9px;font-size:12px;color:#9aa4b2;cursor:pointer}
+  #timer.warn #timer-disp{color:#ff9d3d}
+  #timer.done{animation:tflash .5s steps(1) infinite}
+  #timer.done #timer-disp{color:#ff5b5b}
+  @keyframes tflash{50%{background:#3a1414;box-shadow:0 0 0 3px #ff5b5b inset}}
 </style>
 </head>
 <body>
@@ -383,6 +407,25 @@
 </div>
 
 <div id="tree"></div>
+
+<div id="timer" class="collapsed">
+  <div id="timer-head">
+    <span id="timer-disp">1:00</span>
+    <button id="timer-min" title="收合／展開">⏱</button>
+  </div>
+  <div id="timer-body">
+    <div class="tpresets">
+      <button class="tp" data-s="60">基礎<small>1分</small></button>
+      <button class="tp" data-s="90">中等<small>90秒</small></button>
+      <button class="tp" data-s="120">難題<small>2分</small></button>
+    </div>
+    <div class="tctrl">
+      <button id="t-start">▶ 開始</button>
+      <button id="t-reset">🔄 重設</button>
+    </div>
+    <label class="tauto"><input type="checkbox" id="t-auto"> 換下一題就自動重新計時</label>
+  </div>
+</div>
 
 <script src="data.js"></script>
 <script src="notes.js"></script>
@@ -529,7 +572,7 @@ function showQ(k){
     <div class="nav"><button onclick="step(-1)">◀ 上一題</button>
       <button onclick="step(1)">下一題 ▶</button></div>`;
   detail.querySelectorAll(".opt").forEach(o=>o.onclick=()=>o.classList.add("reveal"));
-  window._q=q; window._note=note; recordStudied(k); renderList();
+  window._q=q; window._note=note; recordStudied(k); renderList(); if(typeof tAutoRestart==="function") tAutoRestart();
   const sel=list.querySelector(".qrow.sel"); if(sel) list.scrollTop=Math.max(0,sel.offsetTop-44); // 選到的題自動移到最上面
   detail.scrollTop=0;
 }
@@ -1108,6 +1151,46 @@ function renderTree(){
   document.getElementById("colAll").onclick=()=>tree.querySelectorAll(".leaf").forEach(l=>l.classList.remove("open"));
 }
 function jumpTo(k){const p=k.split("-");curYear=+p[0];curSec=p[1];buildTabs();switchMode("study");showQ(k);}
+/* ===== 答題計時器 ===== */
+let tTotal=60, tLeft=60, tInt=null, tRunning=false;
+function tFmt(s){return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
+function tRender(){
+  const w=document.getElementById("timer");
+  document.getElementById("timer-disp").textContent=tFmt(Math.max(0,tLeft));
+  w.classList.toggle("warn",tLeft<=10&&tLeft>0);
+}
+function tBeep(){ try{
+  const a=new (window.AudioContext||window.webkitAudioContext)();
+  [0,250,500].forEach(d=>{ const o=a.createOscillator(),g=a.createGain();
+    o.connect(g);g.connect(a.destination);o.type="sine";o.frequency.value=880;
+    g.gain.setValueAtTime(.0001,a.currentTime+d/1000);
+    g.gain.exponentialRampToValueAtTime(.25,a.currentTime+d/1000+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d/1000+.18);
+    o.start(a.currentTime+d/1000);o.stop(a.currentTime+d/1000+.2); });
+  setTimeout(()=>a.close(),900);
+}catch(e){} }
+function tTick(){ tLeft--; if(tLeft<=0){ clearInterval(tInt); tRunning=false; tLeft=0;
+    document.getElementById("t-start").textContent="▶ 開始"; tRender();
+    document.getElementById("timer").classList.add("done"); tBeep();
+    if(navigator.vibrate) navigator.vibrate([200,90,200]); } else tRender(); }
+function tStart(){ if(tRunning) return; if(tLeft<=0) tLeft=tTotal;
+  tRunning=true; document.getElementById("t-start").textContent="⏸ 暫停";
+  document.getElementById("timer").classList.remove("done");
+  tInt=setInterval(tTick,1000); tRender(); }
+function tPause(){ tRunning=false; clearInterval(tInt); document.getElementById("t-start").textContent="▶ 開始"; }
+function tReset(){ tPause(); tLeft=tTotal; document.getElementById("timer").classList.remove("done"); tRender(); }
+function tSetPreset(s,el){ tTotal=s; tLeft=s; tPause();
+  document.querySelectorAll(".tp").forEach(b=>b.classList.toggle("on",b===el));
+  document.getElementById("timer").classList.remove("done"); tStart(); }
+document.querySelectorAll(".tp").forEach(b=>b.onclick=()=>tSetPreset(+b.dataset.s,b));
+document.getElementById("t-start").onclick=()=>{ tRunning?tPause():tStart(); };
+document.getElementById("t-reset").onclick=tReset;
+document.getElementById("timer-min").onclick=()=>document.getElementById("timer").classList.toggle("collapsed");
+document.getElementById("timer-disp").onclick=()=>{ if(document.getElementById("timer").classList.contains("collapsed")) document.getElementById("timer").classList.remove("collapsed"); };
+function tAutoRestart(){ if(document.getElementById("t-auto")&&document.getElementById("t-auto").checked){ tReset(); tStart(); } }
+document.querySelector('.tp[data-s="60"]').classList.add("on");
+tRender();
+
 buildTabs(); renderList(); updateDaily();
 </script>
 </body>
