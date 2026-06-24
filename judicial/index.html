@@ -444,6 +444,7 @@ let marks = JSON.parse(localStorage.getItem(LS) || "{}");
 let curYear = Math.max(...Q.map(q=>q.year));
 let curSec = "全部";          // 全部/刑事組/公法組/民事組/商事組
 let curKey = null, search = "";
+let activeQ = null;   // 計時器要標記的「目前這一題」，不分模式（逐題/衝刺/考點統整開的題都算）
 
 function daysTo(d){return Math.max(0,Math.ceil((new Date(d)-new Date())/86400000));}
 d1.textContent = daysTo("2026-08-01")+"天";
@@ -555,7 +556,7 @@ function studyDiagram(q){
   return `<div class="studydiag"><div class="sd-h">${tag}</div>${body}${key?`<div class="sk-point">📌 要記(觀念)：${key}</div>`:""}</div>`;
 }
 function showQ(k){
-  curKey=k; const q=qByKey(k); const note=NOTES[k]||autoNote(q);
+  curKey=k; activeQ=k; const q=qByKey(k); const note=NOTES[k]||autoNote(q);
   document.body.classList.toggle("hideAns", hideAns.checked);
   const L=["A","B","C","D"];
   const opts=q.options.map((o,i)=>`<div class="opt ${i===q.ansIndex?'correct':''}">
@@ -780,11 +781,13 @@ function sumQHTML(k){
 }
 function toggleQOpen(chip){
   const kpt=chip.closest(".kpt"),open=kpt.querySelector(".qopen"),k=chip.dataset.k;
-  if(open.dataset.k===k){open.innerHTML="";open.dataset.k="";chip.classList.remove("on");return;}
-  kpt.querySelectorAll(".qchip").forEach(c=>c.classList.remove("on"));
+  if(open.dataset.k===k){open.innerHTML="";open.dataset.k="";chip.classList.remove("on");refreshCardMark(kpt);return;}
+  kpt.querySelectorAll(".qchip").forEach(c=>{c.classList.remove("on");const m=marks[c.dataset.k];if(m)c.classList.add(m);});
   chip.classList.add("on");open.innerHTML=sumQHTML(k);open.dataset.k=k;
+  activeQ=k;                                    // 打開哪題，計時器就對哪題
   const ab=open.querySelector(".qcard-audio");
   ab.onclick=e=>{e.stopPropagation();window._q=qByKey(k);readQ();};
+  if(typeof tAutoRestart==="function") tAutoRestart();
 }
 function renderSummary(){
   const items=sumItems(); let html="";
@@ -1180,13 +1183,16 @@ function tTick(){ tLeft--; if(tLeft<=0){ clearInterval(tInt); tRunning=false; tL
     if(navigator.vibrate) navigator.vibrate([200,90,200]); tTimeoutMark(); } else tRender(); }
 function tTimeoutMark(){
   const cb=document.getElementById("t-mark");
-  if(!cb||!cb.checked) return;
-  if((mode!=="study"&&mode!=="sprint")||!curKey) return;
-  if(marks[curKey]==="ok"){ tToast("⏰ 時間到（這題你已標『我懂了』）"); return; }
-  marks[curKey]="review"; localStorage.setItem(LS,JSON.stringify(marks)); renderList();
-  const _r=detail.querySelector(".rev-b"); if(_r)_r.classList.add("on");
-  const _o=detail.querySelector(".ok-b"); if(_o)_o.classList.remove("on");
+  if(!cb||!cb.checked||!activeQ) return;          // 只要有「目前這一題」就生效，不分模式
+  if(marks[activeQ]==="ok"){ tToast("⏰ 時間到（這題你已標『我懂了』）"); return; }
+  marks[activeQ]="review"; localStorage.setItem(LS,JSON.stringify(marks)); renderList();
+  // 逐題/衝刺：更新詳解上的按鈕
+  if(curKey===activeQ){ const _r=detail.querySelector(".rev-b"); if(_r)_r.classList.add("on");
+    const _o=detail.querySelector(".ok-b"); if(_o)_o.classList.remove("on"); }
   if(mode==="sprint") updateSprintBanner();
+  // 考點統整：更新該題所在卡片的著色／標記鈕
+  const chip=summary.querySelector('.qchip[data-k="'+activeQ+'"]');
+  if(chip){ const card=chip.closest(".kpt"); if(card) refreshCardMark(card); }
   tToast("⏰ 時間到，已自動標 🔁 再看");
 }
 function tToast(msg){
