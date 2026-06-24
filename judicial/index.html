@@ -319,6 +319,7 @@
   .relsvg .nl{font-size:4.2px;fill:#2a2418;font-weight:bold;paint-order:stroke fill;stroke:#fffdf5;stroke-width:.7}
   .relsvg .ns{font-size:2.3px;fill:#9b6b3a;font-family:"PingFang TC",sans-serif}
   .relsvg .el{font-size:2.7px;fill:#b04a22;font-family:"PingFang TC",sans-serif;paint-order:stroke fill;stroke:#fffdf5;stroke-width:.95}
+  #rate{background:#1c2330;color:#ffd86b;border:1px solid var(--gold);border-radius:8px;font-family:inherit;font-size:13px;font-weight:bold;padding:3px 6px;margin-left:5px;cursor:pointer}
   /* ===== 答題計時器（浮動） ===== */
   #timer{position:fixed;right:16px;bottom:16px;z-index:60;background:#11151c;border:1px solid var(--gold);
     border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.55);width:188px;overflow:hidden;font-family:inherit}
@@ -383,6 +384,15 @@
       <div class="grp" id="sections"></div>
       <input id="search" placeholder="🔍 搜尋關鍵字…">
       <label class="toggle"><input type="checkbox" id="hideAns"> 遮答案自測</label>
+      <label class="toggle">🔊 語速
+        <select id="rate">
+          <option value="0.8">慢</option>
+          <option value="1">正常</option>
+          <option value="1.2">快</option>
+          <option value="1.45">很快</option>
+          <option value="1.7">超快</option>
+        </select>
+      </label>
     </div>
     <div id="subjbar">
       <span style="font-size:13px;color:#9a7b16;font-weight:bold">科目</span>
@@ -618,6 +628,12 @@ function enterSprint(){
   if(pool.length) showQ(keyOf(pool[0])); else showSprintDone();
 }
 
+function speechRate(){ const el=document.getElementById("rate"); return el?(parseFloat(el.value)||1):1; }
+(function(){ const el=document.getElementById("rate"); if(!el) return;
+  const saved=localStorage.getItem("sjg_rate");
+  el.value = (saved && [...el.options].some(o=>o.value===saved)) ? saved : "1.2"; // 預設「快」
+  el.onchange=()=>localStorage.setItem("sjg_rate",el.value);
+})();
 function cleanForSpeech(t){
   return t
     .replace(/§\s*(\d+)\s*-\s*(\d+)/g,'第$1條之$2')   // §131-1 → 第131條之1
@@ -629,7 +645,7 @@ function cleanForSpeech(t){
 }
 function speak(t){
   t=cleanForSpeech(t); if(!t) return;
-  const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.rate=.92;
+  const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.rate=speechRate();
   const v=speechSynthesis.getVoices().find(v=>/zh|TW|Chinese|Mei|Ting|Han/i.test(v.lang+v.name));if(v)u.voice=v;
   speechSynthesis.cancel();speechSynthesis.speak(u);}
 function readQ(){const q=window._q,L=["A","B","C","D"];
