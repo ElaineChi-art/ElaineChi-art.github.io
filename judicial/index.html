@@ -343,6 +343,10 @@
   #timer.done{animation:tflash .5s steps(1) infinite}
   #timer.done #timer-disp{color:#ff5b5b}
   @keyframes tflash{50%{background:#3a1414;box-shadow:0 0 0 3px #ff5b5b inset}}
+  #t-toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(10px);z-index:70;
+    background:#2a1f0c;border:1px solid var(--gold);color:#ffe7a8;font-size:14px;font-weight:bold;
+    padding:10px 18px;border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:.25s}
+  #t-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
@@ -424,6 +428,7 @@
       <button id="t-reset">🔄 重設</button>
     </div>
     <label class="tauto"><input type="checkbox" id="t-auto"> 換下一題就自動重新計時</label>
+    <label class="tauto"><input type="checkbox" id="t-mark"> 超時沒按「我懂了」就自動標 🔁 再看</label>
   </div>
 </div>
 
@@ -1172,7 +1177,24 @@ function tBeep(){ try{
 function tTick(){ tLeft--; if(tLeft<=0){ clearInterval(tInt); tRunning=false; tLeft=0;
     document.getElementById("t-start").textContent="▶ 開始"; tRender();
     document.getElementById("timer").classList.add("done"); tBeep();
-    if(navigator.vibrate) navigator.vibrate([200,90,200]); } else tRender(); }
+    if(navigator.vibrate) navigator.vibrate([200,90,200]); tTimeoutMark(); } else tRender(); }
+function tTimeoutMark(){
+  const cb=document.getElementById("t-mark");
+  if(!cb||!cb.checked) return;
+  if((mode!=="study"&&mode!=="sprint")||!curKey) return;
+  if(marks[curKey]==="ok"){ tToast("⏰ 時間到（這題你已標『我懂了』）"); return; }
+  marks[curKey]="review"; localStorage.setItem(LS,JSON.stringify(marks)); renderList();
+  const _r=detail.querySelector(".rev-b"); if(_r)_r.classList.add("on");
+  const _o=detail.querySelector(".ok-b"); if(_o)_o.classList.remove("on");
+  if(mode==="sprint") updateSprintBanner();
+  tToast("⏰ 時間到，已自動標 🔁 再看");
+}
+function tToast(msg){
+  let el=document.getElementById("t-toast");
+  if(!el){ el=document.createElement("div"); el.id="t-toast"; document.body.appendChild(el); }
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),2000);
+}
 function tStart(){ if(tRunning) return; if(tLeft<=0) tLeft=tTotal;
   tRunning=true; document.getElementById("t-start").textContent="⏸ 暫停";
   document.getElementById("timer").classList.remove("done");
