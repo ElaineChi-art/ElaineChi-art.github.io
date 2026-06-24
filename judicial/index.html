@@ -345,6 +345,8 @@
   #timer.done{animation:tflash .5s steps(1) infinite}
   #timer.done #timer-disp{color:#ff5b5b}
   @keyframes tflash{50%{background:#3a1414;box-shadow:0 0 0 3px #ff5b5b inset}}
+  @keyframes tpulse{0%{box-shadow:0 0 0 0 rgba(124,180,255,.85),0 12px 34px rgba(0,0,0,.55)}100%{box-shadow:0 0 0 16px rgba(124,180,255,0),0 12px 34px rgba(0,0,0,.55)}}
+  #timer.pulse{animation:tpulse .65s ease-out}
   #t-toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(10px);z-index:70;
     background:#2a1f0c;border:1px solid var(--gold);color:#ffe7a8;font-size:14px;font-weight:bold;
     padding:10px 18px;border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:.25s}
@@ -1232,7 +1234,10 @@ document.getElementById("t-start").onclick=()=>{ tRunning?tPause():tStart(); };
 document.getElementById("t-reset").onclick=tReset;
 document.getElementById("timer-min").onclick=()=>document.getElementById("timer").classList.toggle("collapsed");
 document.getElementById("timer-disp").onclick=()=>{ if(document.getElementById("timer").classList.contains("collapsed")) document.getElementById("timer").classList.remove("collapsed"); };
-function tAutoRestart(){ if(document.getElementById("t-auto")&&document.getElementById("t-auto").checked){ tReset(); tStart(); } }
+function tAutoRestart(){ const cb=document.getElementById("t-auto");
+  if(cb&&cb.checked){ tReset(); tStart();
+    const w=document.getElementById("timer"); w.classList.remove("pulse"); void w.offsetWidth; w.classList.add("pulse");
+  } }
 document.querySelector('.tp[data-s="60"]').classList.add("on");
 tRender();
 
