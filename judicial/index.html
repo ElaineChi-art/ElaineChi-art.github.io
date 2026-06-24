@@ -652,7 +652,8 @@ function speak(t){
   const v=speechSynthesis.getVoices().find(v=>/zh|TW|Chinese|Mei|Ting|Han/i.test(v.lang+v.name));if(v)u.voice=v;
   speechSynthesis.cancel();speechSynthesis.speak(u);}
 function readQ(){const q=window._q,L=["A","B","C","D"];
-  speak("第"+q.num+"題。"+q.stem+" "+q.options.map((o,i)=>"選項"+L[i]+"，"+o).join("。"));}
+  speak("第"+q.num+"題。"+q.stem+" "+q.options.map((o,i)=>"選項"+L[i]+"，"+o).join("。"));
+  if(typeof tAutoRestart==="function") tAutoRestart();}   // 按「念題目／念整題」也算進入下一題→自動重計
 function readNote(){const n=window._note;speak(n.concept+"。"+n.body);}
 
 document.getElementById("search").oninput=e=>{search=e.target.value.trim();renderList();};
