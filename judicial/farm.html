@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>🏰 法律帝國｜時間果實</title>
+<style>
+  :root{--bg:#0c0e13;--line:#262b36;--gold:#e0c060;--green:#4caa64;--blue:#7c5cff;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:#e7ebf2;font-family:"PingFang TC","Microsoft JhengHei",sans-serif;
+    background-image:radial-gradient(1200px 600px at 80% -10%,rgba(76,170,100,.10),transparent),radial-gradient(900px 500px at 0% 110%,rgba(124,92,255,.10),transparent)}
+  a{color:inherit}
+  .topnav{display:flex;gap:6px;background:#0b0d12;padding:8px 14px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:0;z-index:20}
+  .topnav a{color:#9aa4b2;text-decoration:none;font-size:13.5px;padding:5px 10px;border-radius:8px;white-space:nowrap}
+  .topnav a.active{background:#1b2030;color:#fff}
+  .wrap{max-width:760px;margin:0 auto;padding:14px}
+  /* HUD */
+  #hud{background:linear-gradient(135deg,#1b2030,#13161d 70%);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:14px}
+  .empname{font-size:21px;font-weight:bold;background:linear-gradient(90deg,#ffd86b,#9af0bf);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .empsub{font-size:12.5px;color:#9aa4b2;margin-top:3px}
+  .tierbar{height:9px;background:#0c0f16;border-radius:6px;margin:9px 0 4px;overflow:hidden}
+  .tierbar i{display:block;height:100%;background:linear-gradient(90deg,#ffd86b,#4caa64);border-radius:6px;transition:width .4s}
+  .res{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .res .r{background:#0f131b;border:1px solid var(--line);border-radius:12px;padding:7px 12px;font-size:15px;font-weight:bold}
+  .res .r b{color:#ffd86b}
+  .hint{font-size:12.5px;color:#8a93a3;margin-top:9px;line-height:1.6}
+  .hint a{color:#9db4ff;font-weight:bold}
+  /* farm grid */
+  h3.sec{font-size:14px;color:var(--gold);margin:18px 0 8px}
+  #farm{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px}
+  .plot{background:#10141c;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;transition:.15s}
+  .plot.ripe{border-color:var(--gold);box-shadow:0 0 0 2px rgba(224,192,96,.3) inset;animation:bob 1.6s ease-in-out infinite}
+  .plot.empty{border-style:dashed;color:#5b6472;cursor:pointer}
+  .plot.empty:hover{background:#161b25;border-color:var(--green)}
+  @keyframes bob{50%{transform:translateY(-3px)}}
+  .crop{font-size:50px;line-height:1.1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
+  .pname{font-size:13.5px;font-weight:bold;margin-top:4px}
+  .pbar{width:100%;height:8px;background:#0a0d13;border-radius:5px;overflow:hidden;margin:7px 0 4px}
+  .pbar i{display:block;height:100%;background:linear-gradient(90deg,#ffd86b,#4caa64);transition:width .4s}
+  .pinfo{font-size:12px;color:#9aa4b2}
+  .pbtns{display:flex;gap:6px;margin-top:8px}
+  .pbtns button{font-family:inherit;font-size:13px;font-weight:bold;border:none;border-radius:9px;padding:6px 11px;cursor:pointer}
+  .b-harvest{background:var(--gold);color:#1b1b1b} .b-water{background:#2a6fb0;color:#fff}
+  .plot.empty .ec{font-size:34px}
+  /* shop */
+  #shop{display:flex;gap:9px;flex-wrap:wrap}
+  .seed{background:#12161f;border:1.5px solid var(--line);border-radius:13px;padding:10px 12px;cursor:pointer;min-width:120px;flex:1}
+  .seed.on{border-color:var(--gold);background:#1b1c12}
+  .seed.lock{opacity:.45;cursor:not-allowed}
+  .seed .se{font-size:26px} .seed .sn{font-size:14px;font-weight:bold;margin-top:2px}
+  .seed .sd{font-size:11.5px;color:#9aa4b2;margin-top:3px;line-height:1.5}
+  .seed .sd b{color:#ffd86b}
+  /* toast */
+  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(10px);z-index:50;background:#1f2a16;border:1px solid var(--green);
+    color:#bdf0cf;font-weight:bold;padding:11px 20px;border-radius:24px;box-shadow:0 12px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:.25s;font-size:14.5px}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .big{font-size:15px}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="https://elainechi-art.github.io/">🏠 首頁</a>
+  <a href="index.html">📚 回去複習</a>
+  <a class="active" href="farm.html">🏰 法律帝國</a>
+</nav>
+
+<div class="wrap">
+  <div id="hud"></div>
+  <h3 class="sec">🌱 你的田地（讀書時陽光自動灌溉）</h3>
+  <div id="farm"></div>
+  <h3 class="sec">🛒 種子行（選一種，再點空田種下）</h3>
+  <div id="shop"></div>
+</div>
+<div id="toast"></div>
+
+<script>
+const FK="sjg_farm_v1", EXAM="2026-08-01";
+const CROPS={
+  law: {n:"法條穗", e:"🌾", need:20,  sell:12, cost:0},
+  pan: {n:"判例瓜", e:"🍈", need:35,  sell:24, cost:6},
+  shi: {n:"釋字果", e:"⚖️", need:60,  sell:46, cost:16},
+  xian:{n:"憲法樹", e:"🏛️", need:110, sell:95, cost:38}
+};
+const TIERS=[ {f:0,n:"🌱 小菜圃",p:2},{f:10,n:"🌳 果園",p:3},{f:25,n:"🏡 莊園",p:4},
+              {f:50,n:"🏰 法律帝國",p:5},{f:100,n:"⚖️ 考神殿堂",p:6} ];
+
+function load(){ try{return JSON.parse(localStorage.getItem(FK))}catch(e){return null} }
+let F = load() || {coins:25,fruits:0,grantedSunMin:0,grantedWaterQ:0,sunPool:0,water:0,lastBonus:"",seed:"law",plots:[{c:null,g:0},{c:null,g:0}]};
+function save(){ localStorage.setItem(FK,JSON.stringify(F)); }
+
+function focusSec(){ return +localStorage.getItem("sjg_focus_v1")||0; }
+function totalQ(){ let d={}; try{d=JSON.parse(localStorage.getItem("sjg_daily_v1")||"{}")}catch(e){} return Object.values(d).reduce((a,b)=>a+(b.length||0),0); }
+function dstr(d){ return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function streakDays(){ let s=0; const d=new Date(); let daily={}; try{daily=JSON.parse(localStorage.getItem("sjg_daily_v1")||"{}")}catch(e){}
+  if(!(daily[dstr(d)]||[]).length) d.setDate(d.getDate()-1);
+  while((daily[dstr(d)]||[]).length){ s++; d.setDate(d.getDate()-1); } return s; }
+function daysTo(s){ return Math.max(0,Math.ceil((new Date(s)-new Date())/86400000)); }
+function tierOf(){ let t=TIERS[0]; for(const x of TIERS) if(F.fruits>=x.f) t=x; return t; }
+function nextTier(){ for(const x of TIERS) if(F.fruits<x.f) return x; return null; }
+
+/* 把讀書時間收成成陽光、做題收成成水 */
+function collect(){
+  const mins=Math.floor(focusSec()/60);
+  if(mins>F.grantedSunMin){ F.sunPool += (mins-F.grantedSunMin); F.grantedSunMin=mins; }
+  const q=totalQ();
+  if(q>F.grantedWaterQ){ F.water += (q-F.grantedWaterQ); F.grantedWaterQ=q; }
+}
+/* 陽光自動流進生長中的作物 */
+function grow(){
+  for(const p of F.plots){
+    if(F.sunPool<=0) break;
+    if(p.c && p.g < CROPS[p.c].need){
+      const give=Math.min(CROPS[p.c].need-p.g, F.sunPool);
+      p.g+=give; F.sunPool-=give;
+    }
+  }
+}
+/* 帝國升級→解鎖更多田 */
+function syncPlots(){ const want=tierOf().p; while(F.plots.length<want) F.plots.push({c:null,g:0}); }
+/* 每日登入禮 */
+function dailyBonus(){
+  const t=dstr(new Date());
+  if(F.lastBonus!==t){
+    const sk=streakDays(); const give=10+sk*2; F.coins+=give; F.lastBonus=t; save();
+    toast("📅 每日登入禮 +"+give+" 💰（🔥連"+sk+"天加成）");
+  }
+}
+
+let toastT;
+function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("show"),2200); }
+
+function stageEmoji(p){ const c=CROPS[p.c], r=p.g/c.need;
+  if(r>=1) return c.e; if(r<0.34) return "🌱"; if(r<0.7) return "🌿"; return "🌿✨"; }
+
+function renderHUD(){
+  const t=tierOf(), nt=nextTier();
+  const prog = nt ? Math.min(100, Math.round((F.fruits - t.f)/(nt.f - t.f)*100)) : 100;
+  document.getElementById("hud").innerHTML=`
+    <div class="empname">${t.n}　Lv.${TIERS.indexOf(t)+1}</div>
+    <div class="empsub">🍎 總收成果實 <b>${F.fruits}</b>　${nt?`距離「${nt.n}」還差 <b>${nt.f-F.fruits}</b> 顆果實`:"已達最高境界！考神就是你 ⚖️"}</div>
+    <div class="tierbar"><i style="width:${prog}%"></i></div>
+    <div class="res">
+      <span class="r">☀️ 陽光 <b>${F.sunPool}</b></span>
+      <span class="r">💧 水 <b>${F.water}</b></span>
+      <span class="r">💰 金幣 <b>${F.coins}</b></span>
+      <span class="r">🔥 連 <b>${streakDays()}</b> 天</span>
+      <span class="r">⏱ 一試剩 <b>${daysTo(EXAM)}</b> 天</span>
+    </div>
+    <div class="hint">☀️ 陽光怎麼來？<b>去 <a href="index.html">複習頁</a> 開計時器讀書</b>，每讀 1 分鐘 = 1 陽光，自動流進你的田裡讓作物長大。做題會給 💧 水。<br>把讀書時間，種成你的帝國 🏰</div>`;
+}
+function renderFarm(){
+  document.getElementById("farm").innerHTML = F.plots.map((p,i)=>{
+    if(!p.c){ return `<div class="plot empty" data-act="plant" data-i="${i}"><div class="ec">➕</div><div class="pname">空田</div><div class="pinfo">點我種下：${CROPS[F.seed].e} ${CROPS[F.seed].n}</div></div>`; }
+    const c=CROPS[p.c], ripe=p.g>=c.need, pct=Math.min(100,Math.round(p.g/c.need*100));
+    return `<div class="plot ${ripe?'ripe':''}">
+      <div class="crop">${stageEmoji(p)}</div>
+      <div class="pname">${c.n}</div>
+      <div class="pbar"><i style="width:${pct}%"></i></div>
+      <div class="pinfo">${ripe?'✅ 成熟！可收成 +'+c.sell+'💰':p.g+' / '+c.need+' ☀️'}</div>
+      <div class="pbtns">
+        ${ripe?`<button class="b-harvest" data-act="harvest" data-i="${i}">🧺 收成</button>`
+              :`<button class="b-water" data-act="water" data-i="${i}">💧 澆水+8</button>`}
+      </div></div>`;
+  }).join("");
+}
+function renderShop(){
+  document.getElementById("shop").innerHTML = Object.entries(CROPS).map(([k,c])=>{
+    const can=F.coins>=c.cost;
+    return `<div class="seed ${F.seed===k?'on':''} ${can?'':'lock'}" data-seed="${k}">
+      <div class="se">${c.e}</div><div class="sn">${c.n}</div>
+      <div class="sd">需 <b>${c.need}</b>☀️ ｜ 賣 <b>${c.sell}</b>💰<br>種子 ${c.cost===0?'<b>免費</b>':'<b>'+c.cost+'</b>💰'}</div>
+    </div>`;
+  }).join("");
+}
+function render(){ syncPlots(); renderHUD(); renderFarm(); renderShop(); }
+
+/* 事件委派：點田、點種子 */
+document.getElementById("farm").addEventListener("click",e=>{
+  const t=e.target.closest("[data-act]"); if(!t) return;
+  const i=+t.dataset.i, act=t.dataset.act, p=F.plots[i];
+  if(act==="plant"){
+    const c=CROPS[F.seed];
+    if(F.coins<c.cost){ toast("💰 金幣不夠買 "+c.n+" 的種子"); return; }
+    F.coins-=c.cost; p.c=F.seed; p.g=0; save(); render(); toast("🌱 種下 "+c.n+"！讀書讓它長大吧");
+  } else if(act==="harvest"){
+    const c=CROPS[p.c]; F.coins+=c.sell; F.fruits++; const before=tierOf();
+    p.c=null; p.g=0; save();
+    const after=(()=>{let t=TIERS[0];for(const x of TIERS)if(F.fruits>=x.f)t=x;return t;})();
+    render();
+    if(after!==before) toast("🎉 帝國升級！晉升「"+after.n+"」，解鎖新田地！");
+    else toast("🧺 收成 +"+c.sell+"💰　🍎果實 +1");
+  } else if(act==="water"){
+    if(F.water<=0){ toast("💧 沒有水了～去做幾題就有水"); return; }
+    F.water--; p.g=Math.min(CROPS[p.c].need,p.g+8); save(); render();
+  }
+});
+document.getElementById("shop").addEventListener("click",e=>{
+  const t=e.target.closest("[data-seed]"); if(!t) return;
+  F.seed=t.dataset.seed; save(); render();
+});
+
+/* 主循環：每秒把讀書時間收成→灌溉→更新（讀書頁在另個分頁跑也會即時長大） */
+function tick(){ collect(); grow(); save(); render(); }
+window.addEventListener("storage",e=>{ if(e.key==="sjg_focus_v1"||e.key==="sjg_daily_v1"){ collect(); grow(); save(); render(); } });
+
+dailyBonus();
+render();
+setInterval(tick,1000);
+</script>
+</body>
+</html>

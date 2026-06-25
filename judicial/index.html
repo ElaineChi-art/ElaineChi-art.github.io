@@ -27,6 +27,7 @@
   #topbar2 .brand{font-weight:bold;color:#dcd2ff;flex:none}
   #topbar2 .cd b{color:#ffd86b;margin:0 3px}
   #topbar2 #today.hit{color:#7CFFB0}
+  #farmlink{flex:none;margin-left:auto;background:linear-gradient(135deg,#6a5acd,#4a9d5b);color:#fff;font-weight:bold;text-decoration:none;font-size:12.5px;padding:5px 12px;border-radius:14px;white-space:nowrap}
   .count b{font-size:21px;color:var(--gold);display:block}
   .sched{background:#11151c;border-bottom:1px solid var(--line);padding:6px 18px;font-size:13px;color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
   .sched b{color:#c3cad6}
@@ -364,6 +365,7 @@
 <div id="topbar2">
   <span class="brand">📚 一試複習</span>
   <span class="cd">⏱ 一試倒數<b id="d1">–</b>　<span class="d2w">調查局<b id="d2">–</b>　</span>📅 今日<b id="today">0</b>/<span id="goalN">50</span>題　🔥 連<b id="streakN">0</b>天　✅ 已懂<b id="prog">0</b></span>
+  <a id="farmlink" href="farm.html">🏰 我的帝國</a>
 </div>
 
 <div id="ctrlzone">
@@ -1197,7 +1199,9 @@ function tBeep(){ try{
     o.start(a.currentTime+d/1000);o.stop(a.currentTime+d/1000+.2); });
   setTimeout(()=>a.close(),900);
 }catch(e){} }
-function tTick(){ tLeft--; if(tLeft<=0){ clearInterval(tInt); tRunning=false; tLeft=0;
+function tTick(){
+  try{localStorage.setItem("sjg_focus_v1",String((+localStorage.getItem("sjg_focus_v1")||0)+1));}catch(e){} // 讀書秒數→農場陽光
+  tLeft--; if(tLeft<=0){ clearInterval(tInt); tRunning=false; tLeft=0;
     document.getElementById("t-start").textContent="▶ 開始"; tRender();
     document.getElementById("timer").classList.add("done"); tBeep();
     if(navigator.vibrate) navigator.vibrate([200,90,200]); tTimeoutMark(); } else tRender(); }
