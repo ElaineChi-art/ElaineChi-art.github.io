@@ -2,77 +2,79 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>🐢 我的水族箱｜時間養龜</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>🐢 海底總動員水族箱</title>
 <style>
   :root{--line:#1d3a52;--gold:#ffd86b;--green:#4caa64;}
   *{box-sizing:border-box}
-  body{margin:0;background:#04111c;color:#e7f1fb;font-family:"PingFang TC","Microsoft JhengHei",sans-serif}
+  html,body{height:100%}
+  body{margin:0;background:#04111c;color:#e7f1fb;font-family:"PingFang TC","Microsoft JhengHei",sans-serif;
+    display:flex;flex-direction:column;height:100vh;overflow:hidden}
   a{color:inherit}
-  .topnav{display:flex;gap:6px;background:#03121f;padding:8px 14px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:0;z-index:30}
-  .topnav a{color:#7fa8c9;text-decoration:none;font-size:13.5px;padding:5px 10px;border-radius:8px;white-space:nowrap}
+  .topnav{flex:none;display:flex;gap:6px;background:#03121f;padding:6px 12px;border-bottom:1px solid var(--line);overflow-x:auto;z-index:30}
+  .topnav a{color:#7fa8c9;text-decoration:none;font-size:13px;padding:4px 9px;border-radius:8px;white-space:nowrap}
   .topnav a.active{background:#0c2c44;color:#fff}
-  .wrap{max-width:820px;margin:0 auto;padding:12px}
 
-  /* ===== 水族箱 ===== */
-  #tank{position:relative;height:46vh;min-height:300px;border-radius:18px;overflow:hidden;border:3px solid #0a3350;
-    background:linear-gradient(180deg,#0c5b8f 0%,#0a4570 45%,#072f51 80%,#06243f 100%);box-shadow:0 16px 50px rgba(0,0,0,.6),inset 0 0 60px rgba(0,0,0,.35)}
-  .ray{position:absolute;top:-10%;width:40%;height:130%;background:linear-gradient(180deg,rgba(255,255,255,.16),transparent);
-    transform:skewX(-14deg);filter:blur(3px);pointer-events:none}
-  .ray.a{left:8%} .ray.b{left:46%;width:24%;opacity:.7} .ray.c{left:74%;width:30%;opacity:.5}
-  .swimmer{position:absolute;left:0;top:0;will-change:transform;font-size:34px;line-height:1;user-select:none;pointer-events:none;filter:drop-shadow(0 5px 6px rgba(0,0,0,.45))}
-  .swimmer .lab{position:absolute;left:50%;top:-14px;transform:translateX(-50%) scaleX(var(--flip,1));font-size:9px;color:#cfe9ff;background:rgba(0,0,0,.35);padding:0 4px;border-radius:6px;white-space:nowrap;opacity:.0;transition:.2s}
+  /* ===== 全螢幕水族箱 ===== */
+  #tank{flex:1;position:relative;overflow:hidden;
+    background:linear-gradient(180deg,#0e6aa6 0%,#0a4f80 40%,#072f51 78%,#06243f 100%)}
+  .ray{position:absolute;top:-10%;width:36%;height:130%;background:linear-gradient(180deg,rgba(255,255,255,.16),transparent);transform:skewX(-14deg);filter:blur(4px);pointer-events:none}
+  .ray.a{left:6%}.ray.b{left:42%;width:22%;opacity:.7}.ray.c{left:72%;width:28%;opacity:.5}
+  .swimmer{position:absolute;left:0;top:0;will-change:transform;line-height:1;user-select:none;pointer-events:none;filter:drop-shadow(0 4px 5px rgba(0,0,0,.45))}
+  .swimmer .lab{position:absolute;left:50%;top:-15px;transform:translateX(-50%);font-size:9px;color:#cfe9ff;background:rgba(0,0,0,.4);padding:0 4px;border-radius:6px;white-space:nowrap;opacity:0;transition:.2s}
   #tank:hover .swimmer .lab{opacity:.85}
-  /* 海床 */
-  .floor{position:absolute;left:0;right:0;bottom:0;height:64px;background:linear-gradient(180deg,transparent,#caa86a 38%,#b8965a);z-index:2}
-  .weeds{position:absolute;left:0;right:0;bottom:0;height:120px;z-index:3;display:flex;align-items:flex-end;justify-content:space-around;pointer-events:none}
-  .weeds span{font-size:42px;transform-origin:bottom center;animation:sway 4.5s ease-in-out infinite;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
-  .weeds span:nth-child(2n){animation-duration:6s;font-size:34px}
-  .weeds span:nth-child(3n){animation-duration:5.2s;font-size:48px;animation-direction:reverse}
-  @keyframes sway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
-  .bub{position:absolute;bottom:-20px;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9),rgba(255,255,255,.15));
-    animation:rise linear infinite;z-index:4;pointer-events:none}
-  @keyframes rise{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:.8}100%{transform:translateY(-46vh) translateX(14px);opacity:0}}
-  .tankcap{position:absolute;left:12px;top:10px;z-index:5;font-size:12.5px;color:#bfe2ff;background:rgba(3,18,31,.5);border:1px solid var(--line);padding:4px 10px;border-radius:12px}
+  .floor{position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(180deg,transparent,#caa86a 38%,#b8965a);z-index:2}
+  .weeds{position:absolute;left:0;right:0;bottom:0;height:130px;z-index:3;display:flex;align-items:flex-end;justify-content:space-around;pointer-events:none}
+  .weeds span{font-size:46px;transform-origin:bottom center;animation:sway 4.5s ease-in-out infinite;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+  .weeds span:nth-child(2n){animation-duration:6s;font-size:36px}
+  .weeds span:nth-child(3n){animation-duration:5.2s;font-size:52px;animation-direction:reverse}
+  @keyframes sway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+  .bub{position:absolute;bottom:-20px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9),rgba(255,255,255,.12));animation:rise linear infinite;z-index:4;pointer-events:none}
+  @keyframes rise{0%{transform:translateY(0);opacity:0}10%{opacity:.85}100%{transform:translateY(-92vh) translateX(16px);opacity:0}}
 
-  /* ===== HUD ===== */
-  #hud{margin-top:12px;background:linear-gradient(135deg,#0a2438,#06192a 70%);border:1px solid var(--line);border-radius:16px;padding:13px 15px}
-  .aqname{font-size:20px;font-weight:bold;background:linear-gradient(90deg,#8fe3ff,#9af0bf);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .aqsub{font-size:12.5px;color:#86a8c4;margin-top:3px}
-  .tierbar{height:9px;background:#04141f;border-radius:6px;margin:9px 0 4px;overflow:hidden}
-  .tierbar i{display:block;height:100%;background:linear-gradient(90deg,#8fe3ff,#4caa64);transition:width .4s}
-  .res{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
-  .res .r{background:#05192a;border:1px solid var(--line);border-radius:11px;padding:6px 11px;font-size:14.5px;font-weight:bold}
-  .res .r b{color:var(--gold)}
-  .hint{font-size:12.5px;color:#7e9bb4;margin-top:9px;line-height:1.6}
-  .hint a{color:#8fd0ff;font-weight:bold}
+  /* HUD 浮層（疊在魚缸左上） */
+  #hudbar{position:absolute;left:10px;top:10px;right:10px;z-index:8;display:flex;gap:7px;flex-wrap:wrap;align-items:center;pointer-events:none}
+  #hudbar .chip{background:rgba(3,18,31,.62);border:1px solid rgba(120,170,210,.35);border-radius:13px;padding:5px 10px;font-size:13px;font-weight:bold;backdrop-filter:blur(3px)}
+  #hudbar .chip b{color:var(--gold)}
+  #hudbar .lvl{background:linear-gradient(135deg,rgba(20,80,120,.85),rgba(8,40,64,.85));color:#9af0bf}
+  #tankcap{position:absolute;right:12px;bottom:10px;z-index:8;font-size:12px;color:#bfe2ff;background:rgba(3,18,31,.5);border:1px solid var(--line);padding:4px 10px;border-radius:12px}
 
-  h3.sec{font-size:14px;color:#8fe3ff;margin:16px 0 8px}
-  /* 養成槽 */
+  /* 底部操作列 */
+  #dock{flex:none;display:flex;gap:8px;padding:8px 12px;background:#03121f;border-top:1px solid var(--line);z-index:30;align-items:center}
+  #dock button,#dock a{font-family:inherit;font-size:14px;font-weight:bold;border:none;border-radius:12px;padding:9px 14px;cursor:pointer;text-decoration:none;white-space:nowrap}
+  #dock .d-slots{background:#2a6fb0;color:#fff}#dock .d-shop{background:#3a8a55;color:#fff}
+  #dock .d-study{background:linear-gradient(135deg,#6a5acd,#4a9d5b);color:#fff;margin-left:auto}
+
+  /* 底部抽屜（養成槽 / 商店） */
+  #sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;max-height:62vh;background:#06192a;border-top:2px solid var(--gold);
+    border-radius:18px 18px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.55);transform:translateY(110%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+  #sheet.open{transform:translateY(0)}
+  #sheet .sh{display:flex;align-items:center;padding:11px 15px;border-bottom:1px solid var(--line)}
+  #sheet .sh b{font-size:15px;color:#8fe3ff;flex:1}
+  #sheet .sh button{background:#13344a;border:none;color:#cfe9ff;font-size:18px;width:32px;height:32px;border-radius:9px;cursor:pointer}
+  #sheetbody{overflow:auto;padding:13px 15px 22px}
+
   #slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
-  .slot{background:#06192a;border:1px solid var(--line);border-radius:14px;padding:11px;text-align:center;min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:space-between}
-  .slot.empty{border-style:dashed;color:#5f7d96;cursor:pointer}.slot.empty:hover{background:#0a2236;border-color:var(--green)}
+  .slot{background:#0a2236;border:1px solid var(--line);border-radius:14px;padding:11px;text-align:center;min-height:138px;display:flex;flex-direction:column;align-items:center;justify-content:space-between}
+  .slot.empty{border-style:dashed;color:#5f7d96;cursor:pointer}.slot.empty:hover{background:#0d2a42;border-color:var(--green)}
   .slot.grown{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,216,107,.3) inset}
-  .baby{font-size:40px;animation:wiggle 2s ease-in-out infinite}
-  @keyframes wiggle{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+  .baby{font-size:40px;animation:wiggle 2s ease-in-out infinite}@keyframes wiggle{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
   .sname{font-size:13px;font-weight:bold;margin-top:3px}
   .sbar{width:100%;height:7px;background:#04141f;border-radius:5px;overflow:hidden;margin:6px 0 3px}
-  .sbar i{display:block;height:100%;background:linear-gradient(90deg,#8fe3ff,#4caa64);transition:width .4s}
+  .sbar i{display:block;height:100%;background:linear-gradient(90deg,#8fe3ff,#4caa64)}
   .sinfo{font-size:11.5px;color:#86a8c4}
   .slot button{font-family:inherit;font-size:13px;font-weight:bold;border:none;border-radius:9px;padding:6px 11px;cursor:pointer;margin-top:7px}
   .b-rel{background:var(--gold);color:#10222e}.b-feed{background:#2a6fb0;color:#fff}
+  #shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:9px}
+  .egg{background:#0a2236;border:1.5px solid var(--line);border-radius:13px;padding:9px;cursor:pointer;text-align:center}
+  .egg.on{border-color:var(--gold);background:#1b1c10}.egg.lock{opacity:.42;cursor:not-allowed}
+  .egg .ge{font-size:30px}.egg .gn{font-size:12.5px;font-weight:bold;margin-top:2px}
+  .egg .gd{font-size:10.5px;color:#86a8c4;margin-top:3px;line-height:1.5}.egg .gd b{color:var(--gold)}
+  .shopcat{grid-column:1/-1;font-size:12.5px;color:#8fe3ff;font-weight:bold;margin:5px 0 -2px}
+  .hint{grid-column:1/-1;font-size:12px;color:#7e9bb4;line-height:1.6;margin-bottom:4px}.hint a{color:#8fd0ff;font-weight:bold}
 
-  /* 商店 */
-  #shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:9px}
-  .egg{background:#06192a;border:1.5px solid var(--line);border-radius:13px;padding:9px;cursor:pointer;text-align:center}
-  .egg.on{border-color:var(--gold);background:#1b1c10}
-  .egg.lock{opacity:.4;cursor:not-allowed}
-  .egg .ge{font-size:30px}.egg .gn{font-size:13px;font-weight:bold;margin-top:2px}
-  .egg .gd{font-size:11px;color:#86a8c4;margin-top:3px;line-height:1.5}.egg .gd b{color:var(--gold)}
-  .shopcat{grid-column:1/-1;font-size:12.5px;color:#8fe3ff;font-weight:bold;margin:4px 0 -2px}
-
-  #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(10px);z-index:60;background:#0a2c1a;border:1px solid var(--green);
-    color:#bdf0cf;font-weight:bold;padding:11px 20px;border-radius:24px;box-shadow:0 12px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:.25s;font-size:14.5px}
+  #toast{position:fixed;left:50%;bottom:74px;transform:translateX(-50%) translateY(10px);z-index:60;background:#0a2c1a;border:1px solid var(--green);
+    color:#bdf0cf;font-weight:bold;padding:11px 20px;border-radius:24px;box-shadow:0 12px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:.25s;font-size:14px}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
@@ -80,197 +82,182 @@
 <nav class="topnav">
   <a href="https://elainechi-art.github.io/">🏠 首頁</a>
   <a href="index.html">📚 回去複習</a>
-  <a class="active" href="farm.html">🐢 我的水族箱</a>
+  <a class="active" href="farm.html">🐢 海底水族箱</a>
 </nav>
 
-<div class="wrap">
-  <div id="tank">
-    <div class="ray a"></div><div class="ray b"></div><div class="ray c"></div>
-    <div class="tankcap" id="tankcap"></div>
-    <div id="swimmers"></div>
-    <div class="floor"></div>
-    <div class="weeds" id="weeds"></div>
-  </div>
-  <div id="hud"></div>
-  <h3 class="sec">🥚 養成槽（讀書時飼料自動餵，小烏龜會長大）</h3>
-  <div id="slots"></div>
-  <h3 class="sec">🛒 海洋商店（選一隻，再點空養成槽放入養）</h3>
-  <div id="shop"></div>
+<div id="tank">
+  <div class="ray a"></div><div class="ray b"></div><div class="ray c"></div>
+  <div id="hudbar"></div>
+  <div id="swimmers"></div>
+  <div class="floor"></div>
+  <div class="weeds" id="weeds"></div>
+  <div id="tankcap"></div>
+</div>
+
+<div id="dock">
+  <button class="d-slots" data-panel="slots">🥚 養成槽</button>
+  <button class="d-shop" data-panel="shop">🛒 海洋商店</button>
+  <a class="d-study" href="index.html">📚 去讀書賺飼料</a>
+</div>
+
+<div id="sheet">
+  <div class="sh"><b id="sheettitle"></b><button id="sheetclose">✕</button></div>
+  <div id="sheetbody"></div>
 </div>
 <div id="toast"></div>
 
 <script>
-const FK="sjg_aqua_v2", EXAM="2026-08-01";
-/* 生物資料：kind 決定游動方式；need=養大要的飼料；price=珍珠；reward=養成回饋珍珠；hue=色相；sz=大小 */
+const FK="sjg_aqua_v3", EXAM="2026-08-01";
+/* 海底總動員班底（烏龜為主） */
 const SP={
-  // 🐢 烏龜（主角）
-  green:{n:"綠蠵龜",e:"🐢",kind:"turtle",need:25,price:0, reward:8, hue:0,  sz:34, cat:1},
-  hawk: {n:"玳瑁龜",e:"🐢",kind:"turtle",need:45,price:14,reward:20,hue:35, sz:34, cat:1},
-  red:  {n:"赤蠵龜",e:"🐢",kind:"turtle",need:55,price:20,reward:28,hue:-30,sz:36, cat:1},
-  leath:{n:"棱皮龜",e:"🐢",kind:"turtle",need:70,price:30,reward:42,hue:200,sz:38, cat:1},
-  giant:{n:"象龜",  e:"🐢",kind:"turtle",need:110,price:55,reward:80,hue:60, sz:50, cat:1},
-  // 🐠 魚類
-  clown:{n:"小丑魚",e:"🐠",kind:"fish",need:16,price:6, reward:9, hue:0,  sz:26, cat:2},
-  trop: {n:"熱帶魚",e:"🐟",kind:"fish",need:14,price:4, reward:7, hue:0,  sz:26, cat:2},
-  puff: {n:"河豚",  e:"🐡",kind:"fish",need:30,price:12,reward:18,hue:0,  sz:30, cat:2},
-  ray:  {n:"魟魚",  e:"🐟",kind:"ray", need:50,price:24,reward:38,hue:240,sz:40, cat:2, wide:1},
-  shark:{n:"鯊魚",  e:"🦈",kind:"big", need:90,price:42,reward:70,hue:0,  sz:48, cat:2},
-  whale:{n:"小鯨魚",e:"🐳",kind:"big", need:130,price:65,reward:105,hue:0, sz:54, cat:2},
-  dolph:{n:"海豚",  e:"🐬",kind:"fish",need:60,price:28,reward:44,hue:0,  sz:38, cat:2},
+  // 🐢 龜龜家族（Crush & Squirt）
+  green:{n:"龜龜·綠蠵龜",e:"🐢",kind:"turtle",need:20,price:0, reward:8, hue:0,  sz:34,cat:1},
+  squirt:{n:"小古·幼龜",  e:"🐢",kind:"turtle",need:14,price:5, reward:9, hue:90, sz:24,cat:1},
+  hawk:{n:"玳瑁龜",      e:"🐢",kind:"turtle",need:45,price:14,reward:20,hue:35, sz:34,cat:1},
+  red: {n:"赤蠵龜",      e:"🐢",kind:"turtle",need:55,price:20,reward:28,hue:-30,sz:36,cat:1},
+  albino:{n:"白子龜",    e:"🐢",kind:"turtle",need:60,price:26,reward:34,hue:0,  sz:34,cat:1,pale:1},
+  gold:{n:"黃金龜",      e:"🐢",kind:"turtle",need:85,price:40,reward:60,hue:48, sz:36,cat:1,glow:1},
+  leath:{n:"棱皮龜",     e:"🐢",kind:"turtle",need:70,price:30,reward:42,hue:200,sz:38,cat:1},
+  giant:{n:"象龜",       e:"🐢",kind:"turtle",need:115,price:55,reward:85,hue:60,sz:50,cat:1},
+  // 🐠 海底總動員魚班
+  clown:{n:"尼莫·小丑魚",e:"🐠",kind:"fish",need:16,price:6, reward:9, hue:0,  sz:26,cat:2},
+  dory: {n:"多莉·藍倒吊",e:"🐟",kind:"fish",need:18,price:7, reward:11,hue:205,sz:26,cat:2},
+  trop: {n:"神仙魚",     e:"🐟",kind:"fish",need:14,price:4, reward:7, hue:300,sz:26,cat:2},
+  puff: {n:"泡泡·河豚",  e:"🐡",kind:"fish",need:30,price:12,reward:18,hue:0,  sz:30,cat:2},
+  ray:  {n:"魟魚老師",   e:"🐟",kind:"ray", need:50,price:24,reward:38,hue:240,sz:40,cat:2,wide:1},
+  dolph:{n:"海豚",       e:"🐬",kind:"fish",need:60,price:28,reward:44,hue:0,  sz:38,cat:2},
+  shark:{n:"布魯斯·鯊魚",e:"🦈",kind:"big", need:95,price:44,reward:74,hue:0,  sz:48,cat:2},
+  whale:{n:"命運·鯨魚",  e:"🐳",kind:"big", need:135,price:66,reward:108,hue:0,sz:54,cat:2},
   // 🪼 其他海洋生物
-  jelly:{n:"水母",  e:"🪼",kind:"jelly",need:20,price:8, reward:12,hue:0,  sz:30, cat:3},
-  octo: {n:"章魚",  e:"🐙",kind:"slow",need:35,price:16,reward:24,hue:0,  sz:34, cat:3},
-  squid:{n:"魷魚",  e:"🦑",kind:"fish",need:30,price:14,reward:21,hue:0,  sz:32, cat:3},
-  seal: {n:"海豹",  e:"🦭",kind:"fish",need:50,price:22,reward:34,hue:0,  sz:40, cat:3},
-  shrimp:{n:"小蝦", e:"🦐",kind:"bottom",need:10,price:3,reward:5,hue:0,  sz:24, cat:3},
-  crab: {n:"螃蟹",  e:"🦀",kind:"bottom",need:14,price:5,reward:8,hue:0,  sz:28, cat:3}
+  jelly:{n:"水母群",     e:"🪼",kind:"jelly",need:20,price:8, reward:12,hue:0,  sz:30,cat:3},
+  octo: {n:"漢克·章魚",  e:"🐙",kind:"slow",need:35,price:16,reward:24,hue:0,  sz:34,cat:3},
+  squid:{n:"魷魚",       e:"🦑",kind:"fish",need:30,price:14,reward:21,hue:0,  sz:32,cat:3},
+  seal: {n:"海豹",       e:"🦭",kind:"fish",need:50,price:22,reward:34,hue:0,  sz:40,cat:3},
+  star: {n:"桃子·海星",  e:"⭐",kind:"bottom",need:14,price:5,reward:8, hue:0,  sz:26,cat:3},
+  shrimp:{n:"小蝦",      e:"🦐",kind:"bottom",need:10,price:3,reward:5,hue:0,  sz:24,cat:3},
+  crab: {n:"螃蟹",       e:"🦀",kind:"bottom",need:14,price:5,reward:8, hue:0,  sz:28,cat:3}
 };
-const CAT={1:"🐢 烏龜家族",2:"🐠 魚類",3:"🪼 其他海洋生物"};
-const TIERS=[ {f:0,n:"🥛 小魚缸",slot:2,cap:26},{f:6,n:"🐟 水族箱",slot:2,cap:34},{f:15,n:"🌊 大型水槽",slot:3,cap:46},
-              {f:30,n:"🏛️ 海洋館",slot:3,cap:62},{f:60,n:"🌌 深海帝國",slot:4,cap:90} ];
+const CAT={1:"🐢 龜龜家族",2:"🐠 海底總動員魚班",3:"🪼 其他海洋生物"};
+const TIERS=[ {f:0,n:"🥛 小魚缸",slot:2,cap:40},{f:8,n:"🐟 大水族箱",slot:3,cap:55},{f:20,n:"🌊 海洋隧道",slot:3,cap:75},
+              {f:40,n:"🏛️ 海洋館",slot:4,cap:100},{f:80,n:"🌌 大堡礁",slot:4,cap:140} ];
 
 function load(){ try{return JSON.parse(localStorage.getItem(FK))}catch(e){return null} }
-// 開場就放滿：每一種都先放一隻小的，外加多放幾隻烏龜＆熱門魚，缸子一開始就熱鬧
-const STARTER=[...Object.keys(SP), "green","hawk","clown","trop","jelly","shrimp","red","puff"];
-let F = load() || {pearls:20,raised:0,grantedFoodMin:0,grantedWaterQ:0,food:0,water:0,lastBonus:"",pick:"green",
+const STARTER=[...Object.keys(SP),"green","green","squirt","clown","dory","trop","jelly","shrimp","star","hawk"];
+let F = load() || {pearls:25,raised:0,grantedFoodMin:0,grantedWaterQ:0,food:0,water:0,lastBonus:"",pick:"green",
   slots:[{c:null,g:0},{c:null,g:0}], tank:STARTER.slice()};
 function save(){ localStorage.setItem(FK,JSON.stringify(F)); }
 
 function focusSec(){ return +localStorage.getItem("sjg_focus_v1")||0; }
 function totalQ(){ let d={}; try{d=JSON.parse(localStorage.getItem("sjg_daily_v1")||"{}")}catch(e){} return Object.values(d).reduce((a,b)=>a+(b.length||0),0); }
 function dstr(d){ return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
-function streakDays(){ let s=0; const d=new Date(); let daily={}; try{daily=JSON.parse(localStorage.getItem("sjg_daily_v1")||"{}")}catch(e){}
-  if(!(daily[dstr(d)]||[]).length) d.setDate(d.getDate()-1);
-  while((daily[dstr(d)]||[]).length){ s++; d.setDate(d.getDate()-1); } return s; }
+function streakDays(){ let s=0; const d=new Date(); let dl={}; try{dl=JSON.parse(localStorage.getItem("sjg_daily_v1")||"{}")}catch(e){}
+  if(!(dl[dstr(d)]||[]).length) d.setDate(d.getDate()-1);
+  while((dl[dstr(d)]||[]).length){ s++; d.setDate(d.getDate()-1); } return s; }
 function daysTo(s){ return Math.max(0,Math.ceil((new Date(s)-new Date())/86400000)); }
 function tierOf(){ let t=TIERS[0]; for(const x of TIERS) if(F.raised>=x.f) t=x; return t; }
 function nextTier(){ for(const x of TIERS) if(F.raised<x.f) return x; return null; }
 
-function collect(){
-  const mins=Math.floor(focusSec()/60);
-  if(mins>F.grantedFoodMin){ F.food += (mins-F.grantedFoodMin); F.grantedFoodMin=mins; }
-  const q=totalQ();
-  if(q>F.grantedWaterQ){ F.water += (q-F.grantedWaterQ); F.grantedWaterQ=q; }
-}
+function collect(){ const mins=Math.floor(focusSec()/60);
+  if(mins>F.grantedFoodMin){ F.food+=(mins-F.grantedFoodMin); F.grantedFoodMin=mins; }
+  const q=totalQ(); if(q>F.grantedWaterQ){ F.water+=(q-F.grantedWaterQ); F.grantedWaterQ=q; } }
 function grow(){ for(const p of F.slots){ if(F.food<=0) break;
-  if(p.c && p.g<SP[p.c].need){ const give=Math.min(SP[p.c].need-p.g,F.food); p.g+=give; F.food-=give; } } }
+  if(p.c && p.g<SP[p.c].need){ const g=Math.min(SP[p.c].need-p.g,F.food); p.g+=g; F.food-=g; } } }
 function syncSlots(){ const want=tierOf().slot; while(F.slots.length<want) F.slots.push({c:null,g:0}); }
 function dailyBonus(){ const t=dstr(new Date());
   if(F.lastBonus!==t){ const sk=streakDays(); const give=8+sk*2; F.pearls+=give; F.lastBonus=t; save(); toast("📅 每日登入禮 +"+give+" 🐚（🔥連"+sk+"天）"); } }
 
 let toastT; function toast(m){ const el=document.getElementById("toast"); el.textContent=m; el.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("show"),2400); }
 
-/* ===== HUD / 槽 / 商店 ===== */
 function renderHUD(){
-  const t=tierOf(), nt=nextTier(), prog=nt?Math.min(100,Math.round((F.raised-t.f)/(nt.f-t.f)*100)):100;
-  document.getElementById("hud").innerHTML=`
-    <div class="aqname">${t.n}　Lv.${TIERS.indexOf(t)+1}</div>
-    <div class="aqsub">🐢 養成生物 <b>${F.raised}</b> 隻　${nt?`再養 <b>${nt.f-F.raised}</b> 隻升級「${nt.n}」`:"已是最強深海帝國 🌌"}</div>
-    <div class="tierbar"><i style="width:${prog}%"></i></div>
-    <div class="res">
-      <span class="r">🐟 飼料 <b>${F.food}</b></span><span class="r">💧 水質 <b>${F.water}</b></span>
-      <span class="r">🐚 珍珠 <b>${F.pearls}</b></span><span class="r">🔥 連 <b>${streakDays()}</b> 天</span>
-      <span class="r">⏱ 一試剩 <b>${daysTo(EXAM)}</b> 天</span>
-    </div>
-    <div class="hint">🐟 飼料怎麼來？<b>去 <a href="index.html">複習頁</a> 開計時器讀書</b>，每讀 1 分鐘 = 1 飼料，自動餵養成槽裡的小烏龜長大。做題給 💧 水質。<br>養大後放進水缸，看牠們游來游去 🐢🐠🦈</div>`;
+  const t=tierOf(),nt=nextTier();
+  document.getElementById("hudbar").innerHTML=
+    `<span class="chip lvl">${t.n} Lv.${TIERS.indexOf(t)+1}</span>`+
+    `<span class="chip">🐢養成 <b>${F.raised}</b>${nt?`（再 ${nt.f-F.raised} 升級）`:""}</span>`+
+    `<span class="chip">🐟 <b>${F.food}</b></span><span class="chip">💧 <b>${F.water}</b></span>`+
+    `<span class="chip">🐚 <b>${F.pearls}</b></span><span class="chip">🔥<b>${streakDays()}</b></span>`+
+    `<span class="chip">⏱一試<b>${daysTo(EXAM)}</b></span>`;
+  document.getElementById("tankcap").textContent="🐢 缸內 "+F.tank.length+" / "+t.cap+" 隻";
 }
 function renderSlots(){
   document.getElementById("slots").innerHTML=F.slots.map((p,i)=>{
     if(!p.c) return `<div class="slot empty" data-act="put" data-i="${i}"><div style="font-size:32px">➕</div><div class="sname">空槽</div><div class="sinfo">放入：${SP[F.pick].e}${SP[F.pick].n}</div></div>`;
-    const s=SP[p.c], done=p.g>=s.need, pct=Math.min(100,Math.round(p.g/s.need*100));
-    return `<div class="slot ${done?'grown':''}">
-      <div class="baby" style="filter:hue-rotate(${s.hue}deg)">${done?s.e:"🥚"}</div>
-      <div class="sname">${s.n}${done?"":"（幼體）"}</div>
-      <div class="sbar"><i style="width:${pct}%"></i></div>
-      <div class="sinfo">${done?'✅ 長大了！放進水缸 +'+s.reward+'🐚':p.g+' / '+s.need+' 🐟'}</div>
-      ${done?`<button class="b-rel" data-act="release" data-i="${i}">🌊 放入水缸</button>`
-            :`<button class="b-feed" data-act="feed" data-i="${i}">💧 餵水+8</button>`}</div>`;
+    const s=SP[p.c],done=p.g>=s.need,pct=Math.min(100,Math.round(p.g/s.need*100));
+    return `<div class="slot ${done?'grown':''}"><div class="baby" style="filter:hue-rotate(${s.hue}deg)">${done?s.e:"🥚"}</div>
+      <div class="sname">${s.n}${done?"":"（幼體）"}</div><div class="sbar"><i style="width:${pct}%"></i></div>
+      <div class="sinfo">${done?'✅ 長大！放進缸 +'+s.reward+'🐚':p.g+' / '+s.need+' 🐟'}</div>
+      ${done?`<button class="b-rel" data-act="release" data-i="${i}">🌊 放入缸</button>`:`<button class="b-feed" data-act="feed" data-i="${i}">💧 餵水+8</button>`}</div>`;
   }).join("");
 }
 function renderShop(){
-  let html=""; for(const cat of [1,2,3]){
-    html+=`<div class="shopcat">${CAT[cat]}</div>`;
-    for(const [k,s] of Object.entries(SP)){ if(s.cat!==cat) continue;
-      const can=F.pearls>=s.price;
-      html+=`<div class="egg ${F.pick===k?'on':''} ${can?'':'lock'}" data-egg="${k}">
-        <div class="ge" style="filter:hue-rotate(${s.hue}deg)">${s.e}</div><div class="gn">${s.n}</div>
-        <div class="gd">需<b>${s.need}</b>🐟｜${s.price===0?'<b>免費</b>':'<b>'+s.price+'</b>🐚'}</div></div>`;
-    }
-  }
-  document.getElementById("shop").innerHTML=html;
+  let h=`<div class="hint">🐟 飼料怎麼來？<b><a href="index.html">去複習頁開計時器讀書</a></b>，每讀 1 分鐘 = 1 飼料，自動餵幼體長大。做題給 💧 水質。養大放進缸，看牠們游 🐢🐠🦈</div>`;
+  for(const cat of [1,2,3]){ h+=`<div class="shopcat">${CAT[cat]}</div>`;
+    for(const [k,s] of Object.entries(SP)){ if(s.cat!==cat) continue; const can=F.pearls>=s.price;
+      h+=`<div class="egg ${F.pick===k?'on':''} ${can?'':'lock'}" data-egg="${k}"><div class="ge" style="filter:hue-rotate(${s.hue}deg)">${s.e}</div>
+        <div class="gn">${s.n}</div><div class="gd">需<b>${s.need}</b>🐟｜${s.price===0?'<b>免費</b>':'<b>'+s.price+'</b>🐚'}</div></div>`; } }
+  document.getElementById("shop").innerHTML=h;
 }
-function renderUI(){ syncSlots(); renderHUD(); renderSlots(); renderShop();
-  document.getElementById("tankcap").textContent="🐢 水缸 "+F.tank.length+" / "+tierOf().cap+" 隻"; }
+let openPanel=null;
+function renderSheet(){ if(openPanel==="slots"){ syncSlots(); renderSlots(); } else if(openPanel==="shop"){ renderShop(); } }
+function renderUI(){ syncSlots(); renderHUD(); renderSheet(); }
 
-/* ===== 游動動畫引擎 ===== */
+/* 抽屜開關 */
+const sheet=document.getElementById("sheet");
+function openSheet(p){ openPanel=p;
+  document.getElementById("sheettitle").textContent = p==="slots"?"🥚 養成槽（讀書飼料自動餵）":"🛒 海洋商店（選一隻再放入養成槽）";
+  document.getElementById("sheetbody").innerHTML = p==="slots"?'<div id="slots"></div>':'<div id="shop"></div>';
+  renderSheet(); sheet.classList.add("open"); }
+function closeSheet(){ openPanel=null; sheet.classList.remove("open"); }
+document.querySelectorAll("#dock [data-panel]").forEach(b=>b.onclick=()=>{ openPanel===b.dataset.panel?closeSheet():openSheet(b.dataset.panel); });
+document.getElementById("sheetclose").onclick=closeSheet;
+document.getElementById("sheetbody").addEventListener("click",e=>{
+  const eg=e.target.closest("[data-egg]"); if(eg){ F.pick=eg.dataset.egg; save(); renderSheet(); return; }
+  const tg=e.target.closest("[data-act]"); if(!tg) return; const i=+tg.dataset.i,act=tg.dataset.act,p=F.slots[i];
+  if(act==="put"){ const s=SP[F.pick]; if(F.pearls<s.price){ toast("🐚 珍珠不夠（"+s.n+" 要 "+s.price+"）"); return; }
+    F.pearls-=s.price; p.c=F.pick; p.g=0; save(); renderUI(); toast("🥚 放入 "+s.n+" 幼體！讀書餵牠長大");
+  } else if(act==="feed"){ if(F.water<=0){ toast("💧 沒水質了～做幾題就有"); return; } F.water--; p.g=Math.min(SP[p.c].need,p.g+8); save(); renderSheet();
+  } else if(act==="release"){ const cap=tierOf().cap;
+    if(F.tank.length>=cap){ toast("🐢 缸滿了（"+cap+"）！升級才放得下更多"); return; }
+    const s=SP[p.c]; F.tank.push(p.c); F.pearls+=s.reward; F.raised++; const before=tierOf(); p.c=null; p.g=0; save();
+    const after=tierOf(); buildSwimmers(); renderUI();
+    toast(after!==before?("🎉 升級「"+after.n+"」！缸變大、解鎖新槽"):("🌊 "+s.n+" 放進缸囉！+"+s.reward+"🐚")); }
+});
+
+/* ===== 游動動畫 ===== */
 const tank=document.getElementById("tank"), layer=document.getElementById("swimmers");
 let swimmers=[];
-function bandOf(kind){ return kind==="bottom"?[.80,.92]:kind==="big"?[.22,.6]:kind==="turtle"?[.30,.78]:kind==="jelly"?[.12,.7]:kind==="ray"?[.45,.8]:[.12,.72]; }
-function speedOf(kind){ return kind==="big"?.5:kind==="slow"?.35:kind==="turtle"?.55:kind==="bottom"?.4:kind==="jelly"?.25:1.0; }
+function bandOf(k){ return k==="bottom"?[.82,.94]:k==="big"?[.18,.6]:k==="turtle"?[.28,.8]:k==="jelly"?[.1,.72]:k==="ray"?[.5,.82]:[.1,.74]; }
+function speedOf(k){ return k==="big"?.5:k==="slow"?.35:k==="turtle"?.55:k==="bottom"?.4:k==="jelly"?.22:1.0; }
 function buildSwimmers(){
-  layer.innerHTML=""; swimmers=[];
-  const W=tank.clientWidth||600, H=tank.clientHeight||320;
-  const SCALE=0.68;   // 整體縮小，看起來小小隻、塞得下更多種類
-  F.tank.forEach(k=>{
-    const s=SP[k]; if(!s) return;
-    const sz=Math.round(s.sz*SCALE);
-    const el=document.createElement("div"); el.className="swimmer";
-    el.style.fontSize=sz+"px"; el.style.filter=`hue-rotate(${s.hue}deg) drop-shadow(0 4px 5px rgba(0,0,0,.45))`;
-    if(s.wide) el.style.letterSpacing="0";
-    el.innerHTML=`${s.e}<span class="lab">${s.n}</span>`;
-    layer.appendChild(el);
-    const band=bandOf(s.kind), sp=speedOf(s.kind)*(0.7+Math.random()*0.6);
-    swimmers.push({ el, r:sz/2, x:Math.random()*(W-sz)+sz/2, y:(band[0]+Math.random()*(band[1]-band[0]))*H,
-      vx:(Math.random()<.5?-1:1)*sp, vy:(Math.random()-.5)*sp*0.5, band, bs:1+Math.random()*1.5, ba:s.kind==="jelly"?6:3, ph:Math.random()*6 });
-  });
+  layer.innerHTML=""; swimmers=[]; const SCALE=0.7;
+  const W=tank.clientWidth||600,H=tank.clientHeight||400;
+  F.tank.forEach(k=>{ const s=SP[k]; if(!s) return; const sz=Math.round(s.sz*SCALE);
+    const el=document.createElement("div"); el.className="swimmer"; el.style.fontSize=sz+"px";
+    let fil=`hue-rotate(${s.hue}deg) drop-shadow(0 4px 5px rgba(0,0,0,.45))`;
+    if(s.pale) fil="brightness(1.7) saturate(.35) "+fil; if(s.glow) fil="drop-shadow(0 0 7px #ffd86b) "+fil;
+    el.style.filter=fil; el.innerHTML=`${s.e}<span class="lab">${s.n}</span>`; layer.appendChild(el);
+    const band=bandOf(s.kind),sp=speedOf(s.kind)*(0.7+Math.random()*0.6);
+    swimmers.push({el,r:sz/2,x:Math.random()*(W-sz)+sz/2,y:(band[0]+Math.random()*(band[1]-band[0]))*H,
+      vx:(Math.random()<.5?-1:1)*sp,vy:(Math.random()-.5)*sp*0.5,band,bs:1+Math.random()*1.5,ba:s.kind==="jelly"?7:3,ph:Math.random()*6}); });
 }
-function animate(){
-  const W=tank.clientWidth, H=tank.clientHeight, t=performance.now()/1000;
-  for(const s of swimmers){
-    s.x+=s.vx; s.y+=s.vy;
+function animate(){ const W=tank.clientWidth,H=tank.clientHeight,t=performance.now()/1000;
+  for(const s of swimmers){ s.x+=s.vx; s.y+=s.vy;
     if(s.x<s.r){s.x=s.r;s.vx=Math.abs(s.vx);} if(s.x>W-s.r){s.x=W-s.r;s.vx=-Math.abs(s.vx);}
-    const tb=s.band[0]*H+s.r, bb=s.band[1]*H-s.r;
-    if(s.y<tb){s.y=tb;s.vy=Math.abs(s.vy);} if(s.y>bb){s.y=bb;s.vy=-Math.abs(s.vy);}
-    if(Math.random()<0.006) s.vy=(Math.random()-.5)*Math.abs(s.vx||.4);
-    const bob=Math.sin(t*s.bs+s.ph)*s.ba, dir=s.vx>=0?-1:1;
-    s.el.style.transform=`translate(${s.x-s.r}px,${s.y-s.r+bob}px) scaleX(${dir})`;
-    s.el.style.setProperty("--flip",dir);
-  }
-  requestAnimationFrame(animate);
-}
+    const tb=s.band[0]*H+s.r,bb=s.band[1]*H-s.r; if(s.y<tb){s.y=tb;s.vy=Math.abs(s.vy);} if(s.y>bb){s.y=bb;s.vy=-Math.abs(s.vy);}
+    if(Math.random()<0.005) s.vy=(Math.random()-.5)*Math.abs(s.vx||.4);
+    const bob=Math.sin(t*s.bs+s.ph)*s.ba,dir=s.vx>=0?-1:1;
+    s.el.style.transform=`translate(${s.x-s.r}px,${s.y-s.r+bob}px) scaleX(${dir})`; }
+  requestAnimationFrame(animate); }
 
-/* 海草 & 泡泡 裝飾 */
 function decor(){
-  const weeds=["🌿","🪸","🌿","🐚","🌱","🪸","⭐","🌿","🪸","🦀","🌿"];
-  document.getElementById("weeds").innerHTML=weeds.map(w=>`<span>${w}</span>`).join("");
-  for(let i=0;i<14;i++){ const b=document.createElement("div"); b.className="bub";
-    b.style.left=(5+Math.random()*90)+"%"; b.style.animationDuration=(5+Math.random()*7)+"s";
-    b.style.animationDelay=(Math.random()*7)+"s"; const sz=5+Math.random()*8; b.style.width=b.style.height=sz+"px";
-    tank.appendChild(b); }
+  const w=["🌿","🪸","🌿","🐚","🌱","🪸","⭐","🌿","🪸","🦀","🌿","🪸","🐚"];
+  document.getElementById("weeds").innerHTML=w.map(x=>`<span>${x}</span>`).join("");
+  for(let i=0;i<20;i++){ const b=document.createElement("div"); b.className="bub";
+    b.style.left=(4+Math.random()*92)+"%"; b.style.animationDuration=(6+Math.random()*8)+"s"; b.style.animationDelay=(Math.random()*9)+"s";
+    const sz=5+Math.random()*9; b.style.width=b.style.height=sz+"px"; tank.appendChild(b); }
 }
-
-/* ===== 互動 ===== */
-document.getElementById("slots").addEventListener("click",e=>{
-  const tg=e.target.closest("[data-act]"); if(!tg) return; const i=+tg.dataset.i, act=tg.dataset.act, p=F.slots[i];
-  if(act==="put"){ const s=SP[F.pick];
-    if(F.pearls<s.price){ toast("🐚 珍珠不夠（"+s.n+" 要 "+s.price+"）"); return; }
-    F.pearls-=s.price; p.c=F.pick; p.g=0; save(); renderUI(); toast("🥚 放入 "+s.n+" 幼體！讀書餵牠長大");
-  } else if(act==="feed"){ if(F.water<=0){ toast("💧 沒水質了～做幾題就有"); return; } F.water--; p.g=Math.min(SP[p.c].need,p.g+8); save(); renderUI();
-  } else if(act==="release"){
-    const cap=tierOf().cap;
-    if(F.tank.length>=cap){ toast("🐢 水缸滿了（"+cap+"）！升級才放得下更多"); return; }
-    const s=SP[p.c]; F.tank.push(p.c); F.pearls+=s.reward; F.raised++; const before=tierOf();
-    p.c=null; p.g=0; save();
-    const after=tierOf(); buildSwimmers(); renderUI();
-    if(after!==before) toast("🎉 水族館升級「"+after.n+"」！水缸變大、解鎖新槽");
-    else toast("🌊 "+s.n+" 放進水缸囉！+"+s.reward+"🐚");
-  }
-});
-document.getElementById("shop").addEventListener("click",e=>{ const tg=e.target.closest("[data-egg]"); if(!tg) return; F.pick=tg.dataset.egg; save(); renderUI(); });
-
-function tick(){ collect(); grow(); save(); renderUI(); }
-window.addEventListener("storage",e=>{ if(e.key==="sjg_focus_v1"||e.key==="sjg_daily_v1"){ collect(); grow(); save(); renderUI(); } });
-window.addEventListener("resize",()=>buildSwimmers());
+function tick(){ collect(); grow(); save(); renderHUD(); if(openPanel) renderSheet(); }
+window.addEventListener("storage",e=>{ if(e.key==="sjg_focus_v1"||e.key==="sjg_daily_v1"){ collect(); grow(); save(); renderHUD(); if(openPanel) renderSheet(); } });
+let rt; window.addEventListener("resize",()=>{ clearTimeout(rt); rt=setTimeout(buildSwimmers,250); });
 
 decor(); dailyBonus(); renderUI(); buildSwimmers(); animate(); setInterval(tick,1000);
 </script>
