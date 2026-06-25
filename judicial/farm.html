@@ -100,7 +100,7 @@
 <div id="toast"></div>
 
 <script>
-const FK="sjg_aqua_v1", EXAM="2026-08-01";
+const FK="sjg_aqua_v2", EXAM="2026-08-01";
 /* 生物資料：kind 決定游動方式；need=養大要的飼料；price=珍珠；reward=養成回饋珍珠；hue=色相；sz=大小 */
 const SP={
   // 🐢 烏龜（主角）
@@ -126,12 +126,14 @@ const SP={
   crab: {n:"螃蟹",  e:"🦀",kind:"bottom",need:14,price:5,reward:8,hue:0,  sz:28, cat:3}
 };
 const CAT={1:"🐢 烏龜家族",2:"🐠 魚類",3:"🪼 其他海洋生物"};
-const TIERS=[ {f:0,n:"🥛 小魚缸",slot:2,cap:6},{f:6,n:"🐟 水族箱",slot:2,cap:10},{f:15,n:"🌊 大型水槽",slot:3,cap:16},
-              {f:30,n:"🏛️ 海洋館",slot:3,cap:24},{f:60,n:"🌌 深海帝國",slot:4,cap:40} ];
+const TIERS=[ {f:0,n:"🥛 小魚缸",slot:2,cap:26},{f:6,n:"🐟 水族箱",slot:2,cap:34},{f:15,n:"🌊 大型水槽",slot:3,cap:46},
+              {f:30,n:"🏛️ 海洋館",slot:3,cap:62},{f:60,n:"🌌 深海帝國",slot:4,cap:90} ];
 
 function load(){ try{return JSON.parse(localStorage.getItem(FK))}catch(e){return null} }
+// 開場就放滿：每一種都先放一隻小的，外加多放幾隻烏龜＆熱門魚，缸子一開始就熱鬧
+const STARTER=[...Object.keys(SP), "green","hawk","clown","trop","jelly","shrimp","red","puff"];
 let F = load() || {pearls:20,raised:0,grantedFoodMin:0,grantedWaterQ:0,food:0,water:0,lastBonus:"",pick:"green",
-  slots:[{c:null,g:0},{c:null,g:0}], tank:["green"]};
+  slots:[{c:null,g:0},{c:null,g:0}], tank:STARTER.slice()};
 function save(){ localStorage.setItem(FK,JSON.stringify(F)); }
 
 function focusSec(){ return +localStorage.getItem("sjg_focus_v1")||0; }
@@ -208,15 +210,17 @@ function speedOf(kind){ return kind==="big"?.5:kind==="slow"?.35:kind==="turtle"
 function buildSwimmers(){
   layer.innerHTML=""; swimmers=[];
   const W=tank.clientWidth||600, H=tank.clientHeight||320;
+  const SCALE=0.68;   // 整體縮小，看起來小小隻、塞得下更多種類
   F.tank.forEach(k=>{
     const s=SP[k]; if(!s) return;
+    const sz=Math.round(s.sz*SCALE);
     const el=document.createElement("div"); el.className="swimmer";
-    el.style.fontSize=s.sz+"px"; el.style.filter=`hue-rotate(${s.hue}deg) drop-shadow(0 5px 6px rgba(0,0,0,.45))`;
+    el.style.fontSize=sz+"px"; el.style.filter=`hue-rotate(${s.hue}deg) drop-shadow(0 4px 5px rgba(0,0,0,.45))`;
     if(s.wide) el.style.letterSpacing="0";
     el.innerHTML=`${s.e}<span class="lab">${s.n}</span>`;
     layer.appendChild(el);
     const band=bandOf(s.kind), sp=speedOf(s.kind)*(0.7+Math.random()*0.6);
-    swimmers.push({ el, r:s.sz/2, x:Math.random()*(W-s.sz)+s.sz/2, y:(band[0]+Math.random()*(band[1]-band[0]))*H,
+    swimmers.push({ el, r:sz/2, x:Math.random()*(W-sz)+sz/2, y:(band[0]+Math.random()*(band[1]-band[0]))*H,
       vx:(Math.random()<.5?-1:1)*sp, vy:(Math.random()-.5)*sp*0.5, band, bs:1+Math.random()*1.5, ba:s.kind==="jelly"?6:3, ph:Math.random()*6 });
   });
 }
