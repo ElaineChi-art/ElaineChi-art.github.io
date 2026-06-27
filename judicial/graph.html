@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>🕸️ 考點關聯圖 ‧ 司法官律師複習</title>
+<style>
+  :root{--bg:#0b0d12;--panel:#11151c;--line:#262b36;--gold:#ffd86b;--txt:#e6e6e6;--mut:#9aa4b2}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;overflow:hidden}
+  /* 頂部站台導覽（與複習頁一致） */
+  .topnav{display:flex;gap:6px;background:#0b0d12;padding:8px 16px;border-bottom:1px solid var(--line);overflow-x:auto}
+  .topnav a{color:var(--mut);text-decoration:none;font-size:14px;font-weight:600;padding:7px 16px;border-radius:8px;white-space:nowrap}
+  .topnav a:hover{background:#161922;color:#e6e6e6}
+  .topnav a.active{background:#1f2e3a;color:#7fb5ff}
+
+  #shell{display:flex;height:calc(100vh - 48px)}
+
+  /* 左側科目切換 */
+  #side{width:212px;flex:none;background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding:10px 0 30px}
+  #side .grpttl{color:var(--gold);font-size:12.5px;font-weight:bold;padding:12px 14px 5px;letter-spacing:1px}
+  #side .sbtn{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:none;border:none;
+    border-left:3px solid transparent;color:#aeb6c4;font-size:13.5px;padding:8px 14px;cursor:pointer;font-family:inherit}
+  #side .sbtn:hover{background:#1a2030;color:#fff}
+  #side .sbtn.cur{border-left-color:var(--gold);background:#1c2435;color:#ffd86b;font-weight:bold}
+  #side .sbtn .cnt{color:#6b7486;font-size:11.5px}
+  #side .sbtn.all{color:#9db4ff;font-weight:bold;margin-bottom:4px}
+
+  /* 中間畫布 */
+  #stage{flex:1;position:relative;min-width:0}
+  #cv{display:block;width:100%;height:100%;cursor:grab}
+  #cv:active{cursor:grabbing}
+  #hud{position:absolute;left:14px;top:12px;z-index:5;display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:70%}
+  #hud .title{font-size:15px;font-weight:bold;color:#cfd6e2}
+  #hud .title b{color:var(--gold)}
+  #search{background:#0f1320;border:1px solid var(--line);color:#e6e6e6;border-radius:18px;padding:6px 12px;font-size:13px;width:160px;outline:none}
+  #search:focus{border-color:var(--gold)}
+  .hbtn{background:#171c27;border:1px solid var(--line);color:#cfd6e2;border-radius:16px;padding:5px 11px;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .hbtn:hover{background:#222a38}
+  #legend{position:absolute;left:14px;bottom:12px;z-index:5;background:rgba(13,16,23,.82);border:1px solid var(--line);
+    border-radius:10px;padding:8px 11px;font-size:11.5px;color:#9aa4b2;line-height:1.7;max-width:240px}
+  #legend .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+  #tip{position:absolute;z-index:6;pointer-events:none;background:#0f1320;border:1px solid var(--gold);color:#ffe9a8;
+    font-size:12.5px;padding:4px 9px;border-radius:7px;display:none;max-width:260px;line-height:1.5}
+
+  /* 右側詳解面板 */
+  #panel{position:absolute;right:0;top:0;height:100%;width:380px;max-width:88vw;background:#0f1320;border-left:1px solid var(--line);
+    transform:translateX(102%);transition:transform .22s ease;z-index:8;display:flex;flex-direction:column}
+  #panel.open{transform:translateX(0)}
+  #panel .ph{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:flex-start}
+  #panel .ph .sys{font-size:11.5px;color:#9db4ff;font-weight:bold;letter-spacing:.5px}
+  #panel .ph .cpt{font-size:17px;font-weight:bold;color:var(--gold);line-height:1.3;margin-top:3px}
+  #panel .ph .x{margin-left:auto;background:none;border:none;color:#8a93a3;font-size:22px;cursor:pointer;line-height:1}
+  #panel .pb{padding:14px 16px;overflow-y:auto;font-size:14px;line-height:1.75}
+  #panel .meta{color:#7f8aa0;font-size:12.5px;margin-bottom:12px}
+  #panel .meta b{color:#cfd6e2}
+  #panel .blk{margin:0 0 13px}
+  #panel .blk .lab{display:block;font-size:12px;color:#8a93a3;font-weight:bold;margin-bottom:3px}
+  #panel .law{color:#d9b25a}
+  #panel .key{color:#bfe0ff}
+  #panel .trap{color:#ff9d9d}
+  #panel .ans{color:#9fe0a0}
+  #panel .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  #panel .chip{background:#1a2030;border:1px solid var(--line);color:#cfd6e2;border-radius:14px;padding:3px 9px;font-size:11.5px}
+  #panel .rel .relttl{font-size:12px;color:#8a93a3;font-weight:bold;margin:6px 0 5px}
+  #panel .rel .rbtn{display:block;width:100%;text-align:left;background:#141a26;border:1px solid var(--line);color:#bcd;
+    border-radius:8px;padding:6px 10px;font-size:12.5px;margin-bottom:5px;cursor:pointer;font-family:inherit}
+  #panel .rel .rbtn:hover{background:#1d2536;color:#fff}
+  #panel .rel .rbtn small{color:#7f8aa0}
+  #empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#566;font-size:14px;text-align:center;padding:20px;pointer-events:none}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="https://elainechi-art.github.io/">🏠 首頁</a>
+  <a href="https://elainechi-art.github.io/judicial/">📚 司法官・律師複習</a>
+  <a class="active" href="graph.html">🕸️ 考點關聯圖</a>
+  <a href="https://elainechi-art.github.io/exam-radar/">⚖️ 申論實務雷達</a>
+</nav>
+
+<div id="shell">
+  <div id="side"></div>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="hud">
+      <span class="title" id="htitle"></span>
+      <input id="search" placeholder="🔍 找考點…">
+      <button class="hbtn" id="reheat">🔄 重新排列</button>
+      <button class="hbtn" id="fit">🎯 置中</button>
+    </div>
+    <div id="legend"></div>
+    <div id="tip"></div>
+    <div id="empty">此科目尚無已建檔的考點筆記</div>
+  </div>
+  <div id="panel">
+    <div class="ph">
+      <div>
+        <div class="sys" id="p-sys"></div>
+        <div class="cpt" id="p-cpt"></div>
+      </div>
+      <button class="x" id="p-close">×</button>
+    </div>
+    <div class="pb" id="p-body"></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="notes.js"></script>
+<script>
+/* ===== 共用分類邏輯（與 index.html 一致） ===== */
+const Q = window.QUESTIONS || [];
+const NOTES = window.NOTES || {};
+function keyOf(q){return q.year+"-"+q.section+"-"+q.num;}
+function subOf(q){
+  const n=q.num, sec=q.section;
+  if(sec==="刑事組") return n<=35?"刑法":n<=60?"刑訴":"法律倫理";
+  if(sec==="民事組") return n<=50?"民法":"民訴";
+  if(sec==="商事組") return n<=15?"公司法":n<=25?"保險法":n<=35?"票據法":n<=45?"證交法":n<=55?"強制執行":"法學英文";
+  if(sec==="公法組"){
+    const law=((NOTES[keyOf(q)]||{}).body||"").split("\n").find(l=>l.trim().startsWith("⚖️"))||"";
+    if(/涉外|國際私法|準據法|反致|法律適用法/.test(law)) return "國際私法";
+    if(/國際公法|條約|公約|海洋法|聯合國|領海|引渡|戰爭|國際法院|外交/.test(law)) return "國際公法";
+    if(/行政/.test(law)) return "行政法";
+    return "憲法";
+  }
+  return q.subject;
+}
+function systemOf(q){
+  const su=subOf(q);
+  const c=(NOTES[keyOf(q)]||{}).concept||"";
+  const law=((NOTES[keyOf(q)]||{}).body||"").split("\n").find(l=>l.trim().startsWith("⚖️"))||"";
+  const t=c+" "+law;
+  const has=re=>re.test(t);
+  if(su==="刑法"){
+    if(has(/故意|過失|因果|結果加重|不作為|構成要件|錯誤|包攝|打擊|客體錯誤/)) return "刑總·構成要件/故意過失";
+    if(has(/正當防衛|緊急避難|承諾|阻卻違法|依法令|依命令|自助/)) return "刑總·阻卻違法";
+    if(has(/罪責|責任能力|原因自由|違法性錯誤|期待可能|精神|年齡|減輕其刑/)) return "刑總·罪責";
+    if(has(/未遂|中止|預備|著手|不能犯/)) return "刑總·未遂";
+    if(has(/正犯|共犯|教唆|幫助|共同正犯|間接正犯|結夥|脫離/)) return "刑總·正犯與共犯";
+    if(has(/競合|想像競合|數罪|吸收|不罰|罪數|牽連|接續/)) return "刑總·罪數競合";
+    if(has(/沒收|易科|易服|緩刑|累犯|自首|量刑|褫奪|保安處分|時效|追訴權|主刑|從刑|利得/)) return "刑總·刑罰與沒收";
+    if(has(/殺人|傷害|遺棄|墮胎|性交|猥褻|妨害自由|拘禁|強制|恐嚇|名譽|誹謗|侮辱|秘密|電腦|GPS|跟追/)) return "刑分·個人法益";
+    if(has(/竊盜|搶奪|強盜|詐欺|侵占|背信|恐嚇取財|贓物|毀損|重利|擄人勒贖|結合犯/)) return "刑分·財產犯罪";
+    if(has(/瀆職|受賄|行賄|圖利|濫權|洩.*秘密|妨害公務|脫逃|藏匿|頂替|湮滅|偽證|誣告|投票|賄選/)) return "刑分·國家法益";
+    if(has(/公共危險|放火|決水|往來|交通|酒駕|不能安全駕駛|偽造貨幣|偽造文書|有價證券|印章|署押|賭博|猥褻物品|風化|鴉片|毒品/)) return "刑分·社會法益";
+    return "刑分·其他";
+  }
+  if(su==="法律倫理"){
+    if(has(/檢察官|檢察一體|檢察長|偵查不公開/)) return "倫理·檢察官";
+    if(has(/律師/)) return "倫理·律師";
+    if(has(/法官/)) return "倫理·法官";
+    return "倫理·通則";
+  }
+  if(su==="刑訴"){
+    if(has(/傳喚|拘提|逮捕|現行犯|通緝|羈押|具保|責付|搜索|扣押|監聽|通訊監察|身體檢查|強制處分/)) return "刑訴·強制處分";
+    if(has(/證據|自白|傳聞|補強|證據能力|證據排除|權衡|158|159|156|勘驗|鑑定|詰問|誘導|證人|具結/)) return "刑訴·證據法則";
+    if(has(/告訴|告發|自訴|不起訴|緩起訴|起訴|再議|准許提起自訴|偵查|卷證|辯護人指定/)) return "刑訴·偵查與起訴";
+    if(has(/管轄|迴避|簡式|簡易|協商|國民法官|一造辯論|準備程序|審判|判決|相牽連|追加起訴|變更起訴/)) return "刑訴·審判程序";
+    if(has(/上訴|抗告|再審|非常上訴|確定/)) return "刑訴·救濟程序";
+    return "刑訴·其他";
+  }
+  if(su==="憲法"){
+    if(has(/平等|自由|財產|工作|訴訟|人身|隱私|秘密通訊|集會|結社|宗教|受教育|生命|人格|遷徙|居住|基本權|釋字|憲判|比例原則|法律保留/)) return "憲法·基本權";
+    return "憲法·政府組織與釋憲";
+  }
+  if(su==="行政法"){
+    if(has(/組織|機關|管轄|公務員|委託|委任|行政法人|公物|地方自治|自治條例|自治規則/)) return "行政法·組織與自治";
+    if(has(/處分|命令|規則|契約|行政罰|事實行為|裁量|法律保留|信賴保護|比例|附款|程序|聽證|送達/)) return "行政法·行政作用";
+    if(has(/訴願|行政訴訟|國家賠償|國賠|損失補償|強制執行|暫時權利|審判權|救濟/)) return "行政法·行政救濟";
+    return "行政法·其他";
+  }
+  if(su==="國際公法") return "國際公法";
+  if(su==="國際私法") return "國際私法";
+  if(su==="民法"){
+    if(has(/行為能力|意思表示|法律行為|代理|消滅時效|條件|期日|期間|權利能力|人格|法人|住所|物之概念|誠信|權利濫用|監護宣告|輔助宣告|死亡宣告/)) return "民總";
+    if(has(/債|契約|侵權|不當得利|無因管理|買賣|租賃|承攬|委任|借貸|保證|債務不履行|給付|代位|撤銷|讓與|承擔|連帶|抵銷|定金|違約金|解除|擔保|瑕疵/)) return "債編";
+    if(has(/物權|所有權|共有|抵押|質權|留置|地上權|典權|役權|占有|善意取得|登記|相鄰|添附|流抵/)) return "物權";
+    if(has(/婚姻|結婚|離婚|夫妻|剩餘財產|親子|收養|認領|監護|扶養|親權|姻親|血親|婚生/)) return "親屬";
+    if(has(/繼承|遺產|遺囑|特留分|應繼分|拋棄繼承|限定|代位繼承|歸扣|遺贈/)) return "繼承";
+    return "民法·其他";
+  }
+  if(su==="民訴"){
+    if(has(/管轄|當事人|訴訟能力|選定當事人|訴訟標的|起訴|訴之變更|追加|反訴|重複起訴|當事人恆定|適格/)) return "民訴·主體與標的";
+    if(has(/言詞辯論|自認|舉證|證據|證人|調解|和解|爭點|審理|闡明/)) return "民訴·審理與證據";
+    if(has(/判決|既判力|確定|對世效|假執行|對待給付/)) return "民訴·裁判效力";
+    if(has(/上訴|抗告|再審|第三人撤銷|附帶上訴|飛躍/)) return "民訴·救濟";
+    if(has(/保全|假扣押|假處分|支付命令|公示催告|簡易|小額|家事|繫屬登記|保全證據/)) return "民訴·特別與保全程序";
+    return "民訴·其他";
+  }
+  return su;
+}
+function parseNote(note){
+  const lines=(note.body||"").split("\n");
+  const grab=e=>{const m=lines.find(l=>l.trim().startsWith(e));return m?m.replace(e,"").replace(/^法條：/,"").trim():"";};
+  return {law:grab("⚖️"), key:grab("🔑"), ans:grab("✅"), trap:grab("❌"), concept:note.concept||""};
+}
+
+/* ===== 科目定義與配色 ===== */
+const GROUPS=[
+  ["刑事組",["刑法","刑訴","法律倫理"]],
+  ["公法組",["憲法","行政法","國際公法","國際私法"]],
+  ["民事組",["民法","民訴"]],
+  ["商事組",["公司法","保險法","票據法","證交法","強制執行","法學英文"]],
+];
+const SUBJ_COLOR={
+  刑法:"#ff8a8a",刑訴:"#ffb27f",法律倫理:"#e0a3ff",
+  憲法:"#7fb5ff",行政法:"#7fd4ff",國際公法:"#86e0c0",國際私法:"#9fe080",
+  民法:"#ffd86b",民訴:"#f4c06b",
+  公司法:"#c0a0ff",保險法:"#9ad0ff",票據法:"#ff9fc0",證交法:"#9fe0a8",強制執行:"#d4c48a",法學英文:"#bcd0e6",
+};
+const GROUP_COLOR={刑事組:"#ff8a8a",公法組:"#7fb5ff",民事組:"#ffd86b",商事組:"#c0a0ff"};
+const SUB2GROUP={}; GROUPS.forEach(([g,subs])=>subs.forEach(s=>SUB2GROUP[s]=g));
+
+/* ===== 預先把每題的 sub/sys/note 算好（一次） ===== */
+const ROWS=[];
+Q.forEach(q=>{
+  const note=NOTES[keyOf(q)]; if(!note) return;
+  ROWS.push({q,sub:subOf(q),sys:systemOf(q),note,p:parseNote(note),laws:q.laws||[]});
+});
+const SUB_COUNT={}; ROWS.forEach(r=>SUB_COUNT[r.sub]=(SUB_COUNT[r.sub]||0)+1);
+
+/* ===== 左側選單 ===== */
+const side=document.getElementById("side");
+let curSubject="__ALL__";
+function buildSide(){
+  let h=`<button class="sbtn all ${curSubject==="__ALL__"?"cur":""}" data-s="__ALL__">🌐 全部科目總覽<span class="cnt">${ROWS.length}</span></button>`;
+  GROUPS.forEach(([g,subs])=>{
+    h+=`<div class="grpttl">${g}</div>`;
+    subs.forEach(s=>{
+      const c=SUB_COUNT[s]||0;
+      h+=`<button class="sbtn ${curSubject===s?"cur":""}" data-s="${s}" ${c?"":'style="opacity:.4"'}><span>${s}</span><span class="cnt">${c}</span></button>`;
+    });
+  });
+  side.innerHTML=h;
+  side.querySelectorAll(".sbtn").forEach(b=>b.onclick=()=>{curSubject=b.dataset.s;buildSide();loadGraph();});
+}
+
+/* ===== 建立圖資料 ===== */
+function buildGraph(subject){
+  const nodes=[],edges=[],nodeById=new Map();
+  const add=n=>{nodeById.set(n.id,n);nodes.push(n);return n;};
+  if(subject==="__ALL__"){
+    // 科目 hub → 體系節點；體系間共用法條 → 連線
+    const sysMap=new Map();
+    ROWS.forEach(r=>{
+      const id="sys:"+r.sub+"/"+r.sys;
+      let o=sysMap.get(id);
+      if(!o){o={id,kind:"sys",label:r.sys,sub:r.sub,group:SUB2GROUP[r.sub],count:0,laws:new Set(),rows:[]};sysMap.set(id,o);}
+      o.count++; o.rows.push(r); r.laws.forEach(l=>o.laws.add(l));
+    });
+    // 科目 hub
+    const subHubs=new Map();
+    GROUPS.forEach(([g,subs])=>subs.forEach(s=>{
+      if(!SUB_COUNT[s])return;
+      const id="sub:"+s;
+      subHubs.set(s,add({id,kind:"subhub",label:s,sub:s,group:SUB2GROUP[s],count:SUB_COUNT[s]}));
+    }));
+    sysMap.forEach(o=>{add(o);edges.push({a:"sub:"+o.sub,b:o.id,kind:"member"});});
+    // 體系間共用法條連線（限定門檻避免過密）
+    crossLawEdges([...sysMap.values()],edges,2);
+    return {nodes,edges,nodeById,level:"sys"};
+  }
+  // 單一科目：體系 hub → 考點節點；考點間共用法條 → 連線
+  const rows=ROWS.filter(r=>r.sub===subject);
+  const sysMap=new Map(), kptMap=new Map();
+  rows.forEach(r=>{
+    let s=sysMap.get(r.sys);
+    if(!s){s={id:"sys:"+r.sys,kind:"sys",label:r.sys,sub:subject,group:SUB2GROUP[subject],count:0,rows:[]};sysMap.set(r.sys,s);}
+    s.count++; s.rows.push(r);
+    const c=r.note.concept||"（未命名考點）";
+    let k=kptMap.get(c);
+    if(!k){k={id:"kpt:"+c,kind:"kpt",label:c,sub:subject,sys:r.sys,group:SUB2GROUP[subject],count:0,laws:new Set(),rows:[]};kptMap.set(c,k);}
+    k.count++; k.rows.push(r); r.laws.forEach(l=>k.laws.add(l));
+  });
+  sysMap.forEach(s=>add(s));
+  kptMap.forEach(k=>{add(k);edges.push({a:"sys:"+k.sys,b:k.id,kind:"member"});});
+  crossLawEdges([...kptMap.values()],edges,1);
+  return {nodes,edges,nodeById,level:"kpt"};
+}
+// 依共用法條建立節點間關聯（門檻 minShared，且每條法條最多連 6 對避免爆炸）
+function crossLawEdges(items,edges,minShared){
+  const lawIndex=new Map();
+  items.forEach(it=>it.laws&&it.laws.forEach(l=>{ if(!lawIndex.has(l))lawIndex.set(l,[]); lawIndex.get(l).push(it); }));
+  const seen=new Set();
+  lawIndex.forEach((arr)=>{
+    if(arr.length<2||arr.length>14)return;
+    for(let i=0;i<arr.length;i++)for(let j=i+1;j<arr.length;j++){
+      const a=arr[i],b=arr[j]; if(a===b)continue;
+      const pk=a.id<b.id?a.id+"|"+b.id:b.id+"|"+a.id;
+      if(seen.has(pk))continue;
+      // 計算實際共用數
+      const shared=[...a.laws].filter(x=>b.laws.has(x)).length;
+      if(shared<minShared)continue;
+      seen.add(pk); edges.push({a:a.id,b:b.id,kind:"law",w:shared});
+    }
+  });
+}
+
+/* ===== 力導向佈局 + Canvas 繪製 ===== */
+const cv=document.getElementById("cv"), ctx=cv.getContext("2d");
+const tip=document.getElementById("tip"), emptyEl=document.getElementById("empty");
+let G=null, view={x:0,y:0,k:1}, dpr=Math.max(1,window.devicePixelRatio||1);
+let dragNode=null, panning=false, last={x:0,y:0}, hoverNode=null, selNode=null;
+let alpha=1, raf=null;
+
+function resize(){
+  const r=cv.getBoundingClientRect();
+  cv.width=r.width*dpr; cv.height=r.height*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener("resize",()=>{resize();});
+
+function radius(n){
+  if(n.kind==="subhub") return 16+Math.sqrt(n.count)*1.1;
+  if(n.kind==="sys") return 9+Math.sqrt(n.count)*1.2;
+  return 4+Math.sqrt(n.count)*2.0;
+}
+function colorOf(n){
+  if(n.kind==="subhub") return GROUP_COLOR[n.group]||"#ccc";
+  if(n.kind==="sys") return SUBJ_COLOR[n.sub]||"#9db4ff";
+  return SUBJ_COLOR[n.sub]||"#ccc";
+}
+
+function loadGraph(){
+  G=buildGraph(curSubject);
+  emptyEl.style.display=G.nodes.length?"none":"flex";
+  document.getElementById("htitle").innerHTML = curSubject==="__ALL__"
+    ? `全部科目 · <b>體系關聯</b>（共 ${G.nodes.filter(n=>n.kind==="sys").length} 個體系）`
+    : `<b>${curSubject}</b> · 考點關聯（${G.nodes.filter(n=>n.kind==="kpt").length} 個考點 / ${G.nodes.filter(n=>n.kind==="sys").length} 個體系）`;
+  buildLegend();
+  closePanel();
+  // 初始化座標（環狀散開）
+  const R=Math.min(cv.clientWidth,cv.clientHeight)/2.6||300;
+  G.nodes.forEach((n,i)=>{
+    const a=i*2.399963;
+    n.x=Math.cos(a)*R*Math.sqrt(i/G.nodes.length)*1.3+(Math.random()-.5)*30;
+    n.y=Math.sin(a)*R*Math.sqrt(i/G.nodes.length)*1.3+(Math.random()-.5)*30;
+    n.vx=0;n.vy=0;n.pinned=false;
+  });
+  // 鄰接（高亮用）
+  G.adj=new Map(); G.nodes.forEach(n=>G.adj.set(n.id,new Set()));
+  G.edges.forEach(e=>{ if(G.adj.has(e.a)&&G.adj.has(e.b)){G.adj.get(e.a).add(e.b);G.adj.get(e.b).add(e.a);} });
+  view={x:cv.clientWidth/2,y:cv.clientHeight/2,k:1};
+  alpha=1;
+  if(!raf) tick();
+  setTimeout(fitView,650);
+}
+
+function step(){
+  const N=G.nodes, E=G.edges;
+  const rep = G.level==="sys"? 9000 : 4200;
+  // 斥力 O(n^2)
+  for(let i=0;i<N.length;i++){
+    const a=N[i];
+    for(let j=i+1;j<N.length;j++){
+      const b=N[j];
+      let dx=a.x-b.x, dy=a.y-b.y, d2=dx*dx+dy*dy;
+      if(d2<0.01){dx=Math.random()-.5;dy=Math.random()-.5;d2=1;}
+      const d=Math.sqrt(d2), f=rep/d2;
+      const fx=dx/d*f, fy=dy/d*f;
+      a.vx+=fx;a.vy+=fy;b.vx-=fx;b.vy-=fy;
+    }
+  }
+  // 彈簧
+  E.forEach(e=>{
+    const a=G.nodeById.get(e.a), b=G.nodeById.get(e.b); if(!a||!b)return;
+    const rest = e.kind==="member"?(b.kind==="kpt"?64:90):150;
+    let dx=b.x-a.x, dy=b.y-a.y, d=Math.sqrt(dx*dx+dy*dy)||1;
+    const f=(d-rest)*(e.kind==="member"?0.04:0.015);
+    const fx=dx/d*f, fy=dy/d*f;
+    a.vx+=fx;a.vy+=fy;b.vx-=fx;b.vy-=fy;
+  });
+  // 向心
+  N.forEach(n=>{ n.vx+=-n.x*0.0016; n.vy+=-n.y*0.0016; });
+  // 位移（釘住的節點固定不動，但仍對其他節點施力）
+  N.forEach(n=>{
+    if(n.pinned)return;
+    n.vx*=0.86; n.vy*=0.86;
+    const sp=Math.min(30,Math.hypot(n.vx,n.vy));
+    if(sp>30){const s=30/Math.hypot(n.vx,n.vy);n.vx*=s;n.vy*=s;}
+    n.x+=n.vx*alpha; n.y+=n.vy*alpha;
+  });
+  alpha*=0.992; if(alpha<0.03)alpha=0.03;
+}
+
+function worldToScreen(x,y){return {x:x*view.k+view.x, y:y*view.k+view.y};}
+function screenToWorld(x,y){return {x:(x-view.x)/view.k, y:(y-view.y)/view.k};}
+
+function draw(){
+  ctx.clearRect(0,0,cv.clientWidth,cv.clientHeight);
+  const hl = selNode||hoverNode;
+  const nbr = hl? G.adj.get(hl.id) : null;
+  // 邊
+  ctx.lineWidth=1;
+  G.edges.forEach(e=>{
+    const a=G.nodeById.get(e.a), b=G.nodeById.get(e.b); if(!a||!b)return;
+    const pa=worldToScreen(a.x,a.y), pb=worldToScreen(b.x,b.y);
+    const active = hl && (a===hl||b===hl);
+    if(e.kind==="law"){
+      ctx.strokeStyle = active? "rgba(127,181,255,.85)":"rgba(127,181,255,.16)";
+      ctx.setLineDash([4,3]);
+    }else{
+      ctx.strokeStyle = active? "rgba(255,216,107,.7)":"rgba(150,160,180,.16)";
+      ctx.setLineDash([]);
+    }
+    ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+  // 節點
+  G.nodes.forEach(n=>{
+    const p=worldToScreen(n.x,n.y), r=radius(n)*Math.sqrt(view.k);
+    const dim = hl && n!==hl && !(nbr&&nbr.has(n.id));
+    ctx.globalAlpha = dim?0.22:1;
+    ctx.beginPath(); ctx.arc(p.x,p.y,r,0,6.2832);
+    ctx.fillStyle=colorOf(n); ctx.fill();
+    if(n===hl){ ctx.lineWidth=2.5; ctx.strokeStyle="#fff"; ctx.stroke(); }
+    else if(n.kind!=="kpt"){ ctx.lineWidth=1.2; ctx.strokeStyle="rgba(255,255,255,.55)"; ctx.stroke(); }
+    ctx.globalAlpha=1;
+    // 標籤
+    const showLabel = n.kind!=="kpt" || n===hl || (nbr&&nbr.has(n.id)) || view.k>1.5;
+    if(showLabel && !dim){
+      ctx.font = (n.kind==="kpt"?11:n.kind==="subhub"?14:12)+"px -apple-system,'PingFang TC',sans-serif";
+      ctx.textAlign="center"; ctx.textBaseline="top";
+      const t=n.label.length>16?n.label.slice(0,15)+"…":n.label;
+      ctx.fillStyle="rgba(0,0,0,.55)"; ctx.fillText(t,p.x+0.6,p.y+r+2.6);
+      ctx.fillStyle = n.kind==="kpt"?"#c9d2e0":(n.kind==="subhub"?"#ffe9a8":"#dfe6f2");
+      ctx.fillText(t,p.x,p.y+r+2);
+    }
+  });
+}
+
+function tick(){
+  for(let s=0;s<2;s++) step();
+  draw();
+  raf=requestAnimationFrame(tick);
+}
+
+function fitView(){
+  if(!G||!G.nodes.length)return;
+  let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
+  G.nodes.forEach(n=>{minx=Math.min(minx,n.x);miny=Math.min(miny,n.y);maxx=Math.max(maxx,n.x);maxy=Math.max(maxy,n.y);});
+  const w=cv.clientWidth,h=cv.clientHeight, gw=maxx-minx||1, gh=maxy-miny||1;
+  const k=Math.min(w/(gw+140),h/(gh+140),2);
+  view.k=k;
+  view.x=w/2-(minx+maxx)/2*k;
+  view.y=h/2-(miny+maxy)/2*k;
+}
+
+/* ===== 互動 ===== */
+function pickNode(sx,sy){
+  let best=null,bd=1e9;
+  for(const n of G.nodes){
+    const p=worldToScreen(n.x,n.y), r=radius(n)*Math.sqrt(view.k)+4;
+    const d=Math.hypot(p.x-sx,p.y-sy);
+    if(d<r&&d<bd){bd=d;best=n;}
+  }
+  return best;
+}
+function evtPos(e){const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
+
+cv.addEventListener("mousedown",e=>{
+  const p=evtPos(e), n=pickNode(p.x,p.y);
+  if(n){dragNode=n;n.pinned=true;}else{panning=true;}
+  last=p;
+});
+window.addEventListener("mousemove",e=>{
+  const p=evtPos(e);
+  if(dragNode){
+    const w=screenToWorld(p.x,p.y); dragNode.x=w.x; dragNode.y=w.y; dragNode.vx=0;dragNode.vy=0; alpha=Math.max(alpha,.5);
+  }else if(panning){
+    view.x+=p.x-last.x; view.y+=p.y-last.y; last=p;
+  }else{
+    const n=pickNode(p.x,p.y);
+    hoverNode=n;
+    if(n){ tip.style.display="block"; tip.style.left=(p.x+14)+"px"; tip.style.top=(p.y+12)+"px";
+      tip.innerHTML=`<b>${n.label}</b><br><span style="color:#9aa4b2">${n.kind==="kpt"?n.sys:n.kind==="subhub"?"科目 · "+n.count+" 題":"體系 · "+n.count+" 題"}${n.kind==="kpt"?" · "+n.count+" 題":""}</span>`;
+      cv.style.cursor="pointer";
+    }else{ tip.style.display="none"; cv.style.cursor=panning?"grabbing":"grab"; }
+  }
+});
+window.addEventListener("mouseup",e=>{
+  if(dragNode){ /* 保持釘住，方便整理版面 */ }
+  dragNode=null; panning=false;
+});
+cv.addEventListener("click",e=>{
+  const p=evtPos(e), n=pickNode(p.x,p.y);
+  if(n){ selNode=n; openPanel(n); } else { selNode=null; closePanel(); }
+});
+cv.addEventListener("dblclick",e=>{ // 雙擊放開釘住
+  const p=evtPos(e), n=pickNode(p.x,p.y); if(n){n.pinned=false; alpha=Math.max(alpha,.6);}
+});
+cv.addEventListener("wheel",e=>{
+  e.preventDefault();
+  const p=evtPos(e), w=screenToWorld(p.x,p.y);
+  const f=e.deltaY<0?1.12:0.89; view.k=Math.max(0.15,Math.min(5,view.k*f));
+  view.x=p.x-w.x*view.k; view.y=p.y-w.y*view.k;
+},{passive:false});
+// 觸控
+cv.addEventListener("touchstart",e=>{const p=evtPos(e);const n=pickNode(p.x,p.y);if(n){dragNode=n;n.pinned=true;}else panning=true;last=p;},{passive:true});
+cv.addEventListener("touchmove",e=>{const p=evtPos(e);if(dragNode){const w=screenToWorld(p.x,p.y);dragNode.x=w.x;dragNode.y=w.y;dragNode.vx=0;dragNode.vy=0;alpha=Math.max(alpha,.5);}else if(panning){view.x+=p.x-last.x;view.y+=p.y-last.y;last=p;}e.preventDefault?0:0;},{passive:true});
+cv.addEventListener("touchend",e=>{dragNode=null;panning=false;const p=last;const n=pickNode(p.x,p.y);if(n){selNode=n;openPanel(n);}},{passive:true});
+
+document.getElementById("reheat").onclick=()=>{ G.nodes.forEach(n=>n.pinned=false); alpha=1; };
+document.getElementById("fit").onclick=fitView;
+document.getElementById("search").addEventListener("input",e=>{
+  const v=e.target.value.trim();
+  if(!v){selNode=null;closePanel();return;}
+  const hit=G.nodes.find(n=>n.label.includes(v));
+  if(hit){selNode=hit;openPanel(hit);
+    view.k=Math.max(view.k,1.4); view.x=cv.clientWidth/2-hit.x*view.k; view.y=cv.clientHeight/2-hit.y*view.k; }
+});
+
+/* ===== 詳解面板 ===== */
+const panel=document.getElementById("panel");
+function closePanel(){panel.classList.remove("open");}
+document.getElementById("p-close").onclick=()=>{selNode=null;closePanel();};
+function openPanel(n){
+  document.getElementById("p-sys").textContent = n.kind==="kpt"?n.sys:(n.kind==="subhub"?n.sub:n.sub);
+  document.getElementById("p-cpt").textContent = n.label;
+  const body=document.getElementById("p-body");
+  if(n.kind==="kpt"){
+    body.innerHTML=kptPanel(n);
+  }else{
+    body.innerHTML=hubPanel(n);
+  }
+  // 綁定相關節點按鈕
+  body.querySelectorAll(".rbtn[data-id]").forEach(b=>b.onclick=()=>{
+    const t=G.nodeById.get(b.dataset.id); if(!t)return; selNode=t; openPanel(t);
+    view.x=cv.clientWidth/2-t.x*view.k; view.y=cv.clientHeight/2-t.y*view.k;
+  });
+  panel.classList.add("open");
+}
+function uniq(a){return [...new Set(a.filter(Boolean))];}
+function kptPanel(n){
+  const rows=n.rows;
+  const keys=uniq(rows.map(r=>r.p.key));
+  const traps=uniq(rows.map(r=>r.p.trap));
+  const anss=uniq(rows.map(r=>r.p.ans));
+  const law=(rows.find(r=>r.p.law)||{p:{}}).p.law||"";
+  const years=uniq(rows.map(r=>r.q.year)).sort();
+  const chips=rows.sort((a,b)=>a.q.year-b.q.year||a.q.num-b.q.num)
+    .map(r=>`<span class="chip">${r.q.year}·${r.q.num}</span>`).join("");
+  let h=`<div class="meta">📂 ${n.sys}　·　考過 <b>${rows.length}</b> 題　·　年度 <b>${years.join("、")}</b></div>`;
+  if(law) h+=`<div class="blk"><span class="lab">⚖️ 法條</span><span class="law">${law}</span></div>`;
+  if(keys.length) h+=`<div class="blk"><span class="lab">🔑 核心規則</span><span class="key">${keys.join("<br>")}</span></div>`;
+  if(anss.length&&!keys.length) h+=`<div class="blk"><span class="lab">✅ 正解</span><span class="ans">${anss.join("<br>")}</span></div>`;
+  if(traps.length) h+=`<div class="blk"><span class="lab">⚠️ 易混淆（其他選項也考過）</span><span class="trap">${traps.join("<br>")}</span></div>`;
+  h+=`<div class="blk"><span class="lab">📄 出現過的題</span><div class="chips">${chips}</div></div>`;
+  // 相關考點（共用法條）
+  const rel=relatedOf(n);
+  if(rel.length){
+    h+=`<div class="rel"><div class="relttl">🔗 關聯考點（共用法條）</div>`;
+    rel.forEach(([t,shared])=>h+=`<button class="rbtn" data-id="${t.id}">${t.label} <small>· 共用 ${shared} 條法條</small></button>`);
+    h+=`</div>`;
+  }
+  return h;
+}
+function hubPanel(n){
+  const rows=n.rows||[];
+  if(n.kind==="subhub"){
+    // 列出該科底下各體系
+    const bySys={}; ROWS.filter(r=>r.sub===n.sub).forEach(r=>{bySys[r.sys]=(bySys[r.sys]||0)+1;});
+    let h=`<div class="meta">📚 科目　·　共 <b>${n.count}</b> 題已建檔考點</div><div class="rel"><div class="relttl">體系分布（點左側選單看此科考點圖）</div>`;
+    Object.entries(bySys).sort((a,b)=>b[1]-a[1]).forEach(([s,c])=>h+=`<div class="rbtn" style="cursor:default">${s} <small>· ${c} 題</small></div>`);
+    h+=`</div>`; return h;
+  }
+  // sys 節點
+  const years=uniq(rows.map(r=>r.q.year)).sort();
+  const concepts=uniq(rows.map(r=>r.note.concept)).slice(0,40);
+  let h=`<div class="meta">🗂️ 體系　·　${rows.length} 題　·　年度 <b>${years.join("、")}</b></div>`;
+  h+=`<div class="rel"><div class="relttl">此體系常考考點（${uniq(rows.map(r=>r.note.concept)).length}）</div>`;
+  concepts.forEach(c=>h+=`<div class="rbtn" style="cursor:default">${c}</div>`);
+  h+=`</div>`;
+  const rel=relatedOf(n);
+  if(rel.length){
+    h+=`<div class="rel"><div class="relttl">🔗 關聯體系（共用法條）</div>`;
+    rel.forEach(([t,shared])=>h+=`<button class="rbtn" data-id="${t.id}">${t.label} <small>· ${t.sub} · 共用 ${shared} 條</small></button>`);
+    h+=`</div>`;
+  }
+  return h;
+}
+function relatedOf(n){
+  if(!n.laws) return [];
+  const res=[];
+  G.adj.get(n.id).forEach(id=>{
+    const t=G.nodeById.get(id); if(!t||!t.laws)return;
+    const shared=[...n.laws].filter(x=>t.laws.has(x)).length;
+    if(shared>0) res.push([t,shared]);
+  });
+  return res.sort((a,b)=>b[1]-a[1]).slice(0,8);
+}
+
+function buildLegend(){
+  const el=document.getElementById("legend");
+  if(curSubject==="__ALL__"){
+    el.innerHTML=`<b style="color:#cfd6e2">圖例</b><br>`+
+      GROUPS.map(([g])=>`<span class="sw" style="background:${GROUP_COLOR[g]}"></span>${g}`).join("　")+
+      `<br><span style="color:#7fb5ff">⋯⋯</span> 共用法條的關聯　·　大圓＝科目，小圓＝體系`+
+      `<br><span style="color:#6b7486">滾輪縮放／拖曳節點整理／點節點看詳解</span>`;
+  }else{
+    el.innerHTML=`<b style="color:#cfd6e2">${curSubject}</b><br>`+
+      `<span class="sw" style="background:${SUBJ_COLOR[curSubject]}"></span>考點　·　大圓＝體系`+
+      `<br><span style="color:#7fb5ff">⋯⋯</span> 共用法條　<span style="color:#ffd86b">──</span> 屬於某體系`+
+      `<br><span style="color:#6b7486">點考點看法條/核心規則/易混淆/原題</span>`;
+  }
+}
+
+/* ===== 啟動 ===== */
+resize();
+buildSide();
+loadGraph();
+</script>
+</body>
+</html>
