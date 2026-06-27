@@ -17,8 +17,17 @@
 
   #shell{display:flex;height:calc(100vh - 48px)}
 
-  /* 左側科目切換 */
-  #side{width:212px;flex:none;background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding:10px 0 30px}
+  /* 左側科目切換：抽屜式（滑鼠移到頁籤才滑出，像目錄） */
+  #sidedrawer{position:fixed;left:0;top:48px;height:calc(100vh - 48px);z-index:20;pointer-events:none}
+  #side-tab{pointer-events:auto;position:absolute;left:0;top:50%;transform:translateY(-50%);
+    writing-mode:vertical-rl;background:#161b26;color:#cfd6e2;border:1px solid var(--line);border-left:none;
+    border-radius:0 12px 12px 0;padding:16px 8px;font-size:13.5px;font-weight:bold;letter-spacing:3px;cursor:pointer;white-space:nowrap}
+  #side-tab span{letter-spacing:3px}
+  #side-tab:hover{color:var(--gold);background:#1d2433}
+  #side{pointer-events:auto;position:absolute;left:0;top:0;height:100%;width:228px;
+    background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding:10px 0 30px;
+    transform:translateX(-101%);transition:transform .2s ease;box-shadow:5px 0 22px rgba(0,0,0,.45)}
+  #side-tab:hover + #side, #side:hover{transform:translateX(0)}
   #side .grpttl{color:var(--gold);font-size:12.5px;font-weight:bold;padding:12px 14px 5px;letter-spacing:1px}
   #side .sbtn{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:none;border:none;
     border-left:3px solid transparent;color:#aeb6c4;font-size:13.5px;padding:8px 14px;cursor:pointer;font-family:inherit}
@@ -38,6 +47,7 @@
   #search:focus{border-color:var(--gold)}
   .hbtn{background:#171c27;border:1px solid var(--line);color:#cfd6e2;border-radius:16px;padding:5px 11px;font-size:12.5px;cursor:pointer;font-family:inherit}
   .hbtn:hover{background:#222a38}
+  #rate{background:#1c2330;color:var(--gold);border:1px solid var(--gold);border-radius:16px;font-family:inherit;font-size:12.5px;font-weight:bold;padding:5px 8px;cursor:pointer}
   #legend{position:absolute;left:14px;bottom:12px;z-index:5;background:rgba(13,16,23,.82);border:1px solid var(--line);
     border-radius:10px;padding:8px 11px;font-size:11.5px;color:#9aa4b2;line-height:1.7;max-width:240px}
   #legend .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
@@ -68,7 +78,78 @@
     border-radius:8px;padding:6px 10px;font-size:12.5px;margin-bottom:5px;cursor:pointer;font-family:inherit}
   #panel .rel .rbtn:hover{background:#1d2536;color:#fff}
   #panel .rel .rbtn small{color:#7f8aa0}
+  #panel .chip.qchip{cursor:pointer;font-family:inherit}
+  #panel .chip.qchip:hover{background:#26324a;color:#fff;border-color:var(--gold)}
+  #panel .chip.qchip.on{background:#1c2435;border-color:var(--gold);color:#ffd86b}
+  #panel .cbtn{cursor:pointer}
+  /* 題目展開卡 */
+  .qd{background:#0c1019;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:9px;padding:11px 12px;margin:7px 0 10px;font-size:13px;line-height:1.7}
+  .qd-h{color:#ffd86b;font-weight:bold;font-size:12.5px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .qd-audio,.cpt-audio{background:#1b2230;border:1px solid var(--line);color:#9fd0ff;border-radius:12px;padding:2px 9px;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .qd-audio:hover,.cpt-audio:hover{background:#26324a;color:#fff}
+  .qd-audio.on,.cpt-audio.on{background:#1c2435;border-color:var(--gold);color:#ffd86b}
+  .cpt-audio{margin-left:6px}
+  .qd-stem{color:#dfe6f2;margin-bottom:8px}
+  .qd .sopt{color:#b6c0d2;padding:4px 8px;border-radius:6px;margin:3px 0;background:#11161f}
+  .qd .sopt b{color:#8a93a3;margin-right:5px}
+  .qd .sopt.cor{background:#16271b;color:#bfe9c4}
+  .qd .sopt.cor b{color:#6fcf8a}
+  .qd-note{margin-top:9px;padding-top:9px;border-top:1px dashed var(--line);color:#cdd6e4;font-size:12.5px}
+  .qd-laws{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line)}
+  .qd-point{background:rgba(255,216,107,.10);border:1px solid rgba(255,216,107,.35);border-radius:8px;
+    padding:8px 11px;margin-bottom:10px;font-size:13px;line-height:1.7;color:#ffe9b0}
+  .qd-point b{color:#ffd86b}
+  .qd-laws .lab{font-size:12px;font-weight:bold;margin-bottom:6px}
+  .qd-laws .lawitem{margin:0 0 10px;padding:5px 0 5px 9px;border-left:2px solid #3a4760}
+  .qd-laws .lawname{color:#ffd86b;font-weight:bold;font-size:12.5px}
+  .qd-laws .src{color:#6b7486;font-size:11px;margin-left:7px;text-decoration:none}
+  .qd-laws .src:hover{color:#9fd0ff;text-decoration:underline}
+  .qd-laws .lawtext{color:#cfd9e8;font-size:12.5px;line-height:1.75;margin-top:3px}
+  .qd-laws mark{background:rgba(255,216,107,.20);color:#ffe79c;padding:0 1px;border-radius:3px;font-weight:bold}
+  .qd-ref{margin-top:4px;font-size:12px;color:#9db4ff}
   #empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#566;font-size:14px;text-align:center;padding:20px;pointer-events:none}
+  /* 五天計畫 modal */
+  #planBack{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60}
+  #planBack.open{display:block}
+  #planModal{display:none;position:fixed;z-index:61;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:560px;max-width:94vw;max-height:88vh;background:#0f1320;border:1px solid var(--gold);border-radius:14px;
+    flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  #planModal.open{display:flex}
+  #plan-h{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--line);
+    font-size:16px;font-weight:bold;color:var(--gold);background:#141a26}
+  #plan-x{background:none;border:none;color:#8a93a3;font-size:24px;cursor:pointer;line-height:1}
+  #plan-body{padding:14px 18px 20px;overflow-y:auto}
+  .plan-top{background:#141a26;border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:14px;font-size:13px;color:#cfd6e2;line-height:1.8}
+  .plan-top input[type=date]{background:#1c2330;color:#ffd86b;border:1px solid var(--gold);border-radius:7px;font-family:inherit;font-size:13px;padding:3px 7px}
+  .plan-top b{color:#ffd86b}
+  .plan-prog{height:9px;background:#1c2330;border-radius:6px;overflow:hidden;margin:8px 0 2px}
+  .plan-prog>div{height:100%;background:linear-gradient(90deg,#ffd86b,#ff9d5c);width:0;transition:width .3s}
+  .plan-day{border:1px solid var(--line);border-radius:11px;margin-bottom:11px;overflow:hidden}
+  .plan-day .dh{display:flex;align-items:center;gap:9px;padding:9px 13px;font-weight:bold;font-size:14px;color:#0b0d12}
+  .plan-day .dh .dn{background:rgba(0,0,0,.22);border-radius:20px;padding:1px 9px;font-size:12px}
+  .plan-day .dh .dcnt{margin-left:auto;font-size:12px;font-weight:normal;color:rgba(0,0,0,.6)}
+  .plan-row{display:flex;align-items:center;gap:10px;padding:8px 13px;border-top:1px solid var(--line);font-size:13.5px;color:#dfe6f2}
+  .plan-row:hover{background:#161c28}
+  .plan-row.done{color:#7f8aa0}
+  .plan-row.done .pname{text-decoration:line-through}
+  .plan-row input{width:18px;height:18px;accent-color:#ffd86b;cursor:pointer;flex:none}
+  .plan-row .pname{font-weight:600}
+  .plan-row .pcnt{color:#7f8aa0;font-size:11.5px}
+  .plan-row .pgo{margin-left:auto;background:#1d2536;border:1px solid var(--line);color:#9fd0ff;border-radius:14px;
+    padding:3px 11px;font-size:12px;cursor:pointer;font-family:inherit;flex:none}
+  .plan-row .pgo:hover{background:#26324a;color:#fff}
+  .plan-row{align-items:flex-start}
+  .ptask{flex:1;min-width:0}
+  .ptline{font-size:13.5px;color:#dfe6f2}
+  .ptline b{color:#ffe9b0}
+  .ptype{display:inline-block;color:#fff;border-radius:6px;padding:1px 8px;font-size:11.5px;font-weight:bold;margin-right:6px}
+  .pdesc{color:#8a93a3;font-size:11.5px;margin:3px 0 6px;line-height:1.5}
+  .pgos{display:flex;flex-wrap:wrap;gap:5px}
+  .pgos .pgo{margin-left:0}
+  .plan-foot{display:flex;gap:10px;margin-top:6px}
+  .plan-foot button{flex:1;background:#1a2030;border:1px solid var(--line);color:#cfd6e2;border-radius:9px;padding:9px;font-size:13px;cursor:pointer;font-family:inherit}
+  .plan-foot button:hover{background:#222a38}
+  .plan-done-msg{text-align:center;color:#ffd86b;font-weight:bold;font-size:15px;padding:6px;display:none}
 </style>
 </head>
 <body>
@@ -80,14 +161,21 @@
 </nav>
 
 <div id="shell">
-  <div id="side"></div>
   <div id="stage">
     <canvas id="cv"></canvas>
     <div id="hud">
       <span class="title" id="htitle"></span>
       <input id="search" placeholder="🔍 找考點…">
+      <button class="hbtn" id="planBtn" style="border-color:var(--gold);color:#ffd86b">📅 6天計畫</button>
       <button class="hbtn" id="reheat">🔄 重新排列</button>
       <button class="hbtn" id="fit">🎯 置中</button>
+      <select id="rate" title="唸書語速">
+        <option value="0.8">🔊 慢</option>
+        <option value="1">🔊 正常</option>
+        <option value="1.2">🔊 快</option>
+        <option value="1.45">🔊 很快</option>
+        <option value="1.7">🔊 超快</option>
+      </select>
     </div>
     <div id="legend"></div>
     <div id="tip"></div>
@@ -105,8 +193,23 @@
   </div>
 </div>
 
+<div id="sidedrawer">
+  <div id="side-tab">📚 <span>科目目錄</span></div>
+  <div id="side"></div>
+</div>
+
+<div id="planBack"></div>
+<div id="planModal">
+  <div id="plan-h">
+    <span>📅 六天循環讀書計畫</span>
+    <button id="plan-x">×</button>
+  </div>
+  <div id="plan-body"></div>
+</div>
+
 <script src="data.js"></script>
 <script src="notes.js"></script>
+<script src="laws.js"></script>
 <script>
 /* ===== 共用分類邏輯（與 index.html 一致） ===== */
 const Q = window.QUESTIONS || [];
@@ -219,6 +322,7 @@ Q.forEach(q=>{
   ROWS.push({q,sub:subOf(q),sys:systemOf(q),note,p:parseNote(note),laws:q.laws||[]});
 });
 const SUB_COUNT={}; ROWS.forEach(r=>SUB_COUNT[r.sub]=(SUB_COUNT[r.sub]||0)+1);
+const ROW_BY_KEY={}; ROWS.forEach(r=>ROW_BY_KEY[keyOf(r.q)]=r);
 
 /* ===== 左側選單 ===== */
 const side=document.getElementById("side");
@@ -511,43 +615,180 @@ document.getElementById("search").addEventListener("input",e=>{
     view.k=Math.max(view.k,1.4); view.x=cv.clientWidth/2-hit.x*view.k; view.y=cv.clientHeight/2-hit.y*view.k; }
 });
 
+/* ===== 語音（與複習頁共用瀏覽器內建 TTS / 語速設定） ===== */
+(function(){const el=document.getElementById("rate");if(!el)return;
+  const saved=localStorage.getItem("sjg_rate"); if(saved)el.value=saved;
+  el.onchange=()=>localStorage.setItem("sjg_rate",el.value);})();
+function speechRate(){const el=document.getElementById("rate");return el?(parseFloat(el.value)||1):1;}
+let _audioBtn=null;
+function pickVoice(){return speechSynthesis.getVoices().find(v=>/zh|TW|Chinese|Mei|Ting|Han/i.test(v.lang+v.name));}
+function stopSpeak(){speechSynthesis.cancel();if(_audioBtn){_audioBtn.classList.remove("on");_audioBtn=null;}}
+function speak(text,btn){
+  if(!("speechSynthesis" in window)){alert("此瀏覽器不支援語音朗讀");return;}
+  if(btn&&btn===_audioBtn&&speechSynthesis.speaking){stopSpeak();return;} // 再按一次＝停
+  stopSpeak();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang="zh-TW"; u.rate=speechRate();
+  const v=pickVoice(); if(v)u.voice=v;
+  u.onend=u.onerror=()=>{if(btn)btn.classList.remove("on");if(_audioBtn===btn)_audioBtn=null;};
+  if(btn){btn.classList.add("on");_audioBtn=btn;}
+  speechSynthesis.speak(u);
+}
+function rowSpeechText(r){
+  const L=["A","B","C","D","E","F"];
+  let t="第"+r.q.num+"題。"+r.q.stem+" "+(r.q.options||[]).map((o,i)=>"選項"+L[i]+"，"+o).join("。")+"。";
+  t+="正確答案，"+r.q.ansLetter+"。";
+  if(r.note&&r.note.body) t+="詳解。"+(r.note.concept||"")+"。"+r.note.body.replace(/[⚖️🔑✅❌📌🔁]/g,"").replace(/法條：/g,"");
+  return t;
+}
+function cptSpeechText(n){
+  const rows=n.rows||[];
+  const law=(rows.find(r=>r.p.law)||{p:{}}).p.law||"";
+  const keys=uniq(rows.map(r=>r.p.key)), anss=uniq(rows.map(r=>r.p.ans)), traps=uniq(rows.map(r=>r.p.trap));
+  let t=n.label+"。"+(law?"法條，"+law+"。":"");
+  t+=(keys.length?keys.join("。"):anss.join("。"))+"。";
+  if(traps.length)t+="要分清楚："+traps.join("。");
+  return t;
+}
+// 面板內所有 🔊 用事件代理處理（內容是動態插入的）
+document.getElementById("p-body").addEventListener("click",e=>{
+  const qb=e.target.closest(".qd-audio");
+  if(qb){e.stopPropagation();speak(rowSpeechText(ROW_BY_KEY[qb.dataset.k]),qb);return;}
+  const cb=e.target.closest(".cpt-audio");
+  if(cb){e.stopPropagation();if(panelNode)speak(cptSpeechText(panelNode),cb);return;}
+});
+
 /* ===== 詳解面板 ===== */
 const panel=document.getElementById("panel");
-function closePanel(){panel.classList.remove("open");}
+function closePanel(){stopSpeak();panel.classList.remove("open");}
 document.getElementById("p-close").onclick=()=>{selNode=null;closePanel();};
+let panelNode=null, panelConcepts=[];
 function openPanel(n){
-  document.getElementById("p-sys").textContent = n.kind==="kpt"?n.sys:(n.kind==="subhub"?n.sub:n.sub);
+  stopSpeak();
+  panelNode=n; panelConcepts=[];
+  document.getElementById("p-sys").textContent = n.kind==="kpt"?n.sys:n.sub;
   document.getElementById("p-cpt").textContent = n.label;
   const body=document.getElementById("p-body");
-  if(n.kind==="kpt"){
-    body.innerHTML=kptPanel(n);
-  }else{
-    body.innerHTML=hubPanel(n);
-  }
-  // 綁定相關節點按鈕
+  body.innerHTML = n.kind==="kpt"? kptPanel(n) : hubPanel(n);
+  // 跳到相關節點
   body.querySelectorAll(".rbtn[data-id]").forEach(b=>b.onclick=()=>{
     const t=G.nodeById.get(b.dataset.id); if(!t)return; selNode=t; openPanel(t);
     view.x=cv.clientWidth/2-t.x*view.k; view.y=cv.clientHeight/2-t.y*view.k;
   });
+  // 切換科目（從科目 hub 進該科考點圖）
+  body.querySelectorAll(".rbtn[data-sub]").forEach(b=>b.onclick=()=>{
+    curSubject=b.dataset.sub; buildSide(); loadGraph();
+  });
+  // 點考點 → 展開該考點所有考過的題
+  body.querySelectorAll(".cbtn[data-ci]").forEach(b=>b.onclick=()=>{
+    const host=b.nextElementSibling;
+    if(host.dataset.open==="1"){host.innerHTML="";host.dataset.open="0";b.classList.remove("on");return;}
+    const c=panelConcepts[+b.dataset.ci];
+    const rs=(panelNode.rows||[]).filter(r=>(r.note.concept||"（未命名考點）")===c)
+              .sort((a,b)=>a.q.year-b.q.year||a.q.num-b.q.num);
+    host.innerHTML=rs.map(qDetailHTML).join(""); host.dataset.open="1"; b.classList.add("on");
+  });
+  // 點原題 → 展開完整題目
+  body.querySelectorAll(".qchip[data-k]").forEach(b=>b.onclick=()=>{
+    const host=body.querySelector("#qhost-main");
+    if(host.dataset.k===b.dataset.k){host.innerHTML="";host.dataset.k="";b.classList.remove("on");return;}
+    body.querySelectorAll(".qchip").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    host.innerHTML=qDetailHTML(ROW_BY_KEY[b.dataset.k]); host.dataset.k=b.dataset.k;
+  });
   panel.classList.add("open");
 }
 function uniq(a){return [...new Set(a.filter(Boolean))];}
+function escHtml(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+function flnoLabel(flno){
+  if(flno.indexOf("-")>=0){const a=flno.split("-");return "第"+a[0]+"條之"+a[1];}
+  return "第"+flno+"條";
+}
+// 常見「構成要件 / 重點」用字，出現在條文就標起來
+const CORE_ELEMENTS=["故意","過失","意圖","不法所有","不法","未遂","既遂","預備","著手","中止",
+ "共同正犯","教唆","幫助","正犯","因果","違法","阻卻","承諾","正當防衛","緊急避難","期待可能","責任能力",
+ "沒收","加重","減輕","免除","得併科","拘役","罰金","有期徒刑","無期徒刑","死刑",
+ "意思表示","行為能力","善意","惡意","對抗","推定","視為","但書","連帶","損害賠償","契約","債務不履行",
+ "撤銷","解除","抵銷","代位","時效","占有","登記","抵押","質權","通謀","代理","無權",
+ "管轄","當事人","既判力","起訴","上訴","抗告","再審","證據","舉證","自認","言詞辯論",
+ "羈押","搜索","扣押","傳聞","自白","補強","證據能力","辯護人","告訴","自訴","不起訴",
+ "法律保留","比例原則","信賴保護","行政處分","裁量","訴願","國家賠償"];
+// 從文字抽中文關鍵詞（去掉條號）
+function termsFrom(s){
+  const c=(s||"").replace(/§[0-9\-]+/g,"").replace(/第[0-9]+條(之[0-9]+)?/g,"");
+  return (c.match(/[一-鿿]{2,8}/g)||[]).filter(w=>w.length>=2);
+}
+function hlTerms(concept,key){
+  const ws=[...termsFrom(concept), ...termsFrom(key), ...CORE_ELEMENTS];
+  return [...new Set(ws)].sort((a,b)=>b.length-a.length);
+}
+function highlight(text,terms){
+  let t=escHtml(text);
+  terms.forEach(w=>{const e=escHtml(w); if(e.length>=2 && t.indexOf(e)>=0) t=t.split(e).join(""+e+"");});
+  return t.split("").join("<mark>").split("").join("</mark>").replace(/\n/g,"<br>");
+}
+function lawsHTML(r){
+  const k=keyOf(r.q);
+  const arts=(window.QARTS||{})[k]||[];
+  const refs=(window.QREF||{})[k]||[];
+  if(!arts.length && !refs.length) return "";
+  const concept=r.note.concept||"", key=(r.p&&r.p.key)||"";
+  const terms=hlTerms(concept,key);
+  let h='<div class="qd-laws">';
+  // 本題重點：考點 + 核心規則
+  h+=`<div class="qd-point">📌 <b>本題考點：</b>${escHtml(concept)}`;
+  if(key) h+=`<br>🔑 <b>關鍵：</b>${escHtml(key)}`;
+  h+=`</div>`;
+  h+='<div class="lab">📜 法條原文　<span style="color:#8a93a3;font-weight:normal">（與本題重點相關的構成要件用 <mark>螢光</mark> 標示）</span></div>';
+  arts.forEach(a=>{
+    const law=a[0], flno=a[1];
+    const txt=((window.LAWS||{})[law]||{})[flno]; if(!txt)return;
+    const short=(window.LAW_SHORT||{})[law]||law;
+    const pc=(window.LAW_PCODE||{})[law];
+    const src=pc?` <a class="src" target="_blank" rel="noopener" href="https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=${pc}&flno=${flno}">官方原文↗</a>`:"";
+    h+=`<div class="lawitem"><span class="lawname">${short} ${flnoLabel(flno)}</span>${src}<div class="lawtext">${highlight(txt,terms)}</div></div>`;
+  });
+  if(refs.length) h+=`<div class="qd-ref">📌 相關大法官解釋：${refs.map(escHtml).join("、")}</div>`;
+  return h+"</div>";
+}
+function qDetailHTML(r){
+  if(!r) return "";
+  const L=["A","B","C","D","E","F"];
+  const opts=(r.q.options||[]).map((o,i)=>`<div class="sopt ${i===r.q.ansIndex?'cor':''}"><b>${L[i]}</b> ${o}</div>`).join("");
+  const note=(r.note.body||"").replace(/\n/g,"<br>");
+  return `<div class="qd">
+    <div class="qd-h">📄 ${r.q.year}年 第${r.q.num}題（答案 ${r.q.ansLetter}）
+      <button class="qd-audio" data-k="${keyOf(r.q)}" title="念這題＋詳解">🔊 念</button></div>
+    <div class="qd-stem">${r.q.stem}</div>${opts}
+    ${note?`<div class="qd-note"><b>🖊️ ${r.note.concept||""}</b><br>${note}</div>`:""}
+    ${lawsHTML(r)}
+  </div>`;
+}
+// 一段可點開的考點清單（concepts），展開後列出該考點所有題
+function conceptListHTML(rows,title){
+  panelConcepts=uniq(rows.map(r=>r.note.concept||"（未命名考點）"));
+  let h=`<div class="rel"><div class="relttl">${title}（${panelConcepts.length}）</div>`;
+  panelConcepts.forEach((c,i)=>{
+    const cnt=rows.filter(r=>(r.note.concept||"（未命名考點）")===c).length;
+    h+=`<button class="rbtn cbtn" data-ci="${i}">${c} <small>· ${cnt} 題</small></button><div class="qhost" data-open="0"></div>`;
+  });
+  return h+`</div>`;
+}
 function kptPanel(n){
-  const rows=n.rows;
+  const rows=n.rows.slice().sort((a,b)=>a.q.year-b.q.year||a.q.num-b.q.num);
   const keys=uniq(rows.map(r=>r.p.key));
   const traps=uniq(rows.map(r=>r.p.trap));
   const anss=uniq(rows.map(r=>r.p.ans));
   const law=(rows.find(r=>r.p.law)||{p:{}}).p.law||"";
   const years=uniq(rows.map(r=>r.q.year)).sort();
-  const chips=rows.sort((a,b)=>a.q.year-b.q.year||a.q.num-b.q.num)
-    .map(r=>`<span class="chip">${r.q.year}·${r.q.num}</span>`).join("");
-  let h=`<div class="meta">📂 ${n.sys}　·　考過 <b>${rows.length}</b> 題　·　年度 <b>${years.join("、")}</b></div>`;
+  const chips=rows.map(r=>`<button class="chip qchip" data-k="${keyOf(r.q)}">${r.q.year}·${r.q.num}</button>`).join("");
+  let h=`<div class="meta">📂 ${n.sys}　·　考過 <b>${rows.length}</b> 題　·　年度 <b>${years.join("、")}</b>
+    <button class="cpt-audio" data-act="cpt" title="念這個考點重點">🔊 念重點</button></div>`;
   if(law) h+=`<div class="blk"><span class="lab">⚖️ 法條</span><span class="law">${law}</span></div>`;
   if(keys.length) h+=`<div class="blk"><span class="lab">🔑 核心規則</span><span class="key">${keys.join("<br>")}</span></div>`;
   if(anss.length&&!keys.length) h+=`<div class="blk"><span class="lab">✅ 正解</span><span class="ans">${anss.join("<br>")}</span></div>`;
   if(traps.length) h+=`<div class="blk"><span class="lab">⚠️ 易混淆（其他選項也考過）</span><span class="trap">${traps.join("<br>")}</span></div>`;
-  h+=`<div class="blk"><span class="lab">📄 出現過的題</span><div class="chips">${chips}</div></div>`;
-  // 相關考點（共用法條）
+  h+=`<div class="blk"><span class="lab">📄 出現過的題（點題號展開完整題目＋詳解）</span><div class="chips">${chips}</div><div class="qhost" id="qhost-main"></div></div>`;
   const rel=relatedOf(n);
   if(rel.length){
     h+=`<div class="rel"><div class="relttl">🔗 關聯考點（共用法條）</div>`;
@@ -559,19 +800,17 @@ function kptPanel(n){
 function hubPanel(n){
   const rows=n.rows||[];
   if(n.kind==="subhub"){
-    // 列出該科底下各體系
     const bySys={}; ROWS.filter(r=>r.sub===n.sub).forEach(r=>{bySys[r.sys]=(bySys[r.sys]||0)+1;});
-    let h=`<div class="meta">📚 科目　·　共 <b>${n.count}</b> 題已建檔考點</div><div class="rel"><div class="relttl">體系分布（點左側選單看此科考點圖）</div>`;
+    let h=`<div class="meta">📚 科目　·　共 <b>${n.count}</b> 題已建檔考點</div>`;
+    h+=`<button class="rbtn" data-sub="${n.sub}" style="border-color:var(--gold);color:#ffd86b">➜ 進入「${n.sub}」考點圖</button>`;
+    h+=`<div class="rel"><div class="relttl">體系分布</div>`;
     Object.entries(bySys).sort((a,b)=>b[1]-a[1]).forEach(([s,c])=>h+=`<div class="rbtn" style="cursor:default">${s} <small>· ${c} 題</small></div>`);
     h+=`</div>`; return h;
   }
-  // sys 節點
+  // sys 節點：列出考點（可點開看該考點所有題）
   const years=uniq(rows.map(r=>r.q.year)).sort();
-  const concepts=uniq(rows.map(r=>r.note.concept)).slice(0,40);
   let h=`<div class="meta">🗂️ 體系　·　${rows.length} 題　·　年度 <b>${years.join("、")}</b></div>`;
-  h+=`<div class="rel"><div class="relttl">此體系常考考點（${uniq(rows.map(r=>r.note.concept)).length}）</div>`;
-  concepts.forEach(c=>h+=`<div class="rbtn" style="cursor:default">${c}</div>`);
-  h+=`</div>`;
+  h+=conceptListHTML(rows,"此體系考過的考點（點開看題目）");
   const rel=relatedOf(n);
   if(rel.length){
     h+=`<div class="rel"><div class="relttl">🔗 關聯體系（共用法條）</div>`;
@@ -602,9 +841,100 @@ function buildLegend(){
     el.innerHTML=`<b style="color:#cfd6e2">${curSubject}</b><br>`+
       `<span class="sw" style="background:${SUBJ_COLOR[curSubject]}"></span>考點　·　大圓＝體系`+
       `<br><span style="color:#7fb5ff">⋯⋯</span> 共用法條　<span style="color:#ffd86b">──</span> 屬於某體系`+
-      `<br><span style="color:#6b7486">點考點看法條/核心規則/易混淆/原題</span>`;
+      `<br><span style="color:#6b7486">點考點看詳解→點題號展開完整題目；點體系看該體系所有考點</span>`;
   }
 }
+
+/* ===== 六天遺忘曲線循環計畫（新讀＋間隔複習） ===== */
+const BLOCKS={
+ 刑事:{subs:["刑法","刑訴","法律倫理"],c:"#ff8a8a"},
+ 公法:{subs:["憲法","行政法","國際公法","國際私法"],c:"#7fb5ff"},
+ 民法:{subs:["民法"],c:"#ffd86b"},
+ 民訴:{subs:["民訴"],c:"#f4c06b"},
+ 商事:{subs:["公司法","保險法","票據法","證交法","強制執行","法學英文"],c:"#c0a0ff"},
+ 弱點:{subs:[],c:"#8a93a3"},
+};
+const TYPE={
+ "new":{lab:"🆕 新讀",desc:"考點圖逐考點過＋看法條原文／螢光重點"},
+ "r1":{lab:"🔁 複習①",desc:"前1天學的：快掃考點圖，唸法條重點＋核心規則"},
+ "r2":{lab:"🔂 複習②",desc:"前幾天學的：只攻易錯卡／做錯的題，鞏固記憶"},
+ "weak":{lab:"🧩 弱點回鍋",desc:"本輪做錯／不熟的，回到全部總覽圖重點補強"},
+};
+const TYBADGE={"new":"#1f6f43","r1":"#5a4a16","r2":"#5a2f2f","weak":"#3a4760"};
+// 依遺忘曲線：每塊 第N天新讀 → 隔1天複習① → 隔2~3天複習②；第6天為複習鞏固日
+const PLAN=[
+ {d:1,tasks:[["new","刑事"]]},
+ {d:2,tasks:[["new","公法"],["r1","刑事"]]},
+ {d:3,tasks:[["new","民法"],["r1","公法"]]},
+ {d:4,tasks:[["new","民訴"],["r1","民法"],["r2","刑事"]]},
+ {d:5,tasks:[["new","商事"],["r1","民訴"],["r2","公法"]]},
+ {d:6,tasks:[["r1","商事"],["r2","民法"],["r2","民訴"],["weak","弱點"]]},
+];
+// 商事的複習②會接到下一輪初期 → 間隔複習自然延續
+const ALLTASKS=PLAN.reduce((a,d)=>a.concat(d.tasks.map(t=>`d${d.d}-${t[0]}-${t[1]}`)),[]);
+function blkCnt(bk){return BLOCKS[bk].subs.reduce((a,s)=>a+(SUB_COUNT[s]||0),0);}
+function planChecks(){try{return new Set(JSON.parse(localStorage.getItem("sjg_plan_checks")||"[]"));}catch(e){return new Set();}}
+function savePlanChecks(s){localStorage.setItem("sjg_plan_checks",JSON.stringify([...s]));}
+function updatePlanProgress(){
+  const c=planChecks(),done=ALLTASKS.filter(id=>c.has(id)).length,total=ALLTASKS.length,pct=Math.round(done/total*100);
+  const bar=document.querySelector(".plan-prog>div"); if(bar)bar.style.width=pct+"%";
+  const lab=document.getElementById("planProgLab"); if(lab)lab.innerHTML=`本輪進度 <b>${done}/${total}</b>（${pct}%）`;
+  const dm=document.getElementById("planDone"); if(dm)dm.style.display=done===total?"block":"none";
+}
+function renderPlan(){
+  const checks=planChecks(), body=document.getElementById("plan-body");
+  const done=ALLTASKS.filter(id=>checks.has(id)).length,total=ALLTASKS.length,pct=Math.round(done/total*100);
+  const ed=localStorage.getItem("sjg_exam_date")||"";
+  let daysLeft=null;
+  if(ed){daysLeft=Math.ceil((new Date(ed+"T23:59:59")-new Date())/86400000);}
+  let html=`<div class="plan-top">
+    🧠 <b>依遺忘曲線排程</b>：每天讀<b>新進度</b>，同時回頭<b>複習前幾天</b>學過的（隔1天、隔2~3天各一次），記得最牢。<br>
+    🔁 六天一輪，<b>5 個「新讀」＝全部考點讀完一次</b>，第6天為複習鞏固日；複習自然延續到下一輪。<br>
+    📆 考試日期：<input type="date" id="examDate" value="${ed}">`;
+  if(daysLeft!=null) html+= daysLeft>=0
+    ? `　→ 還剩 <b>${daysLeft}</b> 天，可完整輪 <b>${Math.floor(daysLeft/6)}</b> 次　<span style="color:#ff9d9d">剩這幾天請非常認真 💪</span>`
+    : `　→ 考試日已過，更新日期`;
+  html+=`<div class="plan-prog"><div style="width:${pct}%"></div></div><span id="planProgLab">本輪進度 <b>${done}/${total}</b>（${pct}%）</span></div>`;
+  PLAN.forEach(day=>{
+    const nbT=day.tasks.find(t=>t[0]==="new");
+    const hc=nbT?BLOCKS[nbT[1]].c:"#5b6472", htxt=nbT?("主攻 "+nbT[1]):"🧩 複習鞏固日";
+    html+=`<div class="plan-day"><div class="dh" style="background:${hc};color:${nbT?'#0b0d12':'#dfe6f2'}">
+      <span class="dn">Day ${day.d}</span> ${htxt}<span class="dcnt">${day.tasks.length} 項任務</span></div>`;
+    day.tasks.forEach(([ty,bk])=>{
+      const id=`d${day.d}-${ty}-${bk}`, ck=checks.has(id), t=TYPE[ty], subs=BLOCKS[bk].subs;
+      const gos=subs.length? subs.map(s=>`<button class="pgo" data-go="${s}">${s}</button>`).join("")
+                           : `<button class="pgo" data-go="__ALL__">▶ 全部總覽圖</button>`;
+      html+=`<div class="plan-row ${ck?'done':''}">
+        <input type="checkbox" data-id="${id}" ${ck?'checked':''}>
+        <div class="ptask">
+          <div class="ptline"><span class="ptype" style="background:${TYBADGE[ty]}">${t.lab}</span>
+            <b>${bk}</b> <span class="pcnt">${blkCnt(bk)?blkCnt(bk)+" 題考點":"機動"}</span></div>
+          <div class="pdesc">${t.desc}</div>
+          <div class="pgos">${gos}</div>
+        </div></div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`<div class="plan-done-msg" id="planDone">🎉 完成這一輪！新讀＋複習都打勾了，按下方開始下一輪</div>`;
+  html+=`<div class="plan-foot"><button id="planReset">🔄 開始新一輪（清空勾選）</button></div>`;
+  body.innerHTML=html;
+  document.getElementById("planDone").style.display=done===total?"block":"none";
+  body.querySelectorAll("input[type=checkbox]").forEach(cb=>cb.onchange=()=>{
+    const id=cb.dataset.id,c=planChecks(); cb.checked?c.add(id):c.delete(id); savePlanChecks(c);
+    cb.closest(".plan-row").classList.toggle("done",cb.checked); updatePlanProgress();
+  });
+  body.querySelectorAll(".pgo[data-go]").forEach(b=>b.onclick=()=>{
+    curSubject=b.dataset.go; buildSide(); loadGraph(); closePlan();
+  });
+  const exIn=document.getElementById("examDate");
+  if(exIn) exIn.onchange=()=>{localStorage.setItem("sjg_exam_date",exIn.value); renderPlan();};
+  document.getElementById("planReset").onclick=()=>{ if(confirm("清空本輪所有勾選，開始新一輪？")){savePlanChecks(new Set()); renderPlan();} };
+}
+function openPlan(){renderPlan();document.getElementById("planBack").classList.add("open");document.getElementById("planModal").classList.add("open");}
+function closePlan(){document.getElementById("planBack").classList.remove("open");document.getElementById("planModal").classList.remove("open");}
+document.getElementById("planBtn").onclick=openPlan;
+document.getElementById("plan-x").onclick=closePlan;
+document.getElementById("planBack").onclick=closePlan;
 
 /* ===== 啟動 ===== */
 resize();
