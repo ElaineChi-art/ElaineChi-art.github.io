@@ -14,9 +14,19 @@
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <script>
-  /* 分享模式：網址帶 ?share 時，隱藏導覽列，只顯示單字工具（越早執行越不會閃一下） */
-  if(/[?&]share\b/.test(location.search)||/\bshare\b/.test(location.hash))
-    document.documentElement.classList.add('share');
+  /* 預設隱藏導覽列：任何人/朋友打開都只看到單字工具。
+     只有「我的裝置」(localStorage vocabOwner=1) 才顯示導覽列。
+     在自己手機開一次 ?owner=1 設定；?owner=0 取消；?share 一律隱藏。 */
+  (function(){
+    var q=location.search, owner=false;
+    try{
+      if(/[?&]owner=1/.test(q)) localStorage.setItem('vocabOwner','1');
+      if(/[?&]owner=0/.test(q)) localStorage.removeItem('vocabOwner');
+      owner = localStorage.getItem('vocabOwner')==='1';
+    }catch(e){}
+    var forceShare = /[?&]share\b/.test(q) || /\bshare\b/.test(location.hash);
+    if(forceShare || !owner) document.documentElement.classList.add('share');
+  })();
 </script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -29,8 +39,11 @@
   body{font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
        background:var(--bg);color:var(--tx);min-height:100vh}
   .topnav{display:flex;gap:6px;background:#0b0d12;padding:8px 16px;border-bottom:1px solid var(--line);
-          position:sticky;top:0;z-index:50;overflow-x:auto}
-  .topnav a{color:#9aa4b2;text-decoration:none;font-size:14px;font-weight:600;padding:7px 16px;border-radius:8px;white-space:nowrap}
+          padding-top:calc(8px + env(safe-area-inset-top, 0px));
+          padding-left:calc(16px + env(safe-area-inset-left, 0px));
+          position:sticky;top:0;z-index:50;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  html.share .wrap{padding-top:calc(20px + env(safe-area-inset-top, 0px))}
+  .topnav a{color:#9aa4b2;text-decoration:none;font-size:14px;font-weight:600;padding:9px 16px;border-radius:8px;white-space:nowrap}
   .topnav a:hover{background:#161922;color:#e6e6e6}
   .topnav a.active{background:#1f2e3a;color:var(--acc)}
   html.share .topnav{display:none}
@@ -310,7 +323,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v24 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v25 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
