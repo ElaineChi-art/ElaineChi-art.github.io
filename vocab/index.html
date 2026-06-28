@@ -182,9 +182,14 @@
         <div class="row">
           <span class="pill" id="selCount">已選 0 字</span>
           <button class="btn sm" id="btnCompose" disabled>✍️ 用選取的字造句</button>
+          <button class="btn sm" id="btnDelSel" disabled style="background:var(--red)">🗑️ 刪除選取</button>
         </div>
       </div>
       <div class="msg" id="bankStat"></div>
+      <div class="row" id="bankSelTools" style="margin:6px 0 0;display:none">
+        <button class="btn ghost sm" id="btnSelAll">☑️ 全選</button>
+        <button class="btn ghost sm" id="btnSelNone">清除選取</button>
+      </div>
       <div style="font-size:12px;color:var(--mut);margin:6px 0 12px">
         點卡片可看詳解、<b>自己編輯中文意思、加例句、加筆記</b>；勾選右上角方框挑字造句（需求5）。色條＝熟悉度：
         <span style="color:var(--grey)">■新</span>
@@ -486,7 +491,10 @@ function renderEdit(rec,date,key){
     <div style="margin-top:10px"><label class="fld">我的筆記 / 文法補充</label>
       <textarea id="edNote" style="min-height:60px"></textarea></div>
     <button class="btn sm" id="edSaveBtn" style="margin-top:10px">💾 儲存意思與筆記</button>
-    <span class="msg" id="edMsg" style="margin-left:8px"></span></div>`;
+    <span class="msg" id="edMsg" style="margin-left:8px"></span>
+    <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px">
+      <button class="btn ghost sm" id="edDelBtn" style="color:var(--red);border-color:var(--red)">🗑️ 刪除這個單字</button>
+    </div></div>`;
   host.querySelector('#edZh').value=rec.wordZh||'';
   host.querySelector('#edNote').value=rec.note||'';
   host.querySelector('#edAdd').onclick=()=>{
@@ -500,6 +508,12 @@ function renderEdit(rec,date,key){
     rec.note=host.querySelector('#edNote').value;
     save(); host.querySelector('#edMsg').textContent='已儲存 ✓';
   };
+  host.querySelector('#edDelBtn').onclick=()=>{
+    if(!confirm(`確定要刪除單字「${rec.word}」嗎？此動作無法復原。`))return;
+    deleteWord(date,key);
+    document.getElementById('ov').classList.remove('show');
+    refreshBank();
+  };
 }
 function delCustom(date,key,i){
   const rec=DB[date].words[key]; rec.custom.splice(i,1); save(); renderEdit(rec,date,key);
@@ -510,10 +524,24 @@ const selected=new Set();
 let bankViewDate=null, currentBankMode='cal';
 const bankCalState={year:new Date().getFullYear(),month:new Date().getMonth()};
 
-function renderBank(){
+let currentEntries=[];
+function renderBankCal(){
   renderCalendar(document.getElementById('bankCal'),bankCalState,{onPick:(date)=>showBankDay(date)});
+}
+function renderBank(){
+  renderBankCal();
   if(currentBankMode==='all') showAllWords(document.getElementById('allSearch').value);
-  else { const d=DB[today()]?today():allDates()[0]; if(d)showBankDay(d); else renderWordList([]); }
+  else { const d=DB[today()]?today():allDates()[0]; if(d)showBankDay(d);
+    else { document.getElementById('bankListTitle').textContent='單字清單'; renderWordList([]); } }
+}
+// re-render after add/delete/edit while keeping current view
+function refreshBank(){
+  renderBankCal();
+  if(currentBankMode==='all') showAllWords(document.getElementById('allSearch').value);
+  else if(bankViewDate && DB[bankViewDate] && Object.keys(DB[bankViewDate].words).length) showBankDay(bankViewDate);
+  else { const d=DB[today()]?today():allDates()[0]; if(d)showBankDay(d);
+    else { document.getElementById('bankListTitle').textContent='單字清單';
+      document.getElementById('bankDayActions').style.display='none'; renderWordList([]); } }
 }
 document.querySelectorAll('.viewmode').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.viewmode').forEach(x=>x.classList.remove('active'));
@@ -531,9 +559,11 @@ function fillStat(entries){
     `共 ${entries.length} 字　·　<span style="color:var(--grey)">新 ${counts.new}</span>　<span style="color:var(--red)">不熟 ${counts.weak}</span>　<span style="color:var(--yellow)">普通 ${counts.mid}</span>　<span style="color:var(--green)">熟 ${counts.strong}</span>`:'';
 }
 function renderWordList(entries,showDate){
+  currentEntries=entries;
   const grid=document.getElementById('bankGrid');
   grid.innerHTML=''; selected.clear(); updateSelCount();
   document.getElementById('bankEmpty').style.display=entries.length?'none':'block';
+  document.getElementById('bankSelTools').style.display=entries.length?'flex':'none';
   fillStat(entries);
   entries.forEach(({date,key,rec})=>{
     const lv=levelOf(rec);
@@ -566,9 +596,35 @@ function showAllWords(filter){
   renderWordList(entries,true);
 }
 function updateSelCount(){
-  document.getElementById('selCount').textContent='已選 '+selected.size+' 字';
-  document.getElementById('btnCompose').disabled=selected.size===0;
+  const n=selected.size;
+  document.getElementById('selCount').textContent='已選 '+n+' 字';
+  document.getElementById('btnCompose').disabled=n===0;
+  document.getElementById('btnDelSel').disabled=n===0;
 }
+document.getElementById('btnSelAll').onclick=()=>{
+  selected.clear();
+  currentEntries.forEach(e=>selected.add(e.date+'|'+e.key));
+  document.querySelectorAll('#bankGrid .chk').forEach(c=>c.checked=true);
+  updateSelCount();
+};
+document.getElementById('btnSelNone').onclick=()=>{
+  selected.clear();
+  document.querySelectorAll('#bankGrid .chk').forEach(c=>c.checked=false);
+  updateSelCount();
+};
+/* ---- delete words (convenient) ---- */
+function deleteWord(date,key){
+  if(!DB[date]||!DB[date].words[key])return;
+  delete DB[date].words[key];
+  if(!Object.keys(DB[date].words).length) delete DB[date];
+  save();
+}
+document.getElementById('btnDelSel').onclick=()=>{
+  const ids=[...selected]; if(!ids.length)return;
+  if(!confirm(`確定要刪除選取的 ${ids.length} 個單字嗎？此動作無法復原。`))return;
+  ids.forEach(s=>{const i=s.indexOf('|');deleteWord(s.slice(0,i),s.slice(i+1));});
+  refreshBank();
+};
 document.getElementById('btnReviewDay').onclick=()=>{
   const date=bankViewDate;
   if(!date||!DB[date]||!Object.keys(DB[date].words).length){alert('請先在月曆點一天有單字的日期。');return}
@@ -721,9 +777,14 @@ function renderFill(body,it){
   // find an item (within pool order) that has an example; if current lacks, search forward
   let idx=Q.i, ex=null, target=Q.items[idx];
   for(let j=Q.i;j<Q.items.length;j++){ const e=findExample(Q.items[j].rec); if(e){ex=e;target=Q.items[j];idx=j;break;} }
-  if(!ex){ // no examples at all -> skip fill, fall back message
-    body.innerHTML=`<div class="analysis">所選單字沒有可用的例句，無法進行填空測驗。請改用翻卡或拼字測驗，或加入有例句的單字。</div>`;
-    Q.answered=true; return;
+  if(!ex){ // no examples at all -> cannot continue fill quiz
+    Q.answered=true;
+    body.innerHTML=`<div class="analysis">這些單字沒有可用的例句，無法進行填空測驗。<br>
+      可在單字詳解裡「加例句」，或改用翻卡 / 拼字測驗。
+      <div class="row" style="justify-content:center;margin-top:12px">
+        <button class="btn sm" onclick="finishQuiz()">看結果</button>
+        <button class="btn ghost sm" onclick="endQuiz()">回設定</button></div></div>`;
+    return;
   }
   // move target to current position
   if(idx!==Q.i){ const tmp=Q.items[Q.i]; Q.items[Q.i]=Q.items[idx]; Q.items[idx]=tmp; it=Q.items[Q.i]; }
