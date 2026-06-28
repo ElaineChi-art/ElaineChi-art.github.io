@@ -334,8 +334,27 @@ function segmentByLang(line){
   if(cur.trim()&&type) segs.push({type,text:cur.trim()});
   return segs;
 }
+// 把貼上的整段文字切成一筆筆 entry 字串：
+//   偵測到「1. / 2) / 3、」這種編號時 → 用編號分段，續行(換行的長例句)接回同一筆；
+//   否則 → 一行一筆。
+function splitEntries(raw){
+  const lines=raw.split(/\n/);
+  const numRe=/^\s*\d+\s*[.)、]\s+\S/;          // 行首編號（後面要接內容）
+  if(lines.some(l=>numRe.test(l))){
+    const items=[]; let cur=null;
+    for(const line of lines){
+      if(numRe.test(line)){ if(cur!==null)items.push(cur); cur=line; }
+      else if(cur!==null){ if(line.trim())cur+=' '+line.trim(); } // 接回上一筆的續行
+      else if(line.trim()){ items.push(line.trim()); }
+    }
+    if(cur!==null)items.push(cur);
+    return items.map(s=>s.trim()).filter(Boolean);
+  }
+  return lines.map(s=>s.trim()).filter(Boolean);
+}
 // 一行 → {word, wordZh, sentences:[{ex,exZh}], note}
 function parseEntry(line){
+  line=line.replace(/^\s*\d+\s*[.)、]\s*/,'');   // 去掉開頭編號 1. / 2) / 3、
   const segs=segmentByLang(line);
   const wi=segs.findIndex(s=>s.type==='en');
   if(wi<0) return null;                            // 沒有英文字就略過
@@ -430,15 +449,15 @@ async function addWords(){
   if(adding)return;
   const date=document.getElementById('inDate').value||today();
   const raw=document.getElementById('inWords').value;
-  // 拆成多筆 entry：一行一個；純單字行可用逗號一行多個
+  // 拆成多筆 entry：支援編號清單(續行接回)、一行一個、純單字逗號一行多個
   const entries=[];
-  raw.split(/\n/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
-    const plain = !/[|｜㐀-鿿]/.test(line) && /[,，]/.test(line);
-    const pieces = plain ? line.split(/[,，]/).map(s=>s.trim()).filter(Boolean) : null;
+  splitEntries(raw).forEach(item=>{
+    const plain = !/[|｜㐀-鿿]/.test(item) && /[,，]/.test(item);
+    const pieces = plain ? item.split(/[,，]/).map(s=>s.trim()).filter(Boolean) : null;
     if(plain && pieces.every(p=>p.split(/\s+/).length<=3)){
       pieces.forEach(w=>entries.push({word:w,wordZh:'',sentences:[],note:''}));
     }else{
-      const e=parseEntry(line); if(e)entries.push(e);
+      const e=parseEntry(item); if(e)entries.push(e);
     }
   });
   if(!entries.length){document.getElementById('inMsg').textContent='請先輸入單字。';return}
