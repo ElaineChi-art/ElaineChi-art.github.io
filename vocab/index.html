@@ -29,6 +29,7 @@
     }catch(e){}
     var forceShare = /[?&]share\b/.test(q) || /\bshare\b/.test(location.hash);
     if(forceShare || !owner) document.documentElement.classList.add('share');
+    try{ var th=localStorage.getItem('vocabTheme'); if(th && th!=='wine') document.documentElement.setAttribute('data-theme',th); }catch(e){}
   })();
 </script>
 <style>
@@ -86,7 +87,7 @@
   .wcard:hover{border-color:var(--acc2)}
   .wcard .en{font-size:17px;font-weight:700;padding-right:24px}
   .wcard .ph{font-size:12px;color:var(--mut)}
-  .wcard .zh{font-size:13px;color:#b9c4d2;margin-top:3px}
+  .wcard .zh{font-size:13px;color:var(--mut);margin-top:3px}
   .wcard .chk{position:absolute;top:10px;right:10px;width:18px;height:18px;cursor:pointer}
   .lv-new{border-left-color:var(--grey)}
   .lv-weak{border-left-color:var(--red)}
@@ -99,7 +100,7 @@
   .lvb.on.weak{background:var(--red);color:#fff;border-color:var(--red)}
   .lvb.on.mid{background:var(--yellow);color:#241c00;border-color:var(--yellow)}
   .lvb.on.strong{background:var(--green);color:#06210f;border-color:var(--green)}
-  .cardex{font-size:12px;color:#cdd6e2;margin-top:7px;line-height:1.5;word-break:break-word}
+  .cardex{font-size:12px;color:var(--mut);margin-top:7px;line-height:1.5;word-break:break-word}
   /* 可捲動框（仿研究雷達），手機也能在框內滑 */
   .gridscroll{max-height:46vh;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:12px;
     padding:10px;background:#0d1117;-webkit-overflow-scrolling:touch}
@@ -212,10 +213,22 @@
     --bg:#100c0d; --panel:#1a1516; --panel2:#221b1c; --line:#332a2b;
     --tx:#ece3da; --mut:#9b8d84; --acc:#c8a86a; --acc2:#7d3a44;
     --green:#86a07c; --yellow:#c6a45f; --red:#b97070; --grey:#6c615c;
+    --nav:#0c0809; --glow:#1a1314;
     --serif:"Cormorant Garamond","Noto Serif TC",Georgia,"Songti TC",serif;
     --sans:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   }
-  body{background:radial-gradient(1200px 700px at 50% -10%, #1a1314 0%, var(--bg) 60%);
+  /* ===== 主題（預設＝酒紅夜，其餘可切換）===== */
+  html[data-theme="emerald"]{ --bg:#0a0f0d; --panel:#121916; --panel2:#19211d; --line:#26312b; --nav:#070b09; --glow:#0f201a;
+    --tx:#e7efe9; --mut:#8ba093; --acc:#7fc9a6; --acc2:#2e6b57; --green:#86a07c; --yellow:#c6a45f; --red:#bd7a7a; --grey:#67746b; }
+  html[data-theme="sapphire"]{ --bg:#0a0d12; --panel:#141921; --panel2:#1b2230; --line:#28323f; --nav:#070a0e; --glow:#142033;
+    --tx:#e7edf4; --mut:#8b97a8; --acc:#a7c4e6; --acc2:#33598a; --green:#82a37f; --yellow:#c6a45f; --red:#bd7a7a; --grey:#69727f; }
+  html[data-theme="amethyst"]{ --bg:#0f0a12; --panel:#181320; --panel2:#1f1929; --line:#2e2738; --nav:#0a070d; --glow:#1c1430;
+    --tx:#ece4f2; --mut:#9b8fa6; --acc:#c9a7e0; --acc2:#5e3a78; --green:#86a07c; --yellow:#c6a45f; --red:#bd7a7a; --grey:#6e6678; }
+  html[data-theme="graphite"]{ --bg:#0e0f10; --panel:#17181a; --panel2:#1e2023; --line:#2c2f33; --nav:#090a0b; --glow:#191b1e;
+    --tx:#e9ebee; --mut:#969aa0; --acc:#c2c7ce; --acc2:#474c54; --green:#86a07c; --yellow:#c6a45f; --red:#bd7a7a; --grey:#6b7077; }
+  html[data-theme="parchment"]{ --bg:#ece3d2; --panel:#f6f0e5; --panel2:#fbf6ee; --line:#dccfb9; --nav:#e2d6c1; --glow:#f1ead9;
+    --tx:#3a322a; --mut:#7c715f; --acc:#9c6f3a; --acc2:#7d3a44; --green:#5f7d57; --yellow:#a9802f; --red:#a85a5a; --grey:#897f70; }
+  body{background:radial-gradient(1200px 700px at 50% -10%, var(--glow) 0%, var(--bg) 60%);
        letter-spacing:.2px;-webkit-font-smoothing:antialiased}
   *{transition:background-color .22s ease, border-color .22s ease, color .22s ease, transform .12s ease}
   h1{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:.6px}
@@ -223,7 +236,7 @@
   .sec-h{font-family:var(--serif);font-weight:600;font-size:20px;letter-spacing:.4px}
   .sec-n{background:transparent;color:var(--acc);border:1px solid var(--acc);font-family:var(--serif);
          width:26px;height:26px;font-size:14px}
-  .card{background:linear-gradient(180deg,#1b1617,#171213);border:1px solid var(--line);
+  .card{background:var(--panel);border:1px solid var(--line);
         border-radius:14px;padding:22px;box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 12px 30px -22px #000}
   .btn{background:var(--acc2);color:#f3e7e3;border-radius:9px;font-weight:600;letter-spacing:.4px;
        box-shadow:0 8px 20px -14px var(--acc2)}
@@ -231,12 +244,12 @@
   .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--tx)}
   .btn.ghost:hover{background:var(--panel2);border-color:var(--acc)}
   textarea,input[type=text],input[type=date],select{background:var(--panel2);border:1px solid var(--line);border-radius:9px}
-  textarea:focus,input[type=text]:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 1px rgba(200,168,106,.25)}
+  textarea:focus,input[type=text]:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 1px color-mix(in srgb,var(--acc) 30%,transparent)}
   .pill{background:transparent;border:1px solid var(--line);color:var(--mut);letter-spacing:.3px}
   .speak{background:transparent;border:1px solid var(--line);color:var(--acc);border-radius:7px;font-size:13px}
-  .speak:hover{border-color:var(--acc);background:rgba(200,168,106,.08)}
+  .speak:hover{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent)}
   /* word cards */
-  .wcard{background:linear-gradient(180deg,#1c1718,#191314);border-radius:12px;border-left-width:3px;transition:border-color .2s,transform .12s}
+  .wcard{background:var(--panel2);border-radius:12px;border-left-width:3px;transition:border-color .2s,transform .12s}
   .wcard:hover{transform:translateY(-1px);border-color:var(--line)}
   .wcard .en{font-family:var(--serif);font-weight:600;font-size:22px;letter-spacing:.3px}
   .wcard .ph{font-style:italic;font-family:var(--serif);font-size:13px}
@@ -251,11 +264,11 @@
   .calgrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
   .calhead{justify-content:center}
   .calhead b{font-family:var(--serif);font-weight:600;letter-spacing:.5px}
-  .calcell{background:#181314;border-color:#241d1e}
-  .calcell.has{border-color:#3a2e2a}
+  .calcell{background:var(--panel2);border-color:var(--line)}
+  .calcell.has{border-color:var(--line)}
   .calcell.has:hover{border-color:var(--acc)}
   .calcell.today{outline-color:var(--acc)}
-  .calcell.sel{background:rgba(200,168,106,.12);border-color:var(--acc);color:var(--acc)}
+  .calcell.sel{background:color-mix(in srgb,var(--acc) 12%,transparent);border-color:var(--acc);color:var(--acc)}
   .calcell .cnt{color:var(--acc)}
   @media (min-width:620px){ .calcell{font-size:16px} .calcell .cnt{font-size:12px} .caldow{font-size:13px} }
   /* quiz */
@@ -263,18 +276,26 @@
   .opt{border-radius:9px}
   .opt:hover{border-color:var(--acc)}
   .big{font-family:var(--serif)}
-  .sugchip{border-color:var(--acc);background:rgba(200,168,106,.1);color:var(--acc);border-radius:8px}
+  .sugchip{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,transparent);color:var(--acc);border-radius:8px}
   .sugchip.ok{border-color:var(--line);background:transparent;color:var(--mut)}
-  .srcbadge.mine{background:rgba(200,168,106,.14);color:var(--acc);border-color:rgba(200,168,106,.4)}
-  .modal{background:linear-gradient(180deg,#1b1617,#161112);border-radius:16px}
+  .srcbadge.mine{background:color-mix(in srgb,var(--acc) 14%,transparent);color:var(--acc);border-color:color-mix(in srgb,var(--acc) 40%,transparent)}
+  .modal{background:var(--panel);border-radius:16px}
   .modal h2{font-family:var(--serif);font-weight:600}
-  .edsec{background:#1c1617;border-radius:12px}
-  .topnav{background:#0c0809}
-  .topnav a.active{background:rgba(200,168,106,.12);color:var(--acc)}
+  .edsec{background:var(--panel2);border-radius:12px}
+  .topnav{background:var(--nav)}
+  .topnav a.active{background:color-mix(in srgb,var(--acc) 12%,transparent);color:var(--acc)}
   #toTop{background:var(--acc2);border-color:var(--acc2)}
-  .gridscroll{background:#140f10}
+  .gridscroll{background:var(--bg)}
   .grouphd{color:var(--acc);font-family:var(--serif);font-size:15px;font-weight:600}
-  ::-webkit-scrollbar-thumb,.gridscroll::-webkit-scrollbar-thumb{background:#3a2e2a}
+  ::-webkit-scrollbar-thumb,.gridscroll::-webkit-scrollbar-thumb{background:var(--line)}
+  /* 主題選擇器 */
+  .themegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:6px}
+  .themesw{display:flex;align-items:center;gap:10px;padding:11px;border:1px solid var(--line);
+    border-radius:11px;background:var(--panel2);cursor:pointer;text-align:left;color:var(--tx);font-size:14px}
+  .themesw:hover{border-color:var(--acc)}
+  .themesw.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+  .swatch{width:30px;height:30px;border-radius:8px;flex-shrink:0;position:relative;border:1px solid rgba(255,255,255,.12)}
+  .swatch i{position:absolute;width:10px;height:10px;border-radius:50%;bottom:3px;right:3px}
 </style>
 </head>
 <body>
@@ -292,6 +313,7 @@
       <div class="sub">每日英文單字</div>
     </div>
     <div class="row" style="gap:8px;flex-shrink:0">
+      <button class="btn ghost sm" id="btnTheme">外觀</button>
       <button class="btn ghost sm" id="btnVoice">語音</button>
       <button class="btn ghost sm sharebtn" id="btnShare">分享</button>
     </div>
@@ -402,7 +424,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v29 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v30 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -413,7 +435,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='29';
+const APP_VERSION='30';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1513,6 +1535,38 @@ document.getElementById('btnShare').onclick=async()=>{
     prompt('複製這個連結傳給朋友（對方打開只會看到單字工具）：',url);
   }
 };
+
+/* ============ theme switcher ============ */
+const THEMES=[
+  {id:'wine',     name:'酒紅夜（預設）', bg:'#100c0d', a:'#c8a86a', a2:'#7d3a44'},
+  {id:'emerald',  name:'墨玉',          bg:'#0a0f0d', a:'#7fc9a6', a2:'#2e6b57'},
+  {id:'sapphire', name:'午夜藍',        bg:'#0a0d12', a:'#a7c4e6', a2:'#33598a'},
+  {id:'amethyst', name:'紫檀',          bg:'#0f0a12', a:'#c9a7e0', a2:'#5e3a78'},
+  {id:'graphite', name:'石墨',          bg:'#0e0f10', a:'#c2c7ce', a2:'#474c54'},
+  {id:'parchment',name:'羊皮紙（淺）',   bg:'#ece3d2', a:'#9c6f3a', a2:'#7d3a44'},
+];
+function currentTheme(){ try{ return localStorage.getItem('vocabTheme')||'wine'; }catch(e){ return 'wine'; } }
+function applyTheme(id){
+  if(id==='wine') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme',id);
+  try{ localStorage.setItem('vocabTheme',id); }catch(e){}
+  const m=document.querySelector('meta[name=theme-color]');
+  const t=THEMES.find(x=>x.id===id); if(m&&t) m.setAttribute('content',t.bg);
+}
+function openTheme(){
+  const cur=currentTheme();
+  document.getElementById('ovInner').innerHTML=
+    `<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
+     <h2 style="font-size:22px">外觀主題</h2>
+     <div style="font-size:13px;color:var(--mut);margin:6px 0 12px">挑一個喜歡的，會記在這個裝置。</div>
+     <div class="themegrid">${THEMES.map(t=>
+       `<button class="themesw${t.id===cur?' on':''}" data-id="${t.id}">
+          <span class="swatch" style="background:${t.bg}"><i style="background:${t.a}"></i></span>
+          <span>${t.name}</span></button>`).join('')}</div>`;
+  document.getElementById('ov').classList.add('show');
+  document.querySelectorAll('.themesw').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.id); openTheme(); });
+}
+document.getElementById('btnTheme').onclick=openTheme;
 
 /* ============ voice settings (top button) ============ */
 document.getElementById('btnVoice').onclick=()=>{
