@@ -197,7 +197,7 @@
     <div class="sec-h"><span class="sec-n">4</span>測驗（用上面勾選的單字）</div>
     <div id="quizSetup">
       <div style="font-size:14px;margin-bottom:2px">目前已勾選 <b id="quizBasket">0</b> 個單字。</div>
-      <label class="fld" style="margin-top:8px">只測這些熟悉度（可複選，不選＝全部）：</label>
+      <label class="fld" style="margin-top:8px">快速勾選：把上面清單中該熟悉度的字一次全勾起來（再取消＝退選），可複選：</label>
       <div class="lvfilter">
         <label><input type="checkbox" class="lvf" value="weak"><span style="color:var(--red)">不熟</span></label>
         <label><input type="checkbox" class="lvf" value="mid"><span style="color:var(--yellow)">普通</span></label>
@@ -635,28 +635,32 @@ function gatherPool(){ // checked words (basket)
     const rec=DB[dt]&&DB[dt].words[k]; if(rec)arr.push({date:dt,key:k,rec});});
   return arr;
 }
-function levelFilter(){return [...document.querySelectorAll('.lvf:checked')].map(c=>c.value);}
-function filteredPool(){
-  const f=levelFilter(); let pool=gatherPool();
-  if(f.length) pool=pool.filter(e=>f.includes(levelOf(e.rec).k));
-  return pool;
+// 勾某個熟悉度 = 把上面清單中該熟悉度的字全部勾選（取消則退選）
+function applyLevelSelect(lvl,checked){
+  currentEntries.forEach(e=>{
+    if(levelOf(e.rec).k===lvl){
+      const id=e.date+'|'+e.key;
+      if(checked) selected.add(id); else selected.delete(id);
+    }
+  });
+  renderList(); // 重畫清單勾選狀態與數量（第4區的熟悉度勾不受影響）
 }
 function updateQuizPool(){
-  document.getElementById('quizBasket').textContent=selected.size;
+  const n=gatherPool().length;
+  document.getElementById('quizBasket').textContent=n;
   const info=document.getElementById('quizPoolInfo');
-  if(!selected.size){ info.textContent='尚未勾選任何單字（請到上面第 3 區勾選）。'; return; }
-  info.textContent='符合條件、可測 '+filteredPool().length+' 個單字';
+  info.textContent = n ? ('已選 '+n+' 個單字，可開始測驗。')
+    : '尚未勾選任何單字（在上面清單勾選，或用下面的熟悉度快速勾選）。';
 }
-document.querySelectorAll('.lvf').forEach(c=>c.onchange=updateQuizPool);
+document.querySelectorAll('.lvf').forEach(c=>c.onchange=()=>applyLevelSelect(c.value,c.checked));
 function allWordStrings(){const a=[];allDates().forEach(dt=>Object.keys(DB[dt].words).forEach(k=>a.push(DB[dt].words[k].word)));return a;}
 
 let Q=null;
 document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>startQuiz(b.dataset.q));
 function startQuiz(type){
   const msg=document.getElementById('quizMsg');
-  if(!selected.size){msg.textContent='請先到上面第 3 區勾選要測驗的單字。';return}
-  let pool=filteredPool();
-  if(!pool.length){msg.textContent='符合篩選條件的單字是 0 個，換個熟悉度篩選試試。';return}
+  let pool=gatherPool();
+  if(!pool.length){msg.textContent='請先勾選要測驗的單字（清單裡勾，或用熟悉度快速勾選）。';return}
   pool=pool.slice().sort(()=>Math.random()-0.5);
   Q={type,items:pool,i:0,score:0,answered:false,results:[]};
   msg.textContent='';
