@@ -430,7 +430,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v39 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v40 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -441,7 +441,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='39';
+const APP_VERSION='40';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -514,31 +514,41 @@ const trCache=JSON.parse(localStorage.getItem('vocabTr')||'{}');
 async function translate(text){
   if(!text) return '';
   if(trCache[text]) return trCache[text];
+  let t='';
+  // 1) Google 免費翻譯端點（較穩、較準）
   try{
-    const r=await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair=en|zh-TW');
-    const j=await r.json();
-    let t=(j.responseData&&j.responseData.translatedText)||'';
-    if(/MYMEMORY WARNING|QUERY LENGTH LIMIT|INVALID/i.test(t)) t='';
-    if(t){ trCache[text]=t; localStorage.setItem('vocabTr',JSON.stringify(trCache)); } // 只快取成功的，失敗下次再試
-    return t;
-  }catch(e){return ''}
+    const r=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-TW&dt=t&q='+encodeURIComponent(text));
+    if(r.ok){ const j=await r.json(); if(Array.isArray(j)&&Array.isArray(j[0])) t=j[0].map(x=>(x&&x[0])?x[0]:'').join(''); }
+  }catch(e){}
+  // 2) 退回 MyMemory
+  if(!t){
+    try{
+      const r=await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair=en|zh-TW');
+      const j=await r.json();
+      t=(j.responseData&&j.responseData.translatedText)||'';
+      if(/MYMEMORY WARNING|QUERY LENGTH LIMIT|INVALID/i.test(t)) t='';
+    }catch(e){}
+  }
+  if(t){ trCache[text]=t; localStorage.setItem('vocabTr',JSON.stringify(trCache)); } // 只快取成功的
+  return t;
 }
-// 背景自動翻譯：把所有單字的中文意思與例句翻譯補齊（節流，不擋畫面）
+// 背景自動翻譯：把所有單字的例句中文補齊（邊翻邊即時更新畫面）
 let bgRunning=false;
 async function bgTranslate(){
   if(bgRunning)return; bgRunning=true;
   try{
     let did=0;
+    const refresh=()=>{ renderList(); if(document.getElementById('ov').classList.contains('show') && curWord) renderDetail(curWord.rec,curWord.date,curWord.key); };
     for(const dt of Object.keys(DB)){
       for(const k of Object.keys(DB[dt].words||{})){
         const rec=DB[dt].words[k];
-        if(rec.wordZh===undefined||rec.wordZh===''){ const v=await translate(rec.word); if(v){rec.wordZh=v;save();did++;} await sleep(120); }
+        if(!rec.wordZh){ const v=await translate(rec.word); if(v){rec.wordZh=v;save();did++;if(did%4===0)refresh();} await sleep(60); }
         if(rec.sentences) for(const s of rec.sentences){
-          if(s.ex && !s.exZh){ const v=await translate(s.ex); if(v){s.exZh=v;save();did++;} await sleep(120); }
+          if(s.ex && !s.exZh){ const v=await translate(s.ex); if(v){s.exZh=v;save();did++;if(did%4===0)refresh();} await sleep(60); }
         }
       }
     }
-    if(did){ renderList(); if(document.getElementById('ov').classList.contains('show') && curWord) renderDetail(curWord.rec,curWord.date,curWord.key); }
+    if(did) refresh();
   }catch(e){}
   bgRunning=false;
 }
