@@ -101,11 +101,24 @@
   .analysis{background:var(--panel2);border-radius:10px;padding:14px;margin-top:14px;text-align:left;font-size:14px;line-height:1.7}
   .scorebox{font-size:18px;line-height:1.9}
   .big{font-size:46px;font-weight:800}
-  .datechips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
-  .datechip{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);
-            padding:6px 11px;border-radius:9px;font-size:13px;cursor:pointer}
-  .datechip.on{background:#243b55;border-color:var(--acc2);color:var(--acc)}
-  .datechip small{color:var(--mut)}
+
+  /* calendar */
+  .calhead{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:10px}
+  .calhead b{font-size:16px;min-width:120px;text-align:center}
+  .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+  .caldow{text-align:center;font-size:12px;color:var(--mut);padding:2px 0}
+  .calcell{aspect-ratio:1/1;background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
+    position:relative;font-size:14px;gap:1px;user-select:none}
+  .calcell.empty{background:transparent;border:none;cursor:default}
+  .calcell.muted{opacity:.4;cursor:default}
+  .calcell.has{border-color:#36506e}
+  .calcell.has:hover{border-color:var(--acc2)}
+  .calcell.today{outline:2px solid var(--acc);outline-offset:-1px}
+  .calcell.sel{background:#243b55;border-color:var(--acc2)}
+  .calcell .cnt{font-size:11px;color:var(--acc);font-weight:700;line-height:1}
+  .viewmode.active{background:var(--acc2);border-color:var(--acc2);color:#fff}
+  #editArea input,#editArea textarea{font-size:14px}
 </style>
 </head>
 <body>
@@ -147,29 +160,40 @@
   <!-- ========== BANK ========== -->
   <div class="view" id="v-bank">
     <div class="card">
-      <div class="row">
-        <div>
-          <label class="fld">選擇日期</label>
-          <input type="date" id="bankDate">
-        </div>
-        <div style="align-self:flex-end">
-          <button class="btn ghost sm" id="btnReviewDay">⚡ 用這天的不熟單字測驗</button>
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <b>📚 我的單字</b>
+        <div class="row">
+          <button class="btn ghost sm viewmode active" data-bm="cal">📅 日曆</button>
+          <button class="btn ghost sm viewmode" data-bm="all">📋 全部單字</button>
         </div>
       </div>
-      <div class="msg" id="bankStat"></div>
+      <div id="bankCalMode">
+        <div class="cal" id="bankCal"></div>
+        <div style="font-size:12px;color:var(--mut);margin-top:8px">點月曆上的日期看那天的單字；數字＝該天單字數。</div>
+      </div>
+      <div id="bankAllMode" style="display:none">
+        <input type="text" id="allSearch" placeholder="🔍 搜尋英文單字或中文意思…">
+      </div>
     </div>
 
     <div class="card">
       <div class="row" style="justify-content:space-between">
-        <b>單字清單　<span class="pill" id="selCount">已選 0 字</span></b>
-        <button class="btn sm" id="btnCompose" disabled>✍️ 用選取的字造句</button>
+        <b id="bankListTitle">單字清單</b>
+        <div class="row">
+          <span class="pill" id="selCount">已選 0 字</span>
+          <button class="btn sm" id="btnCompose" disabled>✍️ 用選取的字造句</button>
+        </div>
       </div>
+      <div class="msg" id="bankStat"></div>
       <div style="font-size:12px;color:var(--mut);margin:6px 0 12px">
-        點卡片看詳解；勾選右上角方框可挑幾個字做造句練習（需求5）。左邊色條＝熟悉度：
+        點卡片可看詳解、<b>自己編輯中文意思、加例句、加筆記</b>；勾選右上角方框挑字造句（需求5）。色條＝熟悉度：
         <span style="color:var(--grey)">■新</span>
         <span style="color:var(--red)">■不熟</span>
         <span style="color:var(--yellow)">■普通</span>
         <span style="color:var(--green)">■熟</span>
+      </div>
+      <div class="row" id="bankDayActions" style="margin-bottom:12px;display:none">
+        <button class="btn ghost sm" id="btnReviewDay">⚡ 測這天的不熟單字</button>
       </div>
       <div class="wgrid" id="bankGrid"></div>
       <div class="empty" id="bankEmpty" style="display:none">這天還沒有單字，去「📥 輸入單字」加入吧。</div>
@@ -179,8 +203,14 @@
   <!-- ========== QUIZ ========== -->
   <div class="view" id="v-quiz">
     <div class="card" id="quizSetup">
-      <b>1. 勾選要複習的日期（可複選，需求9）</b>
-      <div class="datechips" id="quizDates"></div>
+      <b>1. 在月曆上勾選要複習的日期（可複選，需求9）</b>
+      <div class="cal" id="quizCal" style="margin-top:8px"></div>
+      <div class="row" style="margin:8px 0 16px">
+        <span class="pill" id="quizSelInfo">已選 0 天</span>
+        <button class="btn ghost sm" id="quizSelMonth">本月全選</button>
+        <button class="btn ghost sm" id="quizSelAll">全部日期</button>
+        <button class="btn ghost sm" id="quizSelClear">清除</button>
+      </div>
 
       <b>2. 選擇出題範圍</b>
       <div class="row" style="margin:8px 0 16px">
@@ -319,7 +349,6 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
 
 /* ============ INPUT view ============ */
 document.getElementById('inDate').value=today();
-document.getElementById('bankDate').value=today();
 const inMsg=document.getElementById('inMsg');
 document.getElementById('btnAdd').onclick=async()=>{
   const date=document.getElementById('inDate').value||today();
@@ -352,19 +381,54 @@ function renderWordCard(grid,date,key,clickable){
   grid.appendChild(el);
 }
 
+/* ============ reusable calendar ============ */
+const DOW=['日','一','二','三','四','五','六'];
+function ymd(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
+function renderCalendar(host,state,opts){
+  const {year,month}=state;
+  const startDow=new Date(year,month,1).getDay();
+  const days=new Date(year,month+1,0).getDate();
+  let h=`<div class="calhead">
+    <button class="btn ghost sm" data-nav="-1">‹</button>
+    <b>${year} 年 ${month+1} 月</b>
+    <button class="btn ghost sm" data-nav="1">›</button></div><div class="calgrid">`;
+  DOW.forEach(d=>h+=`<div class="caldow">${d}</div>`);
+  for(let i=0;i<startDow;i++)h+=`<div class="calcell empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const date=ymd(year,month,d);
+    const cnt=(DB[date]&&Object.keys(DB[date].words).length)||0;
+    const cls=['calcell', cnt?'has':'muted'];
+    if(date===today())cls.push('today');
+    if(opts.selected&&opts.selected.has(date))cls.push('sel');
+    h+=`<div class="${cls.join(' ')}" data-date="${date}" data-cnt="${cnt}">
+      <div>${d}</div>${cnt?`<div class="cnt">${cnt}</div>`:''}</div>`;
+  }
+  host.innerHTML=h+'</div>';
+  host.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{
+    state.month+=parseInt(b.dataset.nav);
+    if(state.month<0){state.month=11;state.year--;}
+    if(state.month>11){state.month=0;state.year++;}
+    renderCalendar(host,state,opts);
+  });
+  host.querySelectorAll('[data-date]').forEach(c=>c.onclick=()=>opts.onPick(c.dataset.date,+c.dataset.cnt));
+}
+
 /* ============ word detail modal ============ */
 const ov=document.getElementById('ov');
 ov.onclick=e=>{if(e.target===ov)ov.classList.remove('show')};
 async function openWord(date,key){
   const rec=DB[date].words[key];
+  if(!rec.custom)rec.custom=[]; if(rec.note===undefined)rec.note='';
   const inner=document.getElementById('ovInner');
   const lv=levelOf(rec);
   inner.innerHTML=`<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
     <h2>${rec.word} <button class="speak" onclick="speak('${rec.word.replace(/'/g,"")}')">🔊</button></h2>
-    <div class="ph" style="color:var(--mut)">${rec.phonetic||''}　<span class="pill">${lv.label}</span></div>
+    <div class="ph" style="color:var(--mut)">${rec.phonetic||''}　<span class="pill">${lv.label}</span>　<span class="pill">${date}</span></div>
     <div style="font-size:16px;margin-top:4px">${rec.wordZh||'（無翻譯）'}</div>
-    <div id="meanArea"></div>`;
+    <div id="meanArea"></div>
+    <div id="editArea"></div>`;
   ov.classList.add('show');
+  renderEdit(rec,date,key);
   const area=inner.querySelector('#meanArea');
   if(!rec.meanings.length){
     area.innerHTML=`<div class="mean" style="color:var(--mut)">字典查無此字（片語或專有名詞）。發音與中文翻譯仍可使用。</div>`;
@@ -402,94 +466,168 @@ async function openWord(date,key){
   if(changed) save();
 }
 
-/* ============ BANK view ============ */
+/* ============ edit a word (req: 自己編輯意思/加句子/加筆記) ============ */
+function renderEdit(rec,date,key){
+  const host=document.getElementById('editArea'); if(!host)return;
+  const custom=(rec.custom||[]).map((c,i)=>`<div class="def">
+      “${c.ex}” <button class="speak" data-t="${(c.ex||'').replace(/"/g,'&quot;')}" onclick="speak(this.dataset.t)">🔊</button>
+      <button class="x" style="float:none;font-size:15px;color:var(--red)" onclick="delCustom('${date}','${key}',${i})">✕</button>
+      ${c.exZh?`<div class="exz">${c.exZh}</div>`:''}</div>`).join('')
+      || '<span style="color:var(--mut);font-size:13px">尚無自訂例句</span>';
+  host.innerHTML=`<div class="mean"><b>✍️ 我的補充（可自己編輯）</b>
+    <div style="margin-top:8px"><label class="fld">中文意思（可修改）</label>
+      <input type="text" id="edZh"></div>
+    <div style="margin-top:10px"><label class="fld">我的例句（會列入填空測驗題庫）</label>
+      <div id="customList">${custom}</div>
+      <div class="row" style="margin-top:6px">
+        <input type="text" id="edEx" placeholder="英文句子" style="flex:2;min-width:150px">
+        <input type="text" id="edExZh" placeholder="中文（可留空）" style="flex:1;min-width:110px">
+        <button class="btn sm" id="edAdd">＋ 加句</button></div></div>
+    <div style="margin-top:10px"><label class="fld">我的筆記 / 文法補充</label>
+      <textarea id="edNote" style="min-height:60px"></textarea></div>
+    <button class="btn sm" id="edSaveBtn" style="margin-top:10px">💾 儲存意思與筆記</button>
+    <span class="msg" id="edMsg" style="margin-left:8px"></span></div>`;
+  host.querySelector('#edZh').value=rec.wordZh||'';
+  host.querySelector('#edNote').value=rec.note||'';
+  host.querySelector('#edAdd').onclick=()=>{
+    const ex=host.querySelector('#edEx').value.trim(); if(!ex)return;
+    rec.custom=rec.custom||[];
+    rec.custom.push({ex,exZh:host.querySelector('#edExZh').value.trim()});
+    save(); renderEdit(rec,date,key);
+  };
+  host.querySelector('#edSaveBtn').onclick=()=>{
+    rec.wordZh=host.querySelector('#edZh').value.trim();
+    rec.note=host.querySelector('#edNote').value;
+    save(); host.querySelector('#edMsg').textContent='已儲存 ✓';
+  };
+}
+function delCustom(date,key,i){
+  const rec=DB[date].words[key]; rec.custom.splice(i,1); save(); renderEdit(rec,date,key);
+}
+
+/* ============ BANK view (calendar + all words + edit) ============ */
 const selected=new Set();
+let bankViewDate=null, currentBankMode='cal';
+const bankCalState={year:new Date().getFullYear(),month:new Date().getMonth()};
+
 function renderBank(){
-  const date=document.getElementById('bankDate').value||today();
-  const d=DB[date]; const grid=document.getElementById('bankGrid');
-  const words=d?Object.keys(d.words):[];
-  grid.innerHTML=''; selected.clear(); updateSelCount();
-  document.getElementById('bankEmpty').style.display=words.length?'none':'block';
-  // stats line
+  renderCalendar(document.getElementById('bankCal'),bankCalState,{onPick:(date)=>showBankDay(date)});
+  if(currentBankMode==='all') showAllWords(document.getElementById('allSearch').value);
+  else { const d=DB[today()]?today():allDates()[0]; if(d)showBankDay(d); else renderWordList([]); }
+}
+document.querySelectorAll('.viewmode').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.viewmode').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); currentBankMode=b.dataset.bm;
+  document.getElementById('bankCalMode').style.display=currentBankMode==='cal'?'block':'none';
+  document.getElementById('bankAllMode').style.display=currentBankMode==='all'?'block':'none';
+  renderBank();
+});
+document.getElementById('allSearch').oninput=e=>showAllWords(e.target.value);
+
+function fillStat(entries){
   const counts={new:0,weak:0,mid:0,strong:0};
-  words.forEach(k=>counts[levelOf(d.words[k]).k]++);
-  document.getElementById('bankStat').innerHTML= words.length?
-    `共 ${words.length} 字　·　<span style="color:var(--grey)">新 ${counts.new}</span>　<span style="color:var(--red)">不熟 ${counts.weak}</span>　<span style="color:var(--yellow)">普通 ${counts.mid}</span>　<span style="color:var(--green)">熟 ${counts.strong}</span>`:'';
-  words.forEach(k=>{
-    const rec=d.words[k]; const lv=levelOf(rec);
+  entries.forEach(e=>counts[levelOf(e.rec).k]++);
+  document.getElementById('bankStat').innerHTML=entries.length?
+    `共 ${entries.length} 字　·　<span style="color:var(--grey)">新 ${counts.new}</span>　<span style="color:var(--red)">不熟 ${counts.weak}</span>　<span style="color:var(--yellow)">普通 ${counts.mid}</span>　<span style="color:var(--green)">熟 ${counts.strong}</span>`:'';
+}
+function renderWordList(entries,showDate){
+  const grid=document.getElementById('bankGrid');
+  grid.innerHTML=''; selected.clear(); updateSelCount();
+  document.getElementById('bankEmpty').style.display=entries.length?'none':'block';
+  fillStat(entries);
+  entries.forEach(({date,key,rec})=>{
+    const lv=levelOf(rec);
     const el=document.createElement('div'); el.className='wcard lv-'+lv.k;
     el.innerHTML=`<input type="checkbox" class="chk">
-      <div class="en">${rec.word}</div><div class="ph">${rec.phonetic||''}</div>
+      <div class="en">${rec.word}</div>
+      <div class="ph">${rec.phonetic||''}${showDate?` <span style="color:var(--mut)">${date}</span>`:''}</div>
       <div class="zh">${rec.wordZh||'（無翻譯）'}</div>`;
-    el.querySelector('.chk').onclick=e=>{e.stopPropagation();
-      if(e.target.checked)selected.add(k);else selected.delete(k);updateSelCount();};
-    el.onclick=()=>openWord(date,k);
+    el.querySelector('.chk').onclick=e=>{e.stopPropagation();const id=date+'|'+key;
+      if(e.target.checked)selected.add(id);else selected.delete(id);updateSelCount();};
+    el.onclick=()=>openWord(date,key);
     grid.appendChild(el);
   });
+}
+function showBankDay(date){
+  bankViewDate=date;
+  document.getElementById('bankListTitle').textContent=date+' 的單字';
+  document.getElementById('bankDayActions').style.display='flex';
+  const d=DB[date]; const entries=d?Object.keys(d.words).map(k=>({date,key:k,rec:d.words[k]})):[];
+  renderWordList(entries,false);
+}
+function showAllWords(filter){
+  bankViewDate=null;
+  document.getElementById('bankListTitle').textContent='全部單字';
+  document.getElementById('bankDayActions').style.display='none';
+  let entries=[];
+  allDates().forEach(dt=>Object.keys(DB[dt].words).forEach(k=>entries.push({date:dt,key:k,rec:DB[dt].words[k]})));
+  if(filter){const f=filter.toLowerCase();
+    entries=entries.filter(e=>e.rec.word.toLowerCase().includes(f)||(e.rec.wordZh||'').includes(filter));}
+  renderWordList(entries,true);
 }
 function updateSelCount(){
   document.getElementById('selCount').textContent='已選 '+selected.size+' 字';
   document.getElementById('btnCompose').disabled=selected.size===0;
 }
-document.getElementById('bankDate').onchange=renderBank;
 document.getElementById('btnReviewDay').onclick=()=>{
-  const date=document.getElementById('bankDate').value||today();
-  if(!DB[date]||!Object.keys(DB[date].words).length){alert('這天沒有單字。');return}
-  // jump to quiz with this date selected + weak mode
+  const date=bankViewDate;
+  if(!date||!DB[date]||!Object.keys(DB[date].words).length){alert('請先在月曆點一天有單字的日期。');return}
   document.querySelector('.tab[data-v=quiz]').click();
-  setTimeout(()=>{
-    quizPickDates([date]); document.getElementById('quizMode').value='weak';
-    document.getElementById('quizMsg').textContent='已帶入 '+date+' 的不熟單字，選下方測驗方式開始。';
-  },30);
+  setTimeout(()=>{ quizPickDates([date]); document.getElementById('quizMode').value='weak';
+    document.getElementById('quizMsg').textContent='已帶入 '+date+' 的不熟單字，選下方測驗方式開始。';},30);
 };
 
 /* ============ COMPOSE (req5) ============ */
 const ovc=document.getElementById('ovc');
 ovc.onclick=e=>{if(e.target===ovc)ovc.classList.remove('show')};
-document.getElementById('btnCompose').onclick=()=>{
-  const date=document.getElementById('bankDate').value||today();
-  const d=DB[date]; const keys=[...selected];
-  let ref=keys.map(k=>{const r=d.words[k];const ex=(r.meanings.find(m=>m.defs.some(x=>x.ex))||{}).defs;
-    const exs=ex?ex.find(x=>x.ex):null;
-    return `<li><b>${r.word}</b> <span style="color:var(--mut)">${r.wordZh||''}</span>${exs?`<br><span class="ex">例：${exs.ex}</span>`:''}</li>`;}).join('');
+document.getElementById('btnCompose').onclick=function openCompose(){
+  const ids=[...selected]; if(!ids.length)return;
+  const items=ids.map(s=>{const i=s.indexOf('|');const dt=s.slice(0,i),k=s.slice(i+1);
+    return {dt,k,rec:DB[dt]&&DB[dt].words[k]};}).filter(x=>x.rec);
+  const saveDate=bankViewDate||today(); const d=day(saveDate);
+  const ref=items.map(it=>{const ex=findExample(it.rec);
+    return `<li><b>${it.rec.word}</b> <span style="color:var(--mut)">${it.rec.wordZh||''}</span>${ex?`<br><span class="ex">例：${ex.ex}</span>`:''}</li>`;}).join('');
   const past=(d.comps||[]).map(c=>`<div class="def">${c.text} <button class="speak" onclick="speak(this.dataset.t)" data-t="${c.text.replace(/"/g,'&quot;')}">🔊</button><br><span style="color:var(--mut);font-size:12px">用字：${c.words.join('、')}</span></div>`).join('')||'<span style="color:var(--mut)">還沒有造句紀錄。</span>';
   document.getElementById('ovcInner').innerHTML=`
     <button class="x" onclick="document.getElementById('ovc').classList.remove('show')">✕</button>
     <h2 style="font-size:20px">✍️ 選字造句</h2>
-    <div style="font-size:13px;color:var(--mut);margin-bottom:8px">用這些字寫一個你自己的句子：</div>
+    <div style="font-size:13px;color:var(--mut);margin-bottom:8px">用這些字寫一個你自己的句子（會存到 ${saveDate}）：</div>
     <ul style="margin:0 0 12px 18px;font-size:14px;line-height:1.7">${ref}</ul>
     <textarea id="compText" placeholder="在這裡寫下你的英文句子…"></textarea>
     <div class="row" style="margin-top:10px">
       <button class="btn sm" id="compSpeak">🔊 朗讀我的句子</button>
-      <button class="btn sm" id="compSave">儲存到 ${date}</button>
+      <button class="btn sm" id="compSave">儲存</button>
     </div>
-    <div class="mean"><b>📒 ${date} 的造句紀錄</b><div style="margin-top:8px" id="compList">${past}</div></div>`;
+    <div class="mean"><b>📒 ${saveDate} 的造句紀錄</b><div style="margin-top:8px">${past}</div></div>`;
   ovc.classList.add('show');
   document.getElementById('compSpeak').onclick=()=>speak(document.getElementById('compText').value);
   document.getElementById('compSave').onclick=()=>{
     const txt=document.getElementById('compText').value.trim(); if(!txt)return;
-    day(date).comps.push({text:txt,words:keys.map(k=>d.words[k].word),at:Date.now()}); save();
-    document.getElementById('btnCompose').onclick(); // re-render modal
+    d.comps.push({text:txt,words:items.map(it=>it.rec.word),at:Date.now()}); save(); openCompose();
   };
 };
 
 /* ============ QUIZ ============ */
 const quizSel=new Set();
+const quizCalState={year:new Date().getFullYear(),month:new Date().getMonth()};
 function renderQuizDates(){
-  const box=document.getElementById('quizDates'); box.innerHTML='';
-  const dates=allDates();
-  if(!dates.length){box.innerHTML='<span style="color:var(--mut)">還沒有任何單字。</span>';return}
-  dates.forEach(dt=>{
-    const n=Object.keys(DB[dt].words).length;
-    const el=document.createElement('div');
-    el.className='datechip'+(quizSel.has(dt)?' on':'');
-    el.innerHTML=`${dt} <small>${n}字</small>`;
-    el.onclick=()=>{ if(quizSel.has(dt)){quizSel.delete(dt);el.classList.remove('on');}
-      else{quizSel.add(dt);el.classList.add('on');} };
-    box.appendChild(el);
+  renderCalendar(document.getElementById('quizCal'),quizCalState,{
+    selected:quizSel,
+    onPick:(date,cnt)=>{ if(!cnt)return;
+      if(quizSel.has(date))quizSel.delete(date); else quizSel.add(date); renderQuizDates(); }
   });
+  document.getElementById('quizSelInfo').textContent='已選 '+quizSel.size+' 天';
 }
-function quizPickDates(arr){ quizSel.clear(); arr.forEach(d=>quizSel.add(d)); renderQuizDates(); }
+function quizPickDates(arr){ quizSel.clear(); arr.forEach(d=>quizSel.add(d));
+  if(arr[0]){const p=arr[0].split('-');quizCalState.year=+p[0];quizCalState.month=+p[1]-1;}
+  renderQuizDates(); }
+document.getElementById('quizSelMonth').onclick=()=>{
+  const y=quizCalState.year,m=quizCalState.month;
+  allDates().forEach(dt=>{const p=dt.split('-');if(+p[0]===y&&+p[1]-1===m)quizSel.add(dt);});
+  renderQuizDates();
+};
+document.getElementById('quizSelAll').onclick=()=>{allDates().forEach(d=>quizSel.add(d));renderQuizDates();};
+document.getElementById('quizSelClear').onclick=()=>{quizSel.clear();renderQuizDates();};
 
 function gatherPool(){
   const pool=[];
@@ -575,6 +713,7 @@ function renderFlash(body,it){
 
 /* --- fill in blank --- */
 function findExample(rec){
+  if(rec.custom) for(const c of rec.custom) if(c.ex) return {def:rec.wordZh||'（自訂例句）',ex:c.ex,exZh:c.exZh||''};
   for(const m of rec.meanings) for(const d of m.defs) if(d.ex) return d;
   return null;
 }
