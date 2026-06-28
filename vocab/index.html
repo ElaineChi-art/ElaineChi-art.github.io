@@ -287,7 +287,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v21 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v22 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -1369,8 +1369,24 @@ const toTop=document.getElementById('toTop');
 window.addEventListener('scroll',()=>{ toTop.classList.toggle('show',window.scrollY>500); });
 toTop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 
+// 一次性自動整理：比對字典原始例句，把「不是字典帶的」例句標成「我的」並排前面
+function migrateSentenceSrc(){
+  if(localStorage.getItem('vocabMig_src2')) return;
+  let changed=false;
+  Object.values(DB).forEach(d=>Object.values(d.words||{}).forEach(rec=>{
+    if(!rec.sentences||!rec.sentences.length) return;
+    const dictSet=new Set();
+    (rec.meanings||[]).forEach(m=>(m.defs||[]).forEach(df=>{ if(df.ex)dictSet.add(df.ex.toLowerCase().trim()); }));
+    rec.sentences.forEach(s=>{ s.src = dictSet.has((s.ex||'').toLowerCase().trim()) ? 'dict' : 'user'; });
+    userFirstSentences(rec); changed=true;
+  }));
+  localStorage.setItem('vocabMig_src2','1');
+  if(changed) save();
+}
+
 /* ============ init ============ */
 (function init(){
+  migrateSentenceSrc();   // 自動把舊資料中你自己打的例句標成「我的」
   const start = DB[today()] ? today() : allDates()[0];
   if(start){ daySel.add(start); const p=start.split('-'); calState.year=+p[0]; calState.month=+p[1]-1; }
   renderCal(); renderList();
