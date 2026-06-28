@@ -16,6 +16,7 @@
     --tx:#e7ecf3; --mut:#8b97a8; --acc:#7fb5ff; --acc2:#5b8def;
     --green:#3ec97a; --yellow:#e8b94a; --red:#ef6b6b; --grey:#6a7585;
   }
+  html,body{max-width:100%;overflow-x:hidden}
   body{font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
        background:var(--bg);color:var(--tx);min-height:100vh}
   .topnav{display:flex;gap:6px;background:#0b0d12;padding:8px 16px;border-bottom:1px solid var(--line);
@@ -54,7 +55,7 @@
   .speak:hover{background:#26303d}
 
   /* word grid */
-  .wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+  .wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:10px}
   .wcard{background:var(--panel2);border:1px solid var(--line);border-left:5px solid var(--grey);
          border-radius:11px;padding:12px;cursor:pointer;position:relative}
   .wcard:hover{border-color:var(--acc2)}
@@ -73,7 +74,7 @@
   .lvb.on.weak{background:var(--red);color:#fff;border-color:var(--red)}
   .lvb.on.mid{background:var(--yellow);color:#241c00;border-color:var(--yellow)}
   .lvb.on.strong{background:var(--green);color:#06210f;border-color:var(--green)}
-  .cardex{font-size:12px;color:#cdd6e2;margin-top:7px;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cardex{font-size:12px;color:#cdd6e2;margin-top:7px;line-height:1.5;word-break:break-word}
   /* 可捲動框（仿研究雷達），手機也能在框內滑 */
   .gridscroll{max-height:62vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;
     padding:10px;background:#0d1117;-webkit-overflow-scrolling:touch}
@@ -82,6 +83,18 @@
   .gridscroll::-webkit-scrollbar-thumb:hover{background:#3a4660}
   .grouphd{grid-column:1/-1;font-size:13px;font-weight:700;color:var(--acc);
     padding:8px 4px 4px;border-bottom:1px solid var(--line);margin:6px 0 2px}
+  /* 手機版：避免月曆與內容跑出畫面 */
+  @media (max-width:560px){
+    .wrap{padding:16px 12px 90px}
+    .card{padding:14px 12px}
+    .calhead{gap:10px}
+    .calhead b{min-width:auto;font-size:15px}
+    .calgrid{gap:4px}
+    .caldow{font-size:11px}
+    .calcell{font-size:13px;border-radius:7px}
+    .gridscroll{padding:8px}
+    select{max-width:none}
+  }
   .cardact{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
   .cact{font-size:12px;padding:5px 9px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--tx);cursor:pointer}
   .cact:hover{border-color:var(--acc2)}
@@ -287,7 +300,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v22 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v23 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
