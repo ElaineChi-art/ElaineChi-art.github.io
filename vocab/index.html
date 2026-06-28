@@ -436,7 +436,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v42 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v43 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -448,7 +448,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='42';
+const APP_VERSION='43';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -724,7 +724,14 @@ function record(date,word,ok){
   const w=DB[date]&&DB[date].words[word]; if(!w)return;
   if(ok)w.stats.right++; else w.stats.wrong++;
   w.stats.last=Date.now();
-  save(); // 不再清掉手動熟悉度，讓你的標記說了算
+  save();
+}
+// 測驗結果直接更新熟悉度標記：答對升一級(新/不熟→普通→熟)，答錯→不熟；並連動上面清單
+function markByResult(date,key,ok){
+  const rec=DB[date]&&DB[date].words[key]; if(!rec)return;
+  const cur=levelOf(rec).k;
+  rec.level = ok ? (cur==='strong'?'strong' : cur==='mid'?'strong' : 'mid') : 'weak';
+  save(); renderList();
 }
 
 /* ============ reusable calendar ============ */
@@ -1574,7 +1581,7 @@ function renderFill(body,it){
     b.onclick=()=>{
       if(Q.answered)return;
       const ok=o.toLowerCase()===word.toLowerCase();
-      advance(ok,it);
+      advance(ok,it); markByResult(it.date,it.key,ok);
       [...ob.children].forEach(c=>{
         if(c.textContent.toLowerCase()===word.toLowerCase())c.classList.add('correct');
         else if(c===b)c.classList.add('wrong');
@@ -1607,7 +1614,7 @@ function renderSpell(body,it){
     if(Q.answered)return;
     const val=inp.value.trim().toLowerCase();
     const ok=val===it.rec.word.toLowerCase();
-    advance(ok,it); speak(it.rec.word);
+    advance(ok,it); markByResult(it.date,it.key,ok); speak(it.rec.word);
     document.getElementById('ana').innerHTML=`<div class="analysis">
       <b>${ok?'✓ 拼對了！':'✗ 拼錯了'}</b>　正解：<b>${it.rec.word}</b> ${it.rec.phonetic||''}<br>
       ${ok?'':'你輸入：'+(inp.value||'（空白）')+'<br>'}
