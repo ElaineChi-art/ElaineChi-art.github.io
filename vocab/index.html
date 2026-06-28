@@ -169,6 +169,12 @@
     border:1px solid var(--line);background:var(--acc2);color:#fff;font-size:20px;cursor:pointer;
     display:none;box-shadow:0 4px 14px rgba(0,0,0,.4)}
   #toTop.show{display:block}
+  #bgStatus{position:fixed;left:16px;bottom:20px;z-index:60;display:none;align-items:center;gap:8px;
+    font-size:12px;color:var(--mut);background:var(--panel);border:1px solid var(--line);
+    border-radius:20px;padding:6px 14px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+  #bgStatus.show{display:inline-flex}
+  #bgStatus .dot{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:bgpulse 1s ease-in-out infinite}
+  @keyframes bgpulse{0%,100%{opacity:.3}50%{opacity:1}}
 
   /* quiz */
   .lvfilter{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
@@ -430,18 +436,19 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v40 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v41 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
 <button id="toTop" title="回到頂端">↑</button>
+<div id="bgStatus"><span class="dot"></span>翻譯中…</div>
 
 <!-- word detail modal -->
 <div class="ov" id="ov"><div class="modal" id="ovInner"></div></div>
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='40';
+const APP_VERSION='41';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -536,20 +543,23 @@ async function translate(text){
 let bgRunning=false;
 async function bgTranslate(){
   if(bgRunning)return; bgRunning=true;
+  const ind=document.getElementById('bgStatus'); let shown=false;
+  const show=()=>{ if(!shown&&ind){ind.classList.add('show');shown=true;} };
   try{
     let did=0;
     const refresh=()=>{ renderList(); if(document.getElementById('ov').classList.contains('show') && curWord) renderDetail(curWord.rec,curWord.date,curWord.key); };
     for(const dt of Object.keys(DB)){
       for(const k of Object.keys(DB[dt].words||{})){
         const rec=DB[dt].words[k];
-        if(!rec.wordZh){ const v=await translate(rec.word); if(v){rec.wordZh=v;save();did++;if(did%4===0)refresh();} await sleep(60); }
+        if(!rec.wordZh){ show(); const v=await translate(rec.word); if(v){rec.wordZh=v;save();did++;if(did%4===0)refresh();} await sleep(60); }
         if(rec.sentences) for(const s of rec.sentences){
-          if(s.ex && !s.exZh){ const v=await translate(s.ex); if(v){s.exZh=v;save();did++;if(did%4===0)refresh();} await sleep(60); }
+          if(s.ex && !s.exZh){ show(); const v=await translate(s.ex); if(v){s.exZh=v;save();did++;if(did%4===0)refresh();} await sleep(60); }
         }
       }
     }
     if(did) refresh();
   }catch(e){}
+  if(ind) ind.classList.remove('show');
   bgRunning=false;
 }
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
