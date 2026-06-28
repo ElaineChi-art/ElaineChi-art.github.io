@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📑 考點體系整理 ‧ 司法官律師複習</title>
+<style>
+  :root{--bg:#0b0d12;--panel:#11151c;--line:#262b36;--gold:#ffd86b;--txt:#e6e6e6;--mut:#9aa4b2}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
+  .topnav{display:flex;gap:6px;background:#0b0d12;padding:8px 16px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:0;z-index:50}
+  .topnav a{color:var(--mut);text-decoration:none;font-size:14px;font-weight:600;padding:7px 16px;border-radius:8px;white-space:nowrap}
+  .topnav a:hover{background:#161922;color:#e6e6e6}
+  .topnav a.active{background:#1f2e3a;color:#7fb5ff}
+
+  #shell{display:flex;min-height:calc(100vh - 48px)}
+  /* 左側：科目 + 體系目錄 */
+  #side{width:236px;flex:none;background:var(--panel);border-right:1px solid var(--line);
+    position:sticky;top:48px;height:calc(100vh - 48px);overflow-y:auto;padding:10px 0 30px}
+  #side .subbar{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px 10px;border-bottom:1px solid var(--line)}
+  #side .subbtn{background:#171c27;border:1px solid var(--line);color:#cfd6e2;border-radius:14px;padding:4px 9px;font-size:12px;cursor:pointer;font-family:inherit}
+  #side .subbtn.cur{background:#1c2435;border-color:var(--gold);color:#ffd86b;font-weight:bold}
+  #side .syslink{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:none;border:none;
+    border-left:3px solid transparent;color:#aeb6c4;font-size:13px;padding:8px 13px;cursor:pointer;font-family:inherit}
+  #side .syslink:hover{background:#1a2030;color:#fff}
+  #side .syslink.cur{border-left-color:var(--gold);background:#1c2435;color:#ffd86b;font-weight:bold}
+  #side .syslink .c{color:#6b7486;font-size:11px}
+
+  #main{flex:1;min-width:0;padding:18px 26px 80px;max-width:1000px}
+  h1.sys-title{font-size:21px;color:var(--gold);margin:4px 0 4px}
+  .sys-sub{color:#8a93a3;font-size:13px;margin-bottom:18px}
+  .tools{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tools button{background:#171c27;border:1px solid var(--line);color:#cfd6e2;border-radius:16px;padding:5px 12px;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .tools button:hover{background:#222a38}
+
+  .tier{margin-bottom:26px}
+  .tier-h{font-size:16px;font-weight:bold;padding:9px 14px;border-radius:10px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .tier-h .desc{font-size:12px;font-weight:normal;opacity:.85}
+  .tier-h .n{margin-left:auto;font-size:12px;font-weight:normal;opacity:.7}
+  .tier.t0 .tier-h{background:rgba(110,210,140,.14);border:1px solid #2f7d4f;color:#9fe0b0}
+  .tier.t1 .tier-h{background:rgba(255,200,90,.13);border:1px solid #8a6a1e;color:#ffd98c}
+  .tier.t2 .tier-h{background:rgba(255,120,120,.12);border:1px solid #8a3030;color:#ff9d9d}
+
+  .kpt{border:1px solid var(--line);border-radius:11px;margin:0 0 11px;background:#0f131b;overflow:hidden}
+  .kpt-h{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;cursor:pointer}
+  .kpt-h:hover{background:#141a24}
+  .kpt-h .law{flex:none;background:#1c2330;border:1px solid #3a4760;color:#ffd86b;border-radius:7px;
+    padding:2px 8px;font-size:12px;font-weight:bold;white-space:nowrap;margin-top:1px}
+  .kpt-h .mid{flex:1;min-width:0}
+  .kpt-h .cpt{font-weight:bold;font-size:14.5px;color:#e9eefb}
+  .kpt-h .key{color:#bfe0ff;font-size:13px;margin-top:3px;line-height:1.6}
+  .kpt-h .key b{color:#7fb5ff}
+  .kpt-h .exp{flex:none;color:#6b7486;font-size:12px;margin-top:2px}
+  .kpt-h .audio{flex:none;background:#1b2230;border:1px solid var(--line);color:#9fd0ff;border-radius:12px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:inherit;margin-top:1px}
+  .kpt-h .audio:hover{background:#26324a;color:#fff}
+  .kpt-body{display:none;padding:0 13px 12px;border-top:1px dashed var(--line)}
+  .kpt.open .kpt-body{display:block}
+  .qopt{margin:10px 0 0}
+  .qopt .qh{color:#9aa4b2;font-size:12px;font-weight:bold;margin-bottom:5px}
+  .opt{display:flex;gap:8px;font-size:12.5px;line-height:1.6;padding:4px 8px;border-radius:7px;margin:3px 0;background:#11161f}
+  .opt .mk{flex:none;font-weight:bold}
+  .opt.ok{background:#16271b}.opt.ok .mk{color:#6fcf8a}
+  .opt.no .mk{color:#ff8a8a}
+  .opt .why{color:#8a93a3}
+  .lawtext{margin-top:9px;padding:8px 10px;background:#0c1019;border-left:2px solid #3a4760;border-radius:7px;font-size:12px;color:#cfd9e8;line-height:1.7}
+  .lawtext .ln{color:#ffd86b;font-weight:bold}
+  .empty{color:#566;padding:40px;text-align:center}
+  /* 精修記憶樹 */
+  .curated{margin-bottom:22px}
+  .cur-note{background:rgba(255,216,107,.10);border:1px solid rgba(255,216,107,.35);border-radius:9px;padding:9px 13px;font-size:13px;color:#ffe9b0;margin-bottom:16px}
+  .cur-note b{color:#ffd86b}
+  ul.tree,ul.tree ul{list-style:none;margin:0;padding:0}
+  ul.tree ul{margin-left:8px;padding-left:14px;border-left:1px dashed #33405a}
+  ul.tree li{margin:2px 0;font-size:13.5px;line-height:1.65}
+  .br>.brh{display:flex;align-items:flex-start;gap:6px;cursor:pointer;padding:3px 6px;border-radius:6px;color:#e9eefb;font-weight:600}
+  .br>.brh:hover{background:#161c28}
+  .br>.brh .tw{color:#6b7486;font-size:11px;flex:none;margin-top:3px;transition:transform .15s}
+  .br:not(.open)>.brh .tw{transform:rotate(-90deg)}
+  .br:not(.open)>ul{display:none}
+  .br>.brh .tl{flex:none;background:#1c2330;border:1px solid #3a4760;color:#ffd86b;border-radius:6px;padding:0 6px;font-size:11.5px;font-weight:bold}
+  .lf{color:#c4cdde;padding:2px 6px 2px 16px;position:relative}
+  .lf .tl{background:#1c2330;border:1px solid #3a4760;color:#ffd86b;border-radius:5px;padding:0 5px;font-size:11px;margin-right:4px}
+  .lf:before{content:"·";position:absolute;left:5px;color:#5b6679}
+  /* 記憶標籤色 */
+  .tg-trap{color:#ffc36b}.tg-trap:before{content:"";left:3px}
+  .tg-no{color:#ff8f8f}.tg-no:before{content:"";left:3px}
+  .tg-ok{color:#86e0a0}.tg-ok:before{content:"";left:3px}
+  .tg-key>.brh .bl,.lf.tg-key{color:#bfe0ff;font-weight:bold}
+  .tg-key:before{content:"";left:3px}
+  .tg-mn,.lf.tg-mn{color:#e0b0ff;font-weight:bold;background:rgba(190,120,255,.10);border-radius:5px}
+  .tg-mn:before{content:"";left:3px}
+  .lf.tg-star{color:#ffd86b;font-weight:bold}.lf.tg-star:before{content:"";left:3px}
+  .br.tg-star>.brh,.br.tg-key>.brh,.br.tg-trap>.brh{}
+  .qbranch>.brh{background:rgba(127,181,255,.07);border-radius:6px}
+  .qbranch>.brh .bl{color:#9db4ff;font-weight:bold}
+  .qcard>.brh .bl{color:#cfe0ff;font-weight:600}
+  .autowrap{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#0d1118}
+  .autowrap>summary{cursor:pointer;padding:11px 14px;color:#9db4ff;font-weight:bold;font-size:13.5px;list-style:none}
+  .autowrap>summary::-webkit-details-marker{display:none}
+  .autowrap[open]>summary{border-bottom:1px solid var(--line)}
+  .autoinner{padding:14px}
+  @media(max-width:760px){#side{position:static;width:100%;height:auto}#shell{flex-direction:column}#main{padding:14px}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="https://elainechi-art.github.io/">🏠 首頁</a>
+  <a href="https://elainechi-art.github.io/judicial/">📚 司法官・律師複習</a>
+  <a href="graph.html">🕸️ 考點關聯圖</a>
+  <a class="active" href="outline.html">📑 考點體系整理</a>
+</nav>
+
+<div id="shell">
+  <div id="side">
+    <div class="subbar" id="subbar"></div>
+    <div id="syslist"></div>
+  </div>
+  <div id="main"></div>
+</div>
+
+<script src="data.js"></script>
+<script src="notes.js"></script>
+<script src="diagrams.js"></script>
+<script src="laws.js"></script>
+<script>
+const Q=window.QUESTIONS||[], NOTES=window.NOTES||{}, DIAG=window.DIAG||{};
+function keyOf(q){return q.year+"-"+q.section+"-"+q.num;}
+function subOf(q){
+  const n=q.num, sec=q.section;
+  if(sec==="刑事組") return n<=35?"刑法":n<=60?"刑訴":"法律倫理";
+  if(sec==="民事組") return n<=50?"民法":"民訴";
+  if(sec==="商事組") return n<=15?"公司法":n<=25?"保險法":n<=35?"票據法":n<=45?"證交法":n<=55?"強制執行":"法學英文";
+  if(sec==="公法組"){
+    const law=((NOTES[keyOf(q)]||{}).body||"").split("\n").find(l=>l.trim().startsWith("⚖️"))||"";
+    if(/涉外|國際私法|準據法|反致|法律適用法/.test(law)) return "國際私法";
+    if(/國際公法|條約|公約|海洋法|聯合國|領海|引渡|戰爭|國際法院|外交/.test(law)) return "國際公法";
+    if(/行政/.test(law)) return "行政法";
+    return "憲法";
+  }
+  return q.subject;
+}
+function systemOf(q){
+  const su=subOf(q);
+  const c=(NOTES[keyOf(q)]||{}).concept||"";
+  const law=((NOTES[keyOf(q)]||{}).body||"").split("\n").find(l=>l.trim().startsWith("⚖️"))||"";
+  const t=c+" "+law;
+  const has=re=>re.test(t);
+  if(su==="刑法"){
+    if(has(/故意|過失|因果|結果加重|不作為|構成要件|錯誤|包攝|打擊|客體錯誤/)) return "刑總·構成要件/故意過失";
+    if(has(/正當防衛|緊急避難|承諾|阻卻違法|依法令|依命令|自助/)) return "刑總·阻卻違法";
+    if(has(/罪責|責任能力|原因自由|違法性錯誤|期待可能|精神|年齡|減輕其刑/)) return "刑總·罪責";
+    if(has(/未遂|中止|預備|著手|不能犯/)) return "刑總·未遂";
+    if(has(/正犯|共犯|教唆|幫助|共同正犯|間接正犯|結夥|脫離/)) return "刑總·正犯與共犯";
+    if(has(/競合|想像競合|數罪|吸收|不罰|罪數|牽連|接續/)) return "刑總·罪數競合";
+    if(has(/沒收|易科|易服|緩刑|累犯|自首|量刑|褫奪|保安處分|時效|追訴權|主刑|從刑|利得/)) return "刑總·刑罰與沒收";
+    if(has(/殺人|傷害|遺棄|墮胎|性交|猥褻|妨害自由|拘禁|強制|恐嚇|名譽|誹謗|侮辱|秘密|電腦|GPS|跟追/)) return "刑分·個人法益";
+    if(has(/竊盜|搶奪|強盜|詐欺|侵占|背信|恐嚇取財|贓物|毀損|重利|擄人勒贖|結合犯/)) return "刑分·財產犯罪";
+    if(has(/瀆職|受賄|行賄|圖利|濫權|洩.*秘密|妨害公務|脫逃|藏匿|頂替|湮滅|偽證|誣告|投票|賄選/)) return "刑分·國家法益";
+    if(has(/公共危險|放火|決水|往來|交通|酒駕|不能安全駕駛|偽造貨幣|偽造文書|有價證券|印章|署押|賭博|猥褻物品|風化|鴉片|毒品/)) return "刑分·社會法益";
+    return "刑分·其他";
+  }
+  if(su==="法律倫理"){
+    if(has(/檢察官|檢察一體|檢察長|偵查不公開/)) return "倫理·檢察官";
+    if(has(/律師/)) return "倫理·律師";
+    if(has(/法官/)) return "倫理·法官";
+    return "倫理·通則";
+  }
+  if(su==="刑訴"){
+    if(has(/傳喚|拘提|逮捕|現行犯|通緝|羈押|具保|責付|搜索|扣押|監聽|通訊監察|身體檢查|強制處分/)) return "刑訴·強制處分";
+    if(has(/證據|自白|傳聞|補強|證據能力|證據排除|權衡|158|159|156|勘驗|鑑定|詰問|誘導|證人|具結/)) return "刑訴·證據法則";
+    if(has(/告訴|告發|自訴|不起訴|緩起訴|起訴|再議|准許提起自訴|偵查|卷證|辯護人指定/)) return "刑訴·偵查與起訴";
+    if(has(/管轄|迴避|簡式|簡易|協商|國民法官|一造辯論|準備程序|審判|判決|相牽連|追加起訴|變更起訴/)) return "刑訴·審判程序";
+    if(has(/上訴|抗告|再審|非常上訴|確定/)) return "刑訴·救濟程序";
+    return "刑訴·其他";
+  }
+  if(su==="憲法"){
+    if(has(/平等|自由|財產|工作|訴訟|人身|隱私|秘密通訊|集會|結社|宗教|受教育|生命|人格|遷徙|居住|基本權|釋字|憲判|比例原則|法律保留/)) return "憲法·基本權";
+    return "憲法·政府組織與釋憲";
+  }
+  if(su==="行政法"){
+    if(has(/組織|機關|管轄|公務員|委託|委任|行政法人|公物|地方自治|自治條例|自治規則/)) return "行政法·組織與自治";
+    if(has(/處分|命令|規則|契約|行政罰|事實行為|裁量|法律保留|信賴保護|比例|附款|程序|聽證|送達/)) return "行政法·行政作用";
+    if(has(/訴願|行政訴訟|國家賠償|國賠|損失補償|強制執行|暫時權利|審判權|救濟/)) return "行政法·行政救濟";
+    return "行政法·其他";
+  }
+  if(su==="國際公法") return "國際公法";
+  if(su==="國際私法") return "國際私法";
+  if(su==="民法"){
+    if(has(/行為能力|意思表示|法律行為|代理|消滅時效|條件|期日|期間|權利能力|人格|法人|住所|物之概念|誠信|權利濫用|監護宣告|輔助宣告|死亡宣告/)) return "民總";
+    if(has(/債|契約|侵權|不當得利|無因管理|買賣|租賃|承攬|委任|借貸|保證|債務不履行|給付|代位|撤銷|讓與|承擔|連帶|抵銷|定金|違約金|解除|擔保|瑕疵/)) return "債編";
+    if(has(/物權|所有權|共有|抵押|質權|留置|地上權|典權|役權|占有|善意取得|登記|相鄰|添附|流抵/)) return "物權";
+    if(has(/婚姻|結婚|離婚|夫妻|剩餘財產|親子|收養|認領|監護|扶養|親權|姻親|血親|婚生/)) return "親屬";
+    if(has(/繼承|遺產|遺囑|特留分|應繼分|拋棄繼承|限定|代位繼承|歸扣|遺贈/)) return "繼承";
+    return "民法·其他";
+  }
+  if(su==="民訴"){
+    if(has(/管轄|當事人|訴訟能力|選定當事人|訴訟標的|起訴|訴之變更|追加|反訴|重複起訴|當事人恆定|適格/)) return "民訴·主體與標的";
+    if(has(/言詞辯論|自認|舉證|證據|證人|調解|和解|爭點|審理|闡明/)) return "民訴·審理與證據";
+    if(has(/判決|既判力|確定|對世效|假執行|對待給付/)) return "民訴·裁判效力";
+    if(has(/上訴|抗告|再審|第三人撤銷|附帶上訴|飛躍/)) return "民訴·救濟";
+    if(has(/保全|假扣押|假處分|支付命令|公示催告|簡易|小額|家事|繫屬登記|保全證據/)) return "民訴·特別與保全程序";
+    return "民訴·其他";
+  }
+  return su;
+}
+function parseNote(note){
+  const lines=(note.body||"").split("\n");
+  const grab=e=>{const m=lines.find(l=>l.trim().startsWith(e));return m?m.replace(e,"").replace(/^法條：/,"").trim():"";};
+  return {law:grab("⚖️"), key:grab("🔑"), ans:grab("✅"), trap:grab("❌"), concept:note.concept||""};
+}
+
+/* ===== 科目與體系 ===== */
+const SUBORDER=["刑法","刑訴","法律倫理","憲法","行政法","國際公法","國際私法","民法","民訴","公司法","保險法","票據法","證交法","強制執行","法學英文"];
+// 各題預先算好
+const ROWS=Q.map(q=>{const k=keyOf(q);const note=NOTES[k]; if(!note)return null;
+  return {q,k,sub:subOf(q),sys:systemOf(q),note,p:parseNote(note)};}).filter(Boolean);
+
+/* ===== 難度判定 ===== */
+const HI=/結合犯|不能抗拒|準強盜|釋字|憲判|想像競合|牽連|吸收|原因自由|容許構成要件|誤想|打擊錯誤|客體錯誤|間接正犯|共謀共同|加重結果|客觀歸責|罪數|數罪併罰|競合|期待可能|不作為犯|對向犯|承繼共同/;
+const MID=/加重|區別|實務|既遂|未遂|中止|共同正犯|教唆|幫助|阻卻|正當防衛|緊急避難|承諾|業務|身分|沒收|連續|接續|處分意思|乘機|準用|轉換|不純正|效用|歸入/;
+function diffOf(r){
+  const t=(r.p.concept||"")+" "+(r.p.key||"")+" "+(r.p.law||"");
+  const nlaw=((window.QARTS||{})[r.k]||[]).length;
+  if(HI.test(t)) return 2;
+  if(MID.test(t)||nlaw>=2) return 1;
+  return 0;
+}
+/* ===== 法條號（排序與顯示） ===== */
+function artsOf(r){return (window.QARTS||{})[r.k]||[];}
+function lawBadge(rs){
+  const set=[];
+  rs.forEach(r=>artsOf(r).forEach(a=>{const lab=(window.LAW_SHORT||{})[a[0]]||a[0]; const f=a[1].indexOf("-")>=0?a[1].replace("-","之"):a[1]; const s="§"+f; if(!set.includes(s))set.push(s);}));
+  return set.slice(0,4).join("、")||"—";
+}
+function firstFlnoNum(r){
+  const a=artsOf(r)[0]; if(!a)return 99999; const m=(a[1]+"").match(/\d+/); return m?+m[0]:99999;
+}
+/* ===== 選項觀念 ===== */
+const L=["A","B","C","D","E","F"];
+function optionsOf(r){
+  const d=DIAG[r.k];
+  if(d&&d.o&&d.o.length) return d.o.map(o=>({ok:o.y===1,t:o.t,why:o.why||""}));
+  const out=[];
+  if(r.p.ans) out.push({ok:true,t:r.p.ans,why:""});
+  (r.p.trap||"").split(/[；;｜|]/).forEach(x=>{if(x.trim())out.push({ok:false,t:x.trim(),why:""});});
+  if(!out.length){ // 退而用原選項＋標答案
+    (r.q.options||[]).forEach((o,i)=>out.push({ok:i===r.q.ansIndex,t:L[i]+" "+o,why:""}));
+  }
+  return out;
+}
+
+/* ===== 狀態 ===== */
+let curSub="刑法", curSys=null;
+function systemsOf(sub){
+  const seen=[],cnt={};
+  ROWS.filter(r=>r.sub===sub).forEach(r=>{if(!cnt[r.sys]){cnt[r.sys]=0;seen.push(r.sys);}cnt[r.sys]++;});
+  return seen.map(s=>({sys:s,n:cnt[s]}));
+}
+/* concept 聚合（同體系內，同 concept 合一） */
+function conceptsOf(sub,sys){
+  const map=new Map();
+  ROWS.filter(r=>r.sub===sub&&r.sys===sys).forEach(r=>{
+    const c=r.p.concept||"（未命名考點）";
+    if(!map.has(c)) map.set(c,[]);
+    map.get(c).push(r);
+  });
+  const arr=[...map.entries()].map(([c,rs])=>{
+    const diff=Math.max(...rs.map(diffOf));
+    const key=(rs.find(r=>r.p.key)||{p:{}}).p.key||"";
+    return {concept:c, rs, diff, key, badge:lawBadge(rs), ord:Math.min(...rs.map(firstFlnoNum))};
+  });
+  arr.sort((a,b)=>a.diff-b.diff || a.ord-b.ord);
+  return arr;
+}
+
+/* ===== 側欄 ===== */
+function buildSide(){
+  const sb=document.getElementById("subbar");
+  sb.innerHTML=SUBORDER.filter(s=>ROWS.some(r=>r.sub===s))
+    .map(s=>`<button class="subbtn ${s===curSub?'cur':''}" data-s="${s}">${s}</button>`).join("");
+  sb.querySelectorAll(".subbtn").forEach(b=>b.onclick=()=>{curSub=b.dataset.s;curSys=null;buildSide();render();});
+  const sl=document.getElementById("syslist");
+  const sys=systemsOf(curSub);
+  if(!curSys&&sys.length) curSys=(sys.find(s=>CURATED[curSub+"|"+s.sys])||sys[0]).sys;
+  sl.innerHTML=sys.map(s=>`<button class="syslink ${s.sys===curSys?'cur':''}" data-s="${s.sys}">
+     <span>${s.sys}</span><span class="c">${s.n}</span></button>`).join("");
+  sl.querySelectorAll(".syslink").forEach(b=>b.onclick=()=>{curSys=b.dataset.s;buildSide();render();window.scrollTo(0,0);});
+}
+
+/* ===== 語音 ===== */
+function speak(t,btn){
+  if(!("speechSynthesis"in window))return;
+  if(btn&&btn._on){speechSynthesis.cancel();btn._on=false;btn.classList.remove("on");return;}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";
+  const rt=localStorage.getItem("sjg_rate"); if(rt)u.rate=parseFloat(rt)||1;
+  const v=speechSynthesis.getVoices().find(v=>/zh|TW|Chinese|Mei|Ting|Han/i.test(v.lang+v.name));if(v)u.voice=v;
+  if(btn){btn._on=true;btn.classList.add("on");u.onend=u.onerror=()=>{btn._on=false;btn.classList.remove("on");};}
+  speechSynthesis.speak(u);
+}
+
+/* ===== 法條原文 ===== */
+function lawTextHTML(rs){
+  const seen=new Set(); let h="";
+  rs.forEach(r=>artsOf(r).forEach(a=>{
+    const id=a[0]+a[1]; if(seen.has(id))return; seen.add(id);
+    const txt=((window.LAWS||{})[a[0]]||{})[a[1]]; if(!txt)return;
+    const short=(window.LAW_SHORT||{})[a[0]]||a[0];
+    const f=a[1].indexOf("-")>=0?("第"+a[1].split("-")[0]+"條之"+a[1].split("-")[1]):("第"+a[1]+"條");
+    h+=`<div><span class="ln">${short} ${f}</span> ${txt.replace(/\n/g,"／")}</div>`;
+  }));
+  return h?`<div class="lawtext">${h}</div>`:"";
+}
+
+/* ===== 精修深樹（手工拆解＋官方條文校正）=====
+   node: 字串=葉；{l,law,c:[...]}=可展開枝；tag: trap/ok/no/key/mn/star */
+const CURATED={
+"刑法|刑總·刑罰與沒收":{
+ title:"刑之宣告・緩刑・易科・沒收・累犯・罪刑法定",
+ tiers:[
+  {t:0,nodes:[
+   {l:"緩刑制度",law:"§74",c:[
+     {l:"緩刑要件",c:[
+       {l:"① 宣告刑限於：2年以下有期徒刑／拘役／罰金",c:[{l:"看「宣告刑」非「法定刑」",tag:"key"}]},
+       {l:"② 前科限制（擇一）",c:[
+         "未曾因故意犯罪受有期徒刑以上之宣告",
+         "或前受宣告，但執行完畢／赦免後5年內未再因故意犯罪受有期徒刑以上宣告"]},
+       {l:"③ 緩刑期間：2年以上5年以下，自裁判確定日起算"}]},
+     {l:"附條件 §74-II（八款・超常考）",c:[
+       "1 向被害人道歉","2 立悔過書","3 損害賠償（財產／非財產）",
+       {l:"4 向『公庫』支付一定金額",tag:"star"},
+       "5 義務勞務 40～240 小時（政府機關/機構/行政法人/社區/公益團體）",
+       "6 戒癮治療／精神治療／心理輔導／其他處遇",
+       "7 保護被害人安全之必要命令","8 預防再犯之必要命令",
+       {l:"第3、4款得為民事強制執行名義",tag:"star"}]},
+     {l:"易錯點",tag:"key",c:[
+       {l:"向『公益基金會』支付 → 不是法定款",tag:"no"},
+       {l:"向『公庫』支付 → 正確",tag:"ok"},
+       {l:"宣告 2年6月 → 超過2年，不得緩刑",tag:"no"},
+       {l:"緩刑效力不及於：從刑(褫奪公權)、沒收、保安處分（仍執行）",tag:"trap"}]}]},
+   {l:"褫奪公權",law:"§37",c:[
+     {l:"性質＝從刑"},
+     {l:"宣告方式",c:["不得單獨宣告","裁判時併宣告","自裁判確定時發生效力"]},
+     {l:"期間",c:["死刑／無期徒刑 → 終身","宣告1年以上有期徒刑且性質有必要 → 1年以上10年以下"]},
+     {l:"易錯點",tag:"key",c:[
+       {l:"最長不是15年（有期型上限10年）",tag:"no"},
+       {l:"緩刑不及於褫奪公權",tag:"trap"}]}]},
+   {l:"易科罰金",law:"§41",c:[
+     {l:"適用條件",c:["所犯最重本刑5年以下有期徒刑以下之罪","且受6月以下有期徒刑或拘役之宣告"]},
+     {l:"折算方式：新臺幣 1000／2000／3000 元 折算一日"},
+     {l:"例外不得易科：難收矯正之效或難以維持法秩序"},
+     {l:"與易服社會勞動",c:["得易科而未聲請 → 得易服社會勞動（6小時折一日）"]},
+     {l:"易錯點",tag:"key",c:[
+       {l:"不是依『每日所得』折算（是1000~3000定額）",tag:"no"},
+       {l:"數罪併罰均得易科、應執行刑逾6月，仍可易科（§41-VIII）",tag:"ok"}]}]},
+   {l:"自首",law:"§62",c:[
+     {l:"要件",c:["① 對『未發覺』之罪","② 主動向有偵查權者申告","③ 願受裁判 → 『得』減輕其刑"]},
+     {l:"不要求",c:["認罪","承認故意／過失（承認事實即可）"]},
+     {l:"易錯點",tag:"key",c:[
+       {l:"『得』減非『必』減；有特別規定依其規定",tag:"trap"},
+       {l:"承認事實 ≠ 承認法律責任",tag:"trap"},
+       {l:"自首後逃亡可能影響『願受裁判』之認定",tag:"no"}]}]},
+  ]},
+  {t:1,nodes:[
+   {l:"沒收制度（已獨立於刑罰）",law:"§38、§38-1",c:[
+     {l:"違禁物 §38-I",c:[{l:"不問屬於何人，『應』沒收",tag:"star"}]},
+     {l:"供犯罪所用／預備／所生之物 §38-II、III",c:[
+       "屬犯罪行為人 → 『得』沒收（任意）","第三人無正當理由提供或取得 → 得沒收"]},
+     {l:"犯罪所得 §38-1",c:[
+       "屬犯罪行為人 → 『應』沒收",
+       {l:"範圍：違法所得＋變得之物＋財產利益＋『孳息』（§38-1 IV）",tag:"star"},
+       "不能／不宜沒收 → 追徵價額（§38-1 III）"]},
+     {l:"易錯點",tag:"key",c:[
+       {l:"利息＝孳息 → 屬犯罪所得，應沒收",tag:"ok"},
+       {l:"兇刀多屬『供犯罪所用』→ 得沒收(任意)，非當然應沒收",tag:"trap"},
+       {l:"沒收適用『裁判時』法（§2-II）",tag:"trap"}]}]},
+   {l:"科刑與罰金",law:"§57＋§58",c:[
+     {l:"第一層 §57：以責任為基礎，審酌一切情狀（9款）",c:[
+       "動機目的／所受刺激／手段／生活狀況／品行／智識／與被害人關係／違反義務程度／所生危險或損害"]},
+     {l:"第二層 §58（罰金特殊）",c:["另審酌資力＋犯罪所得利益","所得逾罰金最多額 → 得於所得範圍內加重"]},
+     {l:"口訣：§57(一般)先 → §58(罰金)後",tag:"mn"}]},
+   {l:"主刑加減",law:"§67、§68",c:[
+     {l:"有期徒刑／罰金 §67：最高度＋最低度『同』加減"},
+     {l:"拘役 §68：僅加減『最高度』"},
+     {l:"拘役不調最低度",tag:"key"}]},
+  ]},
+  {t:2,nodes:[
+   {l:"利得沒收（憲判18・111年）",law:"憲判18",c:[
+     {l:"性質",c:["非刑罰","類『準不當得利』之衡平措施"]},
+     {l:"範圍原則",c:["相對總額原則","扣除『合法／必要』成本（違法行為投入不扣）"]},
+     {l:"易錯點",tag:"key",c:[
+       {l:"不受罪刑法定(§1)拘束（因非刑罰）",tag:"trap"},
+       {l:"不是扣除『全部』成本",tag:"no"}]}]},
+   {l:"罪刑法定",law:"§1、§2",c:[
+     {l:"§1：處罰以『行為時』法律明文為限（含拘束人身自由之保安處分）"},
+     {l:"四大禁止",c:["禁類推適用","禁習慣法入罪","禁溯及既往","禁絕對不定期刑"]},
+     {l:"例外",c:[{l:"有利被告之類推／變更 → §2-I但書 適用最有利",tag:"ok"}]},
+     {l:"沒收、非拘束人身自由保安處分 → §2-II 適用『裁判時』法",tag:"trap"}]},
+   {l:"緩刑撤銷",law:"§75、§75-1",c:[
+     {l:"應撤銷 §75",c:[{l:"緩刑期內(或緩刑前)因故意犯他罪，於緩刑期內受『逾6月』有期徒刑宣告確定",tag:"star"}]},
+     {l:"得撤銷 §75-1",c:[
+       "① 緩刑前故意犯他罪，受6月以下/拘役/罰金確定",
+       "② 緩刑期內故意犯他罪，受6月以下/拘役/罰金確定",
+       "③ 緩刑期內過失更犯，受有期徒刑確定",
+       "④ 違反 §74-II 各款負擔，情節重大"]},
+     {l:"口訣：故意＋逾六月＋期間內受判確定＝『應撤』",tag:"mn"}]},
+   {l:"累犯",law:"§47＋釋字775",c:[
+     {l:"要件：徒刑執行完畢/一部執行赦免後，5年內『故意』再犯『有期徒刑以上』之罪 → 加重本刑至1/2"},
+     {l:"釋字775：一律加重違憲 → 法院得裁量是否加重（避免過苛）",tag:"star"},
+     {l:"認定程序（實務）",c:["檢察官主張並具體指出證據","法院調查","再裁量是否加重","法院不應『自行』補足事證"]},
+     {l:"未主張累犯 ≠ 完全不能作量刑參考（仍可依§57品行審酌）",tag:"key"}]},
+  ]},
+ ]
+}
+};
+const TIERLABEL=[
+ {name:"🟢 基礎觀念層",desc:"法條核心構成要件、基礎觀念辨析"},
+ {name:"🟡 中階進階層",desc:"多法條競合、實務見解深化、構成要件解釋"},
+ {name:"🔴 高難度／綜合層",desc:"憲判實務、制度融合、結構爭點"},
+];
+// 刑法條號 → 該條相關題目（用於把選項拆解掛進精修樹對應節點）
+const CRIM_BY_ART={};
+ROWS.filter(r=>r.sub==="刑法").forEach(r=>{
+  ((window.QARTS||{})[r.k]||[]).forEach(a=>{ if(a[0]==="刑法"){ (CRIM_BY_ART[a[1]]=CRIM_BY_ART[a[1]]||[]).push(r); } });
+});
+function lawFlnos(lawStr){return (lawStr.match(/§\s*[0-9]+(?:-[0-9]+)?/g)||[]).map(s=>s.replace(/[§\s]/g,""));}
+function questionsForLaw(lawStr){
+  const seen=new Set(),out=[];
+  lawFlnos(lawStr).forEach(f=>(CRIM_BY_ART[f]||[]).forEach(r=>{if(!seen.has(r.k)){seen.add(r.k);out.push(r);}}));
+  return out.sort((a,b)=>a.q.year-b.q.year||a.q.num-b.q.num);
+}
+function qOptHTML(r){
+  let h=`<li class="br qcard"><div class="brh"><span class="tw">▾</span><span class="bl">📄 ${r.q.year}年 第${r.q.num}題（答 ${r.q.ansLetter}）</span></div><ul>`;
+  optionsOf(r).forEach(o=>{h+=`<li class="lf tg-${o.ok?'ok':'no'}">${o.ok?'✅':'❌'} ${esc(o.t)}${o.why?` <span style="color:#8a93a3">— ${esc(o.why)}</span>`:""}</li>`;});
+  return h+`</ul></li>`;
+}
+function qBranchHTML(lawStr){
+  const qs=questionsForLaw(lawStr||"");
+  if(!qs.length)return "";
+  return `<li class="br qbranch"><div class="brh"><span class="tw">▾</span><span class="bl">📄 歷屆題目・每選項拆解（${qs.length} 題）</span></div><ul>${qs.map(qOptHTML).join("")}</ul></li>`;
+}
+function treeNodeHTML(n){
+  if(typeof n==="string") return `<li class="lf">${esc(n)}</li>`;
+  const ic={trap:"⚠️",ok:"✅",no:"❌",key:"🔑",mn:"🧠",star:"★"}[n.tag]||"";
+  const tg=n.tag?("tg-"+n.tag):"";
+  const law=n.law?`<span class="tl">${esc(n.law)}</span>`:"";
+  if(n.c&&n.c.length){
+    const kids=n.c.map(treeNodeHTML).join("")+(n.law?qBranchHTML(n.law):"");
+    return `<li class="br open"><div class="brh ${tg}"><span class="tw">▾</span>${law}<span class="bl">${ic?ic+" ":""}${esc(n.l)}</span></div>
+      <ul>${kids}</ul></li>`;
+  }
+  return `<li class="lf ${tg}">${ic?ic+" ":""}${law}${esc(n.l||"")}</li>`;
+}
+function curatedHTML(cur){
+  let h=`<div class="curated"><div class="cur-note">✍️ <b>精修記憶樹</b>（手工拆解＋官方條文校正）　·　${esc(cur.title)}</div>`;
+  cur.tiers.forEach((tier,ti)=>{
+    if(!tier.nodes||!tier.nodes.length)return;
+    const T=TIERLABEL[tier.t];
+    h+=`<div class="tier t${tier.t}"><div class="tier-h">${T.name}<span class="desc">（${T.desc}）</span></div>
+      <ul class="tree">${tier.nodes.map(treeNodeHTML).join("")}</ul></div>`;
+  });
+  return h+`</div>`;
+}
+
+/* ===== 主畫面 ===== */
+const TIERS=[
+  {t:0,name:"🟢 基礎觀念層",desc:"法條核心構成要件、基礎觀念辨析"},
+  {t:1,name:"🟡 中階進階層",desc:"多法條競合、實務見解深化、構成要件解釋"},
+  {t:2,name:"🔴 高難度／綜合層",desc:"競合結合、釋字實務、結構變體與綜合判斷"},
+];
+function render(){
+  const main=document.getElementById("main");
+  if(!curSys){main.innerHTML='<div class="empty">請在左側選一個體系</div>';return;}
+  const cps=conceptsOf(curSub,curSys);
+  const cur=CURATED[curSub+"|"+curSys];
+  let html=`<h1 class="sys-title">⚖️ ${curSub}　${curSys}</h1>
+    <div class="sys-sub">共 ${cps.length} 個考點　·　依難易分層、每個考點可展開看「每一個選項的觀念」與法條原文</div>
+    <div class="tools"><button id="expAll">🔽 全部展開</button><button id="colAll">🔼 全部收合</button></div>`;
+  if(cur){
+    html+=curatedHTML(cur);
+    // 未被任何 § 節點對應到的題，集中補在最後（仍是同一棵樹，不另開區塊）
+    const used=new Set();
+    cur.tiers.forEach(t=>t.nodes.forEach(n=>{if(n.law)questionsForLaw(n.law).forEach(r=>used.add(r.k));}));
+    const restC=cps.map(c=>({c,rs:c.rs.filter(r=>!used.has(r.k))})).filter(x=>x.rs.length);
+    if(restC.length){
+      let rh=`<div class="curated"><div class="tier t1"><div class="tier-h">🔸 其他相關考點（未對應到上方條文節點）</div><ul class="tree">`;
+      restC.forEach(x=>{
+        rh+=`<li class="br"><div class="brh"><span class="tw">▾</span><span class="tl">${x.c.badge}</span><span class="bl">${esc(x.c.concept)}</span></div><ul>${x.rs.map(qOptHTML).join("")}</ul></li>`;
+      });
+      html+=rh+`</ul></div></div>`;
+    }
+  } else {
+    TIERS.forEach(T=>{
+      const list=cps.filter(c=>c.diff===T.t);
+      if(!list.length)return;
+      html+=`<div class="tier t${T.t}"><div class="tier-h">${T.name}<span class="desc">（${T.desc}）</span><span class="n">${list.length} 考點</span></div>`;
+      list.forEach((c,i)=>{
+        const spk=(c.concept+"。"+(c.key||"")).replace(/[§]/g,"第").replace(/"/g,"");
+        html+=`<div class="kpt" data-i="${T.t}-${i}">
+          <div class="kpt-h">
+            <span class="law">${c.badge}</span>
+            <div class="mid"><div class="cpt">${esc(c.concept)}</div>
+              ${c.key?`<div class="key">🔑 <b>點：</b>${esc(c.key)}</div>`:""}</div>
+            <button class="audio" data-spk="${encodeURIComponent(spk)}">🔊</button>
+            <span class="exp">＋ 展開選項</span>
+          </div>
+          <div class="kpt-body">${bodyHTML(c)}</div>
+        </div>`;
+      });
+      html+=`</div>`;
+    });
+  }
+  main.innerHTML=html;
+  // 所有樹枝幹：點一下收合／展開
+  main.querySelectorAll(".brh").forEach(h=>h.onclick=()=>h.parentElement.classList.toggle("open"));
+  // 自動逐題卡片
+  main.querySelectorAll(".kpt-h").forEach(h=>h.onclick=e=>{
+    if(e.target.closest(".audio"))return;
+    h.parentElement.classList.toggle("open");
+    const ex=h.querySelector(".exp"); ex.textContent=h.parentElement.classList.contains("open")?"－ 收合":"＋ 展開選項";
+  });
+  main.querySelectorAll(".audio").forEach(b=>b.onclick=e=>{e.stopPropagation();speak(decodeURIComponent(b.dataset.spk),b);});
+  document.getElementById("expAll").onclick=()=>{
+    main.querySelectorAll(".kpt").forEach(k=>{k.classList.add("open");k.querySelector(".exp").textContent="－ 收合";});
+    main.querySelectorAll(".br").forEach(b=>b.classList.add("open"));
+    main.querySelectorAll("details").forEach(d=>d.open=true);
+  };
+  document.getElementById("colAll").onclick=()=>{
+    main.querySelectorAll(".kpt").forEach(k=>{k.classList.remove("open");k.querySelector(".exp").textContent="＋ 展開選項";});
+    main.querySelectorAll(".br").forEach(b=>b.classList.remove("open"));
+  };
+}
+// 每題 A~D 選項逐項拆解 → 樹狀（考點→題→選項）
+function autoTreeHTML(cps){
+  let h=`<ul class="tree">`;
+  const byT={0:[],1:[],2:[]}; cps.forEach(c=>byT[c.diff].push(c));
+  [0,1,2].forEach(t=>{
+    if(!byT[t].length)return;
+    const T=TIERLABEL[t];
+    h+=`<li class="br tierli"><div class="brh"><span class="tw">▾</span><span class="bl">${T.name}　<span style="color:#7f8aa0;font-weight:normal;font-size:12px">${byT[t].length} 考點</span></span></div><ul>`;
+    byT[t].forEach(c=>{
+      h+=`<li class="br"><div class="brh"><span class="tw">▾</span><span class="tl">${c.badge}</span><span class="bl">${esc(c.concept)}</span></div><ul>`;
+      c.rs.sort((a,b)=>a.q.year-b.q.year||a.q.num-b.q.num).forEach(r=>{
+        h+=`<li class="br"><div class="brh"><span class="tw">▾</span><span class="bl">📄 ${r.q.year}年 第${r.q.num}題（答 ${r.q.ansLetter}）</span></div><ul>`;
+        optionsOf(r).forEach(o=>{
+          h+=`<li class="lf tg-${o.ok?'ok':'no'}">${o.ok?'✅':'❌'} ${esc(o.t)}${o.why?` <span style="color:#8a93a3">— ${esc(o.why)}</span>`:""}</li>`;
+        });
+        h+=`</ul></li>`;
+      });
+      h+=`</ul></li>`;
+    });
+    h+=`</ul></li>`;
+  });
+  return h+`</ul>`;
+}
+function bodyHTML(c){
+  let h="";
+  c.rs.sort((a,b)=>a.q.year-b.q.year||a.q.num-b.q.num).forEach(r=>{
+    const opts=optionsOf(r);
+    h+=`<div class="qopt"><div class="qh">📄 ${r.q.year}年 第${r.q.num}題（答案 ${r.q.ansLetter}）</div>`;
+    opts.forEach(o=>{
+      h+=`<div class="opt ${o.ok?'ok':'no'}"><span class="mk">${o.ok?'✔':'✘'}</span>
+        <span><span class="ot">${esc(o.t)}</span>${o.why?` <span class="why">— ${esc(o.why)}</span>`:""}</span></div>`;
+    });
+    h+=`</div>`;
+  });
+  h+=lawTextHTML(c.rs);
+  return h;
+}
+function esc(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+
+buildSide();
+render();
+</script>
+</body>
+</html>
