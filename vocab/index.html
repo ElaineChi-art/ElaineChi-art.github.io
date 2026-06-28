@@ -430,7 +430,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v37 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v38 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -441,7 +441,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='37';
+const APP_VERSION='38';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1035,7 +1035,7 @@ function drawGrid(){
       <div class="en">${rec.word}</div>
       <div class="ph">${rec.phonetic||''}${listMulti?` <span style="color:var(--mut)">${date}</span>`:''}</div>
       <div class="zh">${rec.wordZh||'（無翻譯）'}</div>
-      ${ex?`<div class="cardex"><span class="srcbadge ${ex.src==='user'?'mine':'auto'}" style="cursor:default">${ex.src==='user'?'我的':'自動'}</span> ${ex.ex}</div>`:''}
+      ${ex?`<div class="cardex"><span class="srcbadge ${ex.src==='user'?'mine':'auto'}" style="cursor:default">${ex.src==='user'?'我的':'自動'}</span> ${ex.ex}${ex.exZh?`<span class="extrans" style="display:block;color:var(--mut);margin-top:2px">${ex.exZh}</span>`:''}</div>`:''}
       <div class="lvset">
         <button class="lvb weak${lv.k==='weak'?' on':''}" data-l="weak">不熟</button>
         <button class="lvb mid${lv.k==='mid'?' on':''}" data-l="mid">普通</button>
@@ -1666,7 +1666,8 @@ function openTheme(){
   tb.textContent=hidden()?'已隱藏（點來顯示）':'顯示中（點來隱藏）';
   tb.onclick=()=>{ const h=!hidden(); document.documentElement.classList.toggle('hidetrans',h);
     try{ localStorage.setItem('vocabHideTrans', h?'1':'0'); }catch(e){}
-    tb.textContent=h?'已隱藏（點來顯示）':'顯示中（點來隱藏）'; };
+    tb.textContent=h?'已隱藏（點來顯示）':'顯示中（點來隱藏）';
+    if(!h) bgTranslate(); };
 }
 document.getElementById('btnTheme').onclick=openTheme;
 
