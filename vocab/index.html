@@ -155,14 +155,17 @@
       <label class="fld" style="margin:0">加入到</label>
       <input type="date" id="inDate" style="width:auto">
     </div>
-    <textarea id="inWords" placeholder="一行一個單字／片語（純單字也可一行多個，用逗號分隔）&#10;想直接附中文或例句：用 | 分隔，例如&#10;resilient | 有韌性的 | She stayed resilient. | 她保持堅韌&#10;打完按 Enter 加入（Shift+Enter 換行）"></textarea>
-    <div style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.7">
+    <textarea id="inWords" placeholder="一行一個單字／片語（純單字也可一行多個，用逗號分隔）&#10;想直接附中文或例句：用 | 分隔，例如&#10;resilient | 有韌性的 | She stayed resilient. | 她保持堅韌"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="btnAdd">➕ 加入單字</button>
+      <span class="msg" id="inMsg" style="margin:0"></span>
+    </div>
+    <div style="font-size:12px;color:var(--mut);margin-top:10px;line-height:1.7">
       加入後會自動帶入<b>發音、多句例句（附中文）、文法補充（詞性／同義／反義）</b>，
       點單字即可<b>刪改或新增</b>。<br>
       你也可以在上面直接丟「中文意思」或「例句」，用 <b>|</b> 隔開，系統會自動分類整理：
       第一個中文＝字義、英文＝例句、緊接在例句後的中文＝該句翻譯。
     </div>
-    <div class="msg" id="inMsg"></div>
   </div>
 
   <!-- 2. CALENDAR -->
@@ -462,6 +465,7 @@ async function addWords(){
   });
   if(!entries.length){document.getElementById('inMsg').textContent='請先輸入單字。';return}
   adding=true;
+  const addBtn=document.getElementById('btnAdd'); addBtn.disabled=true;
   const d=day(date); let done=0;
   for(const e of entries){
     document.getElementById('inMsg').textContent=`查詢中… ${done+1}/${entries.length}：${e.word}`;
@@ -478,11 +482,13 @@ async function addWords(){
   document.getElementById('inWords').value='';
   daySel.clear(); daySel.add(date);
   const p=date.split('-'); calState.year=+p[0]; calState.month=+p[1]-1;
-  adding=false; refresh();
+  adding=false; addBtn.disabled=false; refresh();
 }
 document.getElementById('inDate').value=today();
+document.getElementById('btnAdd').onclick=addWords;
+// 電腦想快速送出：Cmd/Ctrl + Enter（一般 Enter 維持換行，手機打多行才順）
 document.getElementById('inWords').addEventListener('keydown',e=>{
-  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); addWords(); }
+  if(e.key==='Enter' && (e.metaKey||e.ctrlKey)){ e.preventDefault(); addWords(); }
 });
 
 /* ============ 2. CALENDAR ============ */
