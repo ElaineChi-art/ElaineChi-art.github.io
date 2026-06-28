@@ -328,7 +328,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v26 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v27 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -338,6 +338,23 @@
 <div class="ov" id="ov"><div class="modal" id="ovInner"></div></div>
 
 <script>
+/* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
+const APP_VERSION='27';
+async function checkUpdate(){
+  try{
+    const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return;
+    const j=await r.json();
+    const v=(j&&j.v!=null)?String(j.v):null;
+    if(!v || v===APP_VERSION) return;
+    const cur=new URL(location.href).searchParams.get('_v');
+    if(cur===v) return;                       // 已針對這版重載過 → 避免迴圈
+    const u=new URL(location.href); u.searchParams.set('_v',v);
+    location.replace(u.toString());           // 改網址強制抓新 HTML
+  }catch(e){}
+}
+checkUpdate(); setInterval(checkUpdate, 60000);
+
 /* ============ storage ============ */
 const KEY='vocabDB_v1';
 let DB=JSON.parse(localStorage.getItem(KEY)||'{}'); // { 'YYYY-MM-DD': { words:{ key:{...} } } }
