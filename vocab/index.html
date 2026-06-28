@@ -155,7 +155,13 @@
       <label class="fld" style="margin:0">加入到</label>
       <input type="date" id="inDate" style="width:auto">
     </div>
-    <textarea id="inWords" placeholder="輸入單字或片語，可一次多個（用換行或逗號分隔）&#10;打完按 Enter 直接加入（Shift+Enter 換行）"></textarea>
+    <textarea id="inWords" placeholder="一行一個單字／片語（純單字也可一行多個，用逗號分隔）&#10;想直接附中文或例句：用 | 分隔，例如&#10;resilient | 有韌性的 | She stayed resilient. | 她保持堅韌&#10;打完按 Enter 加入（Shift+Enter 換行）"></textarea>
+    <div style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.7">
+      加入後會自動帶入<b>發音、多句例句（附中文）、文法補充（詞性／同義／反義）</b>，
+      點單字即可<b>刪改或新增</b>。<br>
+      你也可以在上面直接丟「中文意思」或「例句」，用 <b>|</b> 隔開，系統會自動分類整理：
+      第一個中文＝字義、英文＝例句、緊接在例句後的中文＝該句翻譯。
+    </div>
     <div class="msg" id="inMsg"></div>
   </div>
 
@@ -298,6 +304,61 @@ async function buildWord(raw){
   rec.wordZh=await translate(word);
   return rec;
 }
+// 文法補充：詞性／同義詞／反義詞（一開始就帶入，可編輯）
+function buildGrammarNote(meanings){
+  const out=[];
+  (meanings||[]).forEach(m=>{
+    const pos=POS_ZH[m.pos]||m.pos||'';
+    const bits=[];
+    if(m.syn&&m.syn.length) bits.push('同義：'+m.syn.join('、'));
+    if(m.ant&&m.ant.length) bits.push('反義：'+m.ant.join('、'));
+    if(bits.length) out.push((pos?`【${pos}】`:'')+bits.join('；'));
+  });
+  return out.join('\n');
+}
+
+/* ============ smart input parsing ============ */
+// 把一行依「中文 / 英文」切成片段（| 視為分隔），用語言自動判斷歸位
+function segmentByLang(line){
+  line=line.replace(/[|｜]/g,' ');
+  const isZh=ch=>/[㐀-鿿　-〿＀-￯]/.test(ch);
+  const isEn=ch=>/[a-zA-Z]/.test(ch);
+  const segs=[]; let cur='', type=null;
+  for(const ch of line){
+    const t = isZh(ch)?'zh' : isEn(ch)?'en' : null;
+    if(t===null){ cur+=ch; continue; }            // 標點/空白/數字 跟著目前片段
+    if(type===null){ type=t; cur+=ch; }
+    else if(t===type){ cur+=ch; }
+    else { if(cur.trim())segs.push({type,text:cur.trim()}); cur=ch; type=t; }
+  }
+  if(cur.trim()&&type) segs.push({type,text:cur.trim()});
+  return segs;
+}
+// 一行 → {word, wordZh, sentences:[{ex,exZh}], note}
+function parseEntry(line){
+  const segs=segmentByLang(line);
+  const wi=segs.findIndex(s=>s.type==='en');
+  if(wi<0) return null;                            // 沒有英文字就略過
+  const out={word:segs[wi].text, wordZh:'', sentences:[], note:''};
+  let pending=null;
+  segs.forEach((s,i)=>{
+    if(i===wi) return;
+    if(s.type==='zh'){
+      if(pending){ pending.exZh=s.text; pending=null; }   // 接在英文句後 → 該句翻譯
+      else if(!out.wordZh){ out.wordZh=s.text; }           // 第一個中文 → 字義
+      else out.note += (out.note?'\n':'')+s.text;          // 其餘 → 筆記
+    }else{
+      pending={ex:s.text,exZh:''}; out.sentences.push(pending); // 英文 → 例句
+    }
+  });
+  return out;
+}
+function mergeSentences(rec,list){
+  rec.sentences=rec.sentences||[];
+  const seen=new Set(rec.sentences.map(s=>(s.ex||'').toLowerCase()));
+  list.forEach(s=>{ const k=(s.ex||'').toLowerCase();
+    if(s.ex && !seen.has(k)){ rec.sentences.push({ex:s.ex,exZh:s.exZh||''}); seen.add(k); }});
+}
 
 /* ============ familiarity (manual override wins) ============ */
 function levelOf(rec){
@@ -369,17 +430,32 @@ async function addWords(){
   if(adding)return;
   const date=document.getElementById('inDate').value||today();
   const raw=document.getElementById('inWords').value;
-  const list=[...new Set(raw.split(/[\n,，]/).map(s=>s.trim()).filter(Boolean))];
-  if(!list.length){document.getElementById('inMsg').textContent='請先輸入單字。';return}
+  // 拆成多筆 entry：一行一個；純單字行可用逗號一行多個
+  const entries=[];
+  raw.split(/\n/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
+    const plain = !/[|｜㐀-鿿]/.test(line) && /[,，]/.test(line);
+    const pieces = plain ? line.split(/[,，]/).map(s=>s.trim()).filter(Boolean) : null;
+    if(plain && pieces.every(p=>p.split(/\s+/).length<=3)){
+      pieces.forEach(w=>entries.push({word:w,wordZh:'',sentences:[],note:''}));
+    }else{
+      const e=parseEntry(line); if(e)entries.push(e);
+    }
+  });
+  if(!entries.length){document.getElementById('inMsg').textContent='請先輸入單字。';return}
   adding=true;
   const d=day(date); let done=0;
-  for(const w of list){
-    document.getElementById('inMsg').textContent=`查詢中… ${done+1}/${list.length}：${w}`;
-    const key=w.toLowerCase();
-    if(!d.words[key]){ const rec=await buildWord(w); if(rec){d.words[key]=rec; save();} }
-    done++;
+  for(const e of entries){
+    document.getElementById('inMsg').textContent=`查詢中… ${done+1}/${entries.length}：${e.word}`;
+    const key=e.word.toLowerCase();
+    let rec=d.words[key];
+    if(!rec){ rec=await buildWord(e.word); if(!rec){done++;continue;} d.words[key]=rec; }
+    initEditable(rec);                                  // 帶入詞性/定義/例句/文法補充
+    if(e.wordZh) rec.wordZh=e.wordZh;                   // 你提供的中文意思優先
+    mergeSentences(rec, e.sentences);                   // 你丟的例句整理進去（去重）
+    if(e.note) rec.note=(rec.note?rec.note+'\n':'')+e.note;
+    save(); done++;
   }
-  document.getElementById('inMsg').textContent=`✓ 已加入 ${done} 個字到 ${date}（已顯示在下方）`;
+  document.getElementById('inMsg').textContent=`✓ 已加入/更新 ${done} 筆到 ${date}（點下方單字可看發音、例句、文法補充並編輯）`;
   document.getElementById('inWords').value='';
   daySel.clear(); daySel.add(date);
   const p=date.split('-'); calState.year=+p[0]; calState.month=+p[1]-1;
@@ -494,7 +570,7 @@ function initEditable(rec){
   if(rec.pos===undefined){ const m=(rec.meanings||[])[0]; rec.pos=m?(POS_ZH[m.pos]||m.pos||''):''; }
   if(rec.defEn===undefined){ const m=(rec.meanings||[])[0]; rec.defEn=(m&&m.defs[0]&&m.defs[0].def)||''; }
   if(rec.wordZh===undefined)rec.wordZh='';
-  if(rec.note===undefined)rec.note='';
+  if(rec.note===undefined)rec.note=buildGrammarNote(rec.meanings); // 文法補充一開始就帶入
   if(rec.level===undefined)rec.level=null;
 }
 async function openWord(date,key){
