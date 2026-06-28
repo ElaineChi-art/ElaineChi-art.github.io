@@ -2,8 +2,17 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>每日英文單字庫</title>
+<!-- 加到主畫面變成 App（PWA） -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#10131a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="單字庫">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <script>
   /* 分享模式：網址帶 ?share 時，隱藏導覽列，只顯示單字工具（越早執行越不會閃一下） */
   if(/[?&]share\b/.test(location.search)||/\bshare\b/.test(location.hash))
@@ -157,6 +166,7 @@
   input[type=range]{accent-color:var(--acc2)}
 
   /* calendar */
+  .cal{max-width:440px;margin:0 auto}
   .calhead{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:10px}
   .calhead b{font-size:16px;min-width:120px;text-align:center}
   .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
@@ -300,7 +310,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v23 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v24 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
