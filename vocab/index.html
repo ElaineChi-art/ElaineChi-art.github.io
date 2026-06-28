@@ -246,7 +246,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v13 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v14 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -942,7 +942,7 @@ async function playCard(rec){
   const steps=[
     ()=>sayOnce(rec.word,'en-US'),
     ()=>wait(250),
-    ()=>sayOnce('spelled, '+spellOut(rec.word),'en-US'),
+    ()=>sayOnce(spellOut(rec.word),'en-US'),
     ()=>wait(200),
     ()=>sayOnce(rec.word,'en-US'),
     ()=>wait(250),
