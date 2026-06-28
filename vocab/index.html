@@ -105,6 +105,10 @@
   .revrow .rv-z{flex:1;min-width:90px}
   .revrow .rv-e{flex:2;min-width:150px}
   #inReview{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
+  #toTop{position:fixed;right:16px;bottom:20px;z-index:60;width:46px;height:46px;border-radius:50%;
+    border:1px solid var(--line);background:var(--acc2);color:#fff;font-size:20px;cursor:pointer;
+    display:none;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+  #toTop.show{display:block}
 
   /* quiz */
   .lvfilter{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
@@ -214,6 +218,22 @@
       點卡片＝編輯內容；右上方框＝勾選要測驗的字；卡片下方可<b>直接標記</b>
       <span style="color:var(--red)">不熟</span>／<span style="color:var(--yellow)">普通</span>／<span style="color:var(--green)">熟</span>。
     </div>
+    <div class="row" id="listFilterBar" style="margin-bottom:10px;display:none">
+      <input type="text" id="listSearch" placeholder="🔍 搜尋單字或中文" style="flex:1;min-width:150px">
+      <select id="listFilter" style="max-width:120px">
+        <option value="all">全部熟悉度</option>
+        <option value="new">只看 新</option>
+        <option value="weak">只看 不熟</option>
+        <option value="mid">只看 普通</option>
+        <option value="strong">只看 熟</option>
+      </select>
+      <select id="listSort" style="max-width:130px">
+        <option value="default">預設順序</option>
+        <option value="az">英文 A→Z</option>
+        <option value="weak">不熟優先</option>
+      </select>
+    </div>
+    <div style="font-size:12px;color:var(--mut);margin-bottom:8px" id="listCount"></div>
     <div class="wgrid" id="grid"></div>
     <div class="empty" id="listEmpty" style="display:none">在上方月曆點選有單字的日期，這裡就會列出來。</div>
   </div>
@@ -249,9 +269,11 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v18 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v19 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
+
+<button id="toTop" title="回到頂端">↑</button>
 
 <!-- word detail modal -->
 <div class="ov" id="ov"><div class="modal" id="ovInner"></div></div>
@@ -521,6 +543,9 @@ async function addWords(){
   let entries=(reviewEntries&&reviewEntries.length)?reviewEntries:parseInputEntries(raw);
   entries=entries.filter(e=>e.word&&e.word.trim());
   if(!entries.length){document.getElementById('inMsg').textContent='請先輸入單字。';return}
+  // 拼字確認：字典查不到的單字，加入前再問一次
+  const suspects=entries.filter(e=>{const w=(e.word||'').trim().toLowerCase(); return w && !/\s/.test(w) && spellCache[w]===false;});
+  if(suspects.length && !confirm(`有 ${suspects.length} 個字字典查不到、可能拼錯：\n${suspects.map(s=>s.word).join('、')}\n\n仍要加入嗎？（按「取消」回去更正）`)) return;
   adding=true;
   const addBtn=document.getElementById('btnAdd'); addBtn.disabled=true;
   const d=day(date); let done=0;
@@ -559,20 +584,24 @@ let reviewEntries=[];
 function drawReview(){
   const host=document.getElementById('inReview');
   if(!reviewEntries.length){ host.innerHTML=''; return; }
-  let warn=false;
+  let warn=false, mis=false;
   host.innerHTML=
     `<div style="font-size:13px;margin-bottom:8px">將加入 <b style="color:var(--acc)">${reviewEntries.length}</b> 個單字 —— 下面可<b>直接修正</b>（單字／中文／例句），確認後再按上面「加入單字」：</div>`
     + reviewEntries.map((e,i)=>{
         const long=(e.word||'').split(/\s+/).length>4; if(long)warn=true;
+        const bad=e.suspect && !long; if(bad)mis=true;
+        const style=(long||bad)?' style="border-color:var(--red)"':'';
         return `<div class="revrow" data-i="${i}">
-          <input class="rv-w" placeholder="單字"${long?' style="border-color:var(--red)"':''}>
+          <input class="rv-w" placeholder="單字"${style}>
           <input class="rv-z" placeholder="中文意思">
           <input class="rv-e" placeholder="例句（可留空）">
+          ${bad?'<span style="color:var(--red);font-size:12px">⚠️查無</span>':''}
           <button class="srm rv-x" title="移除這列">✕</button></div>`;
       }).join('')
     + `<button class="btn ghost sm" id="revAdd" style="margin-top:4px">＋ 再加一列</button>`
     + (warn?'<div style="font-size:12px;color:var(--red);margin-top:6px">⚠️ 紅框那列把一整句當成單字了（多半是該筆編號沒被認出）。把多的部分剪到新的一列，或直接修。</div>':'')
-    + '<div style="font-size:12px;opacity:.7;margin-top:6px">例句留空沒關係 —— 加入後會自動幫你帶入字典例句（字典有的話）。數字不對在這裡改最快，改完直接按「加入單字」。</div>';
+    + (mis?'<div style="font-size:12px;color:var(--red);margin-top:6px">⚠️ 標「查無」的字字典查不到，可能<b>拼錯</b>，請確認或更正（片語、人名可忽略）。</div>':'')
+    + '<div style="font-size:12px;opacity:.7;margin-top:6px">例句留空沒關係 —— 加入後會自動帶入字典例句（字典有的話）。改完直接按「加入單字」。</div>';
   host.querySelectorAll('.revrow').forEach(row=>{
     const i=+row.dataset.i, e=reviewEntries[i];
     row.querySelector('.rv-w').value=e.word||'';
@@ -589,6 +618,29 @@ function drawReview(){
 function refreshReview(){ // 文字框變動 → 重新解析成初稿
   reviewEntries=parseInputEntries(document.getElementById('inWords').value);
   drawReview();
+  clearTimeout(spellTimer); spellTimer=setTimeout(runSpellCheck,700); // 停止打字後再檢查拼字
+}
+/* ---- 拼字偵測：單字若字典查不到 → 標記可能拼錯 ---- */
+const spellCache={}; let spellTimer=null, spellRun=0;
+async function dictExists(w){
+  if(spellCache[w]!==undefined) return spellCache[w];
+  try{ const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w)); spellCache[w]=r.ok; }
+  catch(e){ spellCache[w]=true; } // 連不上就不標錯
+  return spellCache[w];
+}
+async function runSpellCheck(){
+  const token=++spellRun;
+  const targets=reviewEntries.filter(e=>{const w=(e.word||'').trim(); return w && !/\s/.test(w) && /^[a-zA-Z'-]+$/.test(w);});
+  let i=0;
+  async function worker(){
+    while(i<targets.length){
+      if(token!==spellRun) return;
+      const e=targets[i++]; const w=e.word.trim().toLowerCase();
+      e.suspect = (await dictExists(w))===false;
+    }
+  }
+  await Promise.all([0,1,2,3,4,5].map(worker)); // 限制並發 6
+  if(token===spellRun) drawReview();
 }
 document.getElementById('inDate').value=today();
 document.getElementById('btnAdd').onclick=addWords;
@@ -617,27 +669,42 @@ document.getElementById('calAll').onclick=()=>{allDates().forEach(d=>daySel.add(
 document.getElementById('calClear').onclick=()=>{daySel.clear();renderCal();renderList();};
 
 /* ============ 3. WORD LIST ============ */
+let viewEntries=[], listMulti=false;
 function renderList(){
   const dates=[...daySel].sort();
-  const multi=dates.length>1;
+  listMulti=dates.length>1;
   let entries=[];
   dates.forEach(dt=>{ if(DB[dt]) Object.keys(DB[dt].words).forEach(k=>entries.push({date:dt,key:k,rec:DB[dt].words[k]})); });
   currentEntries=entries;
   document.getElementById('listTitle').textContent = dates.length? dates.join('、')+' 的單字' : '單字清單';
   document.getElementById('listEmpty').style.display=entries.length?'none':'block';
   document.getElementById('listTools').style.display=entries.length?'flex':'none';
-  // stats
+  document.getElementById('listFilterBar').style.display=entries.length>8?'flex':'none'; // 字多才顯示工具列
   const counts={new:0,weak:0,mid:0,strong:0};
   entries.forEach(e=>counts[levelOf(e.rec).k]++);
   document.getElementById('listStat').innerHTML=entries.length?
     `共 ${entries.length} 字　·　<span style="color:var(--grey)">新 ${counts.new}</span>　<span style="color:var(--red)">不熟 ${counts.weak}</span>　<span style="color:var(--yellow)">普通 ${counts.mid}</span>　<span style="color:var(--green)">熟 ${counts.strong}</span>`:'';
+  drawGrid();
+}
+function drawGrid(){
+  let v=currentEntries.slice();
+  const q=(document.getElementById('listSearch').value||'').trim().toLowerCase();
+  const f=document.getElementById('listFilter').value;
+  const sort=document.getElementById('listSort').value;
+  if(q) v=v.filter(e=>e.rec.word.toLowerCase().includes(q)||(e.rec.wordZh||'').toLowerCase().includes(q));
+  if(f!=='all') v=v.filter(e=>levelOf(e.rec).k===f);
+  if(sort==='az') v.sort((a,b)=>a.rec.word.toLowerCase().localeCompare(b.rec.word.toLowerCase()));
+  else if(sort==='weak') v.sort((a,b)=>levelOf(a.rec).acc-levelOf(b.rec).acc);
+  viewEntries=v;
+  document.getElementById('listCount').textContent =
+    (q||f!=='all') && currentEntries.length ? `顯示 ${v.length} / 共 ${currentEntries.length} 字` : '';
   const grid=document.getElementById('grid'); grid.innerHTML='';
-  entries.forEach(({date,key,rec})=>{
+  v.forEach(({date,key,rec})=>{
     const lv=levelOf(rec); const id=date+'|'+key;
     const el=document.createElement('div'); el.className='wcard lv-'+lv.k;
     el.innerHTML=`<input type="checkbox" class="chk"${selected.has(id)?' checked':''}>
       <div class="en">${rec.word}</div>
-      <div class="ph">${rec.phonetic||''}${multi?` <span style="color:var(--mut)">${date}</span>`:''}</div>
+      <div class="ph">${rec.phonetic||''}${listMulti?` <span style="color:var(--mut)">${date}</span>`:''}</div>
       <div class="zh">${rec.wordZh||'（無翻譯）'}</div>
       <div class="lvset">
         <button class="lvb weak${lv.k==='weak'?' on':''}" data-l="weak">不熟</button>
@@ -653,18 +720,22 @@ function renderList(){
   });
   updateSelCount(); updateQuizPool();
 }
+['listSearch','listFilter','listSort'].forEach(id=>{
+  const el=document.getElementById(id);
+  el.addEventListener(id==='listSearch'?'input':'change',drawGrid);
+});
 function updateSelCount(){
   const n=selected.size;
   document.getElementById('selCount').textContent='已勾 '+n+' 字';
   document.getElementById('btnDelSel').disabled=n===0;
 }
-document.getElementById('btnSelAll').onclick=()=>{
-  currentEntries.forEach(e=>selected.add(e.date+'|'+e.key));
+document.getElementById('btnSelAll').onclick=()=>{           // 全選＝目前畫面上顯示的
+  viewEntries.forEach(e=>selected.add(e.date+'|'+e.key));
   document.querySelectorAll('#grid .chk').forEach(c=>c.checked=true);
   updateSelCount();updateQuizPool();
 };
 document.getElementById('btnSelNone').onclick=()=>{
-  currentEntries.forEach(e=>selected.delete(e.date+'|'+e.key));
+  viewEntries.forEach(e=>selected.delete(e.date+'|'+e.key));
   document.querySelectorAll('#grid .chk').forEach(c=>c.checked=false);
   updateSelCount();updateQuizPool();
 };
@@ -1215,6 +1286,11 @@ document.getElementById('btnVoice').onclick=()=>{
   document.getElementById('ov').classList.add('show');
   wireVoicePicker();
 };
+
+/* ============ back to top ============ */
+const toTop=document.getElementById('toTop');
+window.addEventListener('scroll',()=>{ toTop.classList.toggle('show',window.scrollY>500); });
+toTop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 
 /* ============ init ============ */
 (function init(){
