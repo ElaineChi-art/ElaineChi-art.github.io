@@ -95,6 +95,14 @@
   .lvedit{display:flex;gap:6px;margin-top:8px}
   .lvedit .lvb{padding:6px 0;font-size:13px}
 
+  /* 輸入確認清單 */
+  .revrow{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center}
+  .revrow input{font-size:13px;padding:8px 10px}
+  .revrow .rv-w{flex:1;min-width:110px}
+  .revrow .rv-z{flex:1;min-width:90px}
+  .revrow .rv-e{flex:2;min-width:150px}
+  #inReview{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
+
   /* quiz */
   .lvfilter{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
   .lvfilter label{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);
@@ -166,7 +174,7 @@
       你也可以在上面直接丟「中文意思」或「例句」，用 <b>|</b> 隔開，系統會自動分類整理：
       第一個中文＝字義、英文＝例句、緊接在例句後的中文＝該句翻譯。
     </div>
-    <div id="inPreview" style="font-size:13px;color:var(--mut);margin-top:10px;line-height:1.7"></div>
+    <div id="inReview"></div>
   </div>
 
   <!-- 2. CALENDAR -->
@@ -233,7 +241,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v9 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v10 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -480,8 +488,9 @@ async function addWords(){
   if(adding)return;
   const date=document.getElementById('inDate').value||today();
   const raw=document.getElementById('inWords').value;
-  // 拆成多筆 entry：支援編號清單(換行有無皆可)、一行一個、純單字逗號一行多個
-  const entries=parseInputEntries(raw);
+  // 用確認清單(可能已被你手動修正過)；若沒有就即時解析
+  let entries=(reviewEntries&&reviewEntries.length)?reviewEntries:parseInputEntries(raw);
+  entries=entries.filter(e=>e.word&&e.word.trim());
   if(!entries.length){document.getElementById('inMsg').textContent='請先輸入單字。';return}
   adding=true;
   const addBtn=document.getElementById('btnAdd'); addBtn.disabled=true;
@@ -499,7 +508,7 @@ async function addWords(){
   }
   document.getElementById('inMsg').textContent=`✓ 已加入/更新 ${done} 筆到 ${date}（點下方單字可看發音、例句、文法補充並編輯）`;
   document.getElementById('inWords').value='';
-  document.getElementById('inPreview').textContent='';
+  reviewEntries=[]; document.getElementById('inReview').innerHTML='';
   daySel.clear(); daySel.add(date);
   const p=date.split('-'); calState.year=+p[0]; calState.month=+p[1]-1;
   adding=false; addBtn.disabled=false; refresh();
@@ -516,24 +525,45 @@ function parseInputEntries(raw){
   });
   return entries;
 }
-// 即時預覽：偵測到幾個單字、是否有句子被誤當單字
-function previewInput(){
-  const box=document.getElementById('inPreview');
-  const raw=document.getElementById('inWords').value;
-  if(!raw.trim()){ box.textContent=''; return; }
-  const words=parseInputEntries(raw).map(e=>e.word);
+// 可編輯的確認清單：解析只是「初稿」，加入前你都看得到、能改、能刪、能加
+let reviewEntries=[];
+function drawReview(){
+  const host=document.getElementById('inReview');
+  if(!reviewEntries.length){ host.innerHTML=''; return; }
   let warn=false;
-  const html=words.map(w=>{
-    if(w.split(/\s+/).length>4){ warn=true; return `<span style="color:var(--red)">⚠️ ${w}</span>`; }
-    return w;
-  }).join('、');
-  box.innerHTML=`偵測到 <b style="color:var(--acc)">${words.length}</b> 個單字：${html}`
-    + (warn?'<br><span style="color:var(--red)">⚠️ 紅色那筆把一整句當成單字了。</span>':'')
-    + '<br><span style="opacity:.75">數字跟你預期不同（例如少一個）？通常是某筆的編號沒被認出、被併進前一筆。把那個字<b>單獨放一行</b>或<b>補上編號</b>即可。</span>';
+  host.innerHTML=
+    `<div style="font-size:13px;margin-bottom:8px">將加入 <b style="color:var(--acc)">${reviewEntries.length}</b> 個單字 —— 下面可<b>直接修正</b>（單字／中文／例句），確認後再按上面「加入單字」：</div>`
+    + reviewEntries.map((e,i)=>{
+        const long=(e.word||'').split(/\s+/).length>4; if(long)warn=true;
+        return `<div class="revrow" data-i="${i}">
+          <input class="rv-w" placeholder="單字"${long?' style="border-color:var(--red)"':''}>
+          <input class="rv-z" placeholder="中文意思">
+          <input class="rv-e" placeholder="例句（可留空）">
+          <button class="srm rv-x" title="移除這列">✕</button></div>`;
+      }).join('')
+    + `<button class="btn ghost sm" id="revAdd" style="margin-top:4px">＋ 再加一列</button>`
+    + (warn?'<div style="font-size:12px;color:var(--red);margin-top:6px">⚠️ 紅框那列把一整句當成單字了（多半是該筆編號沒被認出）。把多的部分剪到新的一列，或直接修。</div>':'')
+    + '<div style="font-size:12px;opacity:.7;margin-top:6px">數字跟你預期不同？在這裡改最快，改完直接按「加入單字」。</div>';
+  host.querySelectorAll('.revrow').forEach(row=>{
+    const i=+row.dataset.i, e=reviewEntries[i];
+    row.querySelector('.rv-w').value=e.word||'';
+    row.querySelector('.rv-z').value=e.wordZh||'';
+    row.querySelector('.rv-e').value=(e.sentences&&e.sentences[0]&&e.sentences[0].ex)||'';
+    row.querySelector('.rv-w').oninput=ev=>e.word=ev.target.value;
+    row.querySelector('.rv-z').oninput=ev=>e.wordZh=ev.target.value;
+    row.querySelector('.rv-e').oninput=ev=>{ if(!e.sentences)e.sentences=[];
+      if(!e.sentences[0])e.sentences[0]={ex:'',exZh:''}; e.sentences[0].ex=ev.target.value; };
+    row.querySelector('.rv-x').onclick=()=>{ reviewEntries.splice(i,1); drawReview(); };
+  });
+  host.querySelector('#revAdd').onclick=()=>{ reviewEntries.push({word:'',wordZh:'',sentences:[],note:''}); drawReview(); };
+}
+function refreshReview(){ // 文字框變動 → 重新解析成初稿
+  reviewEntries=parseInputEntries(document.getElementById('inWords').value);
+  drawReview();
 }
 document.getElementById('inDate').value=today();
 document.getElementById('btnAdd').onclick=addWords;
-document.getElementById('inWords').addEventListener('input',previewInput);
+document.getElementById('inWords').addEventListener('input',refreshReview);
 // 電腦想快速送出：Cmd/Ctrl + Enter（一般 Enter 維持換行，手機打多行才順）
 document.getElementById('inWords').addEventListener('keydown',e=>{
   if(e.key==='Enter' && (e.metaKey||e.ctrlKey)){ e.preventDefault(); addWords(); }
