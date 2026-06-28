@@ -92,6 +92,9 @@
   .srow{padding:8px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px;background:var(--panel)}
   .srm{cursor:pointer;border:none;background:var(--panel2);color:var(--red);border-radius:7px;padding:5px 9px;font-size:14px}
   .srm:hover{background:#3a2526}
+  .srcbadge{font-size:11px;padding:3px 8px;border-radius:6px;cursor:pointer;border:1px solid var(--line);white-space:nowrap;flex-shrink:0}
+  .srcbadge.mine{background:#24304a;color:var(--acc);border-color:#39507a}
+  .srcbadge.auto{background:var(--panel2);color:var(--mut)}
   .lvedit{display:flex;gap:6px;margin-top:8px}
   .lvedit .lvb{padding:6px 0;font-size:13px}
 
@@ -241,7 +244,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v11 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v12 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -415,7 +418,7 @@ function mergeSentences(rec,list){
   rec.sentences=rec.sentences||[];
   const seen=new Set(rec.sentences.map(s=>(s.ex||'').toLowerCase()));
   list.forEach(s=>{ const k=(s.ex||'').toLowerCase();
-    if(s.ex && !seen.has(k)){ rec.sentences.push({ex:s.ex,exZh:s.exZh||''}); seen.add(k); }});
+    if(s.ex && !seen.has(k)){ rec.sentences.push({ex:s.ex,exZh:s.exZh||'',src:s.src||'user'}); seen.add(k); }}); // 你輸入的=我的
 }
 
 /* ============ familiarity (manual override wins) ============ */
@@ -665,9 +668,9 @@ function initEditable(rec){
   if(rec.sentences===undefined){
     const arr=[], seen=new Set();
     (rec.meanings||[]).forEach(m=>m.defs.forEach(d=>{ if(d.ex){const k=d.ex.toLowerCase();
-      if(!seen.has(k)){seen.add(k);arr.push({ex:d.ex,exZh:d.exZh||''});}} }));
-    (rec.custom||[]).forEach(c=>{ if(c.ex){const k=c.ex.toLowerCase();
-      if(!seen.has(k)){seen.add(k);arr.push({ex:c.ex,exZh:c.exZh||''});}} });
+      if(!seen.has(k)){seen.add(k);arr.push({ex:d.ex,exZh:d.exZh||'',src:'dict'});}} }));   // 字典帶的=自動
+      (rec.custom||[]).forEach(c=>{ if(c.ex){const k=c.ex.toLowerCase();
+      if(!seen.has(k)){seen.add(k);arr.push({ex:c.ex,exZh:c.exZh||'',src:'user'});}} });     // 舊的自訂=我的
     rec.sentences=arr;
   }
   if(rec.pos===undefined){ const m=(rec.meanings||[])[0]; rec.pos=m?(POS_ZH[m.pos]||m.pos||''):''; }
@@ -696,23 +699,33 @@ function harvest(rec){
     const arr=[];
     document.querySelectorAll('#sentList .srow').forEach(r=>{
       const en=r.querySelector('.s-en').value.trim(), zh=r.querySelector('.s-zh').value.trim();
-      if(en)arr.push({ex:en,exZh:zh});
+      if(en)arr.push({ex:en,exZh:zh,src:r.dataset.src||'user'});
     });
     rec.sentences=arr;
   }
 }
+// 點標籤切換 例句來源（我的 / 自動）
+function toggleSrc(btn){
+  const mine=!btn.classList.contains('mine');
+  btn.classList.toggle('mine',mine); btn.classList.toggle('auto',!mine);
+  btn.textContent=mine?'我的':'自動';
+  btn.closest('.srow').dataset.src=mine?'user':'dict';
+}
 function renderDetail(rec,date,key){
   const inner=document.getElementById('ovInner');
   const lv=levelOf(rec);
-  const sentRows=(rec.sentences||[]).map((s,i)=>`
-    <div class="srow" data-i="${i}">
+  const sentRows=(rec.sentences||[]).map((s,i)=>{
+    const mine=(s.src==='user'); const src=mine?'user':'dict';
+    return `
+    <div class="srow" data-i="${i}" data-src="${src}">
       <div class="row" style="gap:6px;align-items:center">
-        <input type="text" class="s-en" placeholder="英文句子" style="flex:1;min-width:140px">
+        <button type="button" class="srcbadge ${mine?'mine':'auto'}" title="點一下切換來源" onclick="toggleSrc(this)">${mine?'我的':'自動'}</button>
+        <input type="text" class="s-en" placeholder="英文句子" style="flex:1;min-width:110px">
         <button class="speak" title="朗讀" onclick="speak(this.closest('.srow').querySelector('.s-en').value)">🔊</button>
         <button class="srm" title="刪除這句" onclick="delSentence('${date}','${key}',${i})">✕</button>
       </div>
       <input type="text" class="s-zh" placeholder="中文翻譯（可留空）" style="margin-top:5px">
-    </div>`).join('') || '<div style="color:var(--mut);font-size:13px">還沒有句子，下面可新增。</div>';
+    </div>`;}).join('') || '<div style="color:var(--mut);font-size:13px">還沒有句子，下面可新增。</div>';
 
   inner.innerHTML=`<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
     <h2>${rec.word} <button class="speak" onclick="speak('${rec.word.replace(/'/g,'')}')">🔊</button></h2>
@@ -735,7 +748,7 @@ function renderDetail(rec,date,key){
     </div>
 
     <div class="edsec">
-      <label class="fld">例句 / 我的造句　<span style="color:var(--mut);font-weight:400">（會列入填空測驗題庫）</span></label>
+      <label class="fld">例句　<span style="color:var(--mut);font-weight:400">標籤 <b style="color:var(--acc)">我的</b>＝你加的、<b>自動</b>＝字典帶的（可點標籤切換）；會列入填空題庫</span></label>
       <div id="sentList">${sentRows}</div>
       <div class="row" style="margin-top:8px">
         <input type="text" id="newEn" placeholder="新增一句英文" style="flex:1;min-width:140px">
@@ -778,7 +791,7 @@ function renderDetail(rec,date,key){
   document.getElementById('addS').onclick=()=>{
     const en=document.getElementById('newEn').value.trim(); if(!en)return;
     harvest(rec);
-    rec.sentences.push({ex:en,exZh:document.getElementById('newZh').value.trim()});
+    rec.sentences.push({ex:en,exZh:document.getElementById('newZh').value.trim(),src:'user'});
     save(); renderDetail(rec,date,key);
   };
   document.getElementById('saveAll').onclick=()=>{
