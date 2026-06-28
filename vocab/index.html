@@ -330,8 +330,10 @@
     <div class="row" style="margin-top:10px">
       <button class="btn" id="btnAdd">加入單字</button>
       <button class="btn ghost sm" id="btnClear">清除</button>
-      <button class="btn ghost sm" id="btnUndo" style="display:none;border-color:var(--acc);color:var(--acc)">復原剛剛的加入</button>
       <span class="msg" id="inMsg" style="margin:0"></span>
+    </div>
+    <div id="undoBar" style="display:none;margin-top:10px">
+      <button class="btn" id="btnUndo" style="background:transparent;border:1px solid var(--acc);color:var(--acc);width:100%">↶ 復原這次加入（撤回剛剛加入的單字）</button>
     </div>
     <div style="font-size:12px;color:var(--mut);margin-top:10px;line-height:1.7">
       加入後會自動帶入<b>發音、例句（附中文）、文法</b>，點單字即可<b>編輯或新增</b>。
@@ -426,7 +428,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v34 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v35 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -437,7 +439,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='34';
+const APP_VERSION='35';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -728,7 +730,7 @@ async function addWords(){
   entries=entries.filter(e=>e.word&&e.word.trim());
   if(!entries.length){document.getElementById('inMsg').textContent='請先輸入單字。';return}
   const snapBefore=JSON.stringify(DB), inputBefore=raw;   // 給「復原」用
-  document.getElementById('btnUndo').style.display='none';
+  document.getElementById('undoBar').style.display='none';
   adding=true;
   const addBtn=document.getElementById('btnAdd'); addBtn.disabled=true;
   // 先檢查所有「單一英文字」拼字（含尚未檢查的），避免不小心加到拼錯的
@@ -766,7 +768,7 @@ async function addWords(){
     reviewEntries=[]; document.getElementById('inReview').innerHTML='';
     document.getElementById('inMsg').textContent=`✓ 已加入/更新 ${done} 筆到 ${date}`;
   }
-  if(done){ undoSnap=snapBefore; undoInput=inputBefore; document.getElementById('btnUndo').style.display='inline-block'; }
+  if(done){ undoSnap=snapBefore; undoInput=inputBefore; document.getElementById('undoBar').style.display='block'; }
   adding=false; addBtn.disabled=false; refresh();
 }
 // 復原：把資料還原到這次加入之前，並把輸入文字放回去
@@ -777,7 +779,7 @@ function undoAdd(){
   reviewEntries=parseInputEntries(undoInput||''); drawReview();
   clearTimeout(spellTimer); spellTimer=setTimeout(runSpellCheck,300);
   undoSnap=null; undoInput=null;
-  document.getElementById('btnUndo').style.display='none';
+  document.getElementById('undoBar').style.display='none';
   document.getElementById('inMsg').textContent='已復原，剛剛加入的單字已撤回。';
   refresh();
 }
