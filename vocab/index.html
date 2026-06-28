@@ -424,7 +424,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v32 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v33 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -435,7 +435,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='32';
+const APP_VERSION='33';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -779,6 +779,38 @@ function parseInputEntries(raw){
     if(plain && pieces.every(p=>p.split(/\s+/).length<=3)){
       pieces.forEach(w=>entries.push({word:w,wordZh:'',sentences:[],note:''}));
     }else{ const e=parseEntry(item); if(e)entries.push(e); }
+  });
+  return redistributeByContent(entries);
+}
+// 把一段文字切成一句句
+function splitSentences(text){
+  return text.split(/(?<=[.!?。！？])\s+(?=[A-Z"'(])/).map(s=>s.trim()).filter(s=>s.length>1);
+}
+// 某句例句是否提到某個單字（含片語、變化形）→ 分數
+function matchScore(sent, word){
+  if(!word) return 0;
+  const s=' '+sent.toLowerCase().replace(/[^a-z0-9'\s-]/g,' ').replace(/\s+/g,' ').trim()+' ';
+  const w=word.toLowerCase().trim();
+  if(!w) return 0;
+  if(/\s/.test(w)) return s.includes(' '+w+' ')||s.includes(' '+w) ? 3 : 0;   // 片語
+  const esc=w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  if(new RegExp('\\b'+esc+'\\b').test(s)) return 3;                            // 完全相同
+  const stem=w.length>=5 ? w.slice(0, Math.max(4, w.length-2)) : w;           // 變化形(purchase→purchased)
+  for(const t of s.trim().split(' ')){ if(t.length>=stem.length && t.startsWith(stem)) return 2; }
+  return 0;
+}
+// 當例句「集中成一整塊」(單字在上、例句在下) → 用內容自動配對回各單字（順序亂也行）
+function redistributeByContent(entries){
+  if(entries.length<3) return entries;
+  const withSent=entries.filter(e=>e.sentences&&e.sentences.some(s=>s.ex)).length;
+  const pool=[];
+  entries.forEach(e=>(e.sentences||[]).forEach(s=>{ if(s.ex) splitSentences(s.ex).forEach(x=>pool.push(x)); }));
+  if(!(withSent<=2 && pool.length>=Math.ceil(entries.length*0.6))) return entries; // 非集中格式 → 不動
+  entries.forEach(e=>e.sentences=[]);
+  pool.forEach(sent=>{
+    let best=-1, bs=0;
+    entries.forEach((e,i)=>{ const sc=matchScore(sent, e.word); if(sc>bs){bs=sc; best=i;} });
+    if(best>=0 && bs>0) entries[best].sentences.push({ex:sent, exZh:'', src:'user'});
   });
   return entries;
 }
