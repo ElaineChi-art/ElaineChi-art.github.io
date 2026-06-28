@@ -166,6 +166,7 @@
       你也可以在上面直接丟「中文意思」或「例句」，用 <b>|</b> 隔開，系統會自動分類整理：
       第一個中文＝字義、英文＝例句、緊接在例句後的中文＝該句翻譯。
     </div>
+    <div id="inPreview" style="font-size:13px;color:var(--mut);margin-top:10px;line-height:1.7"></div>
   </div>
 
   <!-- 2. CALENDAR -->
@@ -232,7 +233,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v7 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v8 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -478,17 +479,8 @@ async function addWords(){
   if(adding)return;
   const date=document.getElementById('inDate').value||today();
   const raw=document.getElementById('inWords').value;
-  // 拆成多筆 entry：支援編號清單(續行接回)、一行一個、純單字逗號一行多個
-  const entries=[];
-  splitEntries(raw).forEach(item=>{
-    const plain = !/[|｜㐀-鿿]/.test(item) && /[,，]/.test(item);
-    const pieces = plain ? item.split(/[,，]/).map(s=>s.trim()).filter(Boolean) : null;
-    if(plain && pieces.every(p=>p.split(/\s+/).length<=3)){
-      pieces.forEach(w=>entries.push({word:w,wordZh:'',sentences:[],note:''}));
-    }else{
-      const e=parseEntry(item); if(e)entries.push(e);
-    }
-  });
+  // 拆成多筆 entry：支援編號清單(換行有無皆可)、一行一個、純單字逗號一行多個
+  const entries=parseInputEntries(raw);
   if(!entries.length){document.getElementById('inMsg').textContent='請先輸入單字。';return}
   adding=true;
   const addBtn=document.getElementById('btnAdd'); addBtn.disabled=true;
@@ -506,12 +498,41 @@ async function addWords(){
   }
   document.getElementById('inMsg').textContent=`✓ 已加入/更新 ${done} 筆到 ${date}（點下方單字可看發音、例句、文法補充並編輯）`;
   document.getElementById('inWords').value='';
+  document.getElementById('inPreview').textContent='';
   daySel.clear(); daySel.add(date);
   const p=date.split('-'); calState.year=+p[0]; calState.month=+p[1]-1;
   adding=false; addBtn.disabled=false; refresh();
 }
+// 把輸入框文字解析成 entry 陣列（預覽與送出共用）
+function parseInputEntries(raw){
+  const entries=[];
+  splitEntries(raw).forEach(item=>{
+    const plain = !/[|｜㐀-鿿]/.test(item) && /[,，]/.test(item);
+    const pieces = plain ? item.split(/[,，]/).map(s=>s.trim()).filter(Boolean) : null;
+    if(plain && pieces.every(p=>p.split(/\s+/).length<=3)){
+      pieces.forEach(w=>entries.push({word:w,wordZh:'',sentences:[],note:''}));
+    }else{ const e=parseEntry(item); if(e)entries.push(e); }
+  });
+  return entries;
+}
+// 即時預覽：偵測到幾個單字、是否有句子被誤當單字
+function previewInput(){
+  const box=document.getElementById('inPreview');
+  const raw=document.getElementById('inWords').value;
+  if(!raw.trim()){ box.textContent=''; return; }
+  const words=parseInputEntries(raw).map(e=>e.word);
+  let warn=false;
+  const html=words.map(w=>{
+    if(w.split(/\s+/).length>4){ warn=true; return `<span style="color:var(--red)">⚠️ ${w}</span>`; }
+    return w;
+  }).join('、');
+  box.innerHTML=`偵測到 <b style="color:var(--acc)">${words.length}</b> 個單字：${html}`
+    + (warn?'<br><span style="color:var(--red)">⚠️ 紅色那筆把一整句當成單字了。</span>':'')
+    + '<br><span style="opacity:.75">數字跟你預期不同（例如少一個）？通常是某筆的編號沒被認出、被併進前一筆。把那個字<b>單獨放一行</b>或<b>補上編號</b>即可。</span>';
+}
 document.getElementById('inDate').value=today();
 document.getElementById('btnAdd').onclick=addWords;
+document.getElementById('inWords').addEventListener('input',previewInput);
 // 電腦想快速送出：Cmd/Ctrl + Enter（一般 Enter 維持換行，手機打多行才順）
 document.getElementById('inWords').addEventListener('keydown',e=>{
   if(e.key==='Enter' && (e.metaKey||e.ctrlKey)){ e.preventDefault(); addWords(); }
