@@ -246,7 +246,10 @@
   .lvb.on.weak{background:var(--red);color:#1a1011}
   .lvb.on.mid{background:var(--yellow);color:#211a0c}
   .lvb.on.strong{background:var(--green);color:#0f1a0d}
-  /* calendar — 覆蓋藍色，改暖金 */
+  /* calendar — 覆蓋藍色，改暖金；確保置中＋電腦更完整 */
+  .cal{max-width:540px;width:100%;margin-left:auto;margin-right:auto}
+  .calgrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+  .calhead{justify-content:center}
   .calhead b{font-family:var(--serif);font-weight:600;letter-spacing:.5px}
   .calcell{background:#181314;border-color:#241d1e}
   .calcell.has{border-color:#3a2e2a}
@@ -254,6 +257,7 @@
   .calcell.today{outline-color:var(--acc)}
   .calcell.sel{background:rgba(200,168,106,.12);border-color:var(--acc);color:var(--acc)}
   .calcell .cnt{color:var(--acc)}
+  @media (min-width:620px){ .calcell{font-size:16px} .calcell .cnt{font-size:12px} .caldow{font-size:13px} }
   /* quiz */
   .flash{font-family:var(--serif);border-radius:14px}
   .opt{border-radius:9px}
@@ -398,7 +402,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v28 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v29 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -409,7 +413,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='28';
+const APP_VERSION='29';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
