@@ -326,7 +326,7 @@
       <label class="fld" style="margin:0">加入到</label>
       <input type="date" id="inDate" style="width:auto">
     </div>
-    <textarea id="inWords" placeholder="一行一個單字／片語（純單字也可一行多個，用逗號分隔）&#10;想直接附中文或例句：用 | 分隔，例如&#10;resilient | 有韌性的 | She stayed resilient. | 她保持堅韌"></textarea>
+    <textarea id="inWords" placeholder="一行一個單字／片語，或直接貼上整份清單"></textarea>
     <div class="row" style="margin-top:10px">
       <button class="btn" id="btnAdd">加入單字</button>
       <button class="btn ghost sm" id="btnClear">清除</button>
@@ -401,8 +401,8 @@
   <div class="card" id="quizCard">
     <div class="sec-h"><span class="sec-n">4</span>測驗（用上面勾選的單字）</div>
     <div id="quizSetup">
-      <div style="font-size:14px;margin-bottom:2px">目前已勾選 <b id="quizBasket">0</b> 個單字。</div>
-      <label class="fld" style="margin-top:8px">快速勾選：把上面清單中該熟悉度的字一次全勾起來（再取消＝退選），可複選：</label>
+      <div style="font-size:14px;margin-bottom:2px">已勾選 <b id="quizBasket">0</b> 字</div>
+      <label class="fld" style="margin-top:8px">依熟悉度快速勾選</label>
       <div class="lvfilter">
         <label><input type="checkbox" class="lvf" value="weak"><span style="color:var(--red)">不熟</span></label>
         <label><input type="checkbox" class="lvf" value="mid"><span style="color:var(--yellow)">普通</span></label>
@@ -410,7 +410,7 @@
         <label><input type="checkbox" class="lvf" value="new"><span style="color:var(--grey)">新</span></label>
       </div>
       <div class="msg" id="quizPoolInfo" style="min-height:18px">尚未勾選任何單字。</div>
-      <label class="fld" style="margin-top:6px">選擇測驗方式：</label>
+      <label class="fld" style="margin-top:6px">測驗方式</label>
       <div class="row">
         <button class="btn ghost" data-q="flash">翻卡</button>
         <button class="btn ghost" data-q="fill">填空</button>
@@ -428,7 +428,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v35 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v36 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -439,7 +439,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='35';
+const APP_VERSION='36';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -951,8 +951,14 @@ let viewEntries=[], listMulti=false;
 function renderList(){
   const dates=[...daySel].sort();
   listMulti=dates.length>1;
-  let entries=[];
-  dates.forEach(dt=>{ if(DB[dt]) Object.keys(DB[dt].words).forEach(k=>entries.push({date:dt,key:k,rec:DB[dt].words[k]})); });
+  // 多天合併時同一個英文字只留一份（內容最豐富者；同等則取較新那天）
+  const byKey={};
+  dates.forEach(dt=>{ if(!DB[dt])return; Object.keys(DB[dt].words).forEach(k=>{
+    const rec=DB[dt].words[k], cur=byKey[k];
+    const n=(rec.sentences||[]).length;
+    if(!cur || n>cur._n || (n===cur._n && dt>cur.date)) byKey[k]={date:dt,key:k,rec,_n:n};
+  });});
+  let entries=Object.values(byKey).map(({date,key,rec})=>({date,key,rec}));
   currentEntries=entries;
   document.getElementById('listTitle').textContent = dates.length? dates.join('、')+' 的單字' : '單字清單';
   document.getElementById('listEmpty').style.display=entries.length?'none':'block';
@@ -1255,8 +1261,7 @@ function updateQuizPool(){
   const n=gatherPool().length;
   document.getElementById('quizBasket').textContent=n;
   const info=document.getElementById('quizPoolInfo');
-  info.textContent = n ? ('已選 '+n+' 個單字，可開始測驗。')
-    : '尚未勾選任何單字（在上面清單勾選，或用下面的熟悉度快速勾選）。';
+  info.textContent = n ? ('已選 '+n+' 字') : '請先在上方勾選單字';
 }
 document.querySelectorAll('.lvf').forEach(c=>c.onchange=()=>applyLevelSelect(c.value,c.checked));
 function allWordStrings(){const a=[];allDates().forEach(dt=>Object.keys(DB[dt].words).forEach(k=>a.push(DB[dt].words[k].word)));return a;}
