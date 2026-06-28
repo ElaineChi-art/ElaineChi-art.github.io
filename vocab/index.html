@@ -132,7 +132,7 @@
   .sugchip.ok{border-color:var(--line);background:var(--panel2);color:var(--tx)}
   /* 分享版：隱藏開發者提示 */
   html.share .devhint{display:none}
-  html.hidetrans .extrans{display:none}
+  html.hidetrans .extrans{display:none!important}
 
   /* modal */
   .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;
@@ -430,7 +430,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v38 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v39 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -441,7 +441,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='38';
+const APP_VERSION='39';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
