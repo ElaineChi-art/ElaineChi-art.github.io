@@ -329,6 +329,8 @@
     <textarea id="inWords" placeholder="一行一個單字／片語（純單字也可一行多個，用逗號分隔）&#10;想直接附中文或例句：用 | 分隔，例如&#10;resilient | 有韌性的 | She stayed resilient. | 她保持堅韌"></textarea>
     <div class="row" style="margin-top:10px">
       <button class="btn" id="btnAdd">加入單字</button>
+      <button class="btn ghost sm" id="btnClear">清除</button>
+      <button class="btn ghost sm" id="btnUndo" style="display:none;border-color:var(--acc);color:var(--acc)">復原剛剛的加入</button>
       <span class="msg" id="inMsg" style="margin:0"></span>
     </div>
     <div style="font-size:12px;color:var(--mut);margin-top:10px;line-height:1.7">
@@ -424,7 +426,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v33 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v34 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -435,7 +437,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='33';
+const APP_VERSION='34';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -716,8 +718,8 @@ const selected=new Set(); // checked words (quiz basket) "date|key"
 let currentEntries=[];
 const calState={year:new Date().getFullYear(),month:new Date().getMonth()};
 
-/* ============ 1. INPUT (Enter to add, no button) ============ */
-let adding=false;
+/* ============ 1. INPUT ============ */
+let adding=false, undoSnap=null, undoInput=null;
 async function addWords(){
   if(adding)return;
   const date=document.getElementById('inDate').value||today();
@@ -725,6 +727,8 @@ async function addWords(){
   let entries=(reviewEntries&&reviewEntries.length)?reviewEntries:parseInputEntries(raw);
   entries=entries.filter(e=>e.word&&e.word.trim());
   if(!entries.length){document.getElementById('inMsg').textContent='請先輸入單字。';return}
+  const snapBefore=JSON.stringify(DB), inputBefore=raw;   // 給「復原」用
+  document.getElementById('btnUndo').style.display='none';
   adding=true;
   const addBtn=document.getElementById('btnAdd'); addBtn.disabled=true;
   // 先檢查所有「單一英文字」拼字（含尚未檢查的），避免不小心加到拼錯的
@@ -762,8 +766,28 @@ async function addWords(){
     reviewEntries=[]; document.getElementById('inReview').innerHTML='';
     document.getElementById('inMsg').textContent=`✓ 已加入/更新 ${done} 筆到 ${date}`;
   }
+  if(done){ undoSnap=snapBefore; undoInput=inputBefore; document.getElementById('btnUndo').style.display='inline-block'; }
   adding=false; addBtn.disabled=false; refresh();
 }
+// 復原：把資料還原到這次加入之前，並把輸入文字放回去
+function undoAdd(){
+  if(undoSnap==null)return;
+  DB=JSON.parse(undoSnap); save();
+  document.getElementById('inWords').value=undoInput||'';
+  reviewEntries=parseInputEntries(undoInput||''); drawReview();
+  clearTimeout(spellTimer); spellTimer=setTimeout(runSpellCheck,300);
+  undoSnap=null; undoInput=null;
+  document.getElementById('btnUndo').style.display='none';
+  document.getElementById('inMsg').textContent='已復原，剛剛加入的單字已撤回。';
+  refresh();
+}
+function clearInput(){
+  document.getElementById('inWords').value='';
+  reviewEntries=[]; document.getElementById('inReview').innerHTML='';
+  document.getElementById('inMsg').textContent='';
+}
+document.getElementById('btnClear').onclick=clearInput;
+document.getElementById('btnUndo').onclick=undoAdd;
 function entryToLine(e){
   const parts=[e.word];
   if(e.wordZh)parts.push(e.wordZh);
