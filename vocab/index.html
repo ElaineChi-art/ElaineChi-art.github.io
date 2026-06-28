@@ -13,6 +13,9 @@
 <meta name="apple-mobile-web-app-title" content="單字庫">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
 <script>
   /* 預設隱藏導覽列：任何人/朋友打開都只看到單字工具。
      只有「我的裝置」(localStorage vocabOwner=1) 才顯示導覽列。
@@ -201,25 +204,92 @@
   .calcell.today{outline:2px solid var(--acc);outline-offset:-1px}
   .calcell.sel{background:#243b55;border-color:var(--acc2)}
   .calcell .cnt{font-size:11px;color:var(--acc);font-weight:700;line-height:1}
+
+  /* ============================================================
+     PREMIUM THEME — 沉穩・高級・克制（酒紅 × 暖金，襯線標題）
+     ============================================================ */
+  :root{
+    --bg:#100c0d; --panel:#1a1516; --panel2:#221b1c; --line:#332a2b;
+    --tx:#ece3da; --mut:#9b8d84; --acc:#c8a86a; --acc2:#7d3a44;
+    --green:#86a07c; --yellow:#c6a45f; --red:#b97070; --grey:#6c615c;
+    --serif:"Cormorant Garamond","Noto Serif TC",Georgia,"Songti TC",serif;
+    --sans:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  }
+  body{background:radial-gradient(1200px 700px at 50% -10%, #1a1314 0%, var(--bg) 60%);
+       letter-spacing:.2px;-webkit-font-smoothing:antialiased}
+  *{transition:background-color .22s ease, border-color .22s ease, color .22s ease, transform .12s ease}
+  h1{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:.6px}
+  .sub{font-size:13px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mut);opacity:.85}
+  .sec-h{font-family:var(--serif);font-weight:600;font-size:20px;letter-spacing:.4px}
+  .sec-n{background:transparent;color:var(--acc);border:1px solid var(--acc);font-family:var(--serif);
+         width:26px;height:26px;font-size:14px}
+  .card{background:linear-gradient(180deg,#1b1617,#171213);border:1px solid var(--line);
+        border-radius:14px;padding:22px;box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 12px 30px -22px #000}
+  .btn{background:var(--acc2);color:#f3e7e3;border-radius:9px;font-weight:600;letter-spacing:.4px;
+       box-shadow:0 8px 20px -14px var(--acc2)}
+  .btn:hover{background:#8c4450}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--tx)}
+  .btn.ghost:hover{background:var(--panel2);border-color:var(--acc)}
+  textarea,input[type=text],input[type=date],select{background:var(--panel2);border:1px solid var(--line);border-radius:9px}
+  textarea:focus,input[type=text]:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 1px rgba(200,168,106,.25)}
+  .pill{background:transparent;border:1px solid var(--line);color:var(--mut);letter-spacing:.3px}
+  .speak{background:transparent;border:1px solid var(--line);color:var(--acc);border-radius:7px;font-size:13px}
+  .speak:hover{border-color:var(--acc);background:rgba(200,168,106,.08)}
+  /* word cards */
+  .wcard{background:linear-gradient(180deg,#1c1718,#191314);border-radius:12px;border-left-width:3px;transition:border-color .2s,transform .12s}
+  .wcard:hover{transform:translateY(-1px);border-color:var(--line)}
+  .wcard .en{font-family:var(--serif);font-weight:600;font-size:22px;letter-spacing:.3px}
+  .wcard .ph{font-style:italic;font-family:var(--serif);font-size:13px}
+  .cact{background:transparent;border-color:var(--line);font-size:12px;letter-spacing:.5px;color:var(--mut)}
+  .cact:hover{border-color:var(--acc);color:var(--tx)}
+  .lvb{border-radius:7px;font-size:11px;letter-spacing:.5px;background:transparent}
+  .lvb.on.weak{background:var(--red);color:#1a1011}
+  .lvb.on.mid{background:var(--yellow);color:#211a0c}
+  .lvb.on.strong{background:var(--green);color:#0f1a0d}
+  /* calendar — 覆蓋藍色，改暖金 */
+  .calhead b{font-family:var(--serif);font-weight:600;letter-spacing:.5px}
+  .calcell{background:#181314;border-color:#241d1e}
+  .calcell.has{border-color:#3a2e2a}
+  .calcell.has:hover{border-color:var(--acc)}
+  .calcell.today{outline-color:var(--acc)}
+  .calcell.sel{background:rgba(200,168,106,.12);border-color:var(--acc);color:var(--acc)}
+  .calcell .cnt{color:var(--acc)}
+  /* quiz */
+  .flash{font-family:var(--serif);border-radius:14px}
+  .opt{border-radius:9px}
+  .opt:hover{border-color:var(--acc)}
+  .big{font-family:var(--serif)}
+  .sugchip{border-color:var(--acc);background:rgba(200,168,106,.1);color:var(--acc);border-radius:8px}
+  .sugchip.ok{border-color:var(--line);background:transparent;color:var(--mut)}
+  .srcbadge.mine{background:rgba(200,168,106,.14);color:var(--acc);border-color:rgba(200,168,106,.4)}
+  .modal{background:linear-gradient(180deg,#1b1617,#161112);border-radius:16px}
+  .modal h2{font-family:var(--serif);font-weight:600}
+  .edsec{background:#1c1617;border-radius:12px}
+  .topnav{background:#0c0809}
+  .topnav a.active{background:rgba(200,168,106,.12);color:var(--acc)}
+  #toTop{background:var(--acc2);border-color:var(--acc2)}
+  .gridscroll{background:#140f10}
+  .grouphd{color:var(--acc);font-family:var(--serif);font-size:15px;font-weight:600}
+  ::-webkit-scrollbar-thumb,.gridscroll::-webkit-scrollbar-thumb{background:#3a2e2a}
 </style>
 </head>
 <body>
 <nav class="topnav">
   <a href="https://elainechi-art.github.io/">🏠 首頁</a>
   <a href="https://elainechi-art.github.io/judicial/">📚 司法官・律師複習</a>
-  <a class="active" href="./">🔤 每日英文單字</a>
+  <a class="active" href="./">英文單字</a>
   <a href="https://elainechi-art.github.io/music-os/ecosystem.html">🎵 音樂版稅 OS</a>
 </nav>
 
 <div class="wrap">
   <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap">
     <div>
-      <h1>🔤 每日英文單字庫</h1>
-      <div class="sub">輸入 → 自動發音・例句・中文 → 月曆入庫 → 勾選單字做三種測驗</div>
+      <h1>Lexicon</h1>
+      <div class="sub">每日英文單字</div>
     </div>
     <div class="row" style="gap:8px;flex-shrink:0">
-      <button class="btn ghost sm" id="btnVoice">🔊 語音</button>
-      <button class="btn ghost sm sharebtn" id="btnShare">🔗 分享給朋友</button>
+      <button class="btn ghost sm" id="btnVoice">語音</button>
+      <button class="btn ghost sm sharebtn" id="btnShare">分享</button>
     </div>
   </div>
 
@@ -232,7 +302,7 @@
     </div>
     <textarea id="inWords" placeholder="一行一個單字／片語（純單字也可一行多個，用逗號分隔）&#10;想直接附中文或例句：用 | 分隔，例如&#10;resilient | 有韌性的 | She stayed resilient. | 她保持堅韌"></textarea>
     <div class="row" style="margin-top:10px">
-      <button class="btn" id="btnAdd">➕ 加入單字</button>
+      <button class="btn" id="btnAdd">加入單字</button>
       <span class="msg" id="inMsg" style="margin:0"></span>
     </div>
     <div style="font-size:12px;color:var(--mut);margin-top:10px;line-height:1.7">
@@ -244,10 +314,10 @@
 
   <!-- 2. CALENDAR -->
   <div class="card">
-    <div class="sec-h"><span class="sec-n">2</span>我的單字庫（月曆）</div>
+    <div class="sec-h"><span class="sec-n">2</span>單字庫</div>
     <div class="cal" id="cal"></div>
-    <div style="font-size:12px;color:var(--mut);margin-top:8px">
-      點日期＝看那天的單字；可<b>同時點多天</b>一起列出（再點一次取消）。數字＝該天單字數。
+    <div class="devhint" style="font-size:12px;color:var(--mut);margin-top:8px">
+      點日期看當天單字，可同時選多天。
     </div>
     <div class="row" style="margin-top:8px">
       <span class="pill" id="dayInfo">已選 0 天</span>
@@ -262,17 +332,17 @@
     <div class="sec-h"><span class="sec-n">3</span><span id="listTitle">單字清單</span></div>
     <div class="msg" id="listStat" style="margin-top:0"></div>
     <div class="row" id="listTools" style="margin:4px 0 10px;display:none">
-      <button class="btn ghost sm" id="btnSelAll">☑️ 全選</button>
+      <button class="btn ghost sm" id="btnSelAll">全選</button>
       <button class="btn ghost sm" id="btnSelNone">清除勾選</button>
       <span class="pill" id="selCount">已勾 0 字</span>
-      <button class="btn sm" id="btnDelSel" disabled style="background:var(--red)">🗑️ 刪除勾選</button>
+      <button class="btn sm" id="btnDelSel" disabled style="background:var(--red)">刪除</button>
     </div>
-    <div style="font-size:12px;color:var(--mut);margin-bottom:10px">
-      點卡片＝編輯內容；右上方框＝勾選要測驗的字；卡片下方可<b>直接標記</b>
-      <span style="color:var(--red)">不熟</span>／<span style="color:var(--yellow)">普通</span>／<span style="color:var(--green)">熟</span>。
+    <div class="devhint" style="font-size:12px;color:var(--mut);margin-bottom:10px">
+      點卡片編輯；右上勾選要測驗的字；卡片下方標記
+      <span style="color:var(--red)">不熟</span>・<span style="color:var(--yellow)">普通</span>・<span style="color:var(--green)">熟</span>。
     </div>
     <div class="row" id="listFilterBar" style="margin-bottom:10px;display:none">
-      <input type="text" id="listSearch" placeholder="🔍 搜尋單字或中文" style="flex:1;min-width:150px">
+      <input type="text" id="listSearch" placeholder="搜尋單字或中文" style="flex:1;min-width:150px">
       <select id="listFilter" style="max-width:120px">
         <option value="all">全部熟悉度</option>
         <option value="new">只看 新</option>
@@ -312,9 +382,9 @@
       <div class="msg" id="quizPoolInfo" style="min-height:18px">尚未勾選任何單字。</div>
       <label class="fld" style="margin-top:6px">選擇測驗方式：</label>
       <div class="row">
-        <button class="btn ghost" data-q="flash">🃏 翻卡測驗</button>
-        <button class="btn ghost" data-q="fill">📝 填空測驗</button>
-        <button class="btn ghost" data-q="spell">⌨️ 拼字測驗</button>
+        <button class="btn ghost" data-q="flash">翻卡</button>
+        <button class="btn ghost" data-q="fill">填空</button>
+        <button class="btn ghost" data-q="spell">拼字</button>
       </div>
       <div class="msg" id="quizMsg"></div>
     </div>
@@ -328,7 +398,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v27 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v28 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -339,7 +409,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='27';
+const APP_VERSION='28';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -660,7 +730,7 @@ async function addWords(){
     drawReview();
     clearTimeout(spellTimer); spellTimer=setTimeout(runSpellCheck,150);
     document.getElementById('inMsg').textContent=
-      `✓ 已加入 ${done} 個；還有 ${kept.length} 個可能拼錯先留著，請更正（或按該列「✓ 仍加入」）後再按「加入單字」。`;
+      `✓ 已加入 ${done} 個；還有 ${kept.length} 個可能拼錯先留著，請更正（或按該列「仍加入」）後再按「加入單字」。`;
   }else{
     document.getElementById('inWords').value='';
     reviewEntries=[]; document.getElementById('inReview').innerHTML='';
@@ -698,16 +768,16 @@ function drawReview(){
         const long=(e.word||'').split(/\s+/).length>4; if(long)warn=true;
         const bad=e.suspect && !long && !e.confirmed; if(bad)mis=true;
         const style=(long||bad)?' style="border-color:var(--red)"':'';
-        const sug = bad ? `<div class="sugbar" data-i="${i}">${(e.suggest&&e.suggest.length)?'你是不是要打：'+e.suggest.map(s=>`<button class="sugchip" data-w="${(s||'').replace(/"/g,'')}">${s}</button>`).join(''):'<span style="color:var(--red)">可能拼錯</span>'}<button class="sugchip ok" data-ok="1">✓ 仍加入</button></div>` : '';
+        const sug = bad ? `<div class="sugbar" data-i="${i}">${(e.suggest&&e.suggest.length)?'你是不是要打：'+e.suggest.map(s=>`<button class="sugchip" data-w="${(s||'').replace(/"/g,'')}">${s}</button>`).join(''):'<span style="color:var(--red)">可能拼錯</span>'}<button class="sugchip ok" data-ok="1">仍加入</button></div>` : '';
         return `<div class="revrow" data-i="${i}">
           <input class="rv-w" placeholder="單字"${style}>
           <input class="rv-z" placeholder="中文意思">
           <input class="rv-e" placeholder="例句（可留空）">
-          ${bad?'<span style="color:var(--red);font-size:12px">⚠️查無</span>':''}
+          ${bad?'<span style="color:var(--red);font-size:12px">查無</span>':''}
           <button class="srm rv-x" title="移除這列">✕</button></div>${sug}`;
       }).join('')
     + `<button class="btn ghost sm" id="revAdd" style="margin-top:4px">＋ 再加一列</button>`
-    + (mis?'<div style="font-size:12px;color:var(--red);margin-top:6px">紅框的字字典查不到、可能拼錯——可點上面建議直接更正，或按「✓ 仍加入」保留。<span class="devhint">（片語、人名可忽略）</span></div>':'')
+    + (mis?'<div style="font-size:12px;color:var(--red);margin-top:6px">紅框的字字典查不到、可能拼錯——可點上面建議直接更正，或按「仍加入」保留。<span class="devhint">（片語、人名可忽略）</span></div>':'')
     + (warn?'<div class="devhint" style="font-size:12px;color:var(--yellow);margin-top:6px">有一列看起來把整句當成單字了，請確認。</div>':'')
     + '<div class="devhint" style="font-size:12px;opacity:.7;margin-top:6px">例句留空沒關係，加入後會自動帶字典例句。</div>';
   host.querySelectorAll('.revrow').forEach(row=>{
@@ -856,9 +926,9 @@ function drawGrid(){
         <button class="lvb strong${lv.k==='strong'?' on':''}" data-l="strong">熟</button>
       </div>
       <div class="cardact">
-        <button class="cact" data-act="say">🔊 唸單字</button>
-        ${ex?`<button class="cact" data-act="sayex">🔊 例句</button>`:''}
-        <button class="cact" data-act="edit">✏️ 編輯</button>
+        <button class="cact" data-act="say">發音</button>
+        ${ex?`<button class="cact" data-act="sayex">例句</button>`:''}
+        <button class="cact" data-act="edit">編輯</button>
       </div>`;
     el.querySelector('.chk').onclick=e=>{e.stopPropagation();
       if(e.target.checked)selected.add(id);else selected.delete(id);
@@ -974,16 +1044,16 @@ function renderDetail(rec,date,key){
       <div class="row" style="gap:6px;align-items:center">
         <button type="button" class="srcbadge ${mine?'mine':'auto'}" title="點一下切換來源" onclick="toggleSrc(this)">${mine?'我的':'自動'}</button>
         <input type="text" class="s-en" placeholder="英文句子" style="flex:1;min-width:110px">
-        <button class="speak" title="朗讀" onclick="speak(this.closest('.srow').querySelector('.s-en').value)">🔊</button>
+        <button class="speak" title="朗讀" onclick="speak(this.closest('.srow').querySelector('.s-en').value)">聽</button>
         <button class="srm" title="刪除這句" onclick="delSentence('${date}','${key}',${i})">✕</button>
       </div>
       <input type="text" class="s-zh" placeholder="中文翻譯（可留空）" style="margin-top:5px">
     </div>`;}).join('') || '<div style="color:var(--mut);font-size:13px">還沒有句子，下面可新增。</div>';
 
   inner.innerHTML=`<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
-    <h2>${rec.word} <button class="speak" onclick="speak('${rec.word.replace(/'/g,'')}')">🔊</button></h2>
+    <h2>${rec.word} <button class="speak" onclick="speak('${rec.word.replace(/'/g,'')}')">聽</button></h2>
     <div class="ph" style="color:var(--mut)">${rec.phonetic||''}　<span class="pill">${lv.label}</span>　<span class="pill">${date}</span></div>
-    <div style="font-size:12px;color:var(--mut);margin-top:6px">欄位已先帶入字典內容，可<b>自由修改或新增</b>，改完按「💾 儲存」。</div>
+    <div style="font-size:12px;color:var(--mut);margin-top:6px">欄位已先帶入字典內容，可<b>自由修改或新增</b>，改完按「儲存」。</div>
 
     <div class="edsec">
       <label class="fld">中文意思</label>
@@ -1016,21 +1086,21 @@ function renderDetail(rec,date,key){
     </div>
 
     <div class="row" style="margin-top:4px">
-      <button class="btn" id="saveAll">💾 儲存</button>
+      <button class="btn" id="saveAll">儲存</button>
       <span class="msg" id="dMsg"></span>
     </div>
 
     <div class="edsec">
-      <b style="font-size:14px">🎯 只測這個字</b>
+      <b style="font-size:14px">只測這個字</b>
       <div class="row" style="margin-top:8px">
-        <button class="btn ghost sm" data-qt="flash">🃏 翻卡</button>
-        <button class="btn ghost sm" data-qt="fill">📝 填空</button>
-        <button class="btn ghost sm" data-qt="spell">⌨️ 拼字</button>
+        <button class="btn ghost sm" data-qt="flash">翻卡</button>
+        <button class="btn ghost sm" data-qt="fill">填空</button>
+        <button class="btn ghost sm" data-qt="spell">拼字</button>
       </div>
     </div>
 
     <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px">
-      <button class="btn ghost sm" id="delW" style="color:var(--red);border-color:var(--red)">🗑️ 刪除這個單字</button>
+      <button class="btn ghost sm" id="delW" style="color:var(--red);border-color:var(--red)">刪除這個單字</button>
     </div>`;
 
   document.getElementById('f-zh').value=rec.wordZh||'';
@@ -1147,7 +1217,7 @@ function advance(ok,it){
 
 /* --- flashcard --- */
 function renderFlash(body,it){
-  body.innerHTML=`<button class="btn" id="autoBtn" style="margin-bottom:12px">🚌 自動播放（通勤聽：英文→拼字→中文＋詞性）</button>
+  body.innerHTML=`<button class="btn" id="autoBtn" style="margin-bottom:12px">自動播放</button>
     <div class="flash" id="flcard">
       <div>${it.rec.wordZh||it.rec.word}</div>
       <div class="hint">（中文面）點卡片翻到英文</div></div>
@@ -1165,7 +1235,7 @@ function renderFlash(body,it){
   card.onclick=()=>{
     flipped=!flipped;
     if(flipped){
-      card.innerHTML=`<div>${it.rec.word} <button class="speak" onclick="event.stopPropagation();speak('${it.rec.word.replace(/'/g,'')}')">🔊</button></div>
+      card.innerHTML=`<div>${it.rec.word} <button class="speak" onclick="event.stopPropagation();speak('${it.rec.word.replace(/'/g,'')}')">聽</button></div>
         <div class="hint">${it.rec.phonetic||''}　${it.rec.wordZh||''}</div>`;
       speak(it.rec.word);
       document.getElementById('flbtns').style.display='block';
@@ -1257,7 +1327,7 @@ function jump(d){
 }
 function toggleAutoPause(){
   auto.paused=!auto.paused;
-  const b=document.getElementById('aPlay'); if(b)b.textContent=auto.paused?'▶️ 繼續':'⏸ 暫停';
+  const b=document.getElementById('aPlay'); if(b)b.textContent=auto.paused?'繼續':'暫停';
   if(auto.paused){ try{speechSynthesis.cancel();}catch(e){} }
 }
 function renderAutoNow(rec,idx){
@@ -1272,20 +1342,18 @@ function renderAutoUI(){
   const body=document.getElementById('quizBody');
   body.innerHTML=`<div class="autonow" id="autoNow"></div>
     <div class="row" style="justify-content:center;margin-top:14px">
-      <button class="btn ghost sm" id="aPrev">⏮ 上一個</button>
-      <button class="btn sm" id="aPlay">⏸ 暫停</button>
-      <button class="btn ghost sm" id="aNext">下一個 ⏭</button>
-      <button class="btn ghost sm" id="aStop">⏹ 結束播放</button>
+      <button class="btn ghost sm" id="aPrev">上一個</button>
+      <button class="btn sm" id="aPlay">暫停</button>
+      <button class="btn ghost sm" id="aNext">下一個</button>
+      <button class="btn ghost sm" id="aStop">結束</button>
     </div>
     <div class="row" style="justify-content:center;margin-top:12px">
       <span style="font-size:13px;color:var(--mut)">速度</span>
       <input type="range" id="aRate" min="0.5" max="1.1" step="0.1" value="${auto.rate}" style="width:170px">
     </div>
     <div class="edsec" style="text-align:left">${buildVoicePicker()}</div>
-    <div style="font-size:12px;color:var(--mut);margin-top:14px;line-height:1.7;text-align:left">
-      會<b>循環</b>朗讀你選的單字：英文 → 逐字母拼字 → 中文意思＋詞性。<br>
-      ✅ 已自動<b>防止螢幕自動鎖屏</b>，螢幕亮著放著就能一直連續播。<br>
-      ⚠️ 手機<b>完全鎖屏／關螢幕</b>時，瀏覽器（尤其 iPhone）會暫停語音，這是系統限制。建議把螢幕自動鎖定時間調長、或螢幕朝下放著聽。
+    <div class="devhint" style="font-size:12px;color:var(--mut);margin-top:14px;line-height:1.7;text-align:left">
+      循環朗讀：英文 → 拼字 → 中文。已自動防止鎖屏；手機完全鎖屏時系統會暫停語音。
     </div>`;
   document.getElementById('aPlay').onclick=toggleAutoPause;
   document.getElementById('aPrev').onclick=()=>jump(-1);
@@ -1301,7 +1369,7 @@ function buildVoicePicker(){
   if(!en.length && !zh.length)
     return '<div style="font-size:12px;color:var(--mut)">這個瀏覽器目前沒提供可選語音（iPhone Safari 常只給內建那一種）。</div>';
   const opt=(list,base)=>list.map(v=>`<option value="${v.name.replace(/"/g,'')}"${voicePref[base]===v.name?' selected':''}>${v.name}（${v.lang}）</option>`).join('');
-  return `<div style="font-size:13px;font-weight:700;margin-bottom:6px">🔊 語音選擇（挑最好聽的）</div>
+  return `<div style="font-size:13px;font-weight:700;margin-bottom:6px">語音選擇（挑最好聽的）</div>
     <div class="row" style="margin-bottom:6px">英文
       <select id="vEn" style="flex:1;min-width:130px">${opt(en,'en')||'<option>（無）</option>'}</select>
       <button class="speak" onclick="speak('apple, this is a test.','en-US')">試聽</button></div>
@@ -1375,7 +1443,7 @@ function renderFill(body,it){
       });
       speak(word);
       document.getElementById('ana').innerHTML=`<div class="analysis">
-        <b>${ok?'✓ 答對了！':'✗ 答錯了'}</b>　正解：<b>${word}</b> ${it.rec.phonetic||''} <button class="speak" onclick="speak('${word.replace(/'/g,'')}')">🔊</button><br>
+        <b>${ok?'✓ 答對了！':'✗ 答錯了'}</b>　正解：<b>${word}</b> ${it.rec.phonetic||''} <button class="speak" onclick="speak('${word.replace(/'/g,'')}')">聽</button><br>
         中文：${it.rec.wordZh||''}<br>
         定義：${ex.def||'—'}<br>例句：${ex.ex}<br>${ex.exZh?'例句中文：'+ex.exZh+'<br>':''}
         <div style="font-size:12px;color:var(--mut);margin-top:8px">調整熟悉度（同步到上面清單）：</div>${quizLvHtml(it.date,it.key)}
@@ -1389,7 +1457,7 @@ function renderFill(body,it){
 function renderSpell(body,it){
   body.innerHTML=`<div style="font-size:22px;margin-bottom:6px">${it.rec.wordZh||'（無中文，聽寫）'}</div>
     <div class="row" style="justify-content:center;margin-bottom:12px">
-      <button class="btn ghost sm" id="spPlay">🔊 播放英文發音</button>
+      <button class="btn ghost sm" id="spPlay">播放發音</button>
     </div>
     <input type="text" id="spIn" placeholder="輸入你聽到/想到的英文單字" autocomplete="off" autocapitalize="off">
     <div class="row" style="justify-content:center;margin-top:12px">
@@ -1417,7 +1485,7 @@ function renderSpell(body,it){
 function finishQuiz(){
   const total=Q.items.length, sc=Q.score, pct=total?Math.round(sc/total*100):0;
   const wrong=Q.results.filter(r=>!r.ok).map(r=>r.word);
-  const grade=pct>=90?'🏆 太強了！':pct>=70?'👍 不錯，繼續保持':pct>=50?'💪 再多練幾次':'📚 這些字要加強';
+  const grade=pct>=90?'出色':pct>=70?'不錯，繼續保持':pct>=50?'再多練幾次':'這些字要加強';
   document.getElementById('quizBody').innerHTML=`<div class="scorebox">
       <div class="big" style="color:${pct>=70?'var(--green)':pct>=50?'var(--yellow)':'var(--red)'}">${pct} 分</div>
       答對 ${sc} / ${total} 題<br>${grade}
@@ -1447,7 +1515,7 @@ document.getElementById('btnVoice').onclick=()=>{
   loadVoices();
   const inner=document.getElementById('ovInner');
   inner.innerHTML=`<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
-    <h2 style="font-size:20px">🔊 語音設定</h2>
+    <h2 style="font-size:20px">語音設定</h2>
     <div style="font-size:13px;color:var(--mut);margin:6px 0 12px">挑一個最順耳的，會套用到單字發音和自動播放，並記在這支手機（每個人各自設定）。</div>
     <div class="edsec" style="text-align:left;margin-top:0">${buildVoicePicker()}</div>
     <div style="font-size:12px;color:var(--mut);margin-top:12px;line-height:1.7">
