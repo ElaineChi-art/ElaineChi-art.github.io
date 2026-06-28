@@ -30,6 +30,7 @@
     var forceShare = /[?&]share\b/.test(q) || /\bshare\b/.test(location.hash);
     if(forceShare || !owner) document.documentElement.classList.add('share');
     try{ var th=localStorage.getItem('vocabTheme')||'sapphire'; if(th!=='wine') document.documentElement.setAttribute('data-theme',th); }catch(e){}
+    try{ if(localStorage.getItem('vocabHideTrans')==='1') document.documentElement.classList.add('hidetrans'); }catch(e){}
   })();
 </script>
 <style>
@@ -131,6 +132,7 @@
   .sugchip.ok{border-color:var(--line);background:var(--panel2);color:var(--tx)}
   /* 分享版：隱藏開發者提示 */
   html.share .devhint{display:none}
+  html.hidetrans .extrans{display:none}
 
   /* modal */
   .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;
@@ -428,7 +430,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v36 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v37 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -439,7 +441,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='36';
+const APP_VERSION='37';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -516,11 +518,31 @@ async function translate(text){
     const r=await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair=en|zh-TW');
     const j=await r.json();
     let t=(j.responseData&&j.responseData.translatedText)||'';
-    if(/MYMEMORY WARNING|QUERY LENGTH LIMIT/i.test(t)) t='';
-    trCache[text]=t; localStorage.setItem('vocabTr',JSON.stringify(trCache));
+    if(/MYMEMORY WARNING|QUERY LENGTH LIMIT|INVALID/i.test(t)) t='';
+    if(t){ trCache[text]=t; localStorage.setItem('vocabTr',JSON.stringify(trCache)); } // 只快取成功的，失敗下次再試
     return t;
   }catch(e){return ''}
 }
+// 背景自動翻譯：把所有單字的中文意思與例句翻譯補齊（節流，不擋畫面）
+let bgRunning=false;
+async function bgTranslate(){
+  if(bgRunning)return; bgRunning=true;
+  try{
+    let did=0;
+    for(const dt of Object.keys(DB)){
+      for(const k of Object.keys(DB[dt].words||{})){
+        const rec=DB[dt].words[k];
+        if(rec.wordZh===undefined||rec.wordZh===''){ const v=await translate(rec.word); if(v){rec.wordZh=v;save();did++;} await sleep(120); }
+        if(rec.sentences) for(const s of rec.sentences){
+          if(s.ex && !s.exZh){ const v=await translate(s.ex); if(v){s.exZh=v;save();did++;} await sleep(120); }
+        }
+      }
+    }
+    if(did){ renderList(); if(document.getElementById('ov').classList.contains('show') && curWord) renderDetail(curWord.rec,curWord.date,curWord.key); }
+  }catch(e){}
+  bgRunning=false;
+}
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
 /* ============ build a word record ============ */
 const POS_ZH={noun:'名詞',verb:'動詞',adjective:'形容詞',adverb:'副詞',pronoun:'代名詞',
@@ -560,10 +582,13 @@ function buildGrammarNote(meanings){
   const out=[];
   (meanings||[]).forEach(m=>{
     const pos=POS_ZH[m.pos]||m.pos||'';
+    const head=pos?`【${pos}】`:'';
+    const def=(m.defs&&m.defs[0]&&m.defs[0].def)||'';
+    if(def) out.push(head+def);             // 詞性＋語意（用法）
     const bits=[];
-    if(m.syn&&m.syn.length) bits.push('同義：'+m.syn.join('、'));
-    if(m.ant&&m.ant.length) bits.push('反義：'+m.ant.join('、'));
-    if(bits.length) out.push((pos?`【${pos}】`:'')+bits.join('；'));
+    if(m.syn&&m.syn.length) bits.push('同義：'+m.syn.slice(0,6).join('、'));
+    if(m.ant&&m.ant.length) bits.push('反義：'+m.ant.slice(0,6).join('、'));
+    if(bits.length) out.push('　'+bits.join('；'));
   });
   return out.join('\n');
 }
@@ -770,6 +795,7 @@ async function addWords(){
   }
   if(done){ undoSnap=snapBefore; undoInput=inputBefore; document.getElementById('undoBar').style.display='block'; }
   adding=false; addBtn.disabled=false; refresh();
+  bgTranslate(); // 背景把例句中文翻譯補上
 }
 // 復原：把資料還原到這次加入之前，並把輸入文字放回去
 function undoAdd(){
@@ -1030,7 +1056,6 @@ function drawGrid(){
       else if(a==='sayex'){ const t=topExample(rec); if(t)speak(t.ex,'en-US'); }
       else openWord(date,key);
     });
-    el.onclick=()=>openWord(date,key);
     grid.appendChild(el);
   });
   updateSelCount(); updateQuizPool();
@@ -1091,8 +1116,10 @@ function initEditable(rec){
   if(rec.note===undefined)rec.note=buildGrammarNote(rec.meanings); // 文法補充一開始就帶入
   if(rec.level===undefined)rec.level=null;
 }
+let curWord=null;
 async function openWord(date,key){
   const rec=DB[date].words[key];
+  curWord={rec,date,key};
   initEditable(rec);
   userFirstSentences(rec); save();   // 我的例句排最前面
   ov.classList.add('show');
@@ -1131,13 +1158,15 @@ function renderDetail(rec,date,key){
     const mine=(s.src==='user'); const src=mine?'user':'dict';
     return `
     <div class="srow" data-i="${i}" data-src="${src}">
-      <div class="row" style="gap:6px;align-items:center">
+      <div class="row" style="gap:6px;align-items:center;justify-content:space-between">
         <button type="button" class="srcbadge ${mine?'mine':'auto'}" title="點一下切換來源" onclick="toggleSrc(this)">${mine?'我的':'自動'}</button>
-        <input type="text" class="s-en" placeholder="英文句子" style="flex:1;min-width:110px">
-        <button class="speak" title="朗讀" onclick="speak(this.closest('.srow').querySelector('.s-en').value)">聽</button>
-        <button class="srm" title="刪除這句" onclick="delSentence('${date}','${key}',${i})">✕</button>
+        <span class="row" style="gap:6px">
+          <button class="speak" title="朗讀" onclick="speak(this.closest('.srow').querySelector('.s-en').value)">聽</button>
+          <button class="srm" title="刪除這句" onclick="delSentence('${date}','${key}',${i})">✕</button>
+        </span>
       </div>
-      <input type="text" class="s-zh" placeholder="中文翻譯（可留空）" style="margin-top:5px">
+      <textarea class="s-en" placeholder="英文句子" style="width:100%;min-height:46px;margin-top:6px"></textarea>
+      <textarea class="s-zh extrans" placeholder="中文翻譯（可留空）" style="width:100%;min-height:36px;margin-top:5px"></textarea>
     </div>`;}).join('') || '<div style="color:var(--mut);font-size:13px">還沒有句子，下面可新增。</div>';
 
   inner.innerHTML=`<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
@@ -1534,7 +1563,7 @@ function renderFill(body,it){
       document.getElementById('ana').innerHTML=`<div class="analysis">
         <b>${ok?'✓ 答對了！':'✗ 答錯了'}</b>　正解：<b>${word}</b> ${it.rec.phonetic||''} <button class="speak" onclick="speak('${word.replace(/'/g,'')}')">聽</button><br>
         中文：${it.rec.wordZh||''}<br>
-        定義：${ex.def||'—'}<br>例句：${ex.ex}<br>${ex.exZh?'例句中文：'+ex.exZh+'<br>':''}
+        定義：${ex.def||'—'}<br>例句：${ex.ex}<br>${ex.exZh?'<span class="extrans">例句中文：'+ex.exZh+'<br></span>':''}
         <div style="font-size:12px;color:var(--mut);margin-top:8px">調整熟悉度（同步到上面清單）：</div>${quizLvHtml(it.date,it.key)}
         <button class="btn sm" style="margin-top:12px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
     };
@@ -1620,14 +1649,24 @@ function openTheme(){
   const cur=currentTheme();
   document.getElementById('ovInner').innerHTML=
     `<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
-     <h2 style="font-size:22px">外觀主題</h2>
-     <div style="font-size:13px;color:var(--mut);margin:6px 0 12px">挑一個喜歡的，會記在這個裝置。</div>
+     <h2 style="font-size:22px">外觀與偏好</h2>
+     <div style="font-size:13px;color:var(--mut);margin:6px 0 12px">設定會記在這個裝置。</div>
      <div class="themegrid">${THEMES.map(t=>
        `<button class="themesw${t.id===cur?' on':''}" data-id="${t.id}">
           <span class="swatch" style="background:${t.bg}"><i style="background:${t.a}"></i></span>
-          <span>${t.name}</span></button>`).join('')}</div>`;
+          <span>${t.name}</span></button>`).join('')}</div>
+     <div class="edsec" style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+       <span>例句中文翻譯</span>
+       <button class="btn ghost sm" id="btnTransToggle"></button>
+     </div>`;
   document.getElementById('ov').classList.add('show');
   document.querySelectorAll('.themesw').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.id); openTheme(); });
+  const tb=document.getElementById('btnTransToggle');
+  const hidden=()=>document.documentElement.classList.contains('hidetrans');
+  tb.textContent=hidden()?'已隱藏（點來顯示）':'顯示中（點來隱藏）';
+  tb.onclick=()=>{ const h=!hidden(); document.documentElement.classList.toggle('hidetrans',h);
+    try{ localStorage.setItem('vocabHideTrans', h?'1':'0'); }catch(e){}
+    tb.textContent=h?'已隱藏（點來顯示）':'顯示中（點來隱藏）'; };
 }
 document.getElementById('btnTheme').onclick=openTheme;
 
@@ -1673,6 +1712,7 @@ function migrateSentenceSrc(){
   const start = DB[today()] ? today() : allDates()[0];
   if(start){ daySel.add(start); const p=start.split('-'); calState.year=+p[0]; calState.month=+p[1]-1; }
   renderCal(); renderList();
+  setTimeout(bgTranslate, 1500); // 載入後背景補翻譯
 })();
 </script>
 </body>
