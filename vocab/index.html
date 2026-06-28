@@ -241,7 +241,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v10 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v11 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -543,7 +543,7 @@ function drawReview(){
       }).join('')
     + `<button class="btn ghost sm" id="revAdd" style="margin-top:4px">＋ 再加一列</button>`
     + (warn?'<div style="font-size:12px;color:var(--red);margin-top:6px">⚠️ 紅框那列把一整句當成單字了（多半是該筆編號沒被認出）。把多的部分剪到新的一列，或直接修。</div>':'')
-    + '<div style="font-size:12px;opacity:.7;margin-top:6px">數字跟你預期不同？在這裡改最快，改完直接按「加入單字」。</div>';
+    + '<div style="font-size:12px;opacity:.7;margin-top:6px">例句留空沒關係 —— 加入後會自動幫你帶入字典例句（字典有的話）。數字不對在這裡改最快，改完直接按「加入單字」。</div>';
   host.querySelectorAll('.revrow').forEach(row=>{
     const i=+row.dataset.i, e=reviewEntries[i];
     row.querySelector('.rv-w').value=e.word||'';
