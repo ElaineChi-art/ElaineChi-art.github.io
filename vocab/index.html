@@ -73,6 +73,10 @@
   .lvb.on.weak{background:var(--red);color:#fff;border-color:var(--red)}
   .lvb.on.mid{background:var(--yellow);color:#241c00;border-color:var(--yellow)}
   .lvb.on.strong{background:var(--green);color:#06210f;border-color:var(--green)}
+  .cardex{font-size:12px;color:#cdd6e2;margin-top:7px;line-height:1.45}
+  .cardact{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+  .cact{font-size:12px;padding:5px 9px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--tx);cursor:pointer}
+  .cact:hover{border-color:var(--acc2)}
 
   /* modal */
   .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;
@@ -269,7 +273,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v19 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v20 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -370,6 +374,14 @@ async function buildWord(raw){
   }
   rec.wordZh=await translate(word);
   return rec;
+}
+// 例句排序：我的(user)優先；取最優先一句
+function userFirstSentences(rec){
+  if(rec && rec.sentences) rec.sentences.sort((a,b)=>((a.src==='user')?0:1)-((b.src==='user')?0:1));
+}
+function topExample(rec){
+  const s=(rec&&rec.sentences)||[];
+  return s.find(x=>x.src==='user'&&x.ex) || s.find(x=>x.ex) || null;
 }
 // 文法補充：詞性／同義詞／反義詞（一開始就帶入，可編輯）
 function buildGrammarNote(meanings){
@@ -482,17 +494,16 @@ function levelOf(rec){
   if(acc<0.8) return {k:'mid',acc,label:'普通'};
   return {k:'strong',acc,label:'熟'};
 }
-function setLevel(date,key,lvl){
+function setLevel(date,key,lvl,force){
   const rec=DB[date]&&DB[date].words[key]; if(!rec)return;
-  rec.level = (rec.level===lvl)? null : lvl; // click active = back to auto
+  rec.level = (!force && rec.level===lvl)? null : lvl; // 一般點同一級=取消回自動；force 一律設定
   save(); renderList();
 }
 function record(date,word,ok){
   const w=DB[date]&&DB[date].words[word]; if(!w)return;
   if(ok)w.stats.right++; else w.stats.wrong++;
   w.stats.last=Date.now();
-  w.level=null; // real performance takes over after a quiz
-  save();
+  save(); // 不再清掉手動熟悉度，讓你的標記說了算
 }
 
 /* ============ reusable calendar ============ */
@@ -557,6 +568,7 @@ async function addWords(){
     initEditable(rec);                                  // 帶入詞性/定義/例句/文法補充
     if(e.wordZh) rec.wordZh=e.wordZh;                   // 你提供的中文意思優先
     mergeSentences(rec, e.sentences);                   // 你丟的例句整理進去（去重）
+    userFirstSentences(rec);                            // 我的例句排前面
     if(e.note) rec.note=(rec.note?rec.note+'\n':'')+e.note;
     save(); done++;
   }
@@ -701,20 +713,33 @@ function drawGrid(){
   const grid=document.getElementById('grid'); grid.innerHTML='';
   v.forEach(({date,key,rec})=>{
     const lv=levelOf(rec); const id=date+'|'+key;
+    const ex=topExample(rec);
     const el=document.createElement('div'); el.className='wcard lv-'+lv.k;
     el.innerHTML=`<input type="checkbox" class="chk"${selected.has(id)?' checked':''}>
       <div class="en">${rec.word}</div>
       <div class="ph">${rec.phonetic||''}${listMulti?` <span style="color:var(--mut)">${date}</span>`:''}</div>
       <div class="zh">${rec.wordZh||'（無翻譯）'}</div>
+      ${ex?`<div class="cardex"><span class="srcbadge ${ex.src==='user'?'mine':'auto'}" style="cursor:default">${ex.src==='user'?'我的':'自動'}</span> ${ex.ex}</div>`:''}
       <div class="lvset">
         <button class="lvb weak${lv.k==='weak'?' on':''}" data-l="weak">不熟</button>
         <button class="lvb mid${lv.k==='mid'?' on':''}" data-l="mid">普通</button>
         <button class="lvb strong${lv.k==='strong'?' on':''}" data-l="strong">熟</button>
+      </div>
+      <div class="cardact">
+        <button class="cact" data-act="say">🔊 唸單字</button>
+        ${ex?`<button class="cact" data-act="sayex">🔊 例句</button>`:''}
+        <button class="cact" data-act="edit">✏️ 編輯</button>
       </div>`;
     el.querySelector('.chk').onclick=e=>{e.stopPropagation();
       if(e.target.checked)selected.add(id);else selected.delete(id);
       updateSelCount();updateQuizPool();};
     el.querySelectorAll('.lvb').forEach(b=>b.onclick=e=>{e.stopPropagation();setLevel(date,key,b.dataset.l);});
+    el.querySelectorAll('.cact').forEach(b=>b.onclick=e=>{e.stopPropagation();
+      const a=b.dataset.act;
+      if(a==='say') speak(rec.word,'en-US');
+      else if(a==='sayex'){ const t=topExample(rec); if(t)speak(t.ex,'en-US'); }
+      else openWord(date,key);
+    });
     el.onclick=()=>openWord(date,key);
     grid.appendChild(el);
   });
@@ -779,6 +804,7 @@ function initEditable(rec){
 async function openWord(date,key){
   const rec=DB[date].words[key];
   initEditable(rec);
+  userFirstSentences(rec); save();   // 我的例句排最前面
   ov.classList.add('show');
   renderDetail(rec,date,key);
   let changed=false;
@@ -918,6 +944,13 @@ function quizThisWord(date,key,type){
 }
 
 /* ============ 4. QUIZ ============ */
+// 測驗中也能調整熟悉度，且同步到上面清單
+function quizLvHtml(date,key){
+  const rec=DB[date]&&DB[date].words[key]; if(!rec)return '';
+  const lv=levelOf(rec).k;
+  const b=(L,t)=>`<button class="lvb ${L}${lv===L?' on':''}" onclick="setLevel('${date}','${key}','${L}');this.parentNode.outerHTML=quizLvHtml('${date}','${key}')">${t}</button>`;
+  return `<div class="lvset" style="max-width:260px;margin:8px auto 0">${b('weak','不熟')}${b('mid','普通')}${b('strong','熟')}</div>`;
+}
 function gatherPool(){ // checked words (basket)
   const arr=[];
   selected.forEach(id=>{const i=id.indexOf('|');const dt=id.slice(0,i),k=id.slice(i+1);
@@ -988,9 +1021,13 @@ function renderFlash(body,it){
     <div class="flash" id="flcard">
       <div>${it.rec.wordZh||it.rec.word}</div>
       <div class="hint">（中文面）點卡片翻到英文</div></div>
-    <div class="row" id="flbtns" style="justify-content:center;margin-top:14px;display:none">
-      <button class="btn ghost" id="flBad">✗ 不熟</button>
-      <button class="btn" id="flGood">✓ 我記得</button>
+    <div id="flbtns" style="margin-top:14px;display:none">
+      <div style="font-size:12px;color:var(--mut);margin-bottom:6px">選熟悉度 → 自動下一張（會同步到上面清單）</div>
+      <div class="lvset" style="max-width:280px;margin:0 auto">
+        <button class="lvb weak" id="flWeak">不熟</button>
+        <button class="lvb mid" id="flMid">普通</button>
+        <button class="lvb strong" id="flStrong">熟</button>
+      </div>
     </div>`;
   document.getElementById('autoBtn').onclick=startAutoPlay;
   let flipped=false;
@@ -1001,13 +1038,15 @@ function renderFlash(body,it){
       card.innerHTML=`<div>${it.rec.word} <button class="speak" onclick="event.stopPropagation();speak('${it.rec.word.replace(/'/g,'')}')">🔊</button></div>
         <div class="hint">${it.rec.phonetic||''}　${it.rec.wordZh||''}</div>`;
       speak(it.rec.word);
-      document.getElementById('flbtns').style.display='flex';
+      document.getElementById('flbtns').style.display='block';
     }else{
       card.innerHTML=`<div>${it.rec.wordZh||it.rec.word}</div><div class="hint">（中文面）點卡片翻到英文</div>`;
     }
   };
-  document.getElementById('flGood').onclick=()=>{advance(true,it);Q.i++;nextQ();};
-  document.getElementById('flBad').onclick=()=>{advance(false,it);Q.i++;nextQ();};
+  const rate=(L)=>{ setLevel(it.date,it.key,L,true); advance(L==='strong',it); Q.i++; nextQ(); };
+  document.getElementById('flWeak').onclick=()=>rate('weak');
+  document.getElementById('flMid').onclick=()=>rate('mid');
+  document.getElementById('flStrong').onclick=()=>rate('strong');
 }
 
 /* ===== 自動播放（通勤聽，僅翻卡）===== */
@@ -1209,7 +1248,8 @@ function renderFill(body,it){
         <b>${ok?'✓ 答對了！':'✗ 答錯了'}</b>　正解：<b>${word}</b> ${it.rec.phonetic||''} <button class="speak" onclick="speak('${word.replace(/'/g,'')}')">🔊</button><br>
         中文：${it.rec.wordZh||''}<br>
         定義：${ex.def||'—'}<br>例句：${ex.ex}<br>${ex.exZh?'例句中文：'+ex.exZh+'<br>':''}
-        <button class="btn sm" style="margin-top:10px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
+        <div style="font-size:12px;color:var(--mut);margin-top:8px">調整熟悉度（同步到上面清單）：</div>${quizLvHtml(it.date,it.key)}
+        <button class="btn sm" style="margin-top:12px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
     };
     ob.appendChild(b);
   });
@@ -1236,7 +1276,8 @@ function renderSpell(body,it){
       <b>${ok?'✓ 拼對了！':'✗ 拼錯了'}</b>　正解：<b>${it.rec.word}</b> ${it.rec.phonetic||''}<br>
       ${ok?'':'你輸入：'+(inp.value||'（空白）')+'<br>'}
       中文：${it.rec.wordZh||''}<br>
-      <button class="btn sm" style="margin-top:10px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
+      <div style="font-size:12px;color:var(--mut);margin-top:8px">調整熟悉度（同步到上面清單）：</div>${quizLvHtml(it.date,it.key)}
+      <button class="btn sm" style="margin-top:12px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
   };
   document.getElementById('spCheck').onclick=check;
   inp.onkeydown=e=>{if(e.key==='Enter')check();};
