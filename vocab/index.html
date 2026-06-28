@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日英文單字庫</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#10131a; --panel:#161b24; --panel2:#1d2430; --line:#2a3140;
+    --tx:#e7ecf3; --mut:#8b97a8; --acc:#7fb5ff; --acc2:#5b8def;
+    --green:#3ec97a; --yellow:#e8b94a; --red:#ef6b6b; --grey:#6a7585;
+  }
+  body{font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+       background:var(--bg);color:var(--tx);min-height:100vh}
+  .topnav{display:flex;gap:6px;background:#0b0d12;padding:8px 16px;border-bottom:1px solid var(--line);
+          position:sticky;top:0;z-index:50;overflow-x:auto}
+  .topnav a{color:#9aa4b2;text-decoration:none;font-size:14px;font-weight:600;padding:7px 16px;border-radius:8px;white-space:nowrap}
+  .topnav a:hover{background:#161922;color:#e6e6e6}
+  .topnav a.active{background:#1f2e3a;color:var(--acc)}
+  .wrap{max-width:1000px;margin:0 auto;padding:20px 18px 80px}
+  h1{font-size:24px;margin-bottom:4px}
+  .sub{color:var(--mut);font-size:14px;margin-bottom:18px}
+
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+  .tab{background:var(--panel);border:1px solid var(--line);color:var(--mut);
+       padding:9px 18px;border-radius:10px;cursor:pointer;font-size:15px;font-weight:600}
+  .tab.active{background:var(--acc2);border-color:var(--acc2);color:#fff}
+  .view{display:none}
+  .view.active{display:block}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+  label.fld{display:block;font-size:13px;color:var(--mut);margin-bottom:6px}
+  textarea,input[type=text],select{width:100%;background:var(--panel2);border:1px solid var(--line);
+       color:var(--tx);border-radius:10px;padding:11px 12px;font-size:15px;font-family:inherit}
+  textarea{min-height:90px;resize:vertical}
+  input[type=date]{background:var(--panel2);border:1px solid var(--line);color:var(--tx);
+       border-radius:9px;padding:8px 10px;font-size:14px;font-family:inherit}
+  .btn{background:var(--acc2);color:#fff;border:none;border-radius:10px;padding:11px 20px;
+       font-size:15px;font-weight:600;cursor:pointer}
+  .btn:hover{background:#4f7fe0}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--tx)}
+  .btn.ghost:hover{background:var(--panel2)}
+  .btn.sm{padding:6px 12px;font-size:13px;border-radius:8px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;background:var(--panel2);
+        border:1px solid var(--line);color:var(--mut)}
+  .speak{cursor:pointer;border:none;background:var(--panel2);color:var(--acc);border-radius:8px;
+         padding:5px 9px;font-size:15px}
+  .speak:hover{background:#26303d}
+
+  /* word grid */
+  .wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+  .wcard{background:var(--panel2);border:1px solid var(--line);border-left:5px solid var(--grey);
+         border-radius:11px;padding:12px;cursor:pointer;position:relative}
+  .wcard:hover{border-color:var(--acc2)}
+  .wcard .en{font-size:17px;font-weight:700}
+  .wcard .ph{font-size:12px;color:var(--mut)}
+  .wcard .zh{font-size:13px;color:#b9c4d2;margin-top:3px}
+  .wcard .chk{position:absolute;top:8px;right:8px;width:18px;height:18px}
+  .lv-new{border-left-color:var(--grey)}
+  .lv-weak{border-left-color:var(--red)}
+  .lv-mid{border-left-color:var(--yellow)}
+  .lv-strong{border-left-color:var(--green)}
+
+  /* modal */
+  .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;
+      justify-content:center;z-index:100;overflow-y:auto;padding:30px 14px}
+  .ov.show{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;max-width:640px;
+         width:100%;padding:22px}
+  .modal h2{font-size:26px;margin-bottom:2px}
+  .x{float:right;cursor:pointer;color:var(--mut);font-size:22px;line-height:1;border:none;background:none}
+  .mean{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+  .pos{display:inline-block;background:#243b55;color:var(--acc);font-size:12px;font-weight:700;
+       padding:2px 9px;border-radius:6px;margin-bottom:8px}
+  .def{margin-bottom:10px;padding-left:10px;border-left:2px solid var(--line)}
+  .def .e{font-size:14px}
+  .def .z{font-size:13px;color:var(--mut)}
+  .ex{font-size:13px;color:#cdd6e2;margin-top:3px;font-style:italic}
+  .exz{font-size:13px;color:var(--mut)}
+  .gram{background:var(--panel2);border-radius:10px;padding:12px;margin-top:12px;font-size:13px;line-height:1.7}
+  .gram b{color:var(--acc)}
+
+  .msg{font-size:14px;color:var(--mut);margin-top:8px;min-height:20px}
+  .empty{color:var(--mut);font-size:14px;text-align:center;padding:30px}
+
+  /* quiz */
+  .quizbox{text-align:center}
+  .flash{background:var(--panel2);border:1px solid var(--line);border-radius:16px;min-height:200px;
+         display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+         padding:30px;cursor:pointer;font-size:30px;font-weight:700}
+  .flash .hint{font-size:13px;color:var(--mut);font-weight:400}
+  .opt{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);
+       color:var(--tx);border-radius:10px;padding:13px 16px;margin-bottom:9px;cursor:pointer;font-size:16px}
+  .opt:hover{border-color:var(--acc2)}
+  .opt.correct{background:#1c4029;border-color:var(--green)}
+  .opt.wrong{background:#46211f;border-color:var(--red)}
+  .progress{font-size:13px;color:var(--mut);margin-bottom:12px}
+  .analysis{background:var(--panel2);border-radius:10px;padding:14px;margin-top:14px;text-align:left;font-size:14px;line-height:1.7}
+  .scorebox{font-size:18px;line-height:1.9}
+  .big{font-size:46px;font-weight:800}
+  .datechips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
+  .datechip{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);
+            padding:6px 11px;border-radius:9px;font-size:13px;cursor:pointer}
+  .datechip.on{background:#243b55;border-color:var(--acc2);color:var(--acc)}
+  .datechip small{color:var(--mut)}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="https://elainechi-art.github.io/">🏠 首頁</a>
+  <a href="https://elainechi-art.github.io/judicial/">📚 司法官・律師複習</a>
+  <a class="active" href="./">🔤 每日英文單字</a>
+  <a href="https://elainechi-art.github.io/music-os/ecosystem.html">🎵 音樂版稅 OS</a>
+</nav>
+
+<div class="wrap">
+  <h1>🔤 每日英文單字庫</h1>
+  <div class="sub">輸入單字 → 自動發音・例句・中文・文法補充 → 每日入庫 → 三種測驗複習</div>
+
+  <div class="tabs">
+    <div class="tab active" data-v="input">📥 輸入單字</div>
+    <div class="tab" data-v="bank">📚 單字庫</div>
+    <div class="tab" data-v="quiz">📝 測驗</div>
+  </div>
+
+  <!-- ========== INPUT ========== -->
+  <div class="view active" id="v-input">
+    <div class="card">
+      <label class="fld">加入到哪一天（預設今天）</label>
+      <input type="date" id="inDate">
+      <label class="fld" style="margin-top:14px">輸入單字或片語（可一次多個，用換行或逗號分隔）</label>
+      <textarea id="inWords" placeholder="例如：&#10;ubiquitous&#10;break the ice&#10;diligent, resilient, profound"></textarea>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="btnAdd">查詢並加入單字庫</button>
+        <span class="msg" id="inMsg"></span>
+      </div>
+    </div>
+    <div class="card" id="inResults" style="display:none">
+      <b>本次加入的單字</b>
+      <div class="wgrid" id="inGrid" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- ========== BANK ========== -->
+  <div class="view" id="v-bank">
+    <div class="card">
+      <div class="row">
+        <div>
+          <label class="fld">選擇日期</label>
+          <input type="date" id="bankDate">
+        </div>
+        <div style="align-self:flex-end">
+          <button class="btn ghost sm" id="btnReviewDay">⚡ 用這天的不熟單字測驗</button>
+        </div>
+      </div>
+      <div class="msg" id="bankStat"></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <b>單字清單　<span class="pill" id="selCount">已選 0 字</span></b>
+        <button class="btn sm" id="btnCompose" disabled>✍️ 用選取的字造句</button>
+      </div>
+      <div style="font-size:12px;color:var(--mut);margin:6px 0 12px">
+        點卡片看詳解；勾選右上角方框可挑幾個字做造句練習（需求5）。左邊色條＝熟悉度：
+        <span style="color:var(--grey)">■新</span>
+        <span style="color:var(--red)">■不熟</span>
+        <span style="color:var(--yellow)">■普通</span>
+        <span style="color:var(--green)">■熟</span>
+      </div>
+      <div class="wgrid" id="bankGrid"></div>
+      <div class="empty" id="bankEmpty" style="display:none">這天還沒有單字，去「📥 輸入單字」加入吧。</div>
+    </div>
+  </div>
+
+  <!-- ========== QUIZ ========== -->
+  <div class="view" id="v-quiz">
+    <div class="card" id="quizSetup">
+      <b>1. 勾選要複習的日期（可複選，需求9）</b>
+      <div class="datechips" id="quizDates"></div>
+
+      <b>2. 選擇出題範圍</b>
+      <div class="row" style="margin:8px 0 16px">
+        <select id="quizMode" style="max-width:260px">
+          <option value="all">全部單字</option>
+          <option value="random">隨機抽題</option>
+          <option value="weak">不熟單字優先（需求8）</option>
+        </select>
+        <select id="quizCount" style="max-width:160px">
+          <option value="10">10 題</option>
+          <option value="20">20 題</option>
+          <option value="9999">全部</option>
+        </select>
+      </div>
+
+      <b>3. 選擇測驗方式（需求6）</b>
+      <div class="row" style="margin-top:8px">
+        <button class="btn ghost" data-q="flash">🃏 翻卡測驗</button>
+        <button class="btn ghost" data-q="fill">📝 填空測驗</button>
+        <button class="btn ghost" data-q="spell">⌨️ 拼字測驗</button>
+      </div>
+      <div class="msg" id="quizMsg"></div>
+    </div>
+
+    <div class="card quizbox" id="quizRun" style="display:none">
+      <div class="progress" id="quizProg"></div>
+      <div id="quizBody"></div>
+      <div class="row" style="justify-content:center;margin-top:16px">
+        <button class="btn ghost sm" id="quizQuit">結束測驗</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- word detail modal -->
+<div class="ov" id="ov"><div class="modal" id="ovInner"></div></div>
+<!-- compose modal -->
+<div class="ov" id="ovc"><div class="modal" id="ovcInner"></div></div>
+
+<script>
+/* ============ storage ============ */
+const KEY='vocabDB_v1';
+let DB=JSON.parse(localStorage.getItem(KEY)||'{}'); // { 'YYYY-MM-DD': { words:{ word:{...} }, comps:[...] } }
+function save(){localStorage.setItem(KEY,JSON.stringify(DB))}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function day(d){if(!DB[d])DB[d]={words:{},comps:[]};if(!DB[d].comps)DB[d].comps=[];return DB[d]}
+function allDates(){return Object.keys(DB).filter(d=>Object.keys(DB[d].words||{}).length).sort().reverse()}
+
+/* ============ speech ============ */
+let voices=[];
+function loadVoices(){voices=speechSynthesis.getVoices()}
+loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;
+function speak(text){
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='en-US'; u.rate=.9;
+    const v=voices.find(v=>/en[-_]US/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang));
+    if(v)u.voice=v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ============ APIs (free, no key) ============ */
+async function fetchDict(word){
+  try{
+    const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(word.trim()));
+    if(!r.ok) return null;
+    return await r.json();
+  }catch(e){return null}
+}
+const trCache=JSON.parse(localStorage.getItem('vocabTr')||'{}');
+async function translate(text){
+  if(!text) return '';
+  if(trCache[text]) return trCache[text];
+  try{
+    const r=await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair=en|zh-TW');
+    const j=await r.json();
+    let t=(j.responseData&&j.responseData.translatedText)||'';
+    if(/MYMEMORY WARNING|QUERY LENGTH LIMIT/i.test(t)) t='';
+    trCache[text]=t; localStorage.setItem('vocabTr',JSON.stringify(trCache));
+    return t;
+  }catch(e){return ''}
+}
+
+/* ============ build a word record ============ */
+const POS_ZH={noun:'名詞',verb:'動詞',adjective:'形容詞',adverb:'副詞',pronoun:'代名詞',
+  preposition:'介系詞',conjunction:'連接詞',interjection:'感嘆詞',determiner:'限定詞',exclamation:'感嘆詞'};
+async function buildWord(raw){
+  const word=raw.trim(); if(!word) return null;
+  const rec={word, phonetic:'', audio:'', wordZh:'', meanings:[],
+             stats:{right:0,wrong:0,last:null}, addedAt:Date.now()};
+  const data=await fetchDict(word);
+  if(Array.isArray(data)){
+    for(const entry of data){
+      if(!rec.phonetic && entry.phonetic) rec.phonetic=entry.phonetic;
+      (entry.phonetics||[]).forEach(p=>{ if(!rec.phonetic&&p.text)rec.phonetic=p.text; if(!rec.audio&&p.audio)rec.audio=p.audio; });
+      (entry.meanings||[]).forEach(m=>{
+        rec.meanings.push({
+          pos:m.partOfSpeech||'',
+          defs:(m.definitions||[]).slice(0,3).map(d=>({def:d.definition||'',defZh:'',ex:d.example||'',exZh:''})),
+          syn:(m.synonyms||[]).slice(0,6),
+          ant:(m.antonyms||[]).slice(0,6)
+        });
+      });
+    }
+  }
+  rec.wordZh=await translate(word);
+  return rec;
+}
+
+/* ============ familiarity ============ */
+function levelOf(rec){
+  const n=rec.stats.right+rec.stats.wrong;
+  if(n===0) return {k:'new',acc:-1,label:'新'};
+  const acc=rec.stats.right/n;
+  if(acc<0.5) return {k:'weak',acc,label:'不熟'};
+  if(acc<0.8) return {k:'mid',acc,label:'普通'};
+  return {k:'strong',acc,label:'熟'};
+}
+function record(date,word,ok){
+  const w=DB[date]&&DB[date].words[word]; if(!w)return;
+  if(ok)w.stats.right++; else w.stats.wrong++;
+  w.stats.last=Date.now(); save();
+}
+
+/* ============ tabs ============ */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('v-'+t.dataset.v).classList.add('active');
+  if(t.dataset.v==='bank') renderBank();
+  if(t.dataset.v==='quiz') renderQuizDates();
+});
+
+/* ============ INPUT view ============ */
+document.getElementById('inDate').value=today();
+document.getElementById('bankDate').value=today();
+const inMsg=document.getElementById('inMsg');
+document.getElementById('btnAdd').onclick=async()=>{
+  const date=document.getElementById('inDate').value||today();
+  const raw=document.getElementById('inWords').value;
+  const list=[...new Set(raw.split(/[\n,，]/).map(s=>s.trim()).filter(Boolean))];
+  if(!list.length){inMsg.textContent='請先輸入單字。';return}
+  const btn=document.getElementById('btnAdd'); btn.disabled=true;
+  const d=day(date); const grid=document.getElementById('inGrid'); grid.innerHTML='';
+  document.getElementById('inResults').style.display='block';
+  let done=0;
+  for(const w of list){
+    inMsg.textContent=`查詢中… ${done+1}/${list.length}：${w}`;
+    if(d.words[w.toLowerCase()]){ done++; renderWordCard(grid,date,w.toLowerCase(),true); continue; }
+    const rec=await buildWord(w);
+    if(rec){ d.words[w.toLowerCase()]=rec; save(); renderWordCard(grid,date,w.toLowerCase(),true); }
+    done++;
+  }
+  inMsg.textContent=`完成！已加入 ${done} 個字到 ${date}。`;
+  document.getElementById('inWords').value='';
+  btn.disabled=false;
+};
+function renderWordCard(grid,date,key,clickable){
+  const rec=DB[date].words[key]; const lv=levelOf(rec);
+  const el=document.createElement('div');
+  el.className='wcard lv-'+lv.k;
+  el.innerHTML=`<div class="en">${rec.word}</div>
+    <div class="ph">${rec.phonetic||''}</div>
+    <div class="zh">${rec.wordZh||'（無翻譯）'}</div>`;
+  if(clickable) el.onclick=()=>openWord(date,key);
+  grid.appendChild(el);
+}
+
+/* ============ word detail modal ============ */
+const ov=document.getElementById('ov');
+ov.onclick=e=>{if(e.target===ov)ov.classList.remove('show')};
+async function openWord(date,key){
+  const rec=DB[date].words[key];
+  const inner=document.getElementById('ovInner');
+  const lv=levelOf(rec);
+  inner.innerHTML=`<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
+    <h2>${rec.word} <button class="speak" onclick="speak('${rec.word.replace(/'/g,"")}')">🔊</button></h2>
+    <div class="ph" style="color:var(--mut)">${rec.phonetic||''}　<span class="pill">${lv.label}</span></div>
+    <div style="font-size:16px;margin-top:4px">${rec.wordZh||'（無翻譯）'}</div>
+    <div id="meanArea"></div>`;
+  ov.classList.add('show');
+  const area=inner.querySelector('#meanArea');
+  if(!rec.meanings.length){
+    area.innerHTML=`<div class="mean" style="color:var(--mut)">字典查無此字（片語或專有名詞）。發音與中文翻譯仍可使用。</div>`;
+    return;
+  }
+  for(const m of rec.meanings){
+    const wrap=document.createElement('div'); wrap.className='mean';
+    let h=`<span class="pos">${POS_ZH[m.pos]||m.pos||'—'}</span>`;
+    m.defs.forEach((d,i)=>{
+      h+=`<div class="def" data-pos="${m.pos}" data-di="${i}">
+            <div class="e">${i+1}. ${d.def}</div>
+            <div class="z">${d.defZh||'<span style=opacity:.5>翻譯中…</span>'}</div>
+            ${d.ex?`<div class="ex">“${d.ex}” <button class="speak" onclick="speak(this.dataset.t)" data-t="${d.ex.replace(/"/g,'&quot;')}">🔊</button></div>
+                    <div class="exz">${d.exZh||'<span style=opacity:.5>翻譯中…</span>'}</div>`:''}
+          </div>`;
+    });
+    if(m.syn.length||m.ant.length){
+      h+=`<div class="gram"><b>📐 用法・文法補充</b><br>
+        詞性：${POS_ZH[m.pos]||m.pos||'—'}
+        ${m.syn.length?`<br>同義詞：${m.syn.join('、')}`:''}
+        ${m.ant.length?`<br>反義詞：${m.ant.join('、')}`:''}</div>`;
+    }
+    wrap.innerHTML=h; area.appendChild(wrap);
+  }
+  // lazy translate defs + examples
+  let changed=false;
+  for(const m of rec.meanings){
+    for(let i=0;i<m.defs.length;i++){
+      const d=m.defs[i];
+      const node=area.querySelector(`.def[data-pos="${m.pos}"][data-di="${i}"]`);
+      if(!d.defZh){ d.defZh=await translate(d.def); changed=true; if(node)node.querySelector('.z').textContent=d.defZh||''; }
+      if(d.ex&&!d.exZh){ d.exZh=await translate(d.ex); changed=true; const z=node&&node.querySelector('.exz'); if(z)z.textContent=d.exZh||''; }
+    }
+  }
+  if(changed) save();
+}
+
+/* ============ BANK view ============ */
+const selected=new Set();
+function renderBank(){
+  const date=document.getElementById('bankDate').value||today();
+  const d=DB[date]; const grid=document.getElementById('bankGrid');
+  const words=d?Object.keys(d.words):[];
+  grid.innerHTML=''; selected.clear(); updateSelCount();
+  document.getElementById('bankEmpty').style.display=words.length?'none':'block';
+  // stats line
+  const counts={new:0,weak:0,mid:0,strong:0};
+  words.forEach(k=>counts[levelOf(d.words[k]).k]++);
+  document.getElementById('bankStat').innerHTML= words.length?
+    `共 ${words.length} 字　·　<span style="color:var(--grey)">新 ${counts.new}</span>　<span style="color:var(--red)">不熟 ${counts.weak}</span>　<span style="color:var(--yellow)">普通 ${counts.mid}</span>　<span style="color:var(--green)">熟 ${counts.strong}</span>`:'';
+  words.forEach(k=>{
+    const rec=d.words[k]; const lv=levelOf(rec);
+    const el=document.createElement('div'); el.className='wcard lv-'+lv.k;
+    el.innerHTML=`<input type="checkbox" class="chk">
+      <div class="en">${rec.word}</div><div class="ph">${rec.phonetic||''}</div>
+      <div class="zh">${rec.wordZh||'（無翻譯）'}</div>`;
+    el.querySelector('.chk').onclick=e=>{e.stopPropagation();
+      if(e.target.checked)selected.add(k);else selected.delete(k);updateSelCount();};
+    el.onclick=()=>openWord(date,k);
+    grid.appendChild(el);
+  });
+}
+function updateSelCount(){
+  document.getElementById('selCount').textContent='已選 '+selected.size+' 字';
+  document.getElementById('btnCompose').disabled=selected.size===0;
+}
+document.getElementById('bankDate').onchange=renderBank;
+document.getElementById('btnReviewDay').onclick=()=>{
+  const date=document.getElementById('bankDate').value||today();
+  if(!DB[date]||!Object.keys(DB[date].words).length){alert('這天沒有單字。');return}
+  // jump to quiz with this date selected + weak mode
+  document.querySelector('.tab[data-v=quiz]').click();
+  setTimeout(()=>{
+    quizPickDates([date]); document.getElementById('quizMode').value='weak';
+    document.getElementById('quizMsg').textContent='已帶入 '+date+' 的不熟單字，選下方測驗方式開始。';
+  },30);
+};
+
+/* ============ COMPOSE (req5) ============ */
+const ovc=document.getElementById('ovc');
+ovc.onclick=e=>{if(e.target===ovc)ovc.classList.remove('show')};
+document.getElementById('btnCompose').onclick=()=>{
+  const date=document.getElementById('bankDate').value||today();
+  const d=DB[date]; const keys=[...selected];
+  let ref=keys.map(k=>{const r=d.words[k];const ex=(r.meanings.find(m=>m.defs.some(x=>x.ex))||{}).defs;
+    const exs=ex?ex.find(x=>x.ex):null;
+    return `<li><b>${r.word}</b> <span style="color:var(--mut)">${r.wordZh||''}</span>${exs?`<br><span class="ex">例：${exs.ex}</span>`:''}</li>`;}).join('');
+  const past=(d.comps||[]).map(c=>`<div class="def">${c.text} <button class="speak" onclick="speak(this.dataset.t)" data-t="${c.text.replace(/"/g,'&quot;')}">🔊</button><br><span style="color:var(--mut);font-size:12px">用字：${c.words.join('、')}</span></div>`).join('')||'<span style="color:var(--mut)">還沒有造句紀錄。</span>';
+  document.getElementById('ovcInner').innerHTML=`
+    <button class="x" onclick="document.getElementById('ovc').classList.remove('show')">✕</button>
+    <h2 style="font-size:20px">✍️ 選字造句</h2>
+    <div style="font-size:13px;color:var(--mut);margin-bottom:8px">用這些字寫一個你自己的句子：</div>
+    <ul style="margin:0 0 12px 18px;font-size:14px;line-height:1.7">${ref}</ul>
+    <textarea id="compText" placeholder="在這裡寫下你的英文句子…"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn sm" id="compSpeak">🔊 朗讀我的句子</button>
+      <button class="btn sm" id="compSave">儲存到 ${date}</button>
+    </div>
+    <div class="mean"><b>📒 ${date} 的造句紀錄</b><div style="margin-top:8px" id="compList">${past}</div></div>`;
+  ovc.classList.add('show');
+  document.getElementById('compSpeak').onclick=()=>speak(document.getElementById('compText').value);
+  document.getElementById('compSave').onclick=()=>{
+    const txt=document.getElementById('compText').value.trim(); if(!txt)return;
+    day(date).comps.push({text:txt,words:keys.map(k=>d.words[k].word),at:Date.now()}); save();
+    document.getElementById('btnCompose').onclick(); // re-render modal
+  };
+};
+
+/* ============ QUIZ ============ */
+const quizSel=new Set();
+function renderQuizDates(){
+  const box=document.getElementById('quizDates'); box.innerHTML='';
+  const dates=allDates();
+  if(!dates.length){box.innerHTML='<span style="color:var(--mut)">還沒有任何單字。</span>';return}
+  dates.forEach(dt=>{
+    const n=Object.keys(DB[dt].words).length;
+    const el=document.createElement('div');
+    el.className='datechip'+(quizSel.has(dt)?' on':'');
+    el.innerHTML=`${dt} <small>${n}字</small>`;
+    el.onclick=()=>{ if(quizSel.has(dt)){quizSel.delete(dt);el.classList.remove('on');}
+      else{quizSel.add(dt);el.classList.add('on');} };
+    box.appendChild(el);
+  });
+}
+function quizPickDates(arr){ quizSel.clear(); arr.forEach(d=>quizSel.add(d)); renderQuizDates(); }
+
+function gatherPool(){
+  const pool=[];
+  quizSel.forEach(dt=>{ const d=DB[dt]; if(!d)return;
+    Object.keys(d.words).forEach(k=>pool.push({date:dt,key:k,rec:d.words[k]})); });
+  return pool;
+}
+function buildQuestionSet(){
+  const mode=document.getElementById('quizMode').value;
+  const cnt=parseInt(document.getElementById('quizCount').value);
+  let pool=gatherPool();
+  if(!pool.length) return null;
+  if(mode==='weak'){
+    pool.sort((a,b)=>{const la=levelOf(a.rec).acc,lb=levelOf(b.rec).acc;
+      return la-lb;}); // new(-1) & weak first
+  }else{ // random & all both shuffle; 'all' keeps order-ish but shuffle is fine
+    pool.sort(()=>Math.random()-0.5);
+  }
+  return pool.slice(0,cnt);
+}
+
+let Q=null; // current quiz state
+document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>startQuiz(b.dataset.q));
+function startQuiz(type){
+  if(!quizSel.size){document.getElementById('quizMsg').textContent='請先勾選至少一個日期。';return}
+  const set=buildQuestionSet();
+  if(!set||!set.length){document.getElementById('quizMsg').textContent='所選日期沒有單字。';return}
+  Q={type,items:set,i:0,score:0,answered:false,results:[]};
+  document.getElementById('quizMsg').textContent='';
+  document.getElementById('quizSetup').style.display='none';
+  document.getElementById('quizRun').style.display='block';
+  nextQ();
+}
+document.getElementById('quizQuit').onclick=endQuiz;
+function endQuiz(){
+  document.getElementById('quizRun').style.display='none';
+  document.getElementById('quizSetup').style.display='block';
+  renderQuizDates();
+}
+function nextQ(){
+  if(!Q) return;
+  if(Q.i>=Q.items.length) return finishQuiz();
+  Q.answered=false;
+  document.getElementById('quizProg').textContent=`第 ${Q.i+1} / ${Q.items.length} 題　·　目前得分 ${Q.score}`;
+  const body=document.getElementById('quizBody');
+  const it=Q.items[Q.i];
+  if(Q.type==='flash') renderFlash(body,it);
+  if(Q.type==='fill') renderFill(body,it);
+  if(Q.type==='spell') renderSpell(body,it);
+}
+function advance(ok,it){
+  if(Q.answered)return; Q.answered=true;
+  if(ok)Q.score++;
+  record(it.date,it.key,ok);
+  Q.results.push({word:it.rec.word,ok});
+}
+
+/* --- flashcard --- */
+function renderFlash(body,it){
+  body.innerHTML=`<div class="flash" id="flcard">
+      <div>${it.rec.wordZh||it.rec.word}</div>
+      <div class="hint">（中文面）點卡片翻到英文</div></div>
+    <div class="row" id="flbtns" style="justify-content:center;margin-top:14px;display:none">
+      <button class="btn ghost" id="flBad">✗ 不熟</button>
+      <button class="btn" id="flGood">✓ 我記得</button>
+    </div>`;
+  let flipped=false;
+  const card=document.getElementById('flcard');
+  card.onclick=()=>{
+    flipped=!flipped;
+    if(flipped){
+      card.innerHTML=`<div>${it.rec.word} <button class="speak" onclick="event.stopPropagation();speak('${it.rec.word.replace(/'/g,'')}')">🔊</button></div>
+        <div class="hint">${it.rec.phonetic||''}　${it.rec.wordZh||''}</div>`;
+      speak(it.rec.word);
+      document.getElementById('flbtns').style.display='flex';
+    }else{
+      card.innerHTML=`<div>${it.rec.wordZh||it.rec.word}</div><div class="hint">（中文面）點卡片翻到英文</div>`;
+    }
+  };
+  document.getElementById('flGood').onclick=()=>{advance(true,it);Q.i++;nextQ();};
+  document.getElementById('flBad').onclick=()=>{advance(false,it);Q.i++;nextQ();};
+}
+
+/* --- fill in blank --- */
+function findExample(rec){
+  for(const m of rec.meanings) for(const d of m.defs) if(d.ex) return d;
+  return null;
+}
+function renderFill(body,it){
+  // find an item (within pool order) that has an example; if current lacks, search forward
+  let idx=Q.i, ex=null, target=Q.items[idx];
+  for(let j=Q.i;j<Q.items.length;j++){ const e=findExample(Q.items[j].rec); if(e){ex=e;target=Q.items[j];idx=j;break;} }
+  if(!ex){ // no examples at all -> skip fill, fall back message
+    body.innerHTML=`<div class="analysis">所選單字沒有可用的例句，無法進行填空測驗。請改用翻卡或拼字測驗，或加入有例句的單字。</div>`;
+    Q.answered=true; return;
+  }
+  // move target to current position
+  if(idx!==Q.i){ const tmp=Q.items[Q.i]; Q.items[Q.i]=Q.items[idx]; Q.items[idx]=tmp; it=Q.items[Q.i]; }
+  const word=it.rec.word;
+  const re=new RegExp('\\b'+word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');
+  let sentence=ex.ex; if(!re.test(sentence)) sentence=word+' — '+sentence; // safety
+  const blanked=sentence.replace(re,'_____');
+  // distractors
+  const others=gatherPool().map(p=>p.rec.word).filter(w=>w.toLowerCase()!==word.toLowerCase());
+  const uniq=[...new Set(others)].sort(()=>Math.random()-0.5).slice(0,3);
+  const opts=[word,...uniq].sort(()=>Math.random()-0.5);
+  body.innerHTML=`<div style="font-size:17px;line-height:1.7;text-align:left;margin-bottom:6px">${blanked}</div>
+    <div class="exz" style="text-align:left;margin-bottom:14px">${ex.exZh||''}</div>
+    <div id="opts"></div><div id="ana"></div>`;
+  const ob=document.getElementById('opts');
+  opts.forEach(o=>{
+    const b=document.createElement('button'); b.className='opt'; b.textContent=o;
+    b.onclick=()=>{
+      if(Q.answered)return;
+      const ok=o.toLowerCase()===word.toLowerCase();
+      advance(ok,it);
+      [...ob.children].forEach(c=>{
+        if(c.textContent.toLowerCase()===word.toLowerCase())c.classList.add('correct');
+        else if(c===b)c.classList.add('wrong');
+      });
+      speak(word);
+      document.getElementById('ana').innerHTML=`<div class="analysis">
+        <b>${ok?'✓ 答對了！':'✗ 答錯了'}</b>　正解：<b>${word}</b> ${it.rec.phonetic||''} <button class="speak" onclick="speak('${word.replace(/'/g,'')}')">🔊</button><br>
+        中文：${it.rec.wordZh||''}<br>
+        定義：${ex.def}<br>例句：${ex.ex}<br>
+        <button class="btn sm" style="margin-top:10px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
+    };
+    ob.appendChild(b);
+  });
+}
+
+/* --- spelling --- */
+function renderSpell(body,it){
+  body.innerHTML=`<div style="font-size:22px;margin-bottom:6px">${it.rec.wordZh||'（無中文，聽寫）'}</div>
+    <div class="row" style="justify-content:center;margin-bottom:12px">
+      <button class="btn ghost sm" id="spPlay">🔊 播放英文發音</button>
+    </div>
+    <input type="text" id="spIn" placeholder="輸入你聽到/想到的英文單字" autocomplete="off" autocapitalize="off">
+    <div class="row" style="justify-content:center;margin-top:12px">
+      <button class="btn" id="spCheck">送出</button>
+    </div><div id="ana"></div>`;
+  document.getElementById('spPlay').onclick=()=>speak(it.rec.word);
+  const inp=document.getElementById('spIn'); inp.focus();
+  const check=()=>{
+    if(Q.answered)return;
+    const val=inp.value.trim().toLowerCase();
+    const ok=val===it.rec.word.toLowerCase();
+    advance(ok,it); speak(it.rec.word);
+    document.getElementById('ana').innerHTML=`<div class="analysis">
+      <b>${ok?'✓ 拼對了！':'✗ 拼錯了'}</b>　正解：<b>${it.rec.word}</b> ${it.rec.phonetic||''}<br>
+      ${ok?'':'你輸入：'+(inp.value||'（空白）')+'<br>'}
+      中文：${it.rec.wordZh||''}<br>
+      <button class="btn sm" style="margin-top:10px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
+  };
+  document.getElementById('spCheck').onclick=check;
+  inp.onkeydown=e=>{if(e.key==='Enter')check();};
+}
+
+/* --- finish + score (req7) --- */
+function finishQuiz(){
+  const total=Q.items.length, sc=Q.score, pct=Math.round(sc/total*100);
+  const wrong=Q.results.filter(r=>!r.ok).map(r=>r.word);
+  const grade=pct>=90?'🏆 太強了！':pct>=70?'👍 不錯，繼續保持':pct>=50?'💪 再多練幾次':'📚 這些字要加強';
+  document.getElementById('quizBody').innerHTML=`<div class="scorebox">
+      <div class="big" style="color:${pct>=70?'var(--green)':pct>=50?'var(--yellow)':'var(--red)'}">${pct} 分</div>
+      答對 ${sc} / ${total} 題<br>${grade}
+      ${wrong.length?`<div class="analysis" style="margin-top:14px">需要再複習：<b>${[...new Set(wrong)].join('、')}</b></div>`:''}
+      <div class="row" style="justify-content:center;margin-top:16px">
+        <button class="btn" onclick="endQuiz()">完成</button>
+      </div></div>`;
+  document.getElementById('quizProg').textContent='測驗結束';
+  Q=null;
+}
+
+/* init */
+if(allDates().length===0){/* nothing */}
+</script>
+</body>
+</html>
