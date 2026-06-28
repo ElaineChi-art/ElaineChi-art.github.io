@@ -246,7 +246,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v15 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v16 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -949,8 +949,11 @@ function sayOnce(text,lang){
 function wait(ms){ return new Promise(r=>{auto._t=setTimeout(r,ms);}); }
 async function untilResume(){ while(auto.on&&auto.paused){ await wait(200); } }
 function spellOut(w){ return (w.match(/[A-Za-z]/g)||[]).join(', '); }
+// 中文朗讀前清理：把 / ｜ 等換成停頓，避免唸出「斜線」
+function cleanZh(t){ return (t||'').replace(/[\/／|｜]/g,'，').replace(/[，,]{2,}/g,'，').replace(/^[，,]+|[，,]+$/g,''); }
 
 async function playCard(rec){
+  const zh=cleanZh(rec.wordZh||rec.word)+(rec.pos?('，'+rec.pos):'');
   const steps=[
     ()=>sayOnce(rec.word,'en-US'),
     ()=>wait(250),
@@ -958,13 +961,14 @@ async function playCard(rec){
     ()=>wait(200),
     ()=>sayOnce(rec.word,'en-US'),
     ()=>wait(250),
-    ()=>sayOnce((rec.wordZh||rec.word)+(rec.pos?('，'+rec.pos):''),'zh-TW'),
+    ()=>sayOnce(zh,'zh-TW'),
     ()=>wait(700),
   ];
   for(const st of steps){
     if(!auto.on||auto.skip)return;
-    await untilResume(); if(!auto.on||auto.skip)return;
-    await st();
+    await st();                       // 先發聲（確保第一句在點擊手勢內，手機才會播）
+    if(!auto.on||auto.skip)return;
+    await untilResume();
   }
 }
 async function autoLoop(){
@@ -983,10 +987,11 @@ async function startAutoPlay(){
   auto.items = Q ? Q.items.slice() : [];
   if(!auto.items.length){ alert('沒有可播放的單字。'); return; }
   auto.on=true; auto.paused=false; auto.skip=false; auto.idx=0;
-  try{ if('wakeLock' in navigator) auto.wake=await navigator.wakeLock.request('screen'); }catch(e){}
   setupMedia();
   renderAutoUI();
-  autoLoop();
+  autoLoop();                         // 同步起跑：第一句在點擊手勢內發聲，手機才肯播
+  // wake lock 放背景非同步處理，不擋住第一句發聲
+  if('wakeLock' in navigator){ navigator.wakeLock.request('screen').then(w=>{auto.wake=w;}).catch(()=>{}); }
 }
 function killAuto(){
   auto.on=false; auto.paused=false;
