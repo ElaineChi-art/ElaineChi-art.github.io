@@ -843,8 +843,7 @@ function renderFill(body,it){
   if(others.length<3) others=[...new Set(others.concat(allWordStrings().filter(w=>w.toLowerCase()!==word.toLowerCase())))];
   const uniq=others.sort(()=>Math.random()-0.5).slice(0,3);
   const opts=[word,...uniq].sort(()=>Math.random()-0.5);
-  body.innerHTML=`<div style="font-size:17px;line-height:1.7;text-align:left;margin-bottom:6px">${blanked}</div>
-    <div class="exz" style="text-align:left;margin-bottom:14px;color:var(--mut)">${ex.exZh||''}</div>
+  body.innerHTML=`<div style="font-size:17px;line-height:1.7;text-align:left;margin-bottom:14px">${blanked}</div>
     <div id="opts"></div><div id="ana"></div>`;
   const ob=document.getElementById('opts');
   opts.forEach(o=>{
@@ -861,7 +860,7 @@ function renderFill(body,it){
       document.getElementById('ana').innerHTML=`<div class="analysis">
         <b>${ok?'✓ 答對了！':'✗ 答錯了'}</b>　正解：<b>${word}</b> ${it.rec.phonetic||''} <button class="speak" onclick="speak('${word.replace(/'/g,'')}')">🔊</button><br>
         中文：${it.rec.wordZh||''}<br>
-        定義：${ex.def||'—'}<br>例句：${ex.ex}<br>
+        定義：${ex.def||'—'}<br>例句：${ex.ex}<br>${ex.exZh?'例句中文：'+ex.exZh+'<br>':''}
         <button class="btn sm" style="margin-top:10px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
     };
     ob.appendChild(b);
