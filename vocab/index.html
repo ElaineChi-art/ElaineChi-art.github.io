@@ -246,7 +246,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v14 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v15 ・ 2026-06-28</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -266,14 +266,31 @@ function allDates(){return Object.keys(DB).filter(d=>Object.keys(DB[d].words||{}
 let voices=[];
 function loadVoices(){voices=speechSynthesis.getVoices()}
 loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;
-function speak(text){
+// 自動挑「最自然」的語音：優先 Neural/Enhanced/Siri/Google 等高品質語音
+function bestVoice(lang){
+  const want=lang.toLowerCase().replace('_','-'), base=want.split('-')[0];
+  const cands=voices.filter(v=>v.lang && v.lang.toLowerCase().replace('_','-').startsWith(base));
+  if(!cands.length) return null;
+  const score=v=>{
+    let s=0; const n=(v.name||'').toLowerCase(); const l=v.lang.toLowerCase().replace('_','-');
+    if(l===want) s+=4;
+    if(/natural|neural|enhanced|premium|plus/.test(n)) s+=8;   // 高品質語音
+    if(/siri/.test(n)) s+=6;
+    if(/google/.test(n)) s+=5;
+    if(/samantha|aaron|allison|ava|nicky|evan|joelle|mei-?jia|meijia|ting-?ting|sinji|國語|臺灣|台灣/.test(n)) s+=3;
+    if(v.localService===false) s+=1;
+    return s;
+  };
+  return cands.slice().sort((a,b)=>score(b)-score(a))[0];
+}
+function speak(text,lang){
   try{
     if(!text)return;
+    lang=lang||'en-US';
     speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);
-    u.lang='en-US'; u.rate=.9;
-    const v=voices.find(v=>/en[-_]US/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang));
-    if(v)u.voice=v;
+    u.lang=lang; u.rate=.92; u.pitch=1;
+    const v=bestVoice(lang); if(v)u.voice=v;
     speechSynthesis.speak(u);
   }catch(e){}
 }
@@ -917,18 +934,13 @@ function renderFlash(body,it){
 
 /* ===== 自動播放（通勤聽，僅翻卡）===== */
 let auto={on:false,paused:false,skip:false,items:[],idx:0,rate:0.9,wake:null,_t:null};
-function pickVoice(lang){
-  const l=lang.toLowerCase();
-  return voices.find(v=>v.lang&&v.lang.toLowerCase()===l)
-      || voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith(l.split('-')[0]));
-}
 function sayOnce(text,lang){
   return new Promise(res=>{
     if(!text){res();return;}
     try{
       const u=new SpeechSynthesisUtterance(text);
-      u.lang=lang; u.rate=lang.startsWith('en')?auto.rate:Math.min(1,auto.rate+0.05);
-      const v=pickVoice(lang); if(v)u.voice=v;
+      u.lang=lang; u.rate=lang.startsWith('en')?auto.rate:Math.min(1,auto.rate+0.05); u.pitch=1;
+      const v=bestVoice(lang); if(v)u.voice=v;
       u.onend=res; u.onerror=res;
       speechSynthesis.speak(u);
     }catch(e){res();}
