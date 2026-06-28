@@ -6,7 +6,7 @@
 <title>每日英文單字庫</title>
 <!-- 加到主畫面變成 App（PWA） -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#10131a">
+<meta name="theme-color" content="#0a0d12">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -29,7 +29,7 @@
     }catch(e){}
     var forceShare = /[?&]share\b/.test(q) || /\bshare\b/.test(location.hash);
     if(forceShare || !owner) document.documentElement.classList.add('share');
-    try{ var th=localStorage.getItem('vocabTheme'); if(th && th!=='wine') document.documentElement.setAttribute('data-theme',th); }catch(e){}
+    try{ var th=localStorage.getItem('vocabTheme')||'sapphire'; if(th!=='wine') document.documentElement.setAttribute('data-theme',th); }catch(e){}
   })();
 </script>
 <style>
@@ -424,7 +424,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v31 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v32 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -435,7 +435,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='31';
+const APP_VERSION='32';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1538,14 +1538,14 @@ document.getElementById('btnShare').onclick=async()=>{
 
 /* ============ theme switcher ============ */
 const THEMES=[
-  {id:'wine',     name:'酒紅夜（預設）', bg:'#100c0d', a:'#c8a86a', a2:'#7d3a44'},
-  {id:'emerald',  name:'墨玉',          bg:'#0a0f0d', a:'#7fc9a6', a2:'#2e6b57'},
-  {id:'sapphire', name:'午夜藍',        bg:'#0a0d12', a:'#a7c4e6', a2:'#33598a'},
-  {id:'amethyst', name:'紫檀',          bg:'#0f0a12', a:'#c9a7e0', a2:'#5e3a78'},
-  {id:'graphite', name:'石墨',          bg:'#0e0f10', a:'#c2c7ce', a2:'#474c54'},
-  {id:'parchment',name:'羊皮紙（淺）',   bg:'#ece3d2', a:'#9c6f3a', a2:'#7d3a44'},
+  {id:'sapphire', name:'午夜藍（預設）',  bg:'#0a0d12', a:'#a7c4e6', a2:'#33598a'},
+  {id:'wine',     name:'酒紅夜',          bg:'#100c0d', a:'#c8a86a', a2:'#7d3a44'},
+  {id:'emerald',  name:'墨玉',            bg:'#0a0f0d', a:'#7fc9a6', a2:'#2e6b57'},
+  {id:'amethyst', name:'紫檀',            bg:'#0f0a12', a:'#c9a7e0', a2:'#5e3a78'},
+  {id:'graphite', name:'石墨',            bg:'#0e0f10', a:'#c2c7ce', a2:'#474c54'},
+  {id:'parchment',name:'羊皮紙（淺）',     bg:'#ece3d2', a:'#9c6f3a', a2:'#7d3a44'},
 ];
-function currentTheme(){ try{ return localStorage.getItem('vocabTheme')||'wine'; }catch(e){ return 'wine'; } }
+function currentTheme(){ try{ return localStorage.getItem('vocabTheme')||'sapphire'; }catch(e){ return 'sapphire'; } }
 function applyTheme(id){
   if(id==='wine') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme',id);
