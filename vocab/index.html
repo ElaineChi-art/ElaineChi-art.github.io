@@ -158,7 +158,10 @@
       <h1>🔤 每日英文單字庫</h1>
       <div class="sub">輸入 → 自動發音・例句・中文 → 月曆入庫 → 勾選單字做三種測驗</div>
     </div>
-    <button class="btn ghost sm sharebtn" id="btnShare" style="flex-shrink:0">🔗 分享給朋友</button>
+    <div class="row" style="gap:8px;flex-shrink:0">
+      <button class="btn ghost sm" id="btnVoice">🔊 語音</button>
+      <button class="btn ghost sm sharebtn" id="btnShare">🔗 分享給朋友</button>
+    </div>
   </div>
 
   <!-- 1. INPUT -->
@@ -246,7 +249,7 @@
   </div>
 
   <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v17 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v18 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -1195,6 +1198,22 @@ document.getElementById('btnShare').onclick=async()=>{
   }catch(e){
     prompt('複製這個連結傳給朋友（對方打開只會看到單字工具）：',url);
   }
+};
+
+/* ============ voice settings (top button) ============ */
+document.getElementById('btnVoice').onclick=()=>{
+  loadVoices();
+  const inner=document.getElementById('ovInner');
+  inner.innerHTML=`<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
+    <h2 style="font-size:20px">🔊 語音設定</h2>
+    <div style="font-size:13px;color:var(--mut);margin:6px 0 12px">挑一個最順耳的，會套用到單字發音和自動播放，並記在這支手機（每個人各自設定）。</div>
+    <div class="edsec" style="text-align:left;margin-top:0">${buildVoicePicker()}</div>
+    <div style="font-size:12px;color:var(--mut);margin-top:12px;line-height:1.7">
+      想要更多選擇？到手機「設定 → 輔助使用 → 朗讀內容 → 語音」下載增強/Siri 語音；
+      下載後若有出現在上面選單就能選（iPhone Safari 不一定開放給網頁用）。
+    </div>`;
+  document.getElementById('ov').classList.add('show');
+  wireVoicePicker();
 };
 
 /* ============ init ============ */
