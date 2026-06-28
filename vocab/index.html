@@ -340,20 +340,40 @@ function segmentByLang(line){
 // 把貼上的整段文字切成一筆筆 entry 字串：
 //   偵測到「1. / 2) / 3、」這種編號時 → 用編號分段，續行(換行的長例句)接回同一筆；
 //   否則 → 一行一筆。
-function splitEntries(raw){
-  const lines=raw.split(/\n/);
-  const numRe=/^\s*\d+\s*[.)、]\s+\S/;          // 行首編號（後面要接內容）
-  if(lines.some(l=>numRe.test(l))){
-    const items=[]; let cur=null;
-    for(const line of lines){
-      if(numRe.test(line)){ if(cur!==null)items.push(cur); cur=line; }
-      else if(cur!==null){ if(line.trim())cur+=' '+line.trim(); } // 接回上一筆的續行
-      else if(line.trim()){ items.push(line.trim()); }
+// 用「連續編號」切段，不依賴換行（手機貼上換行常被吃掉/合併也沒關係）。
+// 只接受數字遞增 +1 的標記，避免句子裡的數字(如 Flight 237.)被誤判。
+function splitBySequentialNumbers(text){
+  const re=/(\d{1,3})[.)、]\s+/g; let m; const cand=[];
+  while(m=re.exec(text)){ cand.push({num:+m[1], start:m.index, after:re.lastIndex}); }
+  if(cand.length<2) return null;
+  // 從某個編號開始，往後挑「遞增且間隔<=9」的標記（容忍缺號，排除句中大數字如 237）
+  function chain(s){
+    const acc=[cand[s]];
+    for(let i=s+1;i<cand.length;i++){
+      const last=acc[acc.length-1].num, n=cand[i].num;
+      if(n>last && n-last<=9) acc.push(cand[i]);
     }
-    if(cur!==null)items.push(cur);
-    return items.map(s=>s.trim()).filter(Boolean);
+    return acc;
   }
-  return lines.map(s=>s.trim()).filter(Boolean);
+  let best=[];
+  for(let i=0;i<cand.length;i++){
+    const c=chain(i);
+    if(c.length>best.length) best=c;
+    if(cand[i].num===1 && c.length>=2){ best=c; break; } // 從 1 開頭最理想
+  }
+  if(best.length<2) return null;
+  const segs=[];
+  for(let i=0;i<best.length;i++){
+    const s=best[i].after, e=(i+1<best.length)?best[i+1].start:text.length;
+    segs.push(text.slice(s,e).trim());
+  }
+  return segs.filter(Boolean);
+}
+function splitEntries(raw){
+  const flat=raw.replace(/\r/g,'').replace(/\n/g,' ').replace(/\s+/g,' ').trim();
+  const seq=splitBySequentialNumbers(flat);
+  if(seq && seq.length>=2) return seq;            // 編號清單（換行有無都可）
+  return raw.split(/\n/).map(s=>s.trim()).filter(Boolean); // 否則一行一筆
 }
 // 一行 → {word, wordZh, sentences:[{ex,exZh}], note}
 function parseEntry(line){
