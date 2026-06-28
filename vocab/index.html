@@ -98,7 +98,7 @@
   .lvb.on.strong{background:var(--green);color:#06210f;border-color:var(--green)}
   .cardex{font-size:12px;color:#cdd6e2;margin-top:7px;line-height:1.5;word-break:break-word}
   /* 可捲動框（仿研究雷達），手機也能在框內滑 */
-  .gridscroll{max-height:62vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;
+  .gridscroll{max-height:46vh;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:12px;
     padding:10px;background:#0d1117;-webkit-overflow-scrolling:touch}
   .gridscroll::-webkit-scrollbar{width:8px}
   .gridscroll::-webkit-scrollbar-thumb{background:#2a3340;border-radius:5px}
@@ -117,9 +117,16 @@
     .gridscroll{padding:8px}
     select{max-width:none}
   }
-  .cardact{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
-  .cact{font-size:12px;padding:5px 9px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--tx);cursor:pointer}
+  .cardact{display:flex;gap:6px;margin-top:10px}
+  .cact{flex:1;text-align:center;font-size:13px;padding:9px 6px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--tx);cursor:pointer}
   .cact:hover{border-color:var(--acc2)}
+  .cact:active{background:var(--panel2)}
+  /* 拼字建議晶片 */
+  .sugbar{font-size:12px;color:var(--mut);margin:0 0 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .sugchip{font-size:12px;padding:5px 11px;border-radius:8px;border:1px solid var(--acc2);background:#1a2740;color:var(--acc);cursor:pointer}
+  .sugchip.ok{border-color:var(--line);background:var(--panel2);color:var(--tx)}
+  /* 分享版：隱藏開發者提示 */
+  html.share .devhint{display:none}
 
   /* modal */
   .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;
@@ -229,10 +236,8 @@
       <span class="msg" id="inMsg" style="margin:0"></span>
     </div>
     <div style="font-size:12px;color:var(--mut);margin-top:10px;line-height:1.7">
-      加入後會自動帶入<b>發音、多句例句（附中文）、文法補充（詞性／同義／反義）</b>，
-      點單字即可<b>刪改或新增</b>。<br>
-      你也可以在上面直接丟「中文意思」或「例句」，用 <b>|</b> 隔開，系統會自動分類整理：
-      第一個中文＝字義、英文＝例句、緊接在例句後的中文＝該句翻譯。
+      加入後會自動帶入<b>發音、例句（附中文）、文法</b>，點單字即可<b>編輯或新增</b>。
+      <span class="devhint"><br>也可直接附中文或例句，用 <b>|</b> 隔開：第一個中文＝字義、英文＝例句、緊接的中文＝該句翻譯。</span>
     </div>
     <div id="inReview"></div>
   </div>
@@ -322,8 +327,8 @@
     </div>
   </div>
 
-  <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v25 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+  <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
+    版本 <b>v26 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -604,34 +609,53 @@ async function addWords(){
   if(adding)return;
   const date=document.getElementById('inDate').value||today();
   const raw=document.getElementById('inWords').value;
-  // 用確認清單(可能已被你手動修正過)；若沒有就即時解析
   let entries=(reviewEntries&&reviewEntries.length)?reviewEntries:parseInputEntries(raw);
   entries=entries.filter(e=>e.word&&e.word.trim());
   if(!entries.length){document.getElementById('inMsg').textContent='請先輸入單字。';return}
-  // 拼字確認：字典查不到的單字，加入前再問一次
-  const suspects=entries.filter(e=>{const w=(e.word||'').trim().toLowerCase(); return w && !/\s/.test(w) && spellCache[w]===false;});
-  if(suspects.length && !confirm(`有 ${suspects.length} 個字字典查不到、可能拼錯：\n${suspects.map(s=>s.word).join('、')}\n\n仍要加入嗎？（按「取消」回去更正）`)) return;
   adding=true;
   const addBtn=document.getElementById('btnAdd'); addBtn.disabled=true;
+  // 先檢查所有「單一英文字」拼字（含尚未檢查的），避免不小心加到拼錯的
+  document.getElementById('inMsg').textContent='檢查中…';
+  for(const e of entries){ const w=(e.word||'').trim().toLowerCase();
+    if(w && !/\s/.test(w) && /^[a-zA-Z'-]+$/.test(w) && spellCache[w]===undefined) await dictExists(w); }
+  // 分成「可加入」與「可能拼錯→先留下」
+  const isProblem=e=>{ const w=(e.word||'').trim().toLowerCase();
+    return w && !/\s/.test(w) && /^[a-zA-Z'-]+$/.test(w) && spellCache[w]===false && !e.confirmed; };
+  const good=entries.filter(e=>!isProblem(e)), kept=entries.filter(isProblem);
   const d=day(date); let done=0;
-  for(const e of entries){
-    document.getElementById('inMsg').textContent=`查詢中… ${done+1}/${entries.length}：${e.word}`;
+  for(const e of good){
+    if(!e.word||!e.word.trim())continue;
+    document.getElementById('inMsg').textContent=`加入中… ${done+1}/${good.length}：${e.word}`;
     const key=e.word.toLowerCase();
     let rec=d.words[key];
-    if(!rec){ rec=await buildWord(e.word); if(!rec){done++;continue;} d.words[key]=rec; }
-    initEditable(rec);                                  // 帶入詞性/定義/例句/文法補充
-    if(e.wordZh) rec.wordZh=e.wordZh;                   // 你提供的中文意思優先
-    mergeSentences(rec, e.sentences);                   // 你丟的例句整理進去（去重）
-    userFirstSentences(rec);                            // 我的例句排前面
+    if(!rec){ rec=await buildWord(e.word); if(!rec)continue; d.words[key]=rec; }
+    initEditable(rec);
+    if(e.wordZh) rec.wordZh=e.wordZh;
+    mergeSentences(rec, e.sentences);
+    userFirstSentences(rec);
     if(e.note) rec.note=(rec.note?rec.note+'\n':'')+e.note;
     save(); done++;
   }
-  document.getElementById('inMsg').textContent=`✓ 已加入/更新 ${done} 筆到 ${date}（點下方單字可看發音、例句、文法補充並編輯）`;
-  document.getElementById('inWords').value='';
-  reviewEntries=[]; document.getElementById('inReview').innerHTML='';
-  daySel.clear(); daySel.add(date);
-  const p=date.split('-'); calState.year=+p[0]; calState.month=+p[1]-1;
+  if(done){ daySel.clear(); daySel.add(date); const p=date.split('-'); calState.year=+p[0]; calState.month=+p[1]-1; }
+  if(kept.length){ // 留下可能拼錯的，等你更正（不會被加進去）
+    reviewEntries=kept;
+    document.getElementById('inWords').value=kept.map(entryToLine).join('\n');
+    drawReview();
+    clearTimeout(spellTimer); spellTimer=setTimeout(runSpellCheck,150);
+    document.getElementById('inMsg').textContent=
+      `✓ 已加入 ${done} 個；還有 ${kept.length} 個可能拼錯先留著，請更正（或按該列「✓ 仍加入」）後再按「加入單字」。`;
+  }else{
+    document.getElementById('inWords').value='';
+    reviewEntries=[]; document.getElementById('inReview').innerHTML='';
+    document.getElementById('inMsg').textContent=`✓ 已加入/更新 ${done} 筆到 ${date}`;
+  }
   adding=false; addBtn.disabled=false; refresh();
+}
+function entryToLine(e){
+  const parts=[e.word];
+  if(e.wordZh)parts.push(e.wordZh);
+  (e.sentences||[]).forEach(s=>{ if(s.ex){ parts.push(s.ex); if(s.exZh)parts.push(s.exZh); } });
+  return parts.join(' | ');
 }
 // 把輸入框文字解析成 entry 陣列（預覽與送出共用）
 function parseInputEntries(raw){
@@ -645,39 +669,49 @@ function parseInputEntries(raw){
   });
   return entries;
 }
-// 可編輯的確認清單：解析只是「初稿」，加入前你都看得到、能改、能刪、能加
+// 可編輯的確認清單：解析只是「初稿」，加入前都看得到、能改、能刪、能加
 let reviewEntries=[];
 function drawReview(){
   const host=document.getElementById('inReview');
   if(!reviewEntries.length){ host.innerHTML=''; return; }
   let warn=false, mis=false;
   host.innerHTML=
-    `<div style="font-size:13px;margin-bottom:8px">將加入 <b style="color:var(--acc)">${reviewEntries.length}</b> 個單字 —— 下面可<b>直接修正</b>（單字／中文／例句），確認後再按上面「加入單字」：</div>`
+    `<div style="font-size:13px;margin-bottom:8px">將加入 <b style="color:var(--acc)">${reviewEntries.length}</b> 個單字 —— 可直接修正（單字／中文／例句），確認後按「加入單字」：</div>`
     + reviewEntries.map((e,i)=>{
         const long=(e.word||'').split(/\s+/).length>4; if(long)warn=true;
-        const bad=e.suspect && !long; if(bad)mis=true;
+        const bad=e.suspect && !long && !e.confirmed; if(bad)mis=true;
         const style=(long||bad)?' style="border-color:var(--red)"':'';
+        const sug = bad ? `<div class="sugbar" data-i="${i}">${(e.suggest&&e.suggest.length)?'你是不是要打：'+e.suggest.map(s=>`<button class="sugchip" data-w="${(s||'').replace(/"/g,'')}">${s}</button>`).join(''):'<span style="color:var(--red)">可能拼錯</span>'}<button class="sugchip ok" data-ok="1">✓ 仍加入</button></div>` : '';
         return `<div class="revrow" data-i="${i}">
           <input class="rv-w" placeholder="單字"${style}>
           <input class="rv-z" placeholder="中文意思">
           <input class="rv-e" placeholder="例句（可留空）">
           ${bad?'<span style="color:var(--red);font-size:12px">⚠️查無</span>':''}
-          <button class="srm rv-x" title="移除這列">✕</button></div>`;
+          <button class="srm rv-x" title="移除這列">✕</button></div>${sug}`;
       }).join('')
     + `<button class="btn ghost sm" id="revAdd" style="margin-top:4px">＋ 再加一列</button>`
-    + (warn?'<div style="font-size:12px;color:var(--red);margin-top:6px">⚠️ 紅框那列把一整句當成單字了（多半是該筆編號沒被認出）。把多的部分剪到新的一列，或直接修。</div>':'')
-    + (mis?'<div style="font-size:12px;color:var(--red);margin-top:6px">⚠️ 標「查無」的字字典查不到，可能<b>拼錯</b>，請確認或更正（片語、人名可忽略）。</div>':'')
-    + '<div style="font-size:12px;opacity:.7;margin-top:6px">例句留空沒關係 —— 加入後會自動帶入字典例句（字典有的話）。改完直接按「加入單字」。</div>';
+    + (mis?'<div style="font-size:12px;color:var(--red);margin-top:6px">紅框的字字典查不到、可能拼錯——可點上面建議直接更正，或按「✓ 仍加入」保留。<span class="devhint">（片語、人名可忽略）</span></div>':'')
+    + (warn?'<div class="devhint" style="font-size:12px;color:var(--yellow);margin-top:6px">有一列看起來把整句當成單字了，請確認。</div>':'')
+    + '<div class="devhint" style="font-size:12px;opacity:.7;margin-top:6px">例句留空沒關係，加入後會自動帶字典例句。</div>';
   host.querySelectorAll('.revrow').forEach(row=>{
     const i=+row.dataset.i, e=reviewEntries[i];
     row.querySelector('.rv-w').value=e.word||'';
     row.querySelector('.rv-z').value=e.wordZh||'';
     row.querySelector('.rv-e').value=(e.sentences&&e.sentences[0]&&e.sentences[0].ex)||'';
-    row.querySelector('.rv-w').oninput=ev=>e.word=ev.target.value;
+    row.querySelector('.rv-w').oninput=ev=>{ e.word=ev.target.value; e.suspect=false; e.suggest=null; };
     row.querySelector('.rv-z').oninput=ev=>e.wordZh=ev.target.value;
     row.querySelector('.rv-e').oninput=ev=>{ if(!e.sentences)e.sentences=[];
       if(!e.sentences[0])e.sentences[0]={ex:'',exZh:''}; e.sentences[0].ex=ev.target.value; };
     row.querySelector('.rv-x').onclick=()=>{ reviewEntries.splice(i,1); drawReview(); };
+  });
+  host.querySelectorAll('.sugbar').forEach(bar=>{
+    const i=+bar.dataset.i, e=reviewEntries[i];
+    bar.querySelectorAll('.sugchip').forEach(c=>c.onclick=()=>{
+      if(c.dataset.ok){ e.confirmed=true; e.suspect=false; }
+      else { e.word=c.dataset.w; e.suspect=false; e.suggest=null; }
+      drawReview();
+      clearTimeout(spellTimer); spellTimer=setTimeout(runSpellCheck,150);
+    });
   });
   host.querySelector('#revAdd').onclick=()=>{ reviewEntries.push({word:'',wordZh:'',sentences:[],note:''}); drawReview(); };
 }
@@ -686,7 +720,7 @@ function refreshReview(){ // 文字框變動 → 重新解析成初稿
   drawReview();
   clearTimeout(spellTimer); spellTimer=setTimeout(runSpellCheck,700); // 停止打字後再檢查拼字
 }
-/* ---- 拼字偵測：單字若字典查不到 → 標記可能拼錯 ---- */
+/* ---- 拼字偵測＋建議 ---- */
 const spellCache={}; let spellTimer=null, spellRun=0;
 async function dictExists(w){
   if(spellCache[w]!==undefined) return spellCache[w];
@@ -694,15 +728,22 @@ async function dictExists(w){
   catch(e){ spellCache[w]=true; } // 連不上就不標錯
   return spellCache[w];
 }
+async function suggestWord(w){ // 用 Datamuse 取拼字建議
+  try{ const r=await fetch('https://api.datamuse.com/sug?s='+encodeURIComponent(w)+'&max=6');
+    const j=await r.json();
+    return (j||[]).map(x=>x.word).filter(x=>x && x.toLowerCase()!==w.toLowerCase() && !/\s/.test(x)).slice(0,4);
+  }catch(e){ return []; }
+}
 async function runSpellCheck(){
   const token=++spellRun;
-  const targets=reviewEntries.filter(e=>{const w=(e.word||'').trim(); return w && !/\s/.test(w) && /^[a-zA-Z'-]+$/.test(w);});
+  const targets=reviewEntries.filter(e=>{const w=(e.word||'').trim(); return w && !/\s/.test(w) && /^[a-zA-Z'-]+$/.test(w) && !e.confirmed;});
   let i=0;
   async function worker(){
     while(i<targets.length){
       if(token!==spellRun) return;
       const e=targets[i++]; const w=e.word.trim().toLowerCase();
       e.suspect = (await dictExists(w))===false;
+      if(e.suspect && (!e.suggest||!e.suggest.length)) e.suggest = await suggestWord(w);
     }
   }
   await Promise.all([0,1,2,3,4,5].map(worker)); // 限制並發 6
