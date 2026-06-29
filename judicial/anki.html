@@ -345,7 +345,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v17';
+const APP_VERSION='v18';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -477,10 +477,10 @@ function save(){ localStorage.setItem(LS_KEY,JSON.stringify(DB)); }
 function migrate(){ let ch=false; Object.values(DB.cards).forEach(c=>{ if(!c.date){c.date=today();ch=true;}
   if(c.qref===undefined){const r=resolveQref(c.front,c.answer);c.qref=r.qref;c.qansOk=r.qansOk;ch=true;}
   else if(MANUAL_QREF[c.front]&&c.qref!==MANUAL_QREF[c.front]){const r=resolveQref(c.front,c.answer);c.qref=r.qref;c.qansOk=r.qansOk;ch=true;} }); if(ch)save(); }
-function seedIfEmpty(){ if(!Object.keys(DB.cards).length){ addCards(parseText(window.ANKI_SEED||'',today())); DB.seedVersion=2; save(); } }
+function seedIfEmpty(){ if(!Object.keys(DB.cards).length){ addCards(parseText(window.ANKI_SEED||'',today())); DB.seedVersion=3; save(); } }
 /* 一次性升級：把舊範例卡換成豐富版（用正規化考點名比對，保留熟悉度/日期/籃子），避免新舊重複 */
 function upgradeSeed(){
-  if(DB.seedVersion===2) return;
+  if(DB.seedVersion===3) return;
   const rich=parseText(window.ANKI_SEED||'',today());
   const exByNorm={}; Object.values(DB.cards).forEach(c=>{ exByNorm[normCon(c.front)]=c; });
   rich.forEach(nc=>{
@@ -490,7 +490,7 @@ function upgradeSeed(){
     else { nc.level=''; nc.stats={r:0,w:0,last:0}; }
     DB.cards[nc.id]=nc;
   });
-  DB.seedVersion=2; save();
+  DB.seedVersion=3; save();
 }
 function addCards(arr){ let added=0,merged=0; arr.forEach(c=>{ const ex=DB.cards[c.id];
   if(ex){ Object.assign(ex,{front:c.front,back:c.back,tags:c.tags,deck:c.deck,story:c.story,mnemonic:c.mnemonic,detail:c.detail,answerRaw:c.answerRaw,answer:c.answer,cloze:c.cloze,qref:c.qref,qansOk:c.qansOk}); merged++; }
