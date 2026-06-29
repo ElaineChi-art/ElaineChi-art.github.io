@@ -134,11 +134,29 @@
   /* 分享版：隱藏開發者提示 */
   html.share .devhint{display:none}
   html.hidetrans .extrans{display:none!important}
-  /* 全域字體大小（整體縮放） */
-  html[data-fs="s"]{zoom:.9}
-  html[data-fs="l"]{zoom:1.14}
-  html[data-fs="xl"]{zoom:1.3}
-  /* 寬螢幕／iPad 橫向：用更寬版面、單字卡更多欄 */
+  /* 字體大小：只放大文字、不縮放版面（--fs 倍率） */
+  :root{--fs:1}
+  html[data-fs="s"]{--fs:.9}
+  html[data-fs="l"]{--fs:1.2}
+  html[data-fs="xl"]{--fs:1.45}
+  body{font-size:calc(15px*var(--fs))}
+  .wcard .en{font-size:calc(20px*var(--fs))}
+  .wcard .zh{font-size:calc(14px*var(--fs))}
+  .cardex{font-size:calc(12.5px*var(--fs))}
+  .dword{font-size:calc(40px*var(--fs))}
+  .dph{font-size:calc(18px*var(--fs))}
+  .dmean{font-size:calc(21px*var(--fs))}
+  .dex{font-size:calc(21px*var(--fs))}
+  .dexz{font-size:calc(16px*var(--fs))}
+  .dnote{font-size:calc(15px*var(--fs))}
+  /* 卡片：統一、乾淨 */
+  .wcard{display:flex;flex-direction:column;min-height:148px}
+  .wcard .en{font-family:var(--sans);font-weight:700;font-style:normal}
+  .wcard .ph{font-style:normal;font-family:var(--sans)}
+  .cardex{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cardex .extrans{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wcard .lvset{margin-top:auto}
+  /* 寬螢幕／iPad 橫向 */
   @media (min-width:900px){ .wrap{max-width:1180px} }
   @media (min-width:1100px){ .wgrid{grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr))} }
 
@@ -360,7 +378,7 @@
     <div class="row" id="addShelfRow" style="margin-bottom:10px;align-items:center">
       <label class="fld" style="margin:0">書庫</label>
       <span id="addShelfChips" class="row" style="gap:6px"></span>
-      <button class="btn ghost sm" id="btnNewShelf">＋ 新增書庫</button>
+      <button class="btn ghost sm" id="btnManageShelf">管理書庫</button>
     </div>
     <textarea id="inWords" placeholder="一行一個單字／片語，或直接貼上整份清單"></textarea>
     <div class="row" style="margin-top:10px">
@@ -409,8 +427,7 @@
     </div>
     <div class="row" id="listFilterBar" style="margin-bottom:10px;display:none">
       <input type="text" id="listSearch" placeholder="搜尋單字或中文" style="flex:1;min-width:150px">
-      <select id="listShelf" style="max-width:140px"><option value="all">全部書庫</option></select>
-      <button class="btn ghost sm" id="btnShelfManage">管理書庫</button>
+      <select id="listShelf" style="max-width:150px"><option value="all">全部書庫</option></select>
       <select id="listFilter" style="max-width:120px">
         <option value="all">全部熟悉度</option>
         <option value="new">只看 新</option>
@@ -422,12 +439,6 @@
         <option value="default">預設順序</option>
         <option value="az">英文 A→Z</option>
         <option value="weak">不熟優先</option>
-      </select>
-      <select id="listGroup" style="max-width:130px">
-        <option value="none">不分組</option>
-        <option value="pos">依詞性分組</option>
-        <option value="level">依熟悉度分組</option>
-        <option value="az">依字母分組</option>
       </select>
     </div>
     <div style="font-size:12px;color:var(--mut);margin-bottom:8px" id="listCount"></div>
@@ -466,7 +477,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v46 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v47 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -478,7 +489,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='46';
+const APP_VERSION='47';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -593,17 +604,17 @@ async function bgTranslate(){
   const show=()=>{ if(!shown&&ind){ind.classList.add('show');shown=true;} };
   try{
     let did=0;
-    const refresh=()=>{ renderList(); if(document.getElementById('ov').classList.contains('show') && curWord) showDetail(); };
+    const detailOpen=()=>document.getElementById('ov').classList.contains('show');
     for(const dt of Object.keys(DB)){
       for(const k of Object.keys(DB[dt].words||{})){
         const rec=DB[dt].words[k];
-        if(!rec.wordZh){ show(); const v=await translate(rec.word); if(v){rec.wordZh=v;save();did++;if(did%4===0)refresh();} await sleep(60); }
+        if(!rec.wordZh){ show(); const v=await translate(rec.word); if(v){rec.wordZh=v;save();did++;if(did%6===0 && !detailOpen())renderList();} await sleep(60); }
         if(rec.sentences) for(const s of rec.sentences){
-          if(s.ex && !s.exZh){ show(); const v=await translate(s.ex); if(v){s.exZh=v;save();did++;if(did%4===0)refresh();} await sleep(60); }
+          if(s.ex && !s.exZh){ show(); const v=await translate(s.ex); if(v){s.exZh=v;save();did++;if(did%6===0 && !detailOpen())renderList();} await sleep(60); }
         }
       }
     }
-    if(did) refresh();
+    if(did){ renderList(); if(detailOpen() && curWord) showDetail(); }   // 結束才更新詳情，避免打斷發音
   }catch(e){}
   if(ind) ind.classList.remove('show');
   bgRunning=false;
@@ -1033,10 +1044,7 @@ function renderAddShelfChips(){
   host.querySelectorAll('.shelfchip').forEach(b=>b.onclick=()=>{ const s=b.dataset.s;
     if(addShelfSel.has(s))addShelfSel.delete(s); else addShelfSel.add(s); renderAddShelfChips(); });
 }
-document.getElementById('btnNewShelf').onclick=()=>{
-  const name=prompt('新書庫名稱（例如 TOEIC、閱讀、聽力）：'); if(!name)return;
-  const n=addShelf(name); if(n){ addShelfSel.add(n); renderAddShelfChips(); populateShelfFilter(); }
-};
+document.getElementById('btnManageShelf').onclick=()=>openShelfManager();
 renderAddShelfChips();
 // 電腦想快速送出：Cmd/Ctrl + Enter（一般 Enter 維持換行，手機打多行才順）
 document.getElementById('inWords').addEventListener('keydown',e=>{
@@ -1098,7 +1106,7 @@ function drawGrid(){
   const q=(document.getElementById('listSearch').value||'').trim().toLowerCase();
   const f=document.getElementById('listFilter').value;
   const sort=document.getElementById('listSort').value;
-  const group=document.getElementById('listGroup').value;
+  const group=(document.getElementById('listGroup')||{}).value||'none';
   const shelf=document.getElementById('listShelf').value;
   if(q) v=v.filter(e=>e.rec.word.toLowerCase().includes(q)||(e.rec.wordZh||'').toLowerCase().includes(q));
   if(shelf!=='all') v=v.filter(e=>(e.rec.shelves||[]).includes(shelf));
@@ -1151,9 +1159,9 @@ function drawGrid(){
   });
   updateSelCount(); updateQuizPool();
 }
-['listSearch','listFilter','listSort','listGroup','listShelf'].forEach(id=>{
+['listSearch','listFilter','listSort','listShelf'].forEach(id=>{
   const el=document.getElementById(id);
-  el.addEventListener(id==='listSearch'?'input':'change',drawGrid);
+  if(el) el.addEventListener(id==='listSearch'?'input':'change',drawGrid);
 });
 function populateShelfFilter(){
   const sel=document.getElementById('listShelf'); if(!sel)return;
@@ -1161,7 +1169,6 @@ function populateShelfFilter(){
   sel.innerHTML='<option value="all">全部書庫</option>'+allShelves().map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}（${countInShelf(s)}）</option>`).join('');
   if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
 }
-document.getElementById('btnShelfManage').onclick=openShelfManager;
 function updateSelCount(){
   const n=selected.size;
   document.getElementById('selCount').textContent='已勾 '+n+' 字';
@@ -1239,7 +1246,7 @@ async function openWord(date,key){
   detailMode='read';
   ov.classList.add('show');
   renderDetail(rec,date,key);
-  speak(rec.word);                   // 打開自動發音
+  setTimeout(()=>{ if(curWord && curWord.key===key) speak(rec.word); }, 200);  // 稍延遲，避免被渲染切掉
   let changed=false;
   if(!rec.wordZh){ rec.wordZh=await translate(rec.word); changed=true; }
   for(const s of rec.sentences){ if(s.ex&&!s.exZh){ s.exZh=await translate(s.ex); changed=true; } }
@@ -1304,7 +1311,7 @@ function renderDetail(rec,date,key){
     <div class="dph">${rec.phonetic||''}</div>
     <div class="dmean">${rec.pos?'<b style="color:var(--acc)">'+escapeHtml(rec.pos)+'</b> ':''}${escapeHtml((rec.wordZh||'').replace(/\//g,'；'))}</div>
     <div class="dsec-label">例句</div>
-    ${sents.length? sents.map(s=>`<div class="dex">${exHtml(s.ex,rec.word)}</div>${s.exZh?'<div class="dexz extrans">'+escapeHtml(s.exZh)+'</div>':''}`).join('') : '<div class="dexz">尚無例句（按上面「編輯」新增）</div>'}
+    ${sents.length? sents.map(s=>`<div class="dex">${exHtml(s.ex,rec.word)} <button class="speak" data-t="${(s.ex||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" onclick="event.stopPropagation();speak(this.dataset.t)">聽</button></div>${s.exZh?'<div class="dexz extrans">'+escapeHtml(s.exZh)+'</div>':''}`).join('') : '<div class="dexz">尚無例句（按上面「編輯」新增）</div>'}
     ${rec.note?`<div class="dsec-label">補充</div><div class="dnote">${escapeHtml(rec.note)}</div>`:''}
     <div class="devhint" style="font-size:12px;color:var(--mut);margin-top:18px">左右滑動切換單字 ・ 點旁邊空白處關閉</div>`;
 }
