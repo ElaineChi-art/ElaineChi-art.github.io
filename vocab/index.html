@@ -311,6 +311,10 @@
   .themesw:hover{border-color:var(--acc)}
   .themesw.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
   .fsbtn.on{border-color:var(--acc);color:var(--acc)}
+  .shelfchip{font-size:12px;padding:5px 11px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer}
+  .shelfchip.on{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent)}
+  .dex .tapw{cursor:pointer;border-bottom:1px dashed transparent}
+  .dex .tapw:active,.dex .tapw:hover{border-bottom-color:var(--acc)}
   /* 沉浸式閱讀版詳情頁 */
   .dword{font-family:var(--serif);font-size:42px;font-weight:700;color:var(--acc);letter-spacing:.5px;margin-top:4px}
   .dword .speak{font-size:14px;vertical-align:middle}
@@ -352,6 +356,11 @@
     <div class="row" style="margin-bottom:10px">
       <label class="fld" style="margin:0">加入到</label>
       <input type="date" id="inDate" style="width:auto">
+    </div>
+    <div class="row" id="addShelfRow" style="margin-bottom:10px;align-items:center">
+      <label class="fld" style="margin:0">書庫</label>
+      <span id="addShelfChips" class="row" style="gap:6px"></span>
+      <button class="btn ghost sm" id="btnNewShelf">＋ 新增書庫</button>
     </div>
     <textarea id="inWords" placeholder="一行一個單字／片語，或直接貼上整份清單"></textarea>
     <div class="row" style="margin-top:10px">
@@ -400,6 +409,8 @@
     </div>
     <div class="row" id="listFilterBar" style="margin-bottom:10px;display:none">
       <input type="text" id="listSearch" placeholder="搜尋單字或中文" style="flex:1;min-width:150px">
+      <select id="listShelf" style="max-width:140px"><option value="all">全部書庫</option></select>
+      <button class="btn ghost sm" id="btnShelfManage">管理書庫</button>
       <select id="listFilter" style="max-width:120px">
         <option value="all">全部熟悉度</option>
         <option value="new">只看 新</option>
@@ -455,7 +466,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v45 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v46 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -467,7 +478,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='45';
+const APP_VERSION='46';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -490,6 +501,22 @@ function save(){localStorage.setItem(KEY,JSON.stringify(DB))}
 function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function day(d){if(!DB[d])DB[d]={words:{}};return DB[d]}
 function allDates(){return Object.keys(DB).filter(d=>Object.keys(DB[d].words||{}).length).sort().reverse()}
+
+/* ============ 書庫 Bookshelves ============ */
+let SHELVES=JSON.parse(localStorage.getItem('vocabShelves')||'[]');
+function saveShelves(){ localStorage.setItem('vocabShelves',JSON.stringify(SHELVES)); }
+function eachWord(fn){ Object.keys(DB).forEach(d=>Object.keys(DB[d].words||{}).forEach(k=>fn(DB[d].words[k],d,k))); }
+function allShelves(){ const set=new Set(SHELVES); eachWord(r=>(r.shelves||[]).forEach(s=>set.add(s)));
+  const extra=[...set].filter(s=>!SHELVES.includes(s)); return [...SHELVES, ...extra.sort()]; }
+function addShelf(name){ name=(name||'').trim(); if(name && !SHELVES.includes(name)){ SHELVES.push(name); saveShelves(); } return name; }
+function renameShelf(o,n){ n=(n||'').trim(); if(!n)return; SHELVES=[...new Set(SHELVES.map(s=>s===o?n:s))];
+  eachWord(r=>{ if(r.shelves)r.shelves=[...new Set(r.shelves.map(s=>s===o?n:s))]; }); saveShelves(); save(); }
+function deleteShelf(name){ SHELVES=SHELVES.filter(s=>s!==name);
+  eachWord(r=>{ if(r.shelves)r.shelves=r.shelves.filter(s=>s!==name); }); saveShelves(); save(); }
+function mergeShelf(from,to){ if(from===to)return;
+  eachWord(r=>{ if(r.shelves&&r.shelves.includes(from)) r.shelves=[...new Set(r.shelves.map(s=>s===from?to:s))]; });
+  SHELVES=SHELVES.filter(s=>s!==from); saveShelves(); save(); }
+function countInShelf(name){ let n=0; eachWord(r=>{ if((r.shelves||[]).includes(name))n++; }); return n; }
 
 /* ============ speech ============ */
 let voices=[];
@@ -824,6 +851,7 @@ async function addWords(){
     mergeSentences(rec, e.sentences);
     userFirstSentences(rec);
     if(e.note) rec.note=(rec.note?rec.note+'\n':'')+e.note;
+    if(addShelfSel.size) rec.shelves=[...new Set([...(rec.shelves||[]),...addShelfSel])];
     save(); done++;
   }
   if(done){ daySel.clear(); daySel.add(date); const p=date.split('-'); calState.year=+p[0]; calState.month=+p[1]-1; }
@@ -995,6 +1023,21 @@ async function runSpellCheck(){
 document.getElementById('inDate').value=today();
 document.getElementById('btnAdd').onclick=addWords;
 document.getElementById('inWords').addEventListener('input',refreshReview);
+// 加入時要放進哪些書庫
+const addShelfSel=new Set();
+function renderAddShelfChips(){
+  const host=document.getElementById('addShelfChips'); if(!host)return;
+  const shelves=allShelves();
+  host.innerHTML = shelves.length? shelves.map(s=>`<button class="shelfchip${addShelfSel.has(s)?' on':''}" data-s="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join('')
+    : '<span style="font-size:12px;color:var(--mut)">尚無書庫，可不選或新增</span>';
+  host.querySelectorAll('.shelfchip').forEach(b=>b.onclick=()=>{ const s=b.dataset.s;
+    if(addShelfSel.has(s))addShelfSel.delete(s); else addShelfSel.add(s); renderAddShelfChips(); });
+}
+document.getElementById('btnNewShelf').onclick=()=>{
+  const name=prompt('新書庫名稱（例如 TOEIC、閱讀、聽力）：'); if(!name)return;
+  const n=addShelf(name); if(n){ addShelfSel.add(n); renderAddShelfChips(); populateShelfFilter(); }
+};
+renderAddShelfChips();
 // 電腦想快速送出：Cmd/Ctrl + Enter（一般 Enter 維持換行，手機打多行才順）
 document.getElementById('inWords').addEventListener('keydown',e=>{
   if(e.key==='Enter' && (e.metaKey||e.ctrlKey)){ e.preventDefault(); addWords(); }
@@ -1021,6 +1064,7 @@ document.getElementById('calClear').onclick=()=>{daySel.clear();renderCal();rend
 /* ============ 3. WORD LIST ============ */
 let viewEntries=[], listMulti=false;
 function renderList(){
+  populateShelfFilter();
   const dates=[...daySel].sort();
   listMulti=dates.length>1;
   // 多天合併時同一個英文字只留一份（內容最豐富者；同等則取較新那天）
@@ -1055,7 +1099,9 @@ function drawGrid(){
   const f=document.getElementById('listFilter').value;
   const sort=document.getElementById('listSort').value;
   const group=document.getElementById('listGroup').value;
+  const shelf=document.getElementById('listShelf').value;
   if(q) v=v.filter(e=>e.rec.word.toLowerCase().includes(q)||(e.rec.wordZh||'').toLowerCase().includes(q));
+  if(shelf!=='all') v=v.filter(e=>(e.rec.shelves||[]).includes(shelf));
   if(f!=='all') v=v.filter(e=>levelOf(e.rec).k===f);
   if(sort==='az') v.sort((a,b)=>a.rec.word.toLowerCase().localeCompare(b.rec.word.toLowerCase()));
   else if(sort==='weak') v.sort((a,b)=>levelOf(a.rec).acc-levelOf(b.rec).acc);
@@ -1105,10 +1151,17 @@ function drawGrid(){
   });
   updateSelCount(); updateQuizPool();
 }
-['listSearch','listFilter','listSort','listGroup'].forEach(id=>{
+['listSearch','listFilter','listSort','listGroup','listShelf'].forEach(id=>{
   const el=document.getElementById(id);
   el.addEventListener(id==='listSearch'?'input':'change',drawGrid);
 });
+function populateShelfFilter(){
+  const sel=document.getElementById('listShelf'); if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="all">全部書庫</option>'+allShelves().map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}（${countInShelf(s)}）</option>`).join('');
+  if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
+}
+document.getElementById('btnShelfManage').onclick=openShelfManager;
 function updateSelCount(){
   const n=selected.size;
   document.getElementById('selCount').textContent='已勾 '+n+' 字';
@@ -1215,11 +1268,25 @@ function toggleSrc(btn){
   btn.closest('.srow').dataset.src=mine?'user':'dict';
 }
 function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function hlWord(sent,word){
-  let s=escapeHtml(sent); const w=(word||'').toLowerCase().trim(); if(!w)return s;
-  if(/\s/.test(w)){ const re=new RegExp('('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s+')+')','ig'); return s.replace(re,'<span class="hl">$1</span>'); }
-  const stem=w.replace(/[^a-z]/g,''); const pref=stem.slice(0,Math.max(3,stem.length-2));
-  return s.replace(/[A-Za-z]+/g, t=> t.toLowerCase().startsWith(pref) ? '<span class="hl">'+t+'</span>' : t);
+// 例句：每個字可點(加入單字庫)，目標字標色
+function exHtml(sent,word){
+  const w=(word||'').toLowerCase().trim();
+  const x=w.replace(/[^a-z]/g,''); const pref=(!/\s/.test(w)&&x)?x.slice(0,Math.max(3,x.length-2)):'';
+  return (sent||'').replace(/([A-Za-z]+)|([^A-Za-z]+)/g,(m,wd,other)=>{
+    if(wd){ const hl=pref && wd.toLowerCase().startsWith(pref);
+      return `<span class="tapw${hl?' hl':''}" onclick="lookupWord('${wd.replace(/'/g,'')}')">${wd}</span>`; }
+    return escapeHtml(other||'');
+  });
+}
+async function lookupWord(w){
+  w=(w||'').trim(); if(!w)return;
+  if(!confirm('把「'+w+'」加入單字庫'+(addShelfSel.size?'（書庫：'+[...addShelfSel].join('、')+'）':'')+'？')) return;
+  const date=today(); const d=day(date); const key=w.toLowerCase();
+  let rec=d.words[key];
+  if(!rec){ rec=await buildWord(w); if(!rec){alert('加入失敗');return;} d.words[key]=rec; }
+  initEditable(rec);
+  if(addShelfSel.size) rec.shelves=[...new Set([...(rec.shelves||[]),...addShelfSel])];
+  save(); bgTranslate(); renderCal(); renderList();
 }
 let detailMode='read';
 function showDetail(){ if(!curWord)return; if(detailMode==='edit')renderEditor(curWord.rec,curWord.date,curWord.key); else renderDetail(curWord.rec,curWord.date,curWord.key); }
@@ -1237,7 +1304,7 @@ function renderDetail(rec,date,key){
     <div class="dph">${rec.phonetic||''}</div>
     <div class="dmean">${rec.pos?'<b style="color:var(--acc)">'+escapeHtml(rec.pos)+'</b> ':''}${escapeHtml((rec.wordZh||'').replace(/\//g,'；'))}</div>
     <div class="dsec-label">例句</div>
-    ${sents.length? sents.map(s=>`<div class="dex">${hlWord(s.ex,rec.word)}</div>${s.exZh?'<div class="dexz extrans">'+escapeHtml(s.exZh)+'</div>':''}`).join('') : '<div class="dexz">尚無例句（按上面「編輯」新增）</div>'}
+    ${sents.length? sents.map(s=>`<div class="dex">${exHtml(s.ex,rec.word)}</div>${s.exZh?'<div class="dexz extrans">'+escapeHtml(s.exZh)+'</div>':''}`).join('') : '<div class="dexz">尚無例句（按上面「編輯」新增）</div>'}
     ${rec.note?`<div class="dsec-label">補充</div><div class="dnote">${escapeHtml(rec.note)}</div>`:''}
     <div class="devhint" style="font-size:12px;color:var(--mut);margin-top:18px">左右滑動切換單字 ・ 點旁邊空白處關閉</div>`;
 }
@@ -1279,6 +1346,8 @@ function renderEditor(rec,date,key){
         <button class="lvb mid${lv.k==='mid'?' on':''}" onclick="setLevel('${date}','${key}','mid');renderEditor(DB['${date}'].words['${key}'],'${date}','${key}')">普通</button>
         <button class="lvb strong${lv.k==='strong'?' on':''}" onclick="setLevel('${date}','${key}','strong');renderEditor(DB['${date}'].words['${key}'],'${date}','${key}')">熟</button>
       </div>
+      <label class="fld" style="margin-top:10px">所屬書庫</label>
+      <div id="edShelves" class="row" style="gap:6px"></div>
     </div>
 
     <div class="edsec">
@@ -1315,6 +1384,15 @@ function renderEditor(rec,date,key){
     </div>`;
 
   document.getElementById('edDone').onclick=()=>{ harvest(rec); save(); detailMode='read'; renderList(); showDetail(); };
+  (function renderEdShelves(){
+    const host=document.getElementById('edShelves'); if(!host)return;
+    host.innerHTML = allShelves().map(s=>`<button class="shelfchip${(rec.shelves||[]).includes(s)?' on':''}" data-s="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join('')
+      + '<button class="btn ghost sm" id="edShelfNew">＋ 新書庫</button>';
+    host.querySelectorAll('.shelfchip').forEach(b=>b.onclick=()=>{ const s=b.dataset.s; rec.shelves=rec.shelves||[];
+      const i=rec.shelves.indexOf(s); if(i>=0)rec.shelves.splice(i,1); else rec.shelves.push(s); save(); renderEdShelves(); renderList(); });
+    const nb=document.getElementById('edShelfNew'); if(nb)nb.onclick=()=>{ const n=prompt('新書庫名稱：'); if(!n)return;
+      const nm=addShelf(n); if(nm){ rec.shelves=rec.shelves||[]; if(!rec.shelves.includes(nm))rec.shelves.push(nm); save(); renderEdShelves(); renderList(); renderAddShelfChips(); } };
+  })();
   document.getElementById('f-zh').value=rec.wordZh||'';
   document.getElementById('f-pos').value=rec.pos||'';
   document.getElementById('f-def').value=rec.defEn||'';
@@ -1842,6 +1920,41 @@ function mergeImport(obj){
   return n;
 }
 document.getElementById('btnTheme').onclick=openTheme;
+
+/* ============ 書庫管理 modal ============ */
+function openShelfManager(){
+  const list=allShelves();
+  document.getElementById('ovInner').innerHTML=
+    `<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
+     <h2 style="font-size:22px">管理書庫</h2>
+     <div class="row" style="margin:10px 0">
+       <input type="text" id="shNew" placeholder="新書庫名稱（TOEIC、閱讀…）" style="flex:1;min-width:140px">
+       <button class="btn sm" id="shAdd">新增</button>
+     </div>
+     <div id="shList">${ list.length? list.map(s=>`
+        <div class="row" data-s="${escapeHtml(s)}" style="justify-content:space-between;border-top:1px solid var(--line);padding:8px 0">
+          <span>${escapeHtml(s)} <span style="color:var(--mut);font-size:12px">${countInShelf(s)} 字</span></span>
+          <span class="row" style="gap:6px">
+            <button class="btn ghost sm sh-ren">改名</button>
+            <button class="btn ghost sm sh-del" style="color:var(--red);border-color:var(--red)">刪除</button>
+          </span>
+        </div>`).join('') : '<div style="color:var(--mut);font-size:13px">還沒有書庫，上面可新增。</div>' }</div>
+     ${ list.length>1? `<div class="edsec" style="margin-top:14px">
+        <div style="margin-bottom:6px">合併書庫</div>
+        <div class="row"><select id="shFrom">${list.map(s=>`<option>${escapeHtml(s)}</option>`).join('')}</select>
+        <span>→</span><select id="shTo">${list.map(s=>`<option>${escapeHtml(s)}</option>`).join('')}</select>
+        <button class="btn ghost sm" id="shMerge">合併</button></div></div>`:''}`;
+  document.getElementById('ov').classList.add('show');
+  document.getElementById('shAdd').onclick=()=>{ if(addShelf(document.getElementById('shNew').value)){ renderAddShelfChips(); openShelfManager(); refresh(); } };
+  document.querySelectorAll('#shList [data-s]').forEach(row=>{
+    const s=row.dataset.s;
+    row.querySelector('.sh-ren').onclick=()=>{ const n=prompt('改名：',s); if(n&&n.trim()){ renameShelf(s,n.trim()); renderAddShelfChips(); openShelfManager(); refresh(); } };
+    row.querySelector('.sh-del').onclick=()=>{ if(confirm('刪除書庫「'+s+'」？（單字不會刪，只是移出此書庫）')){ deleteShelf(s); addShelfSel.delete(s); renderAddShelfChips(); openShelfManager(); refresh(); } };
+  });
+  const mg=document.getElementById('shMerge');
+  if(mg) mg.onclick=()=>{ const f=document.getElementById('shFrom').value, t=document.getElementById('shTo').value;
+    if(f===t){alert('請選不同書庫');return;} if(confirm('把「'+f+'」併入「'+t+'」？')){ mergeShelf(f,t); renderAddShelfChips(); openShelfManager(); refresh(); } };
+}
 
 /* ============ voice settings (top button) ============ */
 document.getElementById('btnVoice').onclick=()=>{
