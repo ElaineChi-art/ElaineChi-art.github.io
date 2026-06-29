@@ -457,6 +457,7 @@
       <button class="btn ghost sm" id="btnSelAll">全選</button>
       <button class="btn ghost sm" id="btnSelNone">清除勾選</button>
       <span class="pill" id="selCount">已勾 0 字</span>
+      <button class="btn ghost sm" id="btnAddToShelf">加入書庫</button>
       <button class="btn sm" id="btnDelSel" disabled style="background:var(--red)">刪除</button>
     </div>
     <div class="devhint" style="font-size:12px;color:var(--mut);margin-bottom:10px">
@@ -515,7 +516,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v53 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v54 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -527,7 +528,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='53';
+const APP_VERSION='54';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1247,6 +1248,27 @@ document.getElementById('btnDelSel').onclick=()=>{
   if(!confirm(`確定要刪除勾選的 ${ids.length} 個單字嗎？此動作無法復原。`))return;
   ids.forEach(s=>{const i=s.indexOf('|');deleteWord(s.slice(0,i),s.slice(i+1));});
   refresh();
+};
+// 把勾選的單字一次加入某書庫
+function assignSelectedToShelf(shelf){
+  let n=0;
+  selected.forEach(id=>{ const i=id.indexOf('|'); const r=DB[id.slice(0,i)]&&DB[id.slice(0,i)].words[id.slice(i+1)];
+    if(r){ r.shelves=[...new Set([...(r.shelves||[]),shelf])]; n++; } });
+  save(); renderList(); populateShelfFilter(); renderAddShelfChips();
+  alert('已把 '+n+' 個單字加入書庫「'+shelf+'」');
+}
+document.getElementById('btnAddToShelf').onclick=()=>{
+  if(!selected.size){ alert('請先勾選要加入的單字（可按「全選」）。'); return; }
+  const list=allShelves();
+  const inner=document.getElementById('ovInner'); inner.className='modal';
+  inner.innerHTML=
+    `<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
+     <h2 style="font-size:20px">把勾選的 ${selected.size} 字加入書庫</h2>
+     <div class="row" style="margin:14px 0;flex-wrap:wrap;gap:8px">${list.map(s=>`<button class="btn ghost sm pickshelf" data-s="${escapeHtml(s)}">${escapeHtml(s)}（${countInShelf(s)}）</button>`).join('')||'<span style="color:var(--mut)">尚無書庫，下面可新建</span>'}</div>
+     <div class="row"><input type="text" id="pickNew" placeholder="或輸入新書庫名稱" style="flex:1;min-width:140px"><button class="btn sm" id="pickAdd">建立並加入</button></div>`;
+  document.getElementById('ov').classList.add('show');
+  inner.querySelectorAll('.pickshelf').forEach(b=>b.onclick=()=>{ ov.classList.remove('show'); assignSelectedToShelf(b.dataset.s); });
+  document.getElementById('pickAdd').onclick=()=>{ const nm=addShelf(document.getElementById('pickNew').value); if(nm){ ov.classList.remove('show'); assignSelectedToShelf(nm); } };
 };
 
 function refresh(){ renderCal(); renderList(); }
