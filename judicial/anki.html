@@ -345,7 +345,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v16';
+const APP_VERSION='v17';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -806,18 +806,26 @@ function autoShow(c,idx,side){ const el=$('#autoNow'); if(!el)return;
     : `<div style="font-family:var(--serif);font-size:17px;font-weight:600;color:var(--acc);margin:6px 0 10px">${esc(c.front)}</div>
        <div style="text-align:left;font-size:14px;line-height:1.8">${flipBackHtml(c)}</div>`;
   el.innerHTML=head+`<div class="autoface" key="${side}">${body}</div>`;
+  updateAutoLv(c);
   if('mediaSession' in navigator){ try{ navigator.mediaSession.metadata=new MediaMetadata({title:c.front,artist:c.deck,album:'司法官 Anki'}); }catch(e){} } }
+function updateAutoLv(c){ const m={weak:'#alWeak',mid:'#alMid',strong:'#alStrong'};
+  Object.entries(m).forEach(([k,sel])=>{ const b=$(sel); if(b)b.classList.toggle('on',c.level===k); }); }
 function renderAutoUI(){ const body=$('#quizArea');
   body.innerHTML=`<div class="autonow" id="autoNow"></div>
+    <div style="font-size:12px;color:var(--mut);text-align:center;margin-top:14px">聽到不會的就標一下（即時同步到上面清單）</div>
+    <div class="lvset" style="max-width:300px;margin:6px auto 0">
+      <button class="lvb weak" id="alWeak">不熟</button><button class="lvb mid" id="alMid">普通</button><button class="lvb strong" id="alStrong">熟</button></div>
     <div class="row" style="justify-content:center;margin-top:14px">
       <button class="btn ghost sm" id="aPrev">上一個</button><button class="btn sm" id="aPlay">暫停</button>
       <button class="btn ghost sm" id="aNext">下一個</button><button class="btn ghost sm" id="aStop">結束</button></div>
     <div class="row" style="justify-content:center;margin-top:12px"><span style="font-size:13px;color:var(--mut)">速度</span>
       <input type="range" id="aRate" min="0.6" max="1.4" step="0.1" value="${speakRate}" style="width:180px"><span class="pill" id="aRateV">${speakRate.toFixed(1)}x</span></div>
     <div class="edsec" style="text-align:left;margin-top:12px">${buildVoicePicker()}</div>
-    <div class="msg" style="text-align:center">循環朗讀：考點 → 故事 → 口訣。已自動防鎖屏；手機完全鎖屏時系統仍會暫停語音。</div>`;
+    <div class="msg" style="text-align:center">循環朗讀：考點 → 故事 → 口訣 → 關鍵。已自動防鎖屏；手機完全鎖屏時系統仍會暫停語音。</div>`;
   $('#aPlay').onclick=toggleAutoPause; $('#aPrev').onclick=()=>jump(-1); $('#aNext').onclick=()=>jump(1); $('#aStop').onclick=stopAutoPlay;
   $('#aRate').oninput=e=>{ speakRate=+e.target.value; localStorage.setItem('ankiRate',speakRate); $('#aRateV').textContent=speakRate.toFixed(1)+'x'; };
+  const alSet=L=>{ const c=auto.items[auto.idx]; if(!c)return; c.level=(c.level===L?'':L); c.stats.last=Date.now(); save(); updateAutoLv(c); renderList(); };
+  $('#alWeak').onclick=()=>alSet('weak'); $('#alMid').onclick=()=>alSet('mid'); $('#alStrong').onclick=()=>alSet('strong');
   wireVoicePicker();
 }
 
