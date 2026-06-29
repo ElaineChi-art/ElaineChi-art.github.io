@@ -335,7 +335,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v11';
+const APP_VERSION='v12';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -700,22 +700,23 @@ function renderQuizFlip(){
     <button class="btn" id="autoBtn" style="margin-bottom:12px">▶ 自動播放（通勤聽）</button>
     <div class="progress">🕸️ ${esc(c.deck)} ‧ 📅 ${dispDate(c.date)} ‧ ${qfIdx+1}/${pool.length}</div>
     <div class="flash" id="qflip"><div class="ft" id="qfFace">${esc(c.front)}</div><div class="hint">（考點面）點卡片翻到故事口訣 ‧ 🔊 自動朗讀</div></div>
-    <div id="flbtns" style="margin-top:14px;display:none">
-      <div style="font-size:12px;color:var(--mut);margin-bottom:6px">選熟悉度 → 自動下一張（同步到上面清單）</div>
+    <div id="flbtns" style="margin-top:14px">
+      <div style="font-size:12px;color:var(--mut);margin-bottom:6px">標熟悉度（會同步到上面清單，再換下一張）</div>
       <div class="lvset" style="max-width:300px;margin:0 auto">
-        <button class="lvb weak" id="flWeak">不熟</button><button class="lvb mid" id="flMid">普通</button><button class="lvb strong" id="flStrong">熟</button></div></div>
+        <button class="lvb weak ${c.level==='weak'?'on':''}" id="flWeak">不熟</button><button class="lvb mid ${c.level==='mid'?'on':''}" id="flMid">普通</button><button class="lvb strong ${c.level==='strong'?'on':''}" id="flStrong">熟</button></div></div>
     <div class="row" style="justify-content:center;margin-top:12px">
       <button class="btn ghost sm" id="qfPrev">◀ 上一張</button><button class="btn ghost sm" id="qfSpeak">🔊 朗讀</button><button class="btn ghost sm" id="qfNext">下一張 ▶</button></div>
     </div>`;
   $('#autoBtn').onclick=startAutoPlay;
   let flipped=false; const face=$('#qfFace');
   const sayFace=()=>speak(flipped?('故事。'+c.story+'。口訣。'+(c.mnemonic||'')):c.front);
-  $('#qflip').onclick=()=>{ flipped=!flipped; face.innerHTML=flipped?`<div class="bk">${flipBackHtml(c)}</div>`:esc(c.front);
-    if(flipped)$('#flbtns').style.display='block'; sayFace(); };
+  $('#qflip').onclick=()=>{ flipped=!flipped; face.innerHTML=flipped?`<div class="bk">${flipBackHtml(c)}</div>`:esc(c.front); sayFace(); };
   $('#qfSpeak').onclick=e=>{ e.stopPropagation(); sayFace(); };
   $('#qfPrev').onclick=()=>{ qfIdx=(qfIdx-1+pool.length)%pool.length; renderQuizFlip(); };
   $('#qfNext').onclick=()=>{ qfIdx=(qfIdx+1)%pool.length; renderQuizFlip(); };
-  const setLv=L=>{ c.level=L; c.stats.last=Date.now(); save(); renderList(); qfIdx=(qfIdx+1)%pool.length; renderQuizFlip(); };
+  const setLv=L=>{ c.level=L; c.stats.last=Date.now(); save();
+    $('#flWeak').classList.toggle('on',L==='weak'); $('#flMid').classList.toggle('on',L==='mid'); $('#flStrong').classList.toggle('on',L==='strong');
+    renderList(); setTimeout(()=>{ qfIdx=(qfIdx+1)%pool.length; renderQuizFlip(); }, 300); };
   $('#flWeak').onclick=()=>setLv('weak'); $('#flMid').onclick=()=>setLv('mid'); $('#flStrong').onclick=()=>setLv('strong');
   speak(c.front);
 }
