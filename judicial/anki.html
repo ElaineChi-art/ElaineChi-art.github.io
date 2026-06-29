@@ -26,6 +26,9 @@
       if(/[?&]owner=0/.test(q)) localStorage.removeItem('ankiOwner');
       /* 預設＝完整（私人）介面；只有明確帶 ?share 的連結（給朋友）才隱藏導覽與同步鈕 */
       if(/[?&]share\b/.test(q)) document.documentElement.classList.add('share');
+      /* 從主畫面圖示開啟（全螢幕 App 模式）→ 自動收起站台導覽列，畫面更乾淨 */
+      if(navigator.standalone===true || (window.matchMedia&&matchMedia('(display-mode: standalone)').matches))
+        document.documentElement.classList.add('standalone');
       var th=localStorage.getItem('ankiTheme')||'sapphire'; if(th!=='wine') document.documentElement.setAttribute('data-theme',th);
     }catch(e){}
   })();
@@ -44,6 +47,8 @@
   .topnav a.active{background:#1f2e3a;color:var(--acc)}
   html.share .topnav{display:none}
   html.share .sharebtn{display:none}
+  html.standalone .topnav{display:none}
+  html.standalone .wrap{padding-top:calc(16px + env(safe-area-inset-top,0px))}
   html.share .devhint{display:none}
   .wrap{max-width:1000px;margin:0 auto;padding:20px 18px 90px}
   h1{font-size:24px;margin-bottom:4px}
@@ -325,7 +330,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v8';
+const APP_VERSION='v9';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
