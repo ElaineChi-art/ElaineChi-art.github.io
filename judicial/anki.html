@@ -136,7 +136,9 @@
   .analysis .rk{color:var(--mut);font-weight:700;font-size:12px}
   .fb{font-size:16px;font-weight:700;margin-bottom:8px}
   .fb.ok{color:var(--green)} .fb.no{color:var(--red)}
-  .autonow{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:20px 18px;text-align:center}
+  .autonow{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:20px 18px;text-align:center;min-height:160px}
+  .autoface{animation:flipIn .4s ease}
+  @keyframes flipIn{from{opacity:0;transform:rotateX(28deg) translateY(6px)}to{opacity:1;transform:none}}
   input[type=range]{accent-color:var(--acc2)}
 
   /* calendar */
@@ -343,7 +345,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v13';
+const APP_VERSION='v14';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -763,11 +765,14 @@ function sayOnce(text){ return new Promise(res=>{ if(!text){res();return;}
 function awaitMs(ms){ return new Promise(r=>{auto._t=setTimeout(r,ms);}); }
 async function untilResume(){ while(auto.on&&auto.paused) await awaitMs(200); }
 async function playCardA(c){
-  const steps=[ ()=>sayOnce('考點。'+c.front), ()=>awaitMs(300), ()=>sayOnce('故事。'+c.story), ()=>awaitMs(250), ()=>sayOnce('口訣。'+(c.mnemonic||'')), ()=>awaitMs(800) ];
+  const idx=auto.idx;
+  const steps=[ ()=>{ autoShow(c,idx,'front'); return sayOnce('考點。'+c.front); }, ()=>awaitMs(300),
+    ()=>{ autoShow(c,idx,'back'); return sayOnce('故事。'+c.story); }, ()=>awaitMs(250),
+    ()=>sayOnce('口訣。'+(c.mnemonic||'')), ()=>awaitMs(800) ];
   for(const st of steps){ if(!auto.on||auto.skip)return; await st(); if(!auto.on||auto.skip)return; await untilResume(); }
 }
 async function autoLoop(){ while(auto.on){ if(auto.idx>=auto.items.length)auto.idx=0; if(auto.idx<0)auto.idx=0; auto.skip=false;
-  renderAutoNow(auto.items[auto.idx],auto.idx); await playCardA(auto.items[auto.idx]); if(!auto.on)break; if(auto.skip)auto.skip=false; else auto.idx++; } }
+  autoShow(auto.items[auto.idx],auto.idx,'front'); await playCardA(auto.items[auto.idx]); if(!auto.on)break; if(auto.skip)auto.skip=false; else auto.idx++; } }
 function startAutoPlay(){ auto.items=quizPool().slice(); if(!auto.items.length){ alert('沒有可播放的卡（先在清單勾選或按「全部加入測驗籃」）'); return; }
   auto.on=true; auto.paused=false; auto.skip=false; auto.idx=0; renderAutoUI(); autoLoop();
   if('wakeLock' in navigator){ navigator.wakeLock.request('screen').then(w=>{auto.wake=w;}).catch(()=>{}); } }
@@ -775,10 +780,14 @@ function killAuto(){ auto.on=false; auto.paused=false; stopSpeak(); clearTimeout
 function stopAutoPlay(){ killAuto(); renderQuizFlip(); }
 function jump(d){ stopSpeak(); auto.idx=Math.max(0,Math.min(auto.items.length-1,auto.idx+d)); auto.skip=true; auto.paused=false; }
 function toggleAutoPause(){ auto.paused=!auto.paused; const b=$('#aPlay'); if(b)b.textContent=auto.paused?'繼續':'暫停'; if(auto.paused)stopSpeak(); }
-function renderAutoNow(c,idx){ const el=$('#autoNow'); if(!el)return;
-  el.innerHTML=`<div style="font-size:13px;color:var(--mut)">${idx+1} / ${auto.items.length}　自動播放中</div>
-    <div style="font-family:var(--serif);font-size:24px;font-weight:600;margin:8px 0 2px">${esc(c.front)}</div>
-    <div style="color:var(--mut);font-size:13px">🕸️ ${esc(c.deck)} ‧ 📚 ${esc(sysOfCard(c))}</div>`;
+function autoShow(c,idx,side){ const el=$('#autoNow'); if(!el)return;
+  const head=`<div style="font-size:13px;color:var(--mut)">${idx+1} / ${auto.items.length}　自動播放中 ‧ ${side==='front'?'考點面':'解說面'}</div>`;
+  const body = side==='front'
+    ? `<div style="font-family:var(--serif);font-size:24px;font-weight:600;margin:16px 0 8px">${esc(c.front)}</div>
+       <div style="color:var(--mut);font-size:13px">🕸️ ${esc(c.deck)} ‧ 📚 ${esc(sysOfCard(c))}</div>`
+    : `<div style="font-family:var(--serif);font-size:17px;font-weight:600;color:var(--acc);margin:6px 0 10px">${esc(c.front)}</div>
+       <div style="text-align:left;font-size:14px;line-height:1.8">${flipBackHtml(c)}</div>`;
+  el.innerHTML=head+`<div class="autoface" key="${side}">${body}</div>`;
   if('mediaSession' in navigator){ try{ navigator.mediaSession.metadata=new MediaMetadata({title:c.front,artist:c.deck,album:'司法官 Anki'}); }catch(e){} } }
 function renderAutoUI(){ const body=$('#quizArea');
   body.innerHTML=`<div class="autonow" id="autoNow"></div>
