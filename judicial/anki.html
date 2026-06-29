@@ -79,6 +79,10 @@
   .lvb.on.weak{background:var(--red);color:#fff;border-color:var(--red)}
   .lvb.on.mid{background:var(--yellow);color:#241c00;border-color:var(--yellow)}
   .lvb.on.strong{background:var(--green);color:#06210f;border-color:var(--green)}
+  .cardact{display:flex;gap:6px;margin-top:9px}
+  .cact{flex:1;text-align:center;font-size:12px;padding:8px 6px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer;letter-spacing:.4px}
+  .cact:hover{border-color:var(--acc);color:var(--tx)}
+  .edsec{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:14px}
   .cardex{font-size:12.5px;color:var(--tx);margin-top:9px;line-height:1.7;word-break:break-word;border-top:1px dashed var(--line);padding-top:9px;display:none}
   .wcard.open .cardex{display:block}
   .gridscroll{max-height:50vh;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:12px;padding:10px;background:#0d1117;-webkit-overflow-scrolling:touch}
@@ -187,6 +191,8 @@
   .flash .ft{font-family:var(--serif)} .opt:hover{border-color:var(--acc)}
   .grouphd{color:var(--acc);font-family:var(--serif);font-size:15px;font-weight:600}
   .modal h2{font-family:var(--serif);font-weight:600}
+  #toTop{position:fixed;right:16px;bottom:20px;z-index:60;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--acc2);color:#fff;font-size:20px;cursor:pointer;display:none;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+  #toTop.show{display:block}
   @media (max-width:560px){ .wrap{padding:16px 12px 90px} .card{padding:14px 12px} .calgrid{gap:4px} .caldow{font-size:11px} }
 </style>
 </head>
@@ -289,9 +295,8 @@
 <div class="ov" id="ovVoice"><div class="modal"><button class="x" data-close>×</button><h2>語音</h2>
   <label class="fld">語速 <span id="rateVal">1.0</span>x</label>
   <input type="range" id="rate" min="0.6" max="1.6" step="0.1" value="1" style="width:100%">
-  <label class="fld" style="margin-top:12px">通勤連續播放（念 考點→故事→口訣，循環）</label>
-  <div id="autoPanel"></div>
-  <div class="msg">提示：完全鎖屏時瀏覽器（尤其 iPhone）會暫停語音，這是免費語音的限制。</div>
+  <div class="edsec" style="margin-top:14px" id="voicePick"></div>
+  <div class="msg">想要更多語音：手機「設定→輔助使用→朗讀內容→語音」下載增強/Siri 語音，出現在上面選單就能選。<br><b>連續播放（通勤聽）＋速度</b>在「測驗 → 🔄 翻卡 → 自動播放」裡。完全鎖屏時系統會暫停語音（免費語音限制）。</div>
 </div></div>
 <div class="ov" id="ovShare"><div class="modal"><button class="x" data-close>×</button><h2>同步 / 分享</h2>
   <div class="msg" style="margin-top:0">在你<b>自己的</b>裝置間搬資料：在這台按「產生同步連結」，把連結傳到另一台（手機↔電腦）打開，就會把這台的題庫＋熟悉度＋日期整包帶過去。</div>
@@ -304,6 +309,7 @@
   <div class="msg devhint">（之後要分享給朋友：把網址加上 <b>?share</b> 給他，他會看到乾淨的工具、各自存自己的題庫。）</div>
 </div></div>
 <div class="ov" id="ovQ"><div class="modal"><button class="x" data-close>×</button><h2>原題複習</h2><div id="ovQbody"></div></div></div>
+<button id="toTop" title="回到頂端">↑</button>
 
 <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
 <script src="data.js"></script>
@@ -311,7 +317,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v6';
+const APP_VERSION='v7';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -503,6 +509,10 @@ function wcardHtml(c){
     <div class="ph">📚 ${esc(sysOfCard(c))} ‧ 🕸️ ${esc(c.deck)}</div>
     <div class="zh">📅 ${dispDate(c.date)}${q?' ‧ 🔗 原題':' ‧ 🔗 無'}</div>
     <div class="cardex">${flipBackHtml(c)}</div>
+    <div class="cardact">
+      <button class="cact" data-act="say" data-id="${c.id}">🔊 朗讀</button>
+      ${q?`<button class="cact" data-act="orig" data-id="${c.id}">🔗 原題</button>`:''}
+    </div>
     <div class="lvset">
       <button class="lvb weak ${c.level==='weak'?'on':''}" data-lv="weak" data-id="${c.id}">不熟</button>
       <button class="lvb mid ${c.level==='mid'?'on':''}" data-lv="mid" data-id="${c.id}">普通</button>
@@ -519,6 +529,9 @@ $('#grid').addEventListener('change',e=>{ const chk=e.target.closest('.chk'); if
   chk.checked?selected.add(chk.dataset.id):selected.delete(chk.dataset.id); renderBasket(); });
 $('#grid').addEventListener('click',e=>{
   const ql=e.target.closest('.qrefline'); if(ql&&ql.dataset.q){ openQ(ql.dataset.q); return; }
+  const ca=e.target.closest('.cact'); if(ca){ const c=DB.cards[ca.dataset.id]; if(!c)return;
+    if(ca.dataset.act==='say') speak(c.front+'。故事。'+c.story+'。口訣。'+(c.mnemonic||''));
+    else if(ca.dataset.act==='orig'&&c.qref) openQ(c.qref); return; }
   const lv=e.target.closest('.lvb'); if(lv){ const c=DB.cards[lv.dataset.id]; if(!c)return;
     c.level=c.level===lv.dataset.lv?'':lv.dataset.lv; c.stats.last=Date.now(); save(); renderList(); return; }
   if(e.target.closest('.chk'))return;
@@ -628,56 +641,98 @@ function renderFill(card){
     $('#checkBtn').style.display='none';$('#showBtn').style.display='none';$('#nextQ').style.display='inline-block'; speak('口訣 '+card.cloze); };
   $('#checkBtn').onclick=()=>judge(false); $('#showBtn').onclick=()=>judge(true); inp.onkeydown=e=>{if(e.key==='Enter')judge(false);}; $('#nextQ').onclick=nextQuiz;
 }
+/* 翻卡（字卡）＝仿單字頁：自動播放鈕 + 翻面朗讀 + 熟悉度評分自動下一張 */
 function renderQuizFlip(){
   const pool=quizPool(); if(!pool.length){ $('#quizArea').innerHTML=`<div class="empty">清單還沒有可翻的卡。<br>到上面勾選卡片或按「全部加入測驗籃」。</div>`; return; }
-  if(qfIdx>=pool.length)qfIdx=0; const c=pool[qfIdx], q=c.qref?qByKey(c.qref):null;
-  $('#quizArea').innerHTML=`
-    <div class="progress" style="text-align:center">🕸️ ${esc(c.deck)} ‧ 📅 ${dispDate(c.date)} ‧ ${qfIdx+1}/${pool.length}</div>
-    <div class="flash" id="qflip"><div class="ft" id="qfFace">${esc(c.front)}</div><div class="hint">👆 點一下翻面 ‧ 🔊 會自動朗讀</div></div>
-    <div class="row" style="justify-content:center;margin-top:14px">
-      <button class="btn ghost sm" id="qfPrev">◀ 上一張</button>
-      <button class="btn ghost sm" id="qfSpeak">🔊 朗讀</button>
-      <button class="btn ghost sm" id="qfNext">下一張 ▶</button></div>`;
+  if(qfIdx>=pool.length)qfIdx=0; const c=pool[qfIdx];
+  $('#quizArea').innerHTML=`<div style="text-align:center">
+    <button class="btn" id="autoBtn" style="margin-bottom:12px">▶ 自動播放（通勤聽）</button>
+    <div class="progress">🕸️ ${esc(c.deck)} ‧ 📅 ${dispDate(c.date)} ‧ ${qfIdx+1}/${pool.length}</div>
+    <div class="flash" id="qflip"><div class="ft" id="qfFace">${esc(c.front)}</div><div class="hint">（考點面）點卡片翻到故事口訣 ‧ 🔊 自動朗讀</div></div>
+    <div id="flbtns" style="margin-top:14px;display:none">
+      <div style="font-size:12px;color:var(--mut);margin-bottom:6px">選熟悉度 → 自動下一張（同步到上面清單）</div>
+      <div class="lvset" style="max-width:300px;margin:0 auto">
+        <button class="lvb weak" id="flWeak">不熟</button><button class="lvb mid" id="flMid">普通</button><button class="lvb strong" id="flStrong">熟</button></div></div>
+    <div class="row" style="justify-content:center;margin-top:12px">
+      <button class="btn ghost sm" id="qfPrev">◀ 上一張</button><button class="btn ghost sm" id="qfSpeak">🔊 朗讀</button><button class="btn ghost sm" id="qfNext">下一張 ▶</button></div>
+    </div>`;
+  $('#autoBtn').onclick=startAutoPlay;
   let flipped=false; const face=$('#qfFace');
-  const show=()=>{ flipped=!flipped; face.innerHTML=flipped?`<div class="bk">${flipBackHtml(c)}</div>`:esc(c.front);
-    speak(flipped?('故事。'+c.story+'。口訣。'+(c.mnemonic||'').replace(/\*/g,'')):c.front); };
-  $('#qflip').onclick=show;
-  $('#qfSpeak').onclick=e=>{e.stopPropagation(); speak(flipped?('故事。'+c.story+'。口訣。'+(c.mnemonic||'').replace(/\*/g,'')):c.front);};
-  $('#qfPrev').onclick=()=>{qfIdx=(qfIdx-1+pool.length)%pool.length;renderQuizFlip();};
-  $('#qfNext').onclick=()=>{qfIdx=(qfIdx+1)%pool.length;renderQuizFlip();};
+  const sayFace=()=>speak(flipped?('故事。'+c.story+'。口訣。'+(c.mnemonic||'')):c.front);
+  $('#qflip').onclick=()=>{ flipped=!flipped; face.innerHTML=flipped?`<div class="bk">${flipBackHtml(c)}</div>`:esc(c.front);
+    if(flipped)$('#flbtns').style.display='block'; sayFace(); };
+  $('#qfSpeak').onclick=e=>{ e.stopPropagation(); sayFace(); };
+  $('#qfPrev').onclick=()=>{ qfIdx=(qfIdx-1+pool.length)%pool.length; renderQuizFlip(); };
+  $('#qfNext').onclick=()=>{ qfIdx=(qfIdx+1)%pool.length; renderQuizFlip(); };
+  const setLv=L=>{ c.level=L; c.stats.last=Date.now(); save(); renderList(); qfIdx=(qfIdx+1)%pool.length; renderQuizFlip(); };
+  $('#flWeak').onclick=()=>setLv('weak'); $('#flMid').onclick=()=>setLv('mid'); $('#flStrong').onclick=()=>setLv('strong');
   speak(c.front);
 }
 function recordResult(card,ok){ card.stats[ok?'r':'w']++; card.stats.last=Date.now();
   if(ok){if(card.stats.r>=2&&card.level!=='strong')card.level='strong';}else card.level='weak';
   save(); sTotal++; if(ok)sScore++; $('#score').textContent=`本回 ${sScore}／${sTotal}`; renderDbStat(); }
 
-/* ===== 聲音 ===== */
+/* ===== 聲音（仿單字頁：可選語音＋速度，並用於翻卡與自動播放） ===== */
+let voices=[]; function loadVoices(){ try{voices=speechSynthesis.getVoices();}catch(e){voices=[];} }
+loadVoices(); if(window.speechSynthesis) speechSynthesis.onvoiceschanged=loadVoices;
+let voicePref=JSON.parse(localStorage.getItem('ankiVoice')||'{}');
+function saveVoicePref(){ localStorage.setItem('ankiVoice',JSON.stringify(voicePref)); }
+function bestVoice(){ const c=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
+  if(voicePref.zh){ const p=c.find(v=>v.name===voicePref.zh); if(p)return p; } return c.find(v=>v.lang==='zh-TW')||c[0]||null; }
 let speakRate=parseFloat(localStorage.getItem('ankiRate')||'1');
-function pickVoice(){ const vs=speechSynthesis?speechSynthesis.getVoices():[]; return vs.find(v=>v.lang==='zh-TW')||vs.find(v=>/zh/i.test(v.lang))||null; }
+const cleanSpk=t=>String(t).replace(/[§【】*🔑📖📌✅❌⚖️▸🔗📚🕸️📅]/g,' ').replace(/<br\s*\/?>/gi,'，').replace(/\s+/g,' ').trim();
 function speak(text,onend){ if(!window.speechSynthesis){onend&&onend();return;}
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(String(text).replace(/[§【】*]/g,' ').replace(/<br\s*\/?>/gi,'，'));
-  u.lang='zh-TW'; u.rate=speakRate; const v=pickVoice(); if(v)u.voice=v; if(onend)u.onend=onend; speechSynthesis.speak(u); }
-function stopSpeak(){ if(window.speechSynthesis)speechSynthesis.cancel(); }
-
-/* 通勤連續播放 */
-let auto={on:false,idx:0,pool:[]};
-function renderAutoPanel(){
-  const p=$('#autoPanel');
-  if(!auto.on){ p.innerHTML=`<button class="btn" id="autoStart" style="width:100%">▶ 開始連續播放（測驗籃的卡）</button>`;
-    $('#autoStart').onclick=startAuto; return; }
-  const c=auto.pool[auto.idx];
-  p.innerHTML=`<div class="autonow"><div style="font-family:var(--serif);font-size:20px;font-weight:600;margin-bottom:6px">${esc(c.front)}</div>
-    <div class="msg" style="margin-top:0">${auto.idx+1}/${auto.pool.length} ‧ 🕸️ ${esc(c.deck)}</div>
-    <div class="row" style="justify-content:center;margin-top:12px">
-      <button class="btn ghost sm" id="aPrev">◀</button><button class="btn ghost sm" id="aStop">⏹ 停止</button><button class="btn ghost sm" id="aNext">▶▶</button></div></div>`;
-  $('#aStop').onclick=stopAuto; $('#aPrev').onclick=()=>{auto.idx=(auto.idx-1+auto.pool.length)%auto.pool.length;playAuto();};
-  $('#aNext').onclick=()=>{auto.idx=(auto.idx+1)%auto.pool.length;playAuto();};
+  speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(cleanSpk(text));
+  u.lang='zh-TW'; u.rate=speakRate; const v=bestVoice(); if(v)u.voice=v; if(onend)u.onend=onend; speechSynthesis.speak(u); }
+function stopSpeak(){ try{speechSynthesis.cancel();}catch(e){} }
+function buildVoicePicker(){
+  loadVoices(); const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
+  if(!zh.length) return '<div class="msg" style="margin:0">這個瀏覽器目前沒提供可選的中文語音（iPhone Safari 常只給內建那一種，仍可朗讀）。</div>';
+  const opt=zh.map(v=>`<option value="${esc(v.name)}"${voicePref.zh===v.name?' selected':''}>${esc(v.name)}（${v.lang}）</option>`).join('');
+  return `<div style="font-size:13px;font-weight:700;margin-bottom:6px">語音選擇（挑最順耳的）</div>
+    <div class="row">中文 <select id="vZh" style="flex:1;min-width:140px">${opt}</select>
+    <button class="speak" id="vTest">試聽</button></div>`;
 }
-function startAuto(){ auto.pool=quizPool(); if(!auto.pool.length){alert('測驗籃/清單沒有可播的卡');return;} auto.on=true; auto.idx=0; renderAutoPanel(); playAuto(); }
-function playAuto(){ if(!auto.on)return; renderAutoPanel(); const c=auto.pool[auto.idx];
-  speak(c.front,()=>{ if(!auto.on)return; speak('故事。'+c.story,()=>{ if(!auto.on)return; speak('口訣。'+(c.mnemonic||'').replace(/\*/g,''),()=>{ if(!auto.on)return; auto.idx=(auto.idx+1)%auto.pool.length; playAuto(); }); }); }); }
-function stopAuto(){ auto.on=false; stopSpeak(); renderAutoPanel(); }
+function wireVoicePicker(){ const z=$('#vZh'); if(z)z.onchange=()=>{ voicePref.zh=z.value; saveVoicePref(); speak('這是中文語音試聽'); };
+  const t=$('#vTest'); if(t)t.onclick=()=>speak('這是中文語音試聽'); }
+
+/* 自動播放（通勤聽）＝仿單字頁：循環 考點→故事→口訣，速度/上下首/暫停/wake-lock */
+let auto={on:false,paused:false,skip:false,items:[],idx:0,_t:null,wake:null};
+function sayOnce(text){ return new Promise(res=>{ if(!text){res();return;}
+  try{ const u=new SpeechSynthesisUtterance(cleanSpk(text)); u.lang='zh-TW'; u.rate=speakRate; const v=bestVoice(); if(v)u.voice=v; u.onend=res;u.onerror=res; speechSynthesis.speak(u); }catch(e){res();} }); }
+function awaitMs(ms){ return new Promise(r=>{auto._t=setTimeout(r,ms);}); }
+async function untilResume(){ while(auto.on&&auto.paused) await awaitMs(200); }
+async function playCardA(c){
+  const steps=[ ()=>sayOnce('考點。'+c.front), ()=>awaitMs(300), ()=>sayOnce('故事。'+c.story), ()=>awaitMs(250), ()=>sayOnce('口訣。'+(c.mnemonic||'')), ()=>awaitMs(800) ];
+  for(const st of steps){ if(!auto.on||auto.skip)return; await st(); if(!auto.on||auto.skip)return; await untilResume(); }
+}
+async function autoLoop(){ while(auto.on){ if(auto.idx>=auto.items.length)auto.idx=0; if(auto.idx<0)auto.idx=0; auto.skip=false;
+  renderAutoNow(auto.items[auto.idx],auto.idx); await playCardA(auto.items[auto.idx]); if(!auto.on)break; if(auto.skip)auto.skip=false; else auto.idx++; } }
+function startAutoPlay(){ auto.items=quizPool().slice(); if(!auto.items.length){ alert('沒有可播放的卡（先在清單勾選或按「全部加入測驗籃」）'); return; }
+  auto.on=true; auto.paused=false; auto.skip=false; auto.idx=0; renderAutoUI(); autoLoop();
+  if('wakeLock' in navigator){ navigator.wakeLock.request('screen').then(w=>{auto.wake=w;}).catch(()=>{}); } }
+function killAuto(){ auto.on=false; auto.paused=false; stopSpeak(); clearTimeout(auto._t); if(auto.wake){try{auto.wake.release();}catch(e){}auto.wake=null;} }
+function stopAutoPlay(){ killAuto(); renderQuizFlip(); }
+function jump(d){ stopSpeak(); auto.idx=Math.max(0,Math.min(auto.items.length-1,auto.idx+d)); auto.skip=true; auto.paused=false; }
+function toggleAutoPause(){ auto.paused=!auto.paused; const b=$('#aPlay'); if(b)b.textContent=auto.paused?'繼續':'暫停'; if(auto.paused)stopSpeak(); }
+function renderAutoNow(c,idx){ const el=$('#autoNow'); if(!el)return;
+  el.innerHTML=`<div style="font-size:13px;color:var(--mut)">${idx+1} / ${auto.items.length}　自動播放中</div>
+    <div style="font-family:var(--serif);font-size:24px;font-weight:600;margin:8px 0 2px">${esc(c.front)}</div>
+    <div style="color:var(--mut);font-size:13px">🕸️ ${esc(c.deck)} ‧ 📚 ${esc(sysOfCard(c))}</div>`;
+  if('mediaSession' in navigator){ try{ navigator.mediaSession.metadata=new MediaMetadata({title:c.front,artist:c.deck,album:'司法官 Anki'}); }catch(e){} } }
+function renderAutoUI(){ const body=$('#quizArea');
+  body.innerHTML=`<div class="autonow" id="autoNow"></div>
+    <div class="row" style="justify-content:center;margin-top:14px">
+      <button class="btn ghost sm" id="aPrev">上一個</button><button class="btn sm" id="aPlay">暫停</button>
+      <button class="btn ghost sm" id="aNext">下一個</button><button class="btn ghost sm" id="aStop">結束</button></div>
+    <div class="row" style="justify-content:center;margin-top:12px"><span style="font-size:13px;color:var(--mut)">速度</span>
+      <input type="range" id="aRate" min="0.6" max="1.4" step="0.1" value="${speakRate}" style="width:180px"><span class="pill" id="aRateV">${speakRate.toFixed(1)}x</span></div>
+    <div class="edsec" style="text-align:left;margin-top:12px">${buildVoicePicker()}</div>
+    <div class="msg" style="text-align:center">循環朗讀：考點 → 故事 → 口訣。已自動防鎖屏；手機完全鎖屏時系統仍會暫停語音。</div>`;
+  $('#aPlay').onclick=toggleAutoPause; $('#aPrev').onclick=()=>jump(-1); $('#aNext').onclick=()=>jump(1); $('#aStop').onclick=stopAutoPlay;
+  $('#aRate').oninput=e=>{ speakRate=+e.target.value; localStorage.setItem('ankiRate',speakRate); $('#aRateV').textContent=speakRate.toFixed(1)+'x'; };
+  wireVoicePicker();
+}
 
 /* ===== modals：外觀 / 語音 / 同步分享 ===== */
 const THEMES=[['wine','酒紅夜','#100c0d','#c8a86a'],['sapphire','藍寶石','#0a0d12','#a7c4e6'],['emerald','翡翠','#0a0f0d','#7fc9a6'],['amethyst','紫晶','#0f0a12','#c9a7e0'],['graphite','石墨','#0e0f10','#c2c7ce'],['parchment','羊皮紙','#ece3d2','#9c6f3a']];
@@ -690,7 +745,7 @@ function openOv(id){ $(id).classList.add('show'); }
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{ stopSpeak(); b.closest('.ov').classList.remove('show'); });
 document.querySelectorAll('.ov').forEach(o=>o.onclick=e=>{ if(e.target===o){ stopSpeak(); o.classList.remove('show'); } });
 $('#btnTheme').onclick=()=>{ renderThemeGrid(); openOv('#ovTheme'); };
-$('#btnVoice').onclick=()=>{ $('#rate').value=speakRate; $('#rateVal').textContent=speakRate.toFixed(1); renderAutoPanel(); openOv('#ovVoice'); };
+$('#btnVoice').onclick=()=>{ $('#rate').value=speakRate; $('#rateVal').textContent=speakRate.toFixed(1); $('#voicePick').innerHTML=buildVoicePicker(); wireVoicePicker(); openOv('#ovVoice'); };
 $('#rate').oninput=e=>{ speakRate=parseFloat(e.target.value); localStorage.setItem('ankiRate',speakRate); $('#rateVal').textContent=speakRate.toFixed(1); };
 $('#btnShare').onclick=()=>{ $('#ownerState').textContent=localStorage.getItem('ankiOwner')==='1'?'目前：我的裝置':'目前：訪客'; openOv('#ovShare'); };
 $('#genSync').onclick=()=>{
@@ -745,9 +800,9 @@ importSyncFromHash();
 migrate();
 seedIfEmpty();
 $('#inDate').value=today();
-if(window.speechSynthesis) speechSynthesis.onvoiceschanged=()=>{};
 refreshAll();
 $('#foot').textContent=`Memoria ${APP_VERSION} ‧ ${allCards().length} 張卡 ‧ 資料存於本機瀏覽器`;
+const toTop=$('#toTop'); window.addEventListener('scroll',()=>toTop.classList.toggle('show',window.scrollY>500)); toTop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 checkUpdate(); setInterval(checkUpdate,60000);
 </script>
 </body>
