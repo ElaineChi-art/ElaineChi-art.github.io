@@ -102,8 +102,7 @@
   .lvb.on.weak{background:var(--red);color:#fff;border-color:var(--red)}
   .lvb.on.mid{background:var(--yellow);color:#241c00;border-color:var(--yellow)}
   .lvb.on.strong{background:var(--green);color:#06210f;border-color:var(--green)}
-  .cardex{font-size:12px;color:var(--mut);margin-top:7px;line-height:1.45;word-break:break-word;
-    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .cardex{font-size:12px;color:var(--mut);margin-top:7px;line-height:1.45;word-break:break-word}
   /* 可捲動框（仿研究雷達），手機也能在框內滑 */
   .gridscroll{max-height:46vh;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:12px;
     padding:10px;background:#0d1117;-webkit-overflow-scrolling:touch}
@@ -154,7 +153,7 @@
   .wcard{display:flex;flex-direction:column;min-height:124px;gap:2px}
   .wcard .en{font-family:var(--sans);font-weight:700;font-style:normal}
   .wcard .ph{font-style:normal;font-family:var(--sans)}
-  .wcard .zh{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .wcard .zh{word-break:break-word}
   .cpos{display:inline-block;font-size:.8em;color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 38%,transparent);border-radius:5px;padding:0 6px;margin-right:6px;vertical-align:middle}
   .wcard .lvset{margin-top:auto}
   /* 寬螢幕／iPad 橫向 */
@@ -516,7 +515,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v51 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v52 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -528,7 +527,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='51';
+const APP_VERSION='52';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -685,7 +684,7 @@ async function buildWord(raw){
       (entry.meanings||[]).forEach(m=>{
         rec.meanings.push({
           pos:m.partOfSpeech||'',
-          defs:(m.definitions||[]).slice(0,3).map(d=>({def:d.definition||'',defZh:'',ex:d.example||'',exZh:''})),
+          defs:(m.definitions||[]).slice(0,10).map(d=>({def:d.definition||'',defZh:'',ex:d.example||'',exZh:''})),
           syn:(m.synonyms||[]).slice(0,6),
           ant:(m.antonyms||[]).slice(0,6)
         });
@@ -1184,7 +1183,7 @@ function drawGrid(){
       <div class="en">${rec.word}</div>
       <div class="ph">${rec.phonetic||''}${listMulti?` <span style="color:var(--mut)">${date}</span>`:''}</div>
       <div class="zh">${rec.pos?'<span class="cpos">'+escapeHtml(rec.pos)+'</span>':''}${escapeHtml(rec.wordZh||'（無翻譯）')}</div>
-      ${ex?`<div class="cardex">${escapeHtml(ex.ex)}</div>`:''}
+      ${ex?`<div class="cardex">${escapeHtml(ex.ex)}${ex.exZh?`<span class="extrans" style="display:block;color:var(--mut);margin-top:2px">${escapeHtml(ex.exZh)}</span>`:''}</div>`:''}
       <div class="lvset">
         <button class="lvb weak${lv.k==='weak'?' on':''}" data-l="weak">不熟</button>
         <button class="lvb mid${lv.k==='mid'?' on':''}" data-l="mid">普通</button>
