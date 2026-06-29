@@ -515,7 +515,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v52 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v53 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -527,7 +527,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='52';
+const APP_VERSION='53';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1254,6 +1254,16 @@ function refresh(){ renderCal(); renderList(); }
 /* ============ word detail modal (editable) ============ */
 const ov=document.getElementById('ov');
 ov.onclick=e=>{if(e.target===ov)ov.classList.remove('show')};
+// 彈窗開啟時把背景完全鎖住（iOS 也固定，不會跟著動）
+let _lockY=0;
+new MutationObserver(()=>{
+  const open=ov.classList.contains('show'), fixed=document.body.style.position==='fixed';
+  if(open && !fixed){ _lockY=window.scrollY;
+    Object.assign(document.body.style,{position:'fixed',top:(-_lockY)+'px',left:'0',right:'0',width:'100%'}); }
+  else if(!open && fixed){
+    Object.assign(document.body.style,{position:'',top:'',left:'',right:'',width:''});
+    window.scrollTo(0,_lockY); }
+}).observe(ov,{attributes:true,attributeFilter:['class']});
 // 詳情頁左右滑動切換單字（不干擾輸入框）
 let _sx=0,_sy=0,_st0=null;
 ov.addEventListener('touchstart',e=>{ const t=e.touches[0]; _sx=t.clientX;_sy=t.clientY;_st0=e.target; },{passive:true});
@@ -1333,13 +1343,16 @@ function exHtml(sent,word){
 }
 async function lookupWord(w){
   w=(w||'').trim(); if(!w)return;
-  if(!confirm('把「'+w+'」加入單字庫'+(addShelfSel.size?'（書庫：'+[...addShelfSel].join('、')+'）':'')+'？')) return;
+  let shelves=[...addShelfSel];                 // 沒選書庫就放進「收集」，才找得到
+  if(!shelves.length){ addShelf('收集'); shelves=['收集']; }
+  if(!confirm('把「'+w+'」加入單字庫？\n書庫：'+shelves.join('、')+'　日期：'+today())) return;
   const date=today(); const d=day(date); const key=w.toLowerCase();
   let rec=d.words[key];
   if(!rec){ rec=await buildWord(w); if(!rec){alert('加入失敗');return;} d.words[key]=rec; }
   initEditable(rec);
-  if(addShelfSel.size) rec.shelves=[...new Set([...(rec.shelves||[]),...addShelfSel])];
-  save(); bgTranslate(); renderCal(); renderList();
+  rec.shelves=[...new Set([...(rec.shelves||[]),...shelves])];
+  save(); bgTranslate(); renderAddShelfChips(); populateShelfFilter(); renderCal(); renderList();
+  alert('已加入「'+w+'」到書庫「'+shelves.join('、')+'」（'+date+'）');
 }
 let detailMode='read';
 function showDetail(){ if(!curWord)return; if(detailMode==='edit')renderEditor(curWord.rec,curWord.date,curWord.key); else renderDetail(curWord.rec,curWord.date,curWord.key); }
