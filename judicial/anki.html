@@ -335,7 +335,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v10';
+const APP_VERSION='v11';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -419,6 +419,18 @@ function matchQuestion(front,al){ const nf=normCon(front); if(!nf)return null; l
   if(!best||bs<0.5)return null; return {key:best.key,ansOk:!!(al&&best.q&&best.q.ansLetter===al)}; }
 const qByKey=k=>QBYKEY[k]||null;
 const qTitle=q=>q?`${q.year} 年 ${q.section} 第 ${q.num} 題（${q.subject||''}）`:'';
+/* 內建指定連動：考點名與官方寫法差太多、比對不到的，直接指定原題（key=年-組-題號）。可一直往下加。 */
+const MANUAL_QREF={
+  '自訴管轄錯誤':'113-刑事組-55',          // 管轄錯誤判決不移送 §335
+  '最輕3年以上緩起訴':'112-刑事組-55',     // 緩起訴範圍 §253-1（選項C即此錯誤敘述）
+};
+/* 算出某 front 的最終 qref（先用指定，再用比對）與 qansOk */
+function resolveQref(front, ans){
+  const mk=MANUAL_QREF[front];
+  const key = mk || (()=>{ const mq=matchQuestion(front,ans); return mq?mq.key:''; })();
+  const q=key?qByKey(key):null;
+  return { qref:key, qansOk: !!(key && ans && q && q.ansLetter===ans) };
+}
 const sysOfCard=c=>{const q=c.qref?qByKey(c.qref):null;return q?systemOf(q):'未連動';};
 const idOf=front=>'c_'+front.trim().replace(/\s+/g,' ').split('').reduce((h,c)=>((h<<5)-h+c.charCodeAt(0))|0,0)+'_'+front.trim().length;
 
@@ -440,8 +452,8 @@ function parseText(text,date){ const cards=[];
     const i1=ln.indexOf(';'); if(i1<0)return; const i2=ln.lastIndexOf(';');
     let front=ln.slice(0,i1).trim(),back,tagStr;
     if(i2===i1){back=ln.slice(i1+1).trim();tagStr='';}else{back=ln.slice(i1+1,i2).trim();tagStr=ln.slice(i2+1).trim();}
-    if(!front)return; const tags=tagStr?tagStr.split(/\s+/).filter(Boolean):['未分類']; const p=parseBack(back); const mq=matchQuestion(front,p.answer);
-    cards.push({id:idOf(front),front,back,tags,deck:tags[0]||'未分類',date:date||today(),qref:mq?mq.key:'',qansOk:mq?mq.ansOk:false,...p}); });
+    if(!front)return; const tags=tagStr?tagStr.split(/\s+/).filter(Boolean):['未分類']; const p=parseBack(back); const r=resolveQref(front,p.answer);
+    cards.push({id:idOf(front),front,back,tags,deck:tags[0]||'未分類',date:date||today(),qref:r.qref,qansOk:r.qansOk,...p}); });
   return cards;
 }
 
@@ -450,7 +462,8 @@ let DB=load();
 function load(){ try{return JSON.parse(localStorage.getItem(LS_KEY))||{cards:{}};}catch(e){return {cards:{}};} }
 function save(){ localStorage.setItem(LS_KEY,JSON.stringify(DB)); }
 function migrate(){ let ch=false; Object.values(DB.cards).forEach(c=>{ if(!c.date){c.date=today();ch=true;}
-  if(c.qref===undefined){const mq=matchQuestion(c.front,c.answer);c.qref=mq?mq.key:'';c.qansOk=mq?mq.ansOk:false;ch=true;} }); if(ch)save(); }
+  if(c.qref===undefined){const r=resolveQref(c.front,c.answer);c.qref=r.qref;c.qansOk=r.qansOk;ch=true;}
+  else if(MANUAL_QREF[c.front]&&c.qref!==MANUAL_QREF[c.front]){const r=resolveQref(c.front,c.answer);c.qref=r.qref;c.qansOk=r.qansOk;ch=true;} }); if(ch)save(); }
 function seedIfEmpty(){ if(!Object.keys(DB.cards).length) addCards(parseText(window.ANKI_SEED||'',today())); }
 function addCards(arr){ let added=0,merged=0; arr.forEach(c=>{ const ex=DB.cards[c.id];
   if(ex){ Object.assign(ex,{front:c.front,back:c.back,tags:c.tags,deck:c.deck,story:c.story,mnemonic:c.mnemonic,detail:c.detail,answerRaw:c.answerRaw,answer:c.answer,cloze:c.cloze,qref:c.qref,qansOk:c.qansOk}); merged++; }
