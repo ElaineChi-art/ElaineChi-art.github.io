@@ -1,0 +1,13 @@
+{
+  "name": "司法官・律師 Anki 記憶卡",
+  "short_name": "法律Anki",
+  "start_url": "anki.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0d12",
+  "theme_color": "#0a0d12",
+  "icons": [
+    { "src": "anki-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
