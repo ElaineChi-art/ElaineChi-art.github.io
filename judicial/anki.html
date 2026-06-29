@@ -312,9 +312,17 @@
   <div class="msg">想要更多語音：手機「設定→輔助使用→朗讀內容→語音」下載增強/Siri 語音，出現在上面選單就能選。<br><b>連續播放（通勤聽）＋速度</b>在「測驗 → 🔄 翻卡 → 自動播放」裡。完全鎖屏時系統會暫停語音（免費語音限制）。</div>
 </div></div>
 <div class="ov" id="ovShare"><div class="modal"><button class="x" data-close>×</button><h2>同步 / 分享</h2>
-  <div class="msg" style="margin-top:0">在你<b>自己的</b>裝置間搬資料：在這台按「產生同步連結」，把連結傳到另一台（手機↔電腦）打開，就會把這台的題庫＋熟悉度＋日期整包帶過去。</div>
-  <div class="row" style="margin-top:12px"><button class="btn" id="genSync">🔗 產生同步連結（含全部資料）</button></div>
-  <textarea id="syncOut" readonly style="margin-top:10px;min-height:70px;font-size:11px" placeholder="按上面按鈕產生連結，會自動複製"></textarea>
+  <div class="msg" style="margin-top:0"><b>方法 1（最穩・推薦）備份檔：</b>在這台按「匯出備份檔」存成一個小檔（含題庫＋熟悉度＋日期＋原題連動），用 AirDrop／LINE／iCloud 傳到另一台，再按「匯入備份檔」選它就同步好了。資料多也不會壞。</div>
+  <div class="row" style="margin-top:10px">
+    <button class="btn" id="expBackup">⬇ 匯出備份檔</button>
+    <button class="btn ghost" id="impBackupBtn">⬆ 匯入備份檔</button>
+    <input type="file" id="impBackup" accept=".json,application/json" style="display:none">
+  </div>
+  <div class="msg" id="backupMsg"></div>
+  <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
+  <div class="msg" style="margin-top:0"><b>方法 2 連結：</b>按「產生同步連結」把整包資料壓進一條連結傳到另一台打開。<b>資料多時連結會很長、傳輸途中可能被截斷</b>，所以建議優先用上面的備份檔。</div>
+  <div class="row" style="margin-top:12px"><button class="btn ghost" id="genSync">🔗 產生同步連結</button></div>
+  <textarea id="syncOut" readonly style="margin-top:10px;min-height:60px;font-size:11px" placeholder="按上面按鈕產生連結，會自動複製"></textarea>
   <div class="msg" id="syncMsg"></div>
   <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
   <div class="msg" style="margin-top:0">把<b>這台</b>設為「我的裝置」（顯示上方導覽列、開發者提示）：</div>
@@ -335,7 +343,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v12';
+const APP_VERSION='v13';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -799,7 +807,23 @@ document.querySelectorAll('.ov').forEach(o=>o.onclick=e=>{ if(e.target===o){ sto
 $('#btnTheme').onclick=()=>{ renderThemeGrid(); openOv('#ovTheme'); };
 $('#btnVoice').onclick=()=>{ $('#rate').value=speakRate; $('#rateVal').textContent=speakRate.toFixed(1); $('#voicePick').innerHTML=buildVoicePicker(); wireVoicePicker(); openOv('#ovVoice'); };
 $('#rate').oninput=e=>{ speakRate=parseFloat(e.target.value); localStorage.setItem('ankiRate',speakRate); $('#rateVal').textContent=speakRate.toFixed(1); };
-$('#btnShare').onclick=()=>{ $('#ownerState').textContent=localStorage.getItem('ankiOwner')==='1'?'目前：我的裝置':'目前：訪客'; openOv('#ovShare'); };
+$('#btnShare').onclick=()=>{ $('#ownerState').textContent=localStorage.getItem('ankiOwner')==='1'?'目前：我的裝置':'目前：訪客'; $('#backupMsg').textContent=''; openOv('#ovShare'); };
+$('#expBackup').onclick=()=>{
+  const blob=new Blob([JSON.stringify(DB)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`anki-backup-${today()}.json`; a.click();
+  $('#backupMsg').innerHTML=`✓ 已匯出 <b>${allCards().length}</b> 張的備份檔，用 AirDrop／LINE／iCloud 傳到另一台再「匯入備份檔」。`;
+};
+$('#impBackupBtn').onclick=()=>$('#impBackup').click();
+$('#impBackup').onchange=e=>{
+  const f=e.target.files[0]; if(!f)return; const rd=new FileReader();
+  rd.onload=()=>{ try{ const data=JSON.parse(rd.result);
+      if(!data||!data.cards){ $('#backupMsg').textContent='⚠ 這不是有效的備份檔。'; return; }
+      const n=Object.keys(data.cards).length;
+      if(confirm(`要用備份檔覆蓋這台題庫嗎？\n備份檔有 ${n} 張，這台目前 ${allCards().length} 張。`)){
+        DB=data; save(); refreshAll(); $('#backupMsg').innerHTML=`✓ 已匯入 <b>${n}</b> 張，兩台現在一致了。`; }
+    }catch(err){ $('#backupMsg').textContent='⚠ 讀取失敗：'+err.message; } };
+  rd.readAsText(f); e.target.value='';
+};
 $('#genSync').onclick=()=>{
   try{ const payload=LZString.compressToEncodedURIComponent(JSON.stringify(DB));
     const url=location.origin+location.pathname+'#sync='+payload;
