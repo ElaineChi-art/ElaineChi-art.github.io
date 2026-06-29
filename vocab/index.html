@@ -171,9 +171,12 @@
   #ovInner.reader{height:min(86vh,720px);max-height:none;overflow:hidden;padding:0;position:relative;display:flex;flex-direction:column}
   .reader-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
   .reader-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 42px 30px}
-  .reader-edge{position:absolute;top:52px;bottom:0;width:42px;z-index:3;cursor:pointer}
-  .reader-edge.l{left:0} .reader-edge.r{right:0}
-  .reader-edge:active{background:color-mix(in srgb,var(--acc) 8%,transparent)}
+  .reader-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:44px;height:84px;
+    display:flex;align-items:center;justify-content:center;font-size:32px;font-family:var(--serif);
+    color:var(--mut);background:transparent;border:none;cursor:pointer;border-radius:12px}
+  .reader-arrow.l{left:2px} .reader-arrow.r{right:2px}
+  .reader-arrow:hover{color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent)}
+  .reader-arrow:active{color:var(--acc);transform:translateY(-50%) scale(.9)}
   .x{float:right;cursor:pointer;color:var(--mut);font-size:22px;line-height:1;border:none;background:none}
   .msg{font-size:14px;color:var(--mut);margin-top:8px;min-height:20px}
   .empty{color:var(--mut);font-size:14px;text-align:center;padding:26px}
@@ -510,7 +513,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v49 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v50 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -522,7 +525,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='49';
+const APP_VERSION='50';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -587,15 +590,25 @@ function bestVoice(lang){
   };
   return cands.slice().sort((a,b)=>score(b)-score(a))[0];
 }
+// iOS 首次互動先暖機，避免第一句被吃掉
+let _spkWarm=false;
+function warmSpeak(){ if(_spkWarm)return; _spkWarm=true;
+  try{ const u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u); }catch(e){} }
+document.addEventListener('pointerdown',warmSpeak,{once:true});
+document.addEventListener('touchstart',warmSpeak,{once:true,passive:true});
 function speak(text,lang){
   try{
     if(!text)return;
     lang=lang||'en-US';
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(text);
-    u.lang=lang; u.rate=.92; u.pitch=1;
-    const v=bestVoice(lang); if(v)u.voice=v;
-    speechSynthesis.speak(u);
+    if(!voices.length) loadVoices();
+    const make=()=>{ const u=new SpeechSynthesisUtterance(text);
+      u.lang=lang; u.rate=.92; u.pitch=1; const v=bestVoice(lang); if(v)u.voice=v; return u; };
+    if(speechSynthesis.speaking || speechSynthesis.pending){
+      speechSynthesis.cancel();                    // 只有在播放中才取消，並留間隔避免取消連帶吃掉新句
+      setTimeout(()=>{ try{ speechSynthesis.speak(make()); }catch(e){} }, 90);
+    }else{
+      speechSynthesis.speak(make());               // 閒置時直接播，最穩
+    }
   }catch(e){}
 }
 
@@ -1334,13 +1347,12 @@ function renderDetail(rec,date,key){
   const sents=(rec.sentences||[]).filter(s=>s.ex);
   inner.innerHTML=`
     <div class="reader-nav">
-      <button class="btn ghost sm" onclick="detailNav(-1)">‹ 上一個</button>
+      <span style="font-size:12px;color:var(--mut)">點旁邊空白關閉</span>
       <button class="btn ghost sm" onclick="detailMode='edit';showDetail()">編輯</button>
-      <button class="btn ghost sm" onclick="detailNav(1)">下一個 ›</button>
     </div>
-    <div class="reader-edge l" onclick="detailNav(-1)"></div>
-    <div class="reader-edge r" onclick="detailNav(1)"></div>
-    <div class="reader-body">
+    <button class="reader-arrow l" onclick="detailNav(-1)">‹</button>
+    <button class="reader-arrow r" onclick="detailNav(1)">›</button>
+    <div class="reader-body" style="padding-left:48px;padding-right:48px">
       <div class="dword">${rec.word} <button class="speak" onclick="speak('${rec.word.replace(/'/g,'')}')">聽</button></div>
       <div class="dph">${rec.phonetic||''}</div>
       <div class="dmean">${rec.pos?'<b style="color:var(--acc)">'+escapeHtml(rec.pos)+'</b> ':''}${escapeHtml((rec.wordZh||'').replace(/\//g,'；'))}</div>
