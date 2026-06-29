@@ -345,7 +345,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v15';
+const APP_VERSION='v16';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -736,7 +736,7 @@ function renderQuizFlip(){
     </div>`;
   $('#autoBtn').onclick=startAutoPlay;
   let flipped=false; const face=$('#qfFace');
-  const sayFace=()=>speak(flipped?('故事。'+c.story+'。口訣。'+(c.mnemonic||'')):c.front);
+  const sayFace=()=>speak(flipped?('故事。'+c.story+'。口訣。'+(c.mnemonic||'')+(c.detail?'。關鍵。'+c.detail:'')):c.front);
   $('#qflip').onclick=()=>{ flipped=!flipped; face.innerHTML=flipped?`<div class="bk">${flipBackHtml(c)}</div>`:esc(c.front); sayFace(); };
   $('#qfSpeak').onclick=e=>{ e.stopPropagation(); sayFace(); };
   $('#qfPrev').onclick=()=>{ qfIdx=(qfIdx-1+pool.length)%pool.length; renderQuizFlip(); };
@@ -785,7 +785,8 @@ async function playCardA(c){
   const idx=auto.idx;
   const steps=[ ()=>{ autoShow(c,idx,'front'); return sayOnce('考點。'+c.front); }, ()=>awaitMs(300),
     ()=>{ autoShow(c,idx,'back'); return sayOnce('故事。'+c.story); }, ()=>awaitMs(250),
-    ()=>sayOnce('口訣。'+(c.mnemonic||'')), ()=>awaitMs(800) ];
+    ()=>sayOnce('口訣。'+(c.mnemonic||'')), ()=>awaitMs(250),
+    ()=>sayOnce(c.detail?('關鍵。'+c.detail):''), ()=>awaitMs(800) ];
   for(const st of steps){ if(!auto.on||auto.skip)return; await st(); if(!auto.on||auto.skip)return; await untilResume(); }
 }
 async function autoLoop(){ while(auto.on){ if(auto.idx>=auto.items.length)auto.idx=0; if(auto.idx<0)auto.idx=0; auto.skip=false;
