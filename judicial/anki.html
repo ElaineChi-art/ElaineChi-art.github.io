@@ -303,6 +303,7 @@
   <div class="row" style="margin-top:8px"><button class="btn ghost sm" id="setOwner">設為我的裝置</button><button class="btn ghost sm" id="unsetOwner">取消</button><span class="pill" id="ownerState"></span></div>
   <div class="msg devhint">（之後要分享給朋友：把網址加上 <b>?share</b> 給他，他會看到乾淨的工具、各自存自己的題庫。）</div>
 </div></div>
+<div class="ov" id="ovQ"><div class="modal"><button class="x" data-close>×</button><h2>原題複習</h2><div id="ovQbody"></div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
 <script src="data.js"></script>
@@ -310,7 +311,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v5';
+const APP_VERSION='v6';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -491,7 +492,7 @@ function flipBackHtml(c){
   if(c.detail)h+=`<div class="seg"><span class="k">📌 詳細</span>${esc(c.detail)}</div>`;
   if(c.answerRaw)h+=`<div class="seg" style="color:var(--green)"><span class="k">✅ 正確答案</span>${esc(c.answerRaw)}</div>`;
   const q=c.qref?qByKey(c.qref):null;
-  if(q)h+=`<div class="qrefline">🔗 出自原題：${esc(qTitle(q))}</div>`;
+  if(q)h+=`<div class="qrefline" data-q="${esc(c.qref)}" style="cursor:pointer;text-decoration:underline">🔗 出自原題：${esc(qTitle(q))}　▸ 點看原題＋朗讀</div>`;
   return h;
 }
 function wcardHtml(c){
@@ -517,11 +518,39 @@ function renderList(){
 $('#grid').addEventListener('change',e=>{ const chk=e.target.closest('.chk'); if(!chk)return;
   chk.checked?selected.add(chk.dataset.id):selected.delete(chk.dataset.id); renderBasket(); });
 $('#grid').addEventListener('click',e=>{
+  const ql=e.target.closest('.qrefline'); if(ql&&ql.dataset.q){ openQ(ql.dataset.q); return; }
   const lv=e.target.closest('.lvb'); if(lv){ const c=DB.cards[lv.dataset.id]; if(!c)return;
     c.level=c.level===lv.dataset.lv?'':lv.dataset.lv; c.stats.last=Date.now(); save(); renderList(); return; }
   if(e.target.closest('.chk'))return;
   const w=e.target.closest('.wcard'); if(w){ const id=w.dataset.id; expanded.has(id)?expanded.delete(id):expanded.add(id); w.classList.toggle('open'); }
 });
+
+/* 原題複習 modal（點卡片清單的「出自原題」開啟，含朗讀解析） */
+const optLetter=i=>'ABCDEFG'[i];
+function openQ(qref){
+  const q=qByKey(qref); if(!q||!q.options){ alert('找不到對應原題'); return; }
+  const note=(window.NOTES||{})[qref]||{};
+  const ai=(q.ansIndex!=null)?q.ansIndex:'ABCD'.indexOf(q.ansLetter);
+  const body=note.body?esc(note.body).replace(/\n/g,'<br>'):'';
+  $('#ovQbody').innerHTML=`
+    <div class="msg" style="margin-top:0">🔗 ${esc(qTitle(q))} ‧ 📚 ${esc(systemOf(q))}</div>
+    <div style="font-size:16px;line-height:1.85;margin:12px 0">${esc(q.stem)}</div>
+    <div>${q.options.map((o,i)=>`<div class="opt ${i===ai?'correct':''}" style="cursor:default"><b>${optLetter(i)}</b>${esc(o)}</div>`).join('')}</div>
+    <div style="margin-top:8px;color:var(--green);font-weight:700">✅ 正解：${optLetter(ai)}</div>
+    ${body?`<div class="analysis" style="margin-top:12px"><span class="rk">📝 白話詳解</span><br>${body}</div>`:'<div class="msg">（這題還沒有白話詳解）</div>'}
+    <div class="row" style="margin-top:14px"><button class="btn" id="qSpeak">🔊 念題目＋解析</button><button class="btn ghost sm" id="qStop">⏹ 停</button></div>`;
+  $('#qSpeak').onclick=()=>speakQ(q,note,ai);
+  $('#qStop').onclick=stopSpeak;
+  openOv('#ovQ');
+  speakQ(q,note,ai);   // 開啟即朗讀
+}
+function speakQ(q,note,ai){
+  let t=q.stem+'。';
+  q.options.forEach((o,i)=>{ t+=optLetter(i)+'、'+o+'。'; });
+  t+='正確答案 '+optLetter(ai)+'。';
+  if(note.body) t+=note.body.replace(/[⚖️🔑✅❌📌🔁🗝️🟢🟡🔴]/g,'').replace(/法條：/g,'').replace(/\n/g,'，');
+  speak(t);
+}
 function renderBasket(){ $('#basketInfo').textContent=`🧺 測驗籃 ${selected.size}`; }
 $('#selAllBtn').onclick=()=>{ listPool().forEach(c=>selected.add(c.id)); renderList(); };
 $('#selClrBtn').onclick=()=>{ selected.clear(); renderList(); };
@@ -658,8 +687,8 @@ function renderThemeGrid(){ const cur=curTheme();
   $('#themeGrid').innerHTML=THEMES.map(([id,nm,bg,ac])=>`<button class="themesw ${cur===id?'on':''}" data-t="${id}"><span class="swatch" style="background:${bg}"><i style="background:${ac};position:absolute;width:10px;height:10px;border-radius:50%;bottom:3px;right:3px"></i></span>${nm}</button>`).join('');
   $('#themeGrid').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>applyTheme(b.dataset.t)); }
 function openOv(id){ $(id).classList.add('show'); }
-document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.ov').classList.remove('show'));
-document.querySelectorAll('.ov').forEach(o=>o.onclick=e=>{if(e.target===o)o.classList.remove('show');});
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{ stopSpeak(); b.closest('.ov').classList.remove('show'); });
+document.querySelectorAll('.ov').forEach(o=>o.onclick=e=>{ if(e.target===o){ stopSpeak(); o.classList.remove('show'); } });
 $('#btnTheme').onclick=()=>{ renderThemeGrid(); openOv('#ovTheme'); };
 $('#btnVoice').onclick=()=>{ $('#rate').value=speakRate; $('#rateVal').textContent=speakRate.toFixed(1); renderAutoPanel(); openOv('#ovVoice'); };
 $('#rate').oninput=e=>{ speakRate=parseFloat(e.target.value); localStorage.setItem('ankiRate',speakRate); $('#rateVal').textContent=speakRate.toFixed(1); };
