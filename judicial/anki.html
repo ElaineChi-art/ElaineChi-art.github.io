@@ -52,6 +52,25 @@
   .chip .n{color:#6b7486;font-size:11px;margin-left:4px}
   .chip.on .n{color:#bfa55a}
 
+  /* 月曆（記錄每天讀的） */
+  .calhead{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 10px}
+  .calhead b{font-size:15px;color:#dfe6f2}
+  .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .caldow{text-align:center;color:#7f8aa0;font-size:11.5px;font-weight:bold;padding:2px 0}
+  .calcell{position:relative;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    border:1px solid var(--line);border-radius:9px;font-size:13px;color:#c7cedb;cursor:pointer;background:#0f1320}
+  .calcell.empty{border:none;background:none;cursor:default}
+  .calcell.muted{color:#4d566b;cursor:default;background:#0c0f16}
+  .calcell.has:hover{background:#1b2433}
+  .calcell.today{border-color:var(--blue)}
+  .calcell.sel{background:#1c2435;border-color:var(--gold);color:var(--gold);font-weight:bold}
+  .calcell .cnt{font-size:10px;color:#7fb5ff;margin-top:1px;line-height:1}
+  .calcell.sel .cnt{color:#bfa55a}
+  .calhint{color:#7f8aa0;font-size:12px;margin-top:9px;text-align:center}
+  .calhint b{color:var(--gold)}
+  input[type=date]{background:#0f1320;border:1px solid var(--line);color:#e6e6e6;border-radius:8px;
+    padding:7px 10px;font-size:13px;font-family:inherit;color-scheme:dark}
+
   /* 翻卡 */
   .flip{perspective:1400px;margin:6px 0 12px}
   .flipinner{position:relative;width:100%;min-height:300px;transition:transform .5s;transform-style:preserve-3d;cursor:pointer}
@@ -127,6 +146,20 @@
     <button class="stepbtn" data-step="3">③ 測驗<small>看故事選考點／口訣填空</small></button>
   </div>
 
+  <!-- 月曆：記錄每天讀的，可複選幾天來複習/測驗（三步驟共用） -->
+  <div class="card" id="calCard">
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <span class="lab">📅 我的讀書日曆（點某天只看那天讀的卡，可複選）</span>
+      <div class="row">
+        <button class="chip" id="calToday">今天</button>
+        <button class="chip" id="calMonth">本月全選</button>
+        <button class="chip on" id="calAll">看全部</button>
+      </div>
+    </div>
+    <div id="calHost"></div>
+    <div class="calhint" id="calHint"></div>
+  </div>
+
   <!-- 考點關聯圖（deck）篩選，三步驟共用 -->
   <div class="card" id="deckCard">
     <span class="lab">🕸️ 考點關聯圖（用第一個標籤分類，點選只練該類）</span>
@@ -139,6 +172,11 @@
       <span class="lab">① 貼上 Anki 卡片（一行一張）</span>
       <p class="hint">格式：<code>正面考點;詳解(故事/口訣/詳細/正確答案，用 &lt;br&gt; 分行);標籤 標籤2</code>　第一行可放 <code>Front;Back;Tags</code> 表頭，會自動略過。標籤用空白分隔，<b>第一個標籤＝考點關聯圖分類</b>。</p>
       <textarea id="inp" placeholder="土地管轄／船艦犯罪 §5;故事：……&lt;br&gt;口訣：**本出停**&lt;br&gt;正確答案：A;管轄 船艦"></textarea>
+      <div class="row" style="margin-top:10px;align-items:center">
+        <span class="lab" style="font-weight:normal">📅 記到哪一天：</span>
+        <input type="date" id="addDate">
+        <span class="hint" style="margin:0">（預設今天，可改成你實際讀的日期）</span>
+      </div>
       <div class="row" style="margin-top:10px">
         <button class="btn" id="detectBtn">🔍 智慧偵測</button>
         <button class="btn ghost sm" id="loadSeedBtn">↻ 載入內建範例題庫</button>
@@ -223,13 +261,17 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION = 'v1';
+const APP_VERSION = 'v2';
 const LS_KEY = 'ankiDB_v1';
 
 /* ---------- 工具 ---------- */
 const $ = s => document.querySelector(s);
 const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const mdBold = s => esc(s).replace(/\*\*(.+?)\*\*/g,'<b class="hl">$1</b>');
+const DOW = ['日','一','二','三','四','五','六'];
+const ymd = (y,m,d)=> y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+const today = ()=>{ const d=new Date(); return ymd(d.getFullYear(),d.getMonth(),d.getDate()); };
+const dispDate = s => s ? s.slice(5).replace('-','/') : '未排日期';
 const idOf = front => 'c_'+front.trim().replace(/\s+/g,' ').split('').reduce((h,c)=>((h<<5)-h+c.charCodeAt(0))|0,0)+'_'+front.trim().length;
 
 /* 解析詳解：拆出 故事 / 口訣 / 詳細 / 正確答案 / 挖空答案 */
@@ -252,8 +294,8 @@ function parseBack(back){
   return out;
 }
 
-/* 解析整段貼上的文字 → 卡片陣列 */
-function parseText(text){
+/* 解析整段貼上的文字 → 卡片陣列（date = 記到哪一天） */
+function parseText(text, date){
   const cards = [];
   text.split(/\r?\n/).forEach(line=>{
     const ln = line.trim();
@@ -267,7 +309,7 @@ function parseText(text){
     if(!front) return;
     const tags = tagStr ? tagStr.split(/\s+/).filter(Boolean) : ['未分類'];
     const p = parseBack(back);
-    cards.push({id:idOf(front), front, back, tags, deck:tags[0]||'未分類', ...p});
+    cards.push({id:idOf(front), front, back, tags, deck:tags[0]||'未分類', date:date||today(), ...p});
   });
   return cards;
 }
@@ -276,14 +318,19 @@ function parseText(text){
 let DB = load();
 function load(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {cards:{}}; }catch(e){ return {cards:{}}; } }
 function save(){ localStorage.setItem(LS_KEY, JSON.stringify(DB)); }
-function seedIfEmpty(){
-  if(Object.keys(DB.cards).length===0){ addCards(parseText(window.ANKI_SEED||''), true); }
+function migrate(){ // 舊資料沒有 date → 補成今天（只補一次，補完就固定）
+  let changed=false;
+  Object.values(DB.cards).forEach(c=>{ if(!c.date){ c.date=today(); changed=true; } });
+  if(changed) save();
 }
-function addCards(arr, silent){
+function seedIfEmpty(){
+  if(Object.keys(DB.cards).length===0){ addCards(parseText(window.ANKI_SEED||'', today())); }
+}
+function addCards(arr){
   let added=0, merged=0;
   arr.forEach(c=>{
     const ex = DB.cards[c.id];
-    if(ex){ // 保留學習進度，更新內容
+    if(ex){ // 保留學習進度與原讀書日，只更新內容
       Object.assign(ex, {front:c.front,back:c.back,tags:c.tags,deck:c.deck,story:c.story,
         mnemonic:c.mnemonic,detail:c.detail,answerRaw:c.answerRaw,answer:c.answer,cloze:c.cloze});
       merged++;
@@ -298,38 +345,92 @@ function addCards(arr, silent){
 function allCards(){ return Object.values(DB.cards); }
 function decks(){
   const m = {};
-  allCards().forEach(c=>{ m[c.deck]=(m[c.deck]||0)+1; });
+  poolByDate().forEach(c=>{ m[c.deck]=(m[c.deck]||0)+1; });
   return Object.entries(m).sort((a,b)=>b[1]-a[1]);
 }
+function dateCount(){ const m={}; allCards().forEach(c=>{ m[c.date]=(m[c.date]||0)+1; }); return m; }
 
 /* ---------- 共用狀態 ---------- */
-let curDeck = '全部';        // 選的考點關聯圖
+let curDeck = '全部';            // 選的考點關聯圖
+let selDates = new Set();        // 選的日期（空=看全部）
+const calState = {year:new Date().getFullYear(), month:new Date().getMonth()};
 let step = 2;
-function poolCards(){
-  let p = allCards();
+function poolByDate(){           // 只套用日期篩選
+  const all = allCards();
+  return selDates.size ? all.filter(c=>selDates.has(c.date)) : all;
+}
+function poolCards(){            // 日期 + 考點關聯圖
+  let p = poolByDate();
   if(curDeck!=='全部') p = p.filter(c=>c.deck===curDeck);
   return p;
+}
+
+/* ---------- 月曆（記每天讀的） ---------- */
+function renderCal(){
+  const host = $('#calHost'), {year,month}=calState;
+  const startDow = new Date(year,month,1).getDay();
+  const days = new Date(year,month+1,0).getDate();
+  const cnts = dateCount();
+  let h = `<div class="calhead"><button class="btn ghost sm" data-nav="-1">‹</button>
+    <b>${year} 年 ${month+1} 月</b><button class="btn ghost sm" data-nav="1">›</button></div><div class="calgrid">`;
+  DOW.forEach(d=> h+=`<div class="caldow">${d}</div>`);
+  for(let i=0;i<startDow;i++) h+=`<div class="calcell empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const date = ymd(year,month,d), cnt = cnts[date]||0;
+    const cls = ['calcell', cnt?'has':'muted'];
+    if(date===today()) cls.push('today');
+    if(selDates.has(date)) cls.push('sel');
+    h += `<div class="${cls.join(' ')}" data-date="${date}" data-cnt="${cnt}"><div>${d}</div>${cnt?`<div class="cnt">${cnt}張</div>`:''}</div>`;
+  }
+  host.innerHTML = h+'</div>';
+  host.querySelectorAll('[data-nav]').forEach(b=> b.onclick=()=>{
+    calState.month += +b.dataset.nav;
+    if(calState.month<0){ calState.month=11; calState.year--; }
+    if(calState.month>11){ calState.month=0; calState.year++; }
+    renderCal();
+  });
+  host.querySelectorAll('[data-date]').forEach(c=> c.onclick=()=>{
+    if(!+c.dataset.cnt) return;               // 沒卡的日子不能選
+    const d = c.dataset.date;
+    selDates.has(d) ? selDates.delete(d) : selDates.add(d);
+    applyFilter();
+  });
+  // 日期摘要
+  const sel = [...selDates].sort();
+  $('#calAll').classList.toggle('on', selDates.size===0);
+  $('#calHint').innerHTML = selDates.size
+    ? `已選 <b>${sel.map(dispDate).join('、')}</b> 共 <b>${poolByDate().length}</b> 張（再點一次取消；按「看全部」清除）`
+    : `目前看<b>全部 ${allCards().length}</b> 張。點某天只複習那天讀的卡。`;
 }
 
 /* ---------- deck 篩選列 ---------- */
 function renderDecks(){
   const host = $('#deckChips');
   const ds = decks();
-  let html = `<button class="chip ${curDeck==='全部'?'on':''}" data-deck="全部">全部<span class="n">${allCards().length}</span></button>`;
+  let html = `<button class="chip ${curDeck==='全部'?'on':''}" data-deck="全部">全部<span class="n">${poolByDate().length}</span></button>`;
   ds.forEach(([d,n])=> html += `<button class="chip ${curDeck===d?'on':''}" data-deck="${esc(d)}">${esc(d)}<span class="n">${n}</span></button>`);
   host.innerHTML = html;
-  host.querySelectorAll('.chip').forEach(b=> b.onclick=()=>{ curDeck=b.dataset.deck; renderDecks(); onDeckChange(); });
+  host.querySelectorAll('.chip').forEach(b=> b.onclick=()=>{ curDeck=b.dataset.deck; renderDecks(); buildFlipList(); renderFlip(); if(step===3) nextQuiz(); });
 }
-function onDeckChange(){ buildFlipList(); renderFlip(); if(step===3) nextQuiz(); }
+/* 任何篩選變動（日期/deck）後統一刷新 */
+function applyFilter(){
+  if(curDeck!=='全部' && !decks().some(([d])=>d===curDeck)) curDeck='全部'; // 該分類在新日期沒卡就回全部
+  renderCal(); renderDecks(); buildFlipList(); renderFlip(); if(step===3) nextQuiz();
+}
+$('#calToday').onclick = ()=>{ const t=today(); if(dateCount()[t]){ selDates=new Set([t]); } const p=t.split('-'); calState.year=+p[0]; calState.month=+p[1]-1; applyFilter(); };
+$('#calMonth').onclick = ()=>{ const cnts=dateCount(); selDates=new Set(Object.keys(cnts).filter(d=>{const p=d.split('-');return +p[0]===calState.year && +p[1]-1===calState.month;})); applyFilter(); };
+$('#calAll').onclick = ()=>{ selDates=new Set(); applyFilter(); };
 
 /* ====================================================================== */
 /* 第一步：輸入 */
 let pending = null;
+function addDateVal(){ return $('#addDate').value || today(); }
 $('#detectBtn').onclick = ()=>{
-  const cards = parseText($('#inp').value);
+  const date = addDateVal();
+  const cards = parseText($('#inp').value, date);
   if(!cards.length){ $('#detectMsg').textContent='⚠ 偵測不到卡片，請確認每行用「;」分隔'; pending=null; $('#previewCard').style.display='none'; return; }
   pending = cards;
-  $('#detectMsg').textContent = `✓ 偵測到 ${cards.length} 張`;
+  $('#detectMsg').textContent = `✓ 偵測到 ${cards.length} 張，將記到 ${date}`;
   const byDeck = {};
   cards.forEach(c=> (byDeck[c.deck]=byDeck[c.deck]||[]).push(c));
   let html = '';
@@ -353,7 +454,7 @@ $('#addBtn').onclick = ()=>{
   refreshAll();
 };
 $('#cancelBtn').onclick = ()=>{ $('#previewCard').style.display='none'; pending=null; $('#detectMsg').textContent=''; };
-$('#loadSeedBtn').onclick = ()=>{ const r=addCards(parseText(window.ANKI_SEED||'')); $('#detectMsg').textContent=`✓ 範例：新增 ${r.added}、更新 ${r.merged}`; refreshAll(); };
+$('#loadSeedBtn').onclick = ()=>{ const r=addCards(parseText(window.ANKI_SEED||'', addDateVal())); $('#detectMsg').textContent=`✓ 範例：新增 ${r.added}、更新 ${r.merged}（記到 ${addDateVal()}）`; refreshAll(); };
 $('#exportBtn').onclick = ()=>{
   const lines = ['Front;Back;Tags', ...allCards().map(c=>`${c.front};${c.back};${c.tags.join(' ')}`)];
   const blob = new Blob([lines.join('\n')], {type:'text/plain'});
@@ -363,7 +464,9 @@ $('#resetBtn').onclick = ()=>{ if(confirm('確定清空整個題庫？（學習�
 function renderDbStat(){
   const all = allCards();
   const w = all.filter(c=>c.level==='weak').length, s = all.filter(c=>c.level==='strong').length;
-  $('#dbStat').innerHTML = `共 <b style="color:var(--gold)">${all.length}</b> 張 ‧ ${decks().length} 個考點關聯圖 ‧ <span style="color:var(--red)">不熟 ${w}</span> ‧ <span style="color:var(--green)">已熟 ${s}</span>`;
+  const nDays = Object.keys(dateCount()).length;
+  const nDecks = new Set(all.map(c=>c.deck)).size;
+  $('#dbStat').innerHTML = `共 <b style="color:var(--gold)">${all.length}</b> 張 ‧ ${nDays} 天 ‧ ${nDecks} 個考點關聯圖 ‧ <span style="color:var(--red)">不熟 ${w}</span> ‧ <span style="color:var(--green)">已熟 ${s}</span>`;
 }
 
 /* ====================================================================== */
@@ -383,8 +486,8 @@ function renderFlip(){
     $('#fDeck').textContent = '—'; $('#fBack').innerHTML=''; $('#flipProg').textContent='0/0';
     $('#flipLab').textContent='② 翻卡複習'; return;
   }
-  $('#fDeck').textContent = '🕸️ '+c.deck;
-  $('#bDeck').textContent = '🕸️ '+c.deck;
+  $('#fDeck').textContent = '🕸️ '+c.deck+' ‧ 📅 '+dispDate(c.date);
+  $('#bDeck').textContent = '🕸️ '+c.deck+' ‧ 📅 '+dispDate(c.date);
   const lv = c.level ? `<span class="lvtag ${c.level}">${{weak:'不熟',mid:'普通',strong:'熟'}[c.level]}</span>` : '';
   $('#fFront').innerHTML = esc(c.front)+lv;
   let bh = '';
@@ -458,7 +561,7 @@ function renderChoice(card){
   const hint = card.mnemonic ? `<span class="qhint">🔑 口訣：${mdBold(card.mnemonic)}</span>` : '';
   $('#quizArea').innerHTML = `
     <div class="qbox">
-      <div class="qmeta">🕸️ ${esc(card.deck)} ‧ 看故事，選出正確的考點</div>
+      <div class="qmeta">🕸️ ${esc(card.deck)} ‧ 📅 ${dispDate(card.date)} ‧ 看故事，選出正確的考點</div>
       <div class="qstem">📖 ${esc(card.story||card.detail||'（這張卡沒有故事）')}${hint}</div>
       <div class="opts" id="opts">
         ${opts.map((o,i)=>`<button class="opt" data-i="${i}"><b>${'ABCD'[i]}</b>${esc(o.front)}</button>`).join('')}
@@ -491,7 +594,7 @@ function renderFill(card){
   const blanked = mdBold(card.mnemonic).replace(/<b class="hl">.+?<\/b>/,'<b class="hl">＿＿＿</b>');
   $('#quizArea').innerHTML = `
     <div class="qbox">
-      <div class="qmeta">🕸️ ${esc(card.deck)} ‧ 考點：<b style="color:var(--gold)">${esc(card.front)}</b></div>
+      <div class="qmeta">🕸️ ${esc(card.deck)} ‧ 📅 ${dispDate(card.date)} ‧ 考點：<b style="color:var(--gold)">${esc(card.front)}</b></div>
       <div class="qstem">📖 ${esc(card.story||'')}</div>
       <div class="seg mnem" style="margin-top:12px">🔑 口訣：${blanked}</div>
       <input class="fillin" id="fillIn" placeholder="填入口訣關鍵字" autocomplete="off">
@@ -536,15 +639,18 @@ document.querySelectorAll('.stepbtn').forEach(b=> b.onclick=()=>{
   $('#s2').style.display = step===2?'block':'none';
   $('#s3').style.display = step===3?'block':'none';
   $('#deckCard').style.display = step===1?'none':'block';
+  $('#calCard').style.display = step===1?'none':'block';
   if(step===2){ buildFlipList(); renderFlip(); }
   if(step===3){ sScore=0; sTotal=0; $('#score').textContent='本回 0／0'; nextQuiz(); }
   if(step===1) renderDbStat();
 });
 
-function refreshAll(){ renderDecks(); renderDbStat(); buildFlipList(); renderFlip(); }
+function refreshAll(){ renderCal(); renderDecks(); renderDbStat(); buildFlipList(); renderFlip(); }
 
 /* ---------- 啟動 ---------- */
+migrate();
 seedIfEmpty();
+$('#addDate').value = today();   // 第一步預設記到今天
 refreshAll();
 $('#foot').textContent = `Anki 翻卡 ${APP_VERSION} ‧ ${allCards().length} 張卡 ‧ 資料存於本機瀏覽器`;
 </script>
