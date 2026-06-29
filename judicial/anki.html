@@ -322,6 +322,11 @@
   <div class="msg devhint">（之後要分享給朋友：把網址加上 <b>?share</b> 給他，他會看到乾淨的工具、各自存自己的題庫。）</div>
 </div></div>
 <div class="ov" id="ovQ"><div class="modal"><button class="x" data-close>×</button><h2>原題複習</h2><div id="ovQbody"></div></div></div>
+<div class="ov" id="ovPick"><div class="modal"><button class="x" data-close>×</button><h2>指定原題</h2>
+  <div class="msg" style="margin-top:0">搜尋考點或題幹關鍵字，點一筆就把這張卡連到那題。</div>
+  <input type="text" id="pickSearch" placeholder="例如 緩起訴 / 管轄錯誤 / §253" style="margin-top:8px">
+  <div id="pickResults" style="max-height:50vh;overflow-y:auto;margin-top:12px"></div>
+</div></div>
 <button id="toTop" title="回到頂端">↑</button>
 
 <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
@@ -330,7 +335,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v9';
+const APP_VERSION='v10';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -524,7 +529,8 @@ function wcardHtml(c){
     <div class="cardex">${flipBackHtml(c)}</div>
     <div class="cardact">
       <button class="cact" data-act="say" data-id="${c.id}">🔊 朗讀</button>
-      ${q?`<button class="cact" data-act="orig" data-id="${c.id}">🔗 原題</button>`:''}
+      ${q?`<button class="cact" data-act="orig" data-id="${c.id}">🔗 原題</button><button class="cact" data-act="pick" data-id="${c.id}">改</button>`
+         :`<button class="cact" data-act="pick" data-id="${c.id}">🔗 指定原題</button>`}
     </div>
     <div class="lvset">
       <button class="lvb weak ${c.level==='weak'?'on':''}" data-lv="weak" data-id="${c.id}">不熟</button>
@@ -544,7 +550,8 @@ $('#grid').addEventListener('click',e=>{
   const ql=e.target.closest('.qrefline'); if(ql&&ql.dataset.q){ openQ(ql.dataset.q); return; }
   const ca=e.target.closest('.cact'); if(ca){ const c=DB.cards[ca.dataset.id]; if(!c)return;
     if(ca.dataset.act==='say') speak(c.front+'。故事。'+c.story+'。口訣。'+(c.mnemonic||''));
-    else if(ca.dataset.act==='orig'&&c.qref) openQ(c.qref); return; }
+    else if(ca.dataset.act==='orig'&&c.qref) openQ(c.qref);
+    else if(ca.dataset.act==='pick') openPick(c.id); return; }
   const lv=e.target.closest('.lvb'); if(lv){ const c=DB.cards[lv.dataset.id]; if(!c)return;
     c.level=c.level===lv.dataset.lv?'':lv.dataset.lv; c.stats.last=Date.now(); save(); renderList(); return; }
   if(e.target.closest('.chk'))return;
@@ -577,6 +584,24 @@ function speakQ(q,note,ai){
   if(note.body) t+=note.body.replace(/[⚖️🔑✅❌📌🔁🗝️🟢🟡🔴]/g,'').replace(/法條：/g,'').replace(/\n/g,'，');
   speak(t);
 }
+
+/* 手動指定原題（給未連動或想改連結的卡） */
+let pickCardId=null;
+function openPick(id){ const c=DB.cards[id]; if(!c)return; pickCardId=id;
+  $('#pickSearch').value=c.deck||''; renderPickResults(c.deck||''); openOv('#ovPick'); setTimeout(()=>$('#pickSearch').focus(),50); }
+function renderPickResults(qstr){
+  const s=(qstr||'').trim().toLowerCase();
+  let items=CONCEPT_IDX.filter(it=>it.q&&it.q.options);
+  if(s) items=items.filter(it=>{ const concept=((window.NOTES||{})[it.key]||{}).concept||''; return (concept+it.q.stem).toLowerCase().includes(s); });
+  items=items.slice(0,50);
+  $('#pickResults').innerHTML = items.length ? items.map(it=>{ const q=it.q, concept=((window.NOTES||{})[it.key]||{}).concept||'';
+    return `<div class="opt" data-k="${esc(it.key)}" style="cursor:pointer"><b>${esc(concept||'（無考點名）')}</b>
+      <div style="color:var(--mut);font-size:12px;margin-top:3px">${esc(qTitle(q))} ‧ ${esc(q.stem.slice(0,46))}…</div></div>`; }).join('')
+    : '<div class="msg">查無結果，換個關鍵字試試。</div>';
+  $('#pickResults').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ const c=DB.cards[pickCardId]; if(c){ c.qref=b.dataset.k;
+    const q=qByKey(c.qref); c.qansOk=!!(c.answer&&q&&q.ansLetter===c.answer); save(); } $('#ovPick').classList.remove('show'); renderSelectors(); renderList(); });
+}
+$('#pickSearch').oninput=e=>renderPickResults(e.target.value);
 function renderBasket(){ $('#basketInfo').textContent=`🧺 測驗籃 ${selected.size}`; }
 $('#selAllBtn').onclick=()=>{ listPool().forEach(c=>selected.add(c.id)); renderList(); };
 $('#selClrBtn').onclick=()=>{ selected.clear(); renderList(); };
