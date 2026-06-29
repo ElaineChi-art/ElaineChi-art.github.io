@@ -143,7 +143,7 @@
   <div class="steps">
     <button class="stepbtn" data-step="1">① 貼上題庫<small>智慧偵測 Front;Back;Tags</small></button>
     <button class="stepbtn cur" data-step="2">② 翻卡複習<small>正面考點→翻面看故事口訣</small></button>
-    <button class="stepbtn" data-step="3">③ 測驗<small>看故事選考點／口訣填空</small></button>
+    <button class="stepbtn" data-step="3">③ 測驗<small>翻卡／原題選擇／口訣填空</small></button>
   </div>
 
   <!-- 月曆：記錄每天讀的，可複選幾天來複習/測驗（三步驟共用） -->
@@ -246,8 +246,9 @@
     <div class="card">
       <div class="row" style="justify-content:space-between">
         <div class="chips">
-          <button class="chip on" id="modeChoice" data-qmode="choice">選擇題</button>
-          <button class="chip" id="modeFill" data-qmode="fill">口訣填空</button>
+          <button class="chip" data-qmode="flip">🔄 翻卡</button>
+          <button class="chip on" data-qmode="orig">📋 原題選擇</button>
+          <button class="chip" data-qmode="fill">✍️ 口訣填空</button>
         </div>
         <span class="score" id="score">本回 0／0</span>
       </div>
@@ -258,10 +259,12 @@
   <div class="foot" id="foot">Anki 翻卡 v1 ‧ 資料存於本機瀏覽器</div>
 </div>
 
+<script src="data.js"></script>
+<script src="notes.js"></script>
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION = 'v2';
+const APP_VERSION = 'v3';
 const LS_KEY = 'ankiDB_v1';
 
 /* ---------- 工具 ---------- */
@@ -272,6 +275,51 @@ const DOW = ['日','一','二','三','四','五','六'];
 const ymd = (y,m,d)=> y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
 const today = ()=>{ const d=new Date(); return ymd(d.getFullYear(),d.getMonth(),d.getDate()); };
 const dispDate = s => s ? s.slice(5).replace('-','/') : '未排日期';
+
+/* ---------- 連動原題：Front(考點) ↔ notes.js concept ↔ data.js 原題 ---------- */
+let CONCEPT_IDX = [];           // {key, concept, q, ncon}
+let QBYKEY = {};                // key -> 原題
+function buildConceptIndex(){
+  const Q = window.QUESTIONS||[], N = window.NOTES||{};
+  QBYKEY = {};
+  Q.forEach(q=> QBYKEY[q.year+'-'+q.section+'-'+q.num] = q);
+  CONCEPT_IDX = [];
+  Object.entries(N).forEach(([k,n])=>{
+    const c = n.concept||''; if(!c) return;
+    CONCEPT_IDX.push({key:k, concept:c, q:QBYKEY[k]||null, ncon:normCon(c)});
+  });
+}
+function normCon(s){
+  return s.replace(/【[^】]*】/g,'')
+          .replace(/§[\d\-的之]+(Ⅰ|Ⅱ|Ⅲ|Ⅳ|[①-⓿])?/g,'')
+          .replace(/[\s／/、，,。.（）()§\-→]/g,'').toLowerCase();
+}
+function bigram(a,b){
+  if(!a||!b) return 0;
+  const A=new Set(),B=new Set();
+  for(let i=0;i<a.length-1;i++)A.add(a.slice(i,i+2));
+  for(let i=0;i<b.length-1;i++)B.add(b.slice(i,i+2));
+  if(!A.size||!B.size) return 0;
+  let inter=0; A.forEach(x=>{ if(B.has(x)) inter++; });
+  return inter/(A.size+B.size-inter);
+}
+// 回傳 {key, score, ansOk} 或 null
+function matchQuestion(front, ansLetter){
+  const nf = normCon(front); if(!nf) return null;
+  let best=null, bs=0;
+  for(const it of CONCEPT_IDX){
+    const nc=it.ncon; if(!nc) continue;
+    let sc = (nc.indexOf(nf)>=0 || nf.indexOf(nc)>=0)
+      ? Math.min(nf.length,nc.length)/Math.max(nf.length,nc.length)
+      : bigram(nf,nc);
+    if(ansLetter && it.q && it.q.ansLetter===ansLetter) sc += 0.08;  // 答案字母吻合→消歧加分
+    if(sc>bs){ bs=sc; best=it; }
+  }
+  if(!best || bs<0.5) return null;
+  return {key:best.key, score:Math.min(1,bs), ansOk: !!(ansLetter && best.q && best.q.ansLetter===ansLetter)};
+}
+function qByKey(k){ return QBYKEY[k]||null; }
+function qTitle(q){ return q ? `${q.year} 年 ${q.section} 第 ${q.num} 題（${q.subject||q.subs||''}）` : ''; }
 const idOf = front => 'c_'+front.trim().replace(/\s+/g,' ').split('').reduce((h,c)=>((h<<5)-h+c.charCodeAt(0))|0,0)+'_'+front.trim().length;
 
 /* 解析詳解：拆出 故事 / 口訣 / 詳細 / 正確答案 / 挖空答案 */
@@ -309,7 +357,9 @@ function parseText(text, date){
     if(!front) return;
     const tags = tagStr ? tagStr.split(/\s+/).filter(Boolean) : ['未分類'];
     const p = parseBack(back);
-    cards.push({id:idOf(front), front, back, tags, deck:tags[0]||'未分類', date:date||today(), ...p});
+    const mq = matchQuestion(front, p.answer);
+    cards.push({id:idOf(front), front, back, tags, deck:tags[0]||'未分類', date:date||today(),
+      qref: mq?mq.key:'', qscore: mq?mq.score:0, qansOk: mq?mq.ansOk:false, ...p});
   });
   return cards;
 }
@@ -318,9 +368,15 @@ function parseText(text, date){
 let DB = load();
 function load(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {cards:{}}; }catch(e){ return {cards:{}}; } }
 function save(){ localStorage.setItem(LS_KEY, JSON.stringify(DB)); }
-function migrate(){ // 舊資料沒有 date → 補成今天（只補一次，補完就固定）
+function migrate(){ // 舊資料補 date(→今天) 與 qref(連動原題)
   let changed=false;
-  Object.values(DB.cards).forEach(c=>{ if(!c.date){ c.date=today(); changed=true; } });
+  Object.values(DB.cards).forEach(c=>{
+    if(!c.date){ c.date=today(); changed=true; }
+    if(c.qref===undefined){
+      const mq=matchQuestion(c.front, c.answer);
+      c.qref=mq?mq.key:''; c.qscore=mq?mq.score:0; c.qansOk=mq?mq.ansOk:false; changed=true;
+    }
+  });
   if(changed) save();
 }
 function seedIfEmpty(){
@@ -332,7 +388,8 @@ function addCards(arr){
     const ex = DB.cards[c.id];
     if(ex){ // 保留學習進度與原讀書日，只更新內容
       Object.assign(ex, {front:c.front,back:c.back,tags:c.tags,deck:c.deck,story:c.story,
-        mnemonic:c.mnemonic,detail:c.detail,answerRaw:c.answerRaw,answer:c.answer,cloze:c.cloze});
+        mnemonic:c.mnemonic,detail:c.detail,answerRaw:c.answerRaw,answer:c.answer,cloze:c.cloze,
+        qref:c.qref,qscore:c.qscore,qansOk:c.qansOk});
       merged++;
     } else {
       DB.cards[c.id] = {...c, level:'', stats:{r:0,w:0,last:0}};
@@ -430,16 +487,22 @@ $('#detectBtn').onclick = ()=>{
   const cards = parseText($('#inp').value, date);
   if(!cards.length){ $('#detectMsg').textContent='⚠ 偵測不到卡片，請確認每行用「;」分隔'; pending=null; $('#previewCard').style.display='none'; return; }
   pending = cards;
-  $('#detectMsg').textContent = `✓ 偵測到 ${cards.length} 張，將記到 ${date}`;
+  const linked = cards.filter(c=>c.qref).length;
+  $('#detectMsg').textContent = `✓ 偵測到 ${cards.length} 張（🔗 ${linked} 張連動到原題），將記到 ${date}`;
   const byDeck = {};
   cards.forEach(c=> (byDeck[c.deck]=byDeck[c.deck]||[]).push(c));
   let html = '';
   Object.entries(byDeck).forEach(([d,arr])=>{
     html += `<div style="margin:6px 0"><b style="color:var(--blue)">🕸️ ${esc(d)}</b> <span style="color:#6b7486">×${arr.length}</span></div>`;
     arr.slice(0,40).forEach(c=>{
+      const q = c.qref ? qByKey(c.qref) : null;
+      const link = q
+        ? `<div style="color:#7fb5ff;font-size:12px;margin-top:2px">🔗 對應原題：${esc(qTitle(q))}${c.qansOk?' <span style="color:var(--green)">✓答案吻合</span>':' <span style="color:#bfa55a">(請核對)</span>'}</div>`
+        : `<div style="color:#6b7486;font-size:12px;margin-top:2px">🔗 找不到對應原題（仍可翻卡/填空）</div>`;
       html += `<div style="padding:5px 0 5px 12px;border-left:2px solid #2c3445;margin:4px 0">
         <div style="color:var(--gold);font-weight:bold">${esc(c.front)}</div>
         <div style="color:#9aa4b2;font-size:12px">${c.story?'📖 '+esc(c.story.slice(0,42)):''} ${c.cloze?' ‧ 口訣『'+esc(c.cloze)+'』':''} ${c.answer?' ‧ 答案 '+c.answer:''}</div>
+        ${link}
       </div>`;
     });
   });
@@ -472,6 +535,16 @@ function renderDbStat(){
 /* ====================================================================== */
 /* 第二步：翻卡 */
 let flipList = [], flipIdx = 0;
+function flipBackHtml(c){
+  let bh = '';
+  if(c.story)    bh += `<div class="seg story"><span class="k">📖 故事</span><span class="v">${esc(c.story)}</span></div>`;
+  if(c.mnemonic) bh += `<div class="seg mnem"><span class="k">🔑 口訣</span>${mdBold(c.mnemonic)}</div>`;
+  if(c.detail)   bh += `<div class="seg detail"><span class="k">📌 詳細</span><span class="v">${esc(c.detail)}</span></div>`;
+  if(c.answerRaw)bh += `<div class="seg ans"><span class="k">✅ 正確答案</span>${esc(c.answerRaw)}</div>`;
+  const q = c.qref ? qByKey(c.qref) : null;
+  if(q) bh += `<div class="seg" style="border-top:1px dashed var(--line);padding-top:8px;color:#7fb5ff;font-size:12.5px">🔗 出自原題：${esc(qTitle(q))}</div>`;
+  return bh;
+}
 function buildFlipList(){
   let p = poolCards();
   if($('#onlyWeak').checked) p = p.filter(c=>c.level==='weak' || (!c.level && c.stats.r===0));
@@ -490,12 +563,7 @@ function renderFlip(){
   $('#bDeck').textContent = '🕸️ '+c.deck+' ‧ 📅 '+dispDate(c.date);
   const lv = c.level ? `<span class="lvtag ${c.level}">${{weak:'不熟',mid:'普通',strong:'熟'}[c.level]}</span>` : '';
   $('#fFront').innerHTML = esc(c.front)+lv;
-  let bh = '';
-  if(c.story)    bh += `<div class="seg story"><span class="k">📖 故事</span><span class="v">${esc(c.story)}</span></div>`;
-  if(c.mnemonic) bh += `<div class="seg mnem"><span class="k">🔑 口訣</span>${mdBold(c.mnemonic)}</div>`;
-  if(c.detail)   bh += `<div class="seg detail"><span class="k">📌 詳細</span><span class="v">${esc(c.detail)}</span></div>`;
-  if(c.answerRaw)bh += `<div class="seg ans"><span class="k">✅ 正確答案</span>${esc(c.answerRaw)}</div>`;
-  $('#fBack').innerHTML = bh;
+  $('#fBack').innerHTML = flipBackHtml(c);
   $('#flipProg').textContent = (flipIdx+1)+'/'+flipList.length;
   $('#flipLab').textContent = `② 翻卡複習（${curDeck}）`;
   document.querySelectorAll('.fam .fbtn').forEach(b=> b.classList.toggle('on', b.dataset.lv===c.level));
@@ -526,7 +594,7 @@ $('#speakBtn').onclick = (e)=>{
 
 /* ====================================================================== */
 /* 第三步：測驗 */
-let qmode = 'choice', sScore=0, sTotal=0, curQ=null;
+let qmode = 'orig', sScore=0, sTotal=0, curQ=null, qfIdx=0;
 document.querySelectorAll('[data-qmode]').forEach(b=> b.onclick=()=>{
   qmode=b.dataset.qmode;
   document.querySelectorAll('[data-qmode]').forEach(x=>x.classList.toggle('on',x===b));
@@ -544,15 +612,75 @@ function pickDistractors(card, n){
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function nextQuiz(){
   const area = $('#quizArea');
+  if(qmode==='flip') return renderQuizFlip();
   let pool = poolCards();
   if(qmode==='fill') pool = pool.filter(c=>c.cloze);
-  if(qmode==='choice' && allCards().length<2){ area.innerHTML='<div class="empty">題庫至少要 2 張卡才能出選擇題。<br>先到第一步加卡片吧。</div>'; return; }
-  if(!pool.length){ area.innerHTML = qmode==='fill' ? '<div class="empty">這個分類沒有「口訣」可挖空。<br>換個分類或改用選擇題。</div>' : '<div class="empty">這個分類沒有卡片。</div>'; return; }
+  if(!pool.length){ area.innerHTML = qmode==='fill' ? '<div class="empty">這個分類沒有「口訣」可挖空。<br>換個分類或改用原題選擇。</div>' : '<div class="empty">這個分類／日期沒有卡片。</div>'; return; }
   // 優先抽不熟/沒考過的
   const weakFirst = pool.filter(c=>c.level==='weak'||c.stats.r+c.stats.w===0);
   const card = (weakFirst.length?weakFirst:pool)[Math.random()*(weakFirst.length?weakFirst.length:pool.length)|0];
   curQ = card;
-  qmode==='choice' ? renderChoice(card) : renderFill(card);
+  if(qmode==='fill') return renderFill(card);
+  return renderOriginal(card);   // 原題選擇（找不到原題自動退回看故事選考點）
+}
+/* 原題選擇：直接給 data.js 的原題（題幹+真選項），答完接回我的卡 */
+function renderOriginal(card){
+  const q = card.qref ? qByKey(card.qref) : null;
+  if(!q || !q.options || !q.options.length) return renderChoice(card);  // 沒連動→退回故事選考點
+  const ai = (q.ansIndex!=null) ? q.ansIndex : 'ABCD'.indexOf(q.ansLetter);
+  $('#quizArea').innerHTML = `
+    <div class="qbox">
+      <div class="qmeta">🔗 ${esc(qTitle(q))} ‧ 🕸️ ${esc(card.deck)} ‧ 📅 ${dispDate(card.date)}</div>
+      <div class="qstem">${esc(q.stem)}</div>
+      <div class="opts" id="opts">
+        ${q.options.map((o,i)=>`<button class="opt" data-i="${i}"><b>${'ABCDEFG'[i]}</b>${esc(o)}</button>`).join('')}
+      </div>
+      <div class="reveal" id="reveal"></div>
+      <div class="row" style="margin-top:14px;justify-content:flex-end">
+        <button class="btn" id="nextQ" style="display:none">下一題 ▶</button>
+      </div>
+    </div>`;
+  $('#opts').querySelectorAll('.opt').forEach(b=> b.onclick=()=>answerOriginal(b, +b.dataset.i===ai, card, ai));
+  $('#nextQ').onclick = nextQuiz;
+}
+function answerOriginal(btn, ok, card, ai){
+  $('#opts').querySelectorAll('.opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===ai) b.classList.add('correct');
+    else if(b===btn) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  recordResult(card, ok);
+  const rv=$('#reveal'); rv.classList.add('show');
+  rv.innerHTML = `<div class="feedback ${ok?'ok':'no'}">${ok?'✅ 答對了！':'❌ 答錯了'}　正解：${'ABCDEFG'[ai]}</div>
+    <div style="margin-top:6px"><span class="rk">🗂️ 我的記憶卡</span> <b style="color:var(--gold)">${esc(card.front)}</b></div>
+    ${card.story?`<div style="margin-top:4px">📖 ${esc(card.story)}</div>`:''}
+    ${card.mnemonic?`<div style="margin-top:6px"><span class="rk">🔑 口訣</span> ${mdBold(card.mnemonic)}</div>`:''}
+    ${card.detail?`<div style="margin-top:6px"><span class="rk">📌 詳細</span> ${esc(card.detail)}</div>`:''}`;
+  $('#nextQ').style.display='inline-block';
+}
+/* 測驗區內的翻卡（自己掌握、可上下張） */
+function renderQuizFlip(){
+  const pool = poolCards();
+  if(!pool.length){ $('#quizArea').innerHTML='<div class="empty">這個分類／日期沒有卡片。</div>'; return; }
+  if(qfIdx>=pool.length) qfIdx=0;
+  const c = pool[qfIdx], q = c.qref?qByKey(c.qref):null;
+  $('#quizArea').innerHTML = `
+    <div class="qmeta">🕸️ ${esc(c.deck)} ‧ 📅 ${dispDate(c.date)} ‧ ${qfIdx+1}/${pool.length}${q?` ‧ 🔗 ${esc(qTitle(q))}`:''}</div>
+    <div class="flip" id="qflip" style="margin-top:8px"><div class="flipinner">
+      <div class="face front"><span class="deckchip">🗂️ ${esc(c.deck)}</span><div class="frontttl">${esc(c.front)}</div><div class="tapflip">👆 點卡片翻面</div></div>
+      <div class="face back"><span class="deckchip">🔑 詳解</span><div class="backbody">${flipBackHtml(c)}</div></div>
+    </div></div>
+    <div class="flipctrl">
+      <button class="btn ghost sm" id="qfPrev">◀ 上一張</button>
+      <button class="btn ghost sm" id="qfFlip">🔄 翻面</button>
+      <button class="btn ghost sm" id="qfNext">下一張 ▶</button>
+    </div>`;
+  const fl=$('#qflip');
+  fl.onclick=()=>fl.classList.toggle('flipped');
+  $('#qfFlip').onclick=e=>{ e.stopPropagation(); fl.classList.toggle('flipped'); };
+  $('#qfPrev').onclick=()=>{ qfIdx=(qfIdx-1+pool.length)%pool.length; renderQuizFlip(); };
+  $('#qfNext').onclick=()=>{ qfIdx=(qfIdx+1)%pool.length; renderQuizFlip(); };
 }
 function renderChoice(card){
   const ds = pickDistractors(card, 3);
@@ -648,6 +776,7 @@ document.querySelectorAll('.stepbtn').forEach(b=> b.onclick=()=>{
 function refreshAll(){ renderCal(); renderDecks(); renderDbStat(); buildFlipList(); renderFlip(); }
 
 /* ---------- 啟動 ---------- */
+buildConceptIndex();   // 先建「考點↔原題」索引，migrate/seed 才能連動
 migrate();
 seedIfEmpty();
 $('#addDate').value = today();   // 第一步預設記到今天
