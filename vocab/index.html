@@ -150,11 +150,11 @@
   .dexz{font-size:calc(16px*var(--fs))}
   .dnote{font-size:calc(15px*var(--fs))}
   /* 卡片：統一、乾淨 */
-  .wcard{display:flex;flex-direction:column;min-height:148px}
+  .wcard{display:flex;flex-direction:column;min-height:124px;gap:2px}
   .wcard .en{font-family:var(--sans);font-weight:700;font-style:normal}
   .wcard .ph{font-style:normal;font-family:var(--sans)}
-  .cardex{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .cardex .extrans{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wcard .zh{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .cpos{display:inline-block;font-size:.8em;color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 38%,transparent);border-radius:5px;padding:0 6px;margin-right:6px;vertical-align:middle}
   .wcard .lvset{margin-top:auto}
   /* 寬螢幕／iPad 橫向 */
   @media (min-width:900px){ .wrap{max-width:1180px} }
@@ -510,7 +510,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v48 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v49 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -522,7 +522,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='48';
+const APP_VERSION='49';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1167,8 +1167,7 @@ function drawGrid(){
     el.innerHTML=`<input type="checkbox" class="chk"${selected.has(id)?' checked':''}>
       <div class="en">${rec.word}</div>
       <div class="ph">${rec.phonetic||''}${listMulti?` <span style="color:var(--mut)">${date}</span>`:''}</div>
-      <div class="zh">${rec.wordZh||'（無翻譯）'}</div>
-      ${ex?`<div class="cardex"><span class="srcbadge ${ex.src==='user'?'mine':'auto'}" style="cursor:default">${ex.src==='user'?'我的':'自動'}</span> ${ex.ex}${ex.exZh?`<span class="extrans" style="display:block;color:var(--mut);margin-top:2px">${ex.exZh}</span>`:''}</div>`:''}
+      <div class="zh">${rec.pos?'<span class="cpos">'+escapeHtml(rec.pos)+'</span>':''}${escapeHtml(rec.wordZh||'（無翻譯）')}</div>
       <div class="lvset">
         <button class="lvb weak${lv.k==='weak'?' on':''}" data-l="weak">不熟</button>
         <button class="lvb mid${lv.k==='mid'?' on':''}" data-l="mid">普通</button>
