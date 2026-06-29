@@ -311,6 +311,16 @@
   .themesw:hover{border-color:var(--acc)}
   .themesw.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
   .fsbtn.on{border-color:var(--acc);color:var(--acc)}
+  /* 沉浸式閱讀版詳情頁 */
+  .dword{font-family:var(--serif);font-size:42px;font-weight:700;color:var(--acc);letter-spacing:.5px;margin-top:4px}
+  .dword .speak{font-size:14px;vertical-align:middle}
+  .dph{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--mut);margin-top:2px}
+  .dmean{font-size:20px;line-height:1.6;margin-top:12px}
+  .dsec-label{color:var(--acc);font-weight:600;font-size:16px;margin:22px 0 10px}
+  .dex{font-size:20px;line-height:1.6;margin-bottom:4px}
+  .dex .hl{color:var(--acc);font-weight:700}
+  .dexz{font-size:16px;color:var(--mut);line-height:1.5;margin-bottom:18px}
+  .dnote{font-size:15px;color:var(--tx);line-height:1.9;white-space:pre-wrap;opacity:.92}
   .swatch{width:30px;height:30px;border-radius:8px;flex-shrink:0;position:relative;border:1px solid rgba(255,255,255,.12)}
   .swatch i{position:absolute;width:10px;height:10px;border-radius:50%;bottom:3px;right:3px}
 </style>
@@ -445,7 +455,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v44 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v45 ・ 2026-06-29</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -457,7 +467,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='44';
+const APP_VERSION='45';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -556,7 +566,7 @@ async function bgTranslate(){
   const show=()=>{ if(!shown&&ind){ind.classList.add('show');shown=true;} };
   try{
     let did=0;
-    const refresh=()=>{ renderList(); if(document.getElementById('ov').classList.contains('show') && curWord) renderDetail(curWord.rec,curWord.date,curWord.key); };
+    const refresh=()=>{ renderList(); if(document.getElementById('ov').classList.contains('show') && curWord) showDetail(); };
     for(const dt of Object.keys(DB)){
       for(const k of Object.keys(DB[dt].words||{})){
         const rec=DB[dt].words[k];
@@ -1173,13 +1183,14 @@ async function openWord(date,key){
   curWord={rec,date,key};
   initEditable(rec);
   userFirstSentences(rec); save();   // 我的例句排最前面
+  detailMode='read';
   ov.classList.add('show');
   renderDetail(rec,date,key);
   speak(rec.word);                   // 打開自動發音
   let changed=false;
   if(!rec.wordZh){ rec.wordZh=await translate(rec.word); changed=true; }
   for(const s of rec.sentences){ if(s.ex&&!s.exZh){ s.exZh=await translate(s.ex); changed=true; } }
-  if(changed){ save(); if(ov.classList.contains('show')) renderDetail(rec,date,key); }
+  if(changed){ save(); if(ov.classList.contains('show')) showDetail(); }
 }
 function harvest(rec){
   const g=id=>{const e=document.getElementById(id);return e?e.value:undefined;};
@@ -1203,7 +1214,34 @@ function toggleSrc(btn){
   btn.textContent=mine?'我的':'自動';
   btn.closest('.srow').dataset.src=mine?'user':'dict';
 }
+function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function hlWord(sent,word){
+  let s=escapeHtml(sent); const w=(word||'').toLowerCase().trim(); if(!w)return s;
+  if(/\s/.test(w)){ const re=new RegExp('('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s+')+')','ig'); return s.replace(re,'<span class="hl">$1</span>'); }
+  const stem=w.replace(/[^a-z]/g,''); const pref=stem.slice(0,Math.max(3,stem.length-2));
+  return s.replace(/[A-Za-z]+/g, t=> t.toLowerCase().startsWith(pref) ? '<span class="hl">'+t+'</span>' : t);
+}
+let detailMode='read';
+function showDetail(){ if(!curWord)return; if(detailMode==='edit')renderEditor(curWord.rec,curWord.date,curWord.key); else renderDetail(curWord.rec,curWord.date,curWord.key); }
+// 沉浸式閱讀版詳情頁（點旁邊關閉、左右滑切換、編輯用鉛筆進入）
 function renderDetail(rec,date,key){
+  const inner=document.getElementById('ovInner');
+  const sents=(rec.sentences||[]).filter(s=>s.ex);
+  inner.innerHTML=`
+    <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
+      <button class="btn ghost sm" onclick="detailNav(-1)">‹ 上一個</button>
+      <button class="btn ghost sm" onclick="detailMode='edit';showDetail()">編輯</button>
+      <button class="btn ghost sm" onclick="detailNav(1)">下一個 ›</button>
+    </div>
+    <div class="dword">${rec.word} <button class="speak" onclick="speak('${rec.word.replace(/'/g,'')}')">聽</button></div>
+    <div class="dph">${rec.phonetic||''}</div>
+    <div class="dmean">${rec.pos?'<b style="color:var(--acc)">'+escapeHtml(rec.pos)+'</b> ':''}${escapeHtml((rec.wordZh||'').replace(/\//g,'；'))}</div>
+    <div class="dsec-label">例句</div>
+    ${sents.length? sents.map(s=>`<div class="dex">${hlWord(s.ex,rec.word)}</div>${s.exZh?'<div class="dexz extrans">'+escapeHtml(s.exZh)+'</div>':''}`).join('') : '<div class="dexz">尚無例句（按上面「編輯」新增）</div>'}
+    ${rec.note?`<div class="dsec-label">補充</div><div class="dnote">${escapeHtml(rec.note)}</div>`:''}
+    <div class="devhint" style="font-size:12px;color:var(--mut);margin-top:18px">左右滑動切換單字 ・ 點旁邊空白處關閉</div>`;
+}
+function renderEditor(rec,date,key){
   const inner=document.getElementById('ovInner');
   const lv=levelOf(rec);
   const sentRows=(rec.sentences||[]).map((s,i)=>{
@@ -1221,14 +1259,12 @@ function renderDetail(rec,date,key){
       <textarea class="s-zh extrans" placeholder="中文翻譯（可留空）" style="width:100%;min-height:36px;margin-top:5px"></textarea>
     </div>`;}).join('') || '<div style="color:var(--mut);font-size:13px">還沒有句子，下面可新增。</div>';
 
-  inner.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:4px">
-      <button class="btn ghost sm" onclick="detailNav(-1)">‹ 上一個</button>
-      <button class="btn ghost sm" onclick="detailNav(1)">下一個 ›</button>
-      <button class="x" style="float:none" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
+  inner.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+      <button class="btn ghost sm" id="edDone">← 完成</button>
+      <span style="color:var(--mut);font-size:13px">編輯</span>
     </div>
     <h2>${rec.word} <button class="speak" onclick="speak('${rec.word.replace(/'/g,'')}')">聽</button></h2>
-    <div class="ph" style="color:var(--mut)">${rec.phonetic||''}　<span class="pill">${lv.label}</span>　<span class="pill">${date}</span></div>
-    <div class="devhint" style="font-size:12px;color:var(--mut);margin-top:6px">欄位可自由修改或新增，改完按「儲存」。左右滑動可切換單字。</div>
+    <div class="ph" style="color:var(--mut)">${rec.phonetic||''}　<span class="pill">${lv.label}</span></div>
 
     <div class="edsec">
       <label class="fld">中文意思</label>
@@ -1239,9 +1275,9 @@ function renderDetail(rec,date,key){
       <textarea id="f-def" style="min-height:48px" placeholder="英文解釋"></textarea>
       <label class="fld" style="margin-top:10px">熟悉度（手動標記，之後測驗會以實際表現為準）</label>
       <div class="lvedit">
-        <button class="lvb weak${lv.k==='weak'?' on':''}" onclick="setLevel('${date}','${key}','weak');renderDetail(DB['${date}'].words['${key}'],'${date}','${key}')">不熟</button>
-        <button class="lvb mid${lv.k==='mid'?' on':''}" onclick="setLevel('${date}','${key}','mid');renderDetail(DB['${date}'].words['${key}'],'${date}','${key}')">普通</button>
-        <button class="lvb strong${lv.k==='strong'?' on':''}" onclick="setLevel('${date}','${key}','strong');renderDetail(DB['${date}'].words['${key}'],'${date}','${key}')">熟</button>
+        <button class="lvb weak${lv.k==='weak'?' on':''}" onclick="setLevel('${date}','${key}','weak');renderEditor(DB['${date}'].words['${key}'],'${date}','${key}')">不熟</button>
+        <button class="lvb mid${lv.k==='mid'?' on':''}" onclick="setLevel('${date}','${key}','mid');renderEditor(DB['${date}'].words['${key}'],'${date}','${key}')">普通</button>
+        <button class="lvb strong${lv.k==='strong'?' on':''}" onclick="setLevel('${date}','${key}','strong');renderEditor(DB['${date}'].words['${key}'],'${date}','${key}')">熟</button>
       </div>
     </div>
 
@@ -1278,6 +1314,7 @@ function renderDetail(rec,date,key){
       <button class="btn ghost sm" id="delW" style="color:var(--red);border-color:var(--red)">刪除這個單字</button>
     </div>`;
 
+  document.getElementById('edDone').onclick=()=>{ harvest(rec); save(); detailMode='read'; renderList(); showDetail(); };
   document.getElementById('f-zh').value=rec.wordZh||'';
   document.getElementById('f-pos').value=rec.pos||'';
   document.getElementById('f-def').value=rec.defEn||'';
@@ -1290,7 +1327,7 @@ function renderDetail(rec,date,key){
     const en=document.getElementById('newEn').value.trim(); if(!en)return;
     harvest(rec);
     rec.sentences.push({ex:en,exZh:document.getElementById('newZh').value.trim(),src:'user'});
-    save(); renderDetail(rec,date,key);
+    save(); renderEditor(rec,date,key);
   };
   document.getElementById('saveAll').onclick=()=>{
     harvest(rec); save(); document.getElementById('dMsg').textContent='已儲存 ✓'; renderList();
@@ -1305,7 +1342,7 @@ function renderDetail(rec,date,key){
 }
 function delSentence(date,key,i){
   const rec=DB[date].words[key]; harvest(rec);
-  rec.sentences.splice(i,1); save(); renderDetail(rec,date,key);
+  rec.sentences.splice(i,1); save(); renderEditor(rec,date,key);
 }
 function quizThisWord(date,key,type){
   ov.classList.remove('show');
