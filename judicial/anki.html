@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>🗂️ Anki 翻卡測驗 ‧ 司法官律師複習</title>
+<style>
+  :root{--bg:#0b0d12;--panel:#11151c;--line:#262b36;--gold:#ffd86b;--txt:#e6e6e6;--mut:#9aa4b2;--blue:#7fb5ff;
+    --green:#9fe0a0;--red:#ff9d9d}
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
+  a{color:inherit}
+  /* 頂部站台導覽（與複習頁一致） */
+  .topnav{display:flex;gap:6px;background:#0b0d12;padding:8px 16px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:0;z-index:30}
+  .topnav a{color:var(--mut);text-decoration:none;font-size:14px;font-weight:600;padding:7px 16px;border-radius:8px;white-space:nowrap}
+  .topnav a:hover{background:#161922;color:#e6e6e6}
+  .topnav a.active{background:#1f2e3a;color:var(--blue)}
+
+  .wrap{max-width:900px;margin:0 auto;padding:18px 16px 60px}
+
+  /* 步驟切換 */
+  .steps{display:flex;gap:8px;margin:6px 0 16px;flex-wrap:wrap}
+  .stepbtn{flex:1;min-width:150px;background:#121722;border:1px solid var(--line);color:#c7cedb;border-radius:12px;
+    padding:11px 12px;font-size:14.5px;font-weight:bold;cursor:pointer;font-family:inherit;text-align:left;line-height:1.4}
+  .stepbtn small{display:block;color:#7f8aa0;font-weight:normal;font-size:11.5px;margin-top:2px}
+  .stepbtn:hover{background:#19202d}
+  .stepbtn.cur{border-color:var(--gold);background:#1c2435;color:var(--gold)}
+  .stepbtn.cur small{color:#bfa55a}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .lab{font-size:12.5px;color:#8a93a3;font-weight:bold;letter-spacing:.5px}
+  textarea{width:100%;min-height:150px;background:#0f1320;border:1px solid var(--line);color:#e6e6e6;border-radius:10px;
+    padding:11px;font-size:13px;line-height:1.6;font-family:ui-monospace,Menlo,monospace;resize:vertical;outline:none}
+  textarea:focus{border-color:var(--gold)}
+  .btn{background:#1c2330;color:var(--gold);border:1px solid var(--gold);border-radius:10px;font-family:inherit;
+    font-size:13.5px;font-weight:bold;padding:9px 16px;cursor:pointer}
+  .btn:hover{background:#26324a}
+  .btn.ghost{color:#c7cedb;border-color:var(--line);background:#171c27}
+  .btn.ghost:hover{background:#222a38}
+  .btn.sm{padding:6px 11px;font-size:12.5px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .hint{color:#7f8aa0;font-size:12px;line-height:1.6;margin-top:8px}
+  .hint code{background:#0f1320;border:1px solid var(--line);border-radius:4px;padding:1px 5px;color:#bfe0ff;font-size:11.5px}
+
+  /* deck / 考點關聯圖 篩選 */
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .chip{background:#171c27;border:1px solid var(--line);color:#c7cedb;border-radius:16px;padding:5px 11px;font-size:12.5px;
+    cursor:pointer;font-family:inherit;white-space:nowrap}
+  .chip:hover{background:#222a38}
+  .chip.on{background:#1c2435;border-color:var(--gold);color:var(--gold);font-weight:bold}
+  .chip .n{color:#6b7486;font-size:11px;margin-left:4px}
+  .chip.on .n{color:#bfa55a}
+
+  /* 翻卡 */
+  .flip{perspective:1400px;margin:6px 0 12px}
+  .flipinner{position:relative;width:100%;min-height:300px;transition:transform .5s;transform-style:preserve-3d;cursor:pointer}
+  .flip.flipped .flipinner{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;backface-visibility:hidden;background:#0f1320;border:1px solid var(--line);
+    border-radius:16px;padding:22px;display:flex;flex-direction:column}
+  .face.back{transform:rotateY(180deg);background:#0e131e;border-color:#34406a}
+  .deckchip{align-self:flex-start;background:#1a2030;border:1px solid var(--line);color:var(--blue);border-radius:13px;
+    padding:3px 10px;font-size:11.5px;font-weight:bold;margin-bottom:14px}
+  .frontttl{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;
+    font-size:23px;font-weight:bold;color:var(--gold);line-height:1.45}
+  .tapflip{text-align:center;color:#5b6678;font-size:12px;margin-top:10px}
+  .backbody{overflow-y:auto;font-size:14.5px;line-height:1.8}
+  .seg{margin:0 0 12px}
+  .seg .k{display:block;font-size:12px;color:#8a93a3;font-weight:bold;margin-bottom:3px}
+  .seg.story .v{color:#dfe6f2}
+  .seg.mnem{background:rgba(255,216,107,.10);border:1px solid rgba(255,216,107,.32);border-radius:9px;padding:9px 11px;color:#ffe9b0}
+  .seg.detail .v{color:#cdd6e4;font-size:13.5px}
+  .seg.ans{color:var(--green);font-size:13.5px}
+  .hl{color:var(--gold);font-weight:bold}
+  .seg.mnem .hl{color:#fff;background:rgba(255,216,107,.25);border-radius:4px;padding:0 3px}
+
+  .flipctrl{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:4px}
+  .prog{color:#8a93a3;font-size:13px;min-width:64px;text-align:center}
+  .fam{display:flex;gap:8px;justify-content:center;margin-top:12px}
+  .fbtn{flex:1;max-width:130px;border-radius:11px;border:1px solid var(--line);background:#141a26;color:#c7cedb;
+    padding:10px;font-size:13.5px;font-weight:bold;cursor:pointer;font-family:inherit}
+  .fbtn.weak{color:var(--red)} .fbtn.weak.on{background:#2a1618;border-color:var(--red)}
+  .fbtn.mid{color:#ffd86b} .fbtn.mid.on{background:#2a2410;border-color:var(--gold)}
+  .fbtn.strong{color:var(--green)} .fbtn.strong.on{background:#15271a;border-color:var(--green)}
+  .lvtag{font-size:11px;border-radius:9px;padding:1px 7px;margin-left:8px;vertical-align:2px}
+  .lvtag.weak{background:#2a1618;color:var(--red)} .lvtag.mid{background:#2a2410;color:var(--gold)} .lvtag.strong{background:#15271a;color:var(--green)}
+
+  /* 測驗 */
+  .qbox{background:#0f1320;border:1px solid var(--line);border-radius:14px;padding:18px}
+  .qmeta{color:#8a93a3;font-size:12px;margin-bottom:10px}
+  .qstem{font-size:15.5px;line-height:1.85;color:#eef2f8;margin-bottom:6px}
+  .qstem .qhint{display:block;margin-top:8px;color:#ffe9b0;background:rgba(255,216,107,.08);border-radius:8px;padding:7px 10px;font-size:13.5px}
+  .opts{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+  .opt{text-align:left;background:#141a26;border:1px solid var(--line);color:#dbe2ee;border-radius:11px;padding:12px 14px;
+    font-size:14px;line-height:1.5;cursor:pointer;font-family:inherit}
+  .opt:hover{background:#1b2433}
+  .opt b{color:#8a93a3;margin-right:8px}
+  .opt.correct{background:#16271b;border-color:var(--green);color:#bfe9c4} .opt.correct b{color:var(--green)}
+  .opt.wrong{background:#271619;border-color:var(--red);color:#f3c5c5} .opt.wrong b{color:var(--red)}
+  .opt.dim{opacity:.5}
+  .fillin{width:100%;background:#141a26;border:1px solid var(--line);color:#fff;border-radius:11px;padding:13px;
+    font-size:16px;text-align:center;font-family:inherit;outline:none;letter-spacing:2px}
+  .fillin:focus{border-color:var(--gold)}
+  .reveal{margin-top:14px;border-top:1px dashed var(--line);padding-top:13px;font-size:13.5px;line-height:1.8;display:none}
+  .reveal.show{display:block}
+  .reveal .rk{color:#8a93a3;font-weight:bold;font-size:12px}
+  .feedback{font-size:15px;font-weight:bold;margin-bottom:8px}
+  .feedback.ok{color:var(--green)} .feedback.no{color:var(--red)}
+  .score{color:#8a93a3;font-size:12.5px}
+  .empty{color:#6b7486;text-align:center;padding:40px 16px;font-size:14px;line-height:1.7}
+  .foot{color:#3f4756;font-size:11px;text-align:center;margin-top:30px}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="https://elainechi-art.github.io/">🏠 首頁</a>
+  <a href="https://elainechi-art.github.io/judicial/">📚 司法官・律師複習</a>
+  <a href="graph.html">🕸️ 考點關聯圖</a>
+  <a href="outline.html">📑 考點體系整理</a>
+  <a class="active" href="anki.html">🗂️ Anki 翻卡</a>
+</nav>
+
+<div class="wrap">
+  <div class="steps">
+    <button class="stepbtn" data-step="1">① 貼上題庫<small>智慧偵測 Front;Back;Tags</small></button>
+    <button class="stepbtn cur" data-step="2">② 翻卡複習<small>正面考點→翻面看故事口訣</small></button>
+    <button class="stepbtn" data-step="3">③ 測驗<small>看故事選考點／口訣填空</small></button>
+  </div>
+
+  <!-- 考點關聯圖（deck）篩選，三步驟共用 -->
+  <div class="card" id="deckCard">
+    <span class="lab">🕸️ 考點關聯圖（用第一個標籤分類，點選只練該類）</span>
+    <div class="chips" id="deckChips"></div>
+  </div>
+
+  <!-- ===== 第一步：輸入 ===== -->
+  <section id="s1" style="display:none">
+    <div class="card">
+      <span class="lab">① 貼上 Anki 卡片（一行一張）</span>
+      <p class="hint">格式：<code>正面考點;詳解(故事/口訣/詳細/正確答案，用 &lt;br&gt; 分行);標籤 標籤2</code>　第一行可放 <code>Front;Back;Tags</code> 表頭，會自動略過。標籤用空白分隔，<b>第一個標籤＝考點關聯圖分類</b>。</p>
+      <textarea id="inp" placeholder="土地管轄／船艦犯罪 §5;故事：……&lt;br&gt;口訣：**本出停**&lt;br&gt;正確答案：A;管轄 船艦"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="detectBtn">🔍 智慧偵測</button>
+        <button class="btn ghost sm" id="loadSeedBtn">↻ 載入內建範例題庫</button>
+        <span id="detectMsg" class="hint" style="margin:0"></span>
+      </div>
+    </div>
+    <div class="card" id="previewCard" style="display:none">
+      <span class="lab">偵測結果（確認後加入）</span>
+      <div id="previewBody" style="font-size:13px;line-height:1.7;margin-top:8px"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="addBtn">➕ 加入題庫</button>
+        <button class="btn ghost sm" id="cancelBtn">取消</button>
+      </div>
+    </div>
+    <div class="card">
+      <span class="lab">題庫管理</span>
+      <div class="row" style="margin-top:10px">
+        <span class="hint" id="dbStat" style="margin:0"></span>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ghost sm" id="exportBtn">⬇ 匯出全部</button>
+        <button class="btn ghost sm" id="resetBtn" style="color:#ff9d9d;border-color:#5a2b2b">🗑 清空題庫</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 第二步：翻卡 ===== -->
+  <section id="s2">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <span class="lab" id="flipLab">② 翻卡複習</span>
+        <div class="row">
+          <label class="chip" style="cursor:pointer"><input type="checkbox" id="onlyWeak" style="vertical-align:-1px;margin-right:5px">只練不熟</label>
+          <button class="btn ghost sm" id="shuffleBtn">🔀 洗牌</button>
+        </div>
+      </div>
+      <div class="flip" id="flip">
+        <div class="flipinner">
+          <div class="face front">
+            <span class="deckchip" id="fDeck">—</span>
+            <div class="frontttl" id="fFront">—</div>
+            <div class="tapflip">👆 點卡片翻面</div>
+          </div>
+          <div class="face back">
+            <span class="deckchip" id="bDeck">—</span>
+            <div class="backbody" id="fBack"></div>
+          </div>
+        </div>
+      </div>
+      <div class="flipctrl">
+        <button class="btn ghost sm" id="prevBtn">◀ 上一張</button>
+        <span class="prog" id="flipProg">0/0</span>
+        <button class="btn ghost sm" id="flipBtn">🔄 翻面</button>
+        <button class="btn ghost sm" id="speakBtn">🔊 朗讀</button>
+        <button class="btn ghost sm" id="nextBtn">下一張 ▶</button>
+      </div>
+      <div class="fam">
+        <button class="fbtn weak" data-lv="weak">😣 不熟</button>
+        <button class="fbtn mid" data-lv="mid">😐 普通</button>
+        <button class="fbtn strong" data-lv="strong">😎 熟</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 第三步：測驗 ===== -->
+  <section id="s3" style="display:none">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div class="chips">
+          <button class="chip on" id="modeChoice" data-qmode="choice">選擇題</button>
+          <button class="chip" id="modeFill" data-qmode="fill">口訣填空</button>
+        </div>
+        <span class="score" id="score">本回 0／0</span>
+      </div>
+      <div id="quizArea" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <div class="foot" id="foot">Anki 翻卡 v1 ‧ 資料存於本機瀏覽器</div>
+</div>
+
+<script src="anki-cards.js"></script>
+<script>
+"use strict";
+const APP_VERSION = 'v1';
+const LS_KEY = 'ankiDB_v1';
+
+/* ---------- 工具 ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const mdBold = s => esc(s).replace(/\*\*(.+?)\*\*/g,'<b class="hl">$1</b>');
+const idOf = front => 'c_'+front.trim().replace(/\s+/g,' ').split('').reduce((h,c)=>((h<<5)-h+c.charCodeAt(0))|0,0)+'_'+front.trim().length;
+
+/* 解析詳解：拆出 故事 / 口訣 / 詳細 / 正確答案 / 挖空答案 */
+function parseBack(back){
+  const out = {story:'',mnemonic:'',detail:'',answerRaw:'',answer:'',cloze:''};
+  back.split(/<br\s*\/?>/i).forEach(raw=>{
+    const seg = raw.trim(); if(!seg) return;
+    const m = seg.match(/^([^：:]{1,6})[：:]\s*(.*)$/);
+    const key = m ? m[1] : ''; const val = m ? m[2] : seg;
+    if(key.indexOf('故事')>=0) out.story = val;
+    else if(key.indexOf('口訣')>=0){ out.mnemonic = val; const c = val.match(/\*\*(.+?)\*\*/); if(c) out.cloze = c[1].trim(); }
+    else if(key.indexOf('詳細')>=0||key.indexOf('詳解')>=0) out.detail = val;
+    else if(key.indexOf('正確答案')>=0||key.indexOf('答案')>=0){
+      out.answerRaw = val;
+      const half = val.match(/[A-Da-d]/);
+      if(half) out.answer = half[0].toUpperCase();
+      else { const full = val.match(/[ＡＢＣＤ]/); if(full) out.answer = 'ABCD'['ＡＢＣＤ'.indexOf(full[0])]; }
+    } else if(!out.story && !m) out.story = seg; // 無標籤時當故事
+  });
+  return out;
+}
+
+/* 解析整段貼上的文字 → 卡片陣列 */
+function parseText(text){
+  const cards = [];
+  text.split(/\r?\n/).forEach(line=>{
+    const ln = line.trim();
+    if(!ln) return;
+    if(/^Front\s*;\s*Back\s*;\s*Tags/i.test(ln)) return; // 表頭
+    const i1 = ln.indexOf(';'); if(i1<0) return;
+    const i2 = ln.lastIndexOf(';');
+    let front = ln.slice(0,i1).trim(), back, tagStr;
+    if(i2===i1){ back = ln.slice(i1+1).trim(); tagStr=''; }
+    else { back = ln.slice(i1+1,i2).trim(); tagStr = ln.slice(i2+1).trim(); }
+    if(!front) return;
+    const tags = tagStr ? tagStr.split(/\s+/).filter(Boolean) : ['未分類'];
+    const p = parseBack(back);
+    cards.push({id:idOf(front), front, back, tags, deck:tags[0]||'未分類', ...p});
+  });
+  return cards;
+}
+
+/* ---------- 資料庫 ---------- */
+let DB = load();
+function load(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {cards:{}}; }catch(e){ return {cards:{}}; } }
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(DB)); }
+function seedIfEmpty(){
+  if(Object.keys(DB.cards).length===0){ addCards(parseText(window.ANKI_SEED||''), true); }
+}
+function addCards(arr, silent){
+  let added=0, merged=0;
+  arr.forEach(c=>{
+    const ex = DB.cards[c.id];
+    if(ex){ // 保留學習進度，更新內容
+      Object.assign(ex, {front:c.front,back:c.back,tags:c.tags,deck:c.deck,story:c.story,
+        mnemonic:c.mnemonic,detail:c.detail,answerRaw:c.answerRaw,answer:c.answer,cloze:c.cloze});
+      merged++;
+    } else {
+      DB.cards[c.id] = {...c, level:'', stats:{r:0,w:0,last:0}};
+      added++;
+    }
+  });
+  save();
+  return {added, merged};
+}
+function allCards(){ return Object.values(DB.cards); }
+function decks(){
+  const m = {};
+  allCards().forEach(c=>{ m[c.deck]=(m[c.deck]||0)+1; });
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+}
+
+/* ---------- 共用狀態 ---------- */
+let curDeck = '全部';        // 選的考點關聯圖
+let step = 2;
+function poolCards(){
+  let p = allCards();
+  if(curDeck!=='全部') p = p.filter(c=>c.deck===curDeck);
+  return p;
+}
+
+/* ---------- deck 篩選列 ---------- */
+function renderDecks(){
+  const host = $('#deckChips');
+  const ds = decks();
+  let html = `<button class="chip ${curDeck==='全部'?'on':''}" data-deck="全部">全部<span class="n">${allCards().length}</span></button>`;
+  ds.forEach(([d,n])=> html += `<button class="chip ${curDeck===d?'on':''}" data-deck="${esc(d)}">${esc(d)}<span class="n">${n}</span></button>`);
+  host.innerHTML = html;
+  host.querySelectorAll('.chip').forEach(b=> b.onclick=()=>{ curDeck=b.dataset.deck; renderDecks(); onDeckChange(); });
+}
+function onDeckChange(){ buildFlipList(); renderFlip(); if(step===3) nextQuiz(); }
+
+/* ====================================================================== */
+/* 第一步：輸入 */
+let pending = null;
+$('#detectBtn').onclick = ()=>{
+  const cards = parseText($('#inp').value);
+  if(!cards.length){ $('#detectMsg').textContent='⚠ 偵測不到卡片，請確認每行用「;」分隔'; pending=null; $('#previewCard').style.display='none'; return; }
+  pending = cards;
+  $('#detectMsg').textContent = `✓ 偵測到 ${cards.length} 張`;
+  const byDeck = {};
+  cards.forEach(c=> (byDeck[c.deck]=byDeck[c.deck]||[]).push(c));
+  let html = '';
+  Object.entries(byDeck).forEach(([d,arr])=>{
+    html += `<div style="margin:6px 0"><b style="color:var(--blue)">🕸️ ${esc(d)}</b> <span style="color:#6b7486">×${arr.length}</span></div>`;
+    arr.slice(0,40).forEach(c=>{
+      html += `<div style="padding:5px 0 5px 12px;border-left:2px solid #2c3445;margin:4px 0">
+        <div style="color:var(--gold);font-weight:bold">${esc(c.front)}</div>
+        <div style="color:#9aa4b2;font-size:12px">${c.story?'📖 '+esc(c.story.slice(0,42)):''} ${c.cloze?' ‧ 口訣『'+esc(c.cloze)+'』':''} ${c.answer?' ‧ 答案 '+c.answer:''}</div>
+      </div>`;
+    });
+  });
+  $('#previewBody').innerHTML = html;
+  $('#previewCard').style.display='block';
+};
+$('#addBtn').onclick = ()=>{
+  if(!pending) return;
+  const r = addCards(pending);
+  $('#detectMsg').textContent = `✓ 新增 ${r.added} 張、更新 ${r.merged} 張`;
+  $('#previewCard').style.display='none'; $('#inp').value=''; pending=null;
+  refreshAll();
+};
+$('#cancelBtn').onclick = ()=>{ $('#previewCard').style.display='none'; pending=null; $('#detectMsg').textContent=''; };
+$('#loadSeedBtn').onclick = ()=>{ const r=addCards(parseText(window.ANKI_SEED||'')); $('#detectMsg').textContent=`✓ 範例：新增 ${r.added}、更新 ${r.merged}`; refreshAll(); };
+$('#exportBtn').onclick = ()=>{
+  const lines = ['Front;Back;Tags', ...allCards().map(c=>`${c.front};${c.back};${c.tags.join(' ')}`)];
+  const blob = new Blob([lines.join('\n')], {type:'text/plain'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='anki-cards.txt'; a.click();
+};
+$('#resetBtn').onclick = ()=>{ if(confirm('確定清空整個題庫？（學習進度也會刪除）')){ DB={cards:{}}; save(); refreshAll(); } };
+function renderDbStat(){
+  const all = allCards();
+  const w = all.filter(c=>c.level==='weak').length, s = all.filter(c=>c.level==='strong').length;
+  $('#dbStat').innerHTML = `共 <b style="color:var(--gold)">${all.length}</b> 張 ‧ ${decks().length} 個考點關聯圖 ‧ <span style="color:var(--red)">不熟 ${w}</span> ‧ <span style="color:var(--green)">已熟 ${s}</span>`;
+}
+
+/* ====================================================================== */
+/* 第二步：翻卡 */
+let flipList = [], flipIdx = 0;
+function buildFlipList(){
+  let p = poolCards();
+  if($('#onlyWeak').checked) p = p.filter(c=>c.level==='weak' || (!c.level && c.stats.r===0));
+  flipList = p; flipIdx = 0;
+}
+function curFlip(){ return flipList[flipIdx]; }
+function renderFlip(){
+  const c = curFlip();
+  $('#flip').classList.remove('flipped');
+  if(!c){
+    $('#fFront').textContent = flipList.length?'—':'（這個分類沒有卡片）';
+    $('#fDeck').textContent = '—'; $('#fBack').innerHTML=''; $('#flipProg').textContent='0/0';
+    $('#flipLab').textContent='② 翻卡複習'; return;
+  }
+  $('#fDeck').textContent = '🕸️ '+c.deck;
+  $('#bDeck').textContent = '🕸️ '+c.deck;
+  const lv = c.level ? `<span class="lvtag ${c.level}">${{weak:'不熟',mid:'普通',strong:'熟'}[c.level]}</span>` : '';
+  $('#fFront').innerHTML = esc(c.front)+lv;
+  let bh = '';
+  if(c.story)    bh += `<div class="seg story"><span class="k">📖 故事</span><span class="v">${esc(c.story)}</span></div>`;
+  if(c.mnemonic) bh += `<div class="seg mnem"><span class="k">🔑 口訣</span>${mdBold(c.mnemonic)}</div>`;
+  if(c.detail)   bh += `<div class="seg detail"><span class="k">📌 詳細</span><span class="v">${esc(c.detail)}</span></div>`;
+  if(c.answerRaw)bh += `<div class="seg ans"><span class="k">✅ 正確答案</span>${esc(c.answerRaw)}</div>`;
+  $('#fBack').innerHTML = bh;
+  $('#flipProg').textContent = (flipIdx+1)+'/'+flipList.length;
+  $('#flipLab').textContent = `② 翻卡複習（${curDeck}）`;
+  document.querySelectorAll('.fam .fbtn').forEach(b=> b.classList.toggle('on', b.dataset.lv===c.level));
+}
+$('#flip').onclick = ()=> $('#flip').classList.toggle('flipped');
+$('#flipBtn').onclick = (e)=>{ e.stopPropagation(); $('#flip').classList.toggle('flipped'); };
+$('#prevBtn').onclick = ()=>{ if(flipIdx>0){ flipIdx--; renderFlip(); } };
+$('#nextBtn').onclick = ()=>{ if(flipIdx<flipList.length-1){ flipIdx++; renderFlip(); } };
+$('#shuffleBtn').onclick = ()=>{ for(let i=flipList.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [flipList[i],flipList[j]]=[flipList[j],flipList[i]]; } flipIdx=0; renderFlip(); };
+$('#onlyWeak').onchange = ()=>{ buildFlipList(); renderFlip(); };
+document.querySelectorAll('.fam .fbtn').forEach(b=> b.onclick=()=>{
+  const c = curFlip(); if(!c) return;
+  c.level = (c.level===b.dataset.lv) ? '' : b.dataset.lv;  // 再點一次取消
+  c.stats.last = Date.now(); save(); renderDbStat();
+  document.querySelectorAll('.fam .fbtn').forEach(x=> x.classList.toggle('on', x.dataset.lv===c.level));
+  // 標記後自動往下一張
+  if(c.level && flipIdx<flipList.length-1){ setTimeout(()=>{ flipIdx++; renderFlip(); }, 220); }
+  else renderFlip();
+});
+$('#speakBtn').onclick = (e)=>{
+  e.stopPropagation();
+  const c = curFlip(); if(!c || !window.speechSynthesis) return;
+  const flipped = $('#flip').classList.contains('flipped');
+  const txt = flipped ? (c.story+'。'+(c.mnemonic||'').replace(/\*/g,'')+'。'+(c.answerRaw||'')) : c.front;
+  const u = new SpeechSynthesisUtterance(txt.replace(/[§【】]/g,' ').replace(/<br\s*\/?>/g,' '));
+  u.lang='zh-TW'; u.rate=1; speechSynthesis.cancel(); speechSynthesis.speak(u);
+};
+
+/* ====================================================================== */
+/* 第三步：測驗 */
+let qmode = 'choice', sScore=0, sTotal=0, curQ=null;
+document.querySelectorAll('[data-qmode]').forEach(b=> b.onclick=()=>{
+  qmode=b.dataset.qmode;
+  document.querySelectorAll('[data-qmode]').forEach(x=>x.classList.toggle('on',x===b));
+  nextQuiz();
+});
+function pickDistractors(card, n){
+  let same = poolCards().filter(c=>c.id!==card.id && c.deck===card.deck);
+  let other = allCards().filter(c=>c.id!==card.id && c.deck!==card.deck);
+  shuffle(same); shuffle(other);
+  const seen = new Set([card.front]);
+  const res = [];
+  for(const c of [...same, ...other]){ if(res.length>=n) break; if(seen.has(c.front)) continue; seen.add(c.front); res.push(c); }
+  return res;
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function nextQuiz(){
+  const area = $('#quizArea');
+  let pool = poolCards();
+  if(qmode==='fill') pool = pool.filter(c=>c.cloze);
+  if(qmode==='choice' && allCards().length<2){ area.innerHTML='<div class="empty">題庫至少要 2 張卡才能出選擇題。<br>先到第一步加卡片吧。</div>'; return; }
+  if(!pool.length){ area.innerHTML = qmode==='fill' ? '<div class="empty">這個分類沒有「口訣」可挖空。<br>換個分類或改用選擇題。</div>' : '<div class="empty">這個分類沒有卡片。</div>'; return; }
+  // 優先抽不熟/沒考過的
+  const weakFirst = pool.filter(c=>c.level==='weak'||c.stats.r+c.stats.w===0);
+  const card = (weakFirst.length?weakFirst:pool)[Math.random()*(weakFirst.length?weakFirst.length:pool.length)|0];
+  curQ = card;
+  qmode==='choice' ? renderChoice(card) : renderFill(card);
+}
+function renderChoice(card){
+  const ds = pickDistractors(card, 3);
+  const opts = shuffle([card, ...ds]);
+  const ai = opts.indexOf(card);
+  const hint = card.mnemonic ? `<span class="qhint">🔑 口訣：${mdBold(card.mnemonic)}</span>` : '';
+  $('#quizArea').innerHTML = `
+    <div class="qbox">
+      <div class="qmeta">🕸️ ${esc(card.deck)} ‧ 看故事，選出正確的考點</div>
+      <div class="qstem">📖 ${esc(card.story||card.detail||'（這張卡沒有故事）')}${hint}</div>
+      <div class="opts" id="opts">
+        ${opts.map((o,i)=>`<button class="opt" data-i="${i}"><b>${'ABCD'[i]}</b>${esc(o.front)}</button>`).join('')}
+      </div>
+      <div class="reveal" id="reveal"></div>
+      <div class="row" style="margin-top:14px;justify-content:flex-end">
+        <button class="btn" id="nextQ" style="display:none">下一題 ▶</button>
+      </div>
+    </div>`;
+  $('#opts').querySelectorAll('.opt').forEach(b=> b.onclick=()=>answerChoice(b, +b.dataset.i===ai, card, ai));
+  $('#nextQ').onclick = nextQuiz;
+}
+function answerChoice(btn, ok, card, ai){
+  $('#opts').querySelectorAll('.opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===ai) b.classList.add('correct');
+    else if(b===btn) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  recordResult(card, ok);
+  const rv = $('#reveal');
+  rv.classList.add('show');
+  rv.innerHTML = `<div class="feedback ${ok?'ok':'no'}">${ok?'✅ 答對了！':'❌ 答錯了'}</div>
+    ${card.mnemonic?`<div><span class="rk">🔑 口訣</span> ${mdBold(card.mnemonic)}</div>`:''}
+    ${card.detail?`<div style="margin-top:6px"><span class="rk">📌 詳細</span> ${esc(card.detail)}</div>`:''}
+    ${card.answerRaw?`<div style="margin-top:6px;color:var(--green)"><span class="rk">✅ 原題正解</span> ${esc(card.answerRaw)}</div>`:''}`;
+  $('#nextQ').style.display='inline-block';
+}
+function renderFill(card){
+  const blanked = mdBold(card.mnemonic).replace(/<b class="hl">.+?<\/b>/,'<b class="hl">＿＿＿</b>');
+  $('#quizArea').innerHTML = `
+    <div class="qbox">
+      <div class="qmeta">🕸️ ${esc(card.deck)} ‧ 考點：<b style="color:var(--gold)">${esc(card.front)}</b></div>
+      <div class="qstem">📖 ${esc(card.story||'')}</div>
+      <div class="seg mnem" style="margin-top:12px">🔑 口訣：${blanked}</div>
+      <input class="fillin" id="fillIn" placeholder="填入口訣關鍵字" autocomplete="off">
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="checkBtn">確認</button>
+        <button class="btn ghost sm" id="showBtn">看答案</button>
+      </div>
+      <div class="reveal" id="reveal"></div>
+      <div class="row" style="margin-top:14px;justify-content:flex-end">
+        <button class="btn" id="nextQ" style="display:none">下一題 ▶</button>
+      </div>
+    </div>`;
+  const inp = $('#fillIn'); inp.focus();
+  const norm = s => (s||'').replace(/[\s，,。、！!？?＊*]/g,'').toLowerCase();
+  const judge = (reveal)=>{
+    const ok = norm(inp.value) && norm(inp.value)===norm(card.cloze);
+    inp.disabled=true; recordResult(card, ok && !reveal);
+    const rv=$('#reveal'); rv.classList.add('show');
+    rv.innerHTML = `<div class="feedback ${ok?'ok':'no'}">${reveal?'👀 答案是':ok?'✅ 正確！':'❌ 正解'}：<span class="hl">${esc(card.cloze)}</span></div>
+      ${card.detail?`<div style="margin-top:4px"><span class="rk">📌 詳細</span> ${esc(card.detail)}</div>`:''}
+      ${card.answerRaw?`<div style="margin-top:6px;color:var(--green)"><span class="rk">✅ 原題正解</span> ${esc(card.answerRaw)}</div>`:''}`;
+    $('#checkBtn').style.display='none'; $('#showBtn').style.display='none'; $('#nextQ').style.display='inline-block';
+  };
+  $('#checkBtn').onclick=()=>judge(false);
+  $('#showBtn').onclick=()=>judge(true);
+  inp.onkeydown=e=>{ if(e.key==='Enter') judge(false); };
+  $('#nextQ').onclick = nextQuiz;
+}
+function recordResult(card, ok){
+  card.stats[ok?'r':'w']++; card.stats.last=Date.now();
+  if(ok){ if(card.stats.r>=2 && card.level!=='strong') card.level='strong'; }
+  else card.level='weak';
+  save(); sTotal++; if(ok) sScore++; $('#score').textContent=`本回 ${sScore}／${sTotal}`; renderDbStat();
+}
+
+/* ====================================================================== */
+/* 步驟切換 */
+document.querySelectorAll('.stepbtn').forEach(b=> b.onclick=()=>{
+  step = +b.dataset.step;
+  document.querySelectorAll('.stepbtn').forEach(x=>x.classList.toggle('cur',x===b));
+  $('#s1').style.display = step===1?'block':'none';
+  $('#s2').style.display = step===2?'block':'none';
+  $('#s3').style.display = step===3?'block':'none';
+  $('#deckCard').style.display = step===1?'none':'block';
+  if(step===2){ buildFlipList(); renderFlip(); }
+  if(step===3){ sScore=0; sTotal=0; $('#score').textContent='本回 0／0'; nextQuiz(); }
+  if(step===1) renderDbStat();
+});
+
+function refreshAll(){ renderDecks(); renderDbStat(); buildFlipList(); renderFlip(); }
+
+/* ---------- 啟動 ---------- */
+seedIfEmpty();
+refreshAll();
+$('#foot').textContent = `Anki 翻卡 ${APP_VERSION} ‧ ${allCards().length} 張卡 ‧ 資料存於本機瀏覽器`;
+</script>
+</body>
+</html>
