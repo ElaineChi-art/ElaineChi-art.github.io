@@ -630,6 +630,21 @@ seedIfEmpty();
 $('#addDate').value=today();
 refreshAll();
 $('#foot').textContent=`Anki 翻卡 ${APP_VERSION} ‧ ${allCards().length} 張卡 ‧ 資料存於本機瀏覽器`;
+
+/* ---------- 自動更新（部署後開著的頁面約1分鐘內自動抓新版） ---------- */
+async function checkUpdate(){
+  try{
+    const r=await fetch('anki-version.json?_='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return;
+    const j=await r.json(); const v=(j&&j.v!=null)?String(j.v):null;
+    if(!v || v===APP_VERSION) return;
+    const cur=new URL(location.href).searchParams.get('_v');
+    if(cur===v) return;                       // 已針對這版重載過→避免迴圈
+    const u=new URL(location.href); u.searchParams.set('_v',v);
+    location.replace(u.toString());           // 改網址強制抓新 HTML（繞快取）
+  }catch(e){}
+}
+checkUpdate(); setInterval(checkUpdate, 60000);
 </script>
 </body>
 </html>
