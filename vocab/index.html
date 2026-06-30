@@ -169,24 +169,27 @@
   .modal h2{font-size:26px;margin-bottom:2px}
   /* 閱讀卡：固定大小、置中、內部捲動、左右邊可點換頁 */
   #ovInner.reader{height:min(86vh,720px);max-height:none;overflow:hidden;padding:0;position:relative;display:flex;flex-direction:column}
-  .reader-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
-  .reader-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 20px 26px;overscroll-behavior:contain;touch-action:pan-y}
+  .reader-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
+  .reader-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 50px 24px;overscroll-behavior:contain;touch-action:pan-y}
   html:has(.ov.show){overflow:hidden}
   .ov{overscroll-behavior:contain}
-  /* 念什麼選項列 */
-  .roptbox{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--panel2)}
-  .roptchip{font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer}
+  /* 書庫下拉（右上角觸發） */
+  .dshelf-trigger{display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:5px 11px;border:1px solid var(--line);border-radius:20px;background:transparent}
+  .dshelf-dots{display:inline-flex;align-items:center;gap:3px}
+  .dshelf-dots i{display:inline-block;width:11px;height:11px;border-radius:50%}
+  .dshelf-panel{display:flex;flex-wrap:wrap;gap:8px;padding:11px 16px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  /* 左右換頁箭頭：加高加大觸控區（原本的形式） */
+  .reader-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:46px;height:58%;
+    display:flex;align-items:center;justify-content:center;font-size:36px;font-family:var(--serif);
+    color:var(--mut);background:transparent;border:none;cursor:pointer;border-radius:12px}
+  .reader-arrow.l{left:0} .reader-arrow.r{right:0}
+  .reader-arrow:active{color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent);transform:translateY(-50%) scale(.94)}
+  /* 底部控制盤：熟悉度＋自動播放＋念什麼 */
+  .reader-foot{display:flex;flex-direction:column;gap:9px;padding:11px 14px 13px;border-top:1px solid var(--line);flex-shrink:0;background:var(--panel)}
+  .reader-foot .lvset{margin:0}
+  .roptbox{display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:center}
+  .roptchip{font-size:12.5px;padding:5px 13px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer}
   .roptchip.on{border-color:var(--acc);color:var(--tx);background:color-mix(in srgb,var(--acc) 16%,transparent)}
-  /* 卡上熟悉度/書庫操作 */
-  .dctl{margin:14px 0 4px}
-  .dshelves{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
-  /* 上一張/下一張大按鈕 */
-  .reader-foot{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line);flex-shrink:0;background:var(--panel)}
-  .rbig{flex:1;min-height:50px;font-size:16px;font-weight:700;border-radius:12px;border:1px solid var(--line);
-    background:var(--panel2);color:var(--tx);cursor:pointer}
-  .rbig:active{transform:scale(.97);border-color:var(--acc)}
-  .rbig:disabled{opacity:.35;cursor:default}
-  .rpos{font-size:12px;color:var(--mut);min-width:54px;text-align:center}
   .x{float:right;cursor:pointer;color:var(--mut);font-size:22px;line-height:1;border:none;background:none}
   .msg{font-size:14px;color:var(--mut);margin-top:8px;min-height:20px}
   .empty{color:var(--mut);font-size:14px;text-align:center;padding:26px}
@@ -356,9 +359,13 @@
   .themesw:hover{border-color:var(--acc)}
   .themesw.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
   .fsbtn.on{border-color:var(--acc);color:var(--acc)}
-  .shelfchip{font-size:12px;padding:5px 11px;border-radius:20px;border:1px solid var(--sc,var(--line));background:transparent;color:var(--mut);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
-  .shelfchip::before{content:'';width:9px;height:9px;border-radius:50%;background:var(--sc,var(--grey));flex:none;opacity:.85}
-  .shelfchip.on{border-color:var(--sc,var(--acc));color:var(--tx);background:color-mix(in srgb,var(--sc,var(--acc)) 20%,transparent)}
+  .chiprow{display:flex;flex-wrap:wrap;gap:8px}
+  .actbar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:10px;
+    padding:8px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:11px}
+  .shelfchip{font-size:13px;font-weight:600;padding:7px 14px;border-radius:20px;border:2px solid var(--sc,var(--line));background:transparent;color:var(--sc,var(--mut));cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .shelfchip::before{content:'';width:11px;height:11px;border-radius:50%;background:var(--sc,var(--grey));flex:none}
+  .shelfchip.on{border-color:var(--sc,var(--acc));color:#10131a;background:var(--sc,var(--acc))}
+  .shelfchip.on::before{background:rgba(0,0,0,.4)}
   /* 書庫小色標（卡片/大字卡） */
   .shtag{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:20px;
     border:1px solid var(--sc,var(--line));color:var(--tx);background:color-mix(in srgb,var(--sc,var(--line)) 16%,transparent);white-space:nowrap}
@@ -431,14 +438,16 @@
   <!-- 1. INPUT -->
   <div class="card">
     <div class="sec-h"><span class="sec-n">1</span>輸入單字</div>
+    <div id="addShelfRow" style="margin-bottom:12px">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+        <label class="fld" style="margin:0">放入書庫</label>
+        <button class="btn ghost sm" id="btnManageShelf">管理書庫</button>
+      </div>
+      <div id="addShelfChips" class="chiprow"></div>
+    </div>
     <div class="row" style="margin-bottom:10px">
       <label class="fld" style="margin:0">加入到</label>
       <input type="date" id="inDate" style="width:auto">
-    </div>
-    <div class="row" id="addShelfRow" style="margin-bottom:10px;align-items:center">
-      <label class="fld" style="margin:0">書庫</label>
-      <span id="addShelfChips" class="row" style="gap:6px"></span>
-      <button class="btn ghost sm" id="btnManageShelf">管理書庫</button>
     </div>
     <textarea id="inWords" placeholder="一行一個單字／片語，或直接貼上整份清單"></textarea>
     <div class="row" style="margin-top:10px">
@@ -449,10 +458,6 @@
     <div id="undoBar" style="display:none;margin-top:10px">
       <button class="btn" id="btnUndo" style="background:transparent;border:1px solid var(--acc);color:var(--acc);width:100%">↶ 復原這次加入（撤回剛剛加入的單字）</button>
     </div>
-    <div style="font-size:12px;color:var(--mut);margin-top:10px;line-height:1.7">
-      加入後會自動帶入<b>發音、例句（附中文）、文法</b>，點單字即可<b>編輯或新增</b>。
-      <span class="devhint"><br>也可直接附中文或例句，用 <b>|</b> 隔開：第一個中文＝字義、英文＝例句、緊接的中文＝該句翻譯。</span>
-    </div>
     <div id="inReview"></div>
   </div>
 
@@ -461,7 +466,7 @@
     <div class="sec-h"><span class="sec-n">2</span>單字庫</div>
     <div class="cal" id="cal"></div>
     <div class="devhint" style="font-size:12px;color:var(--mut);margin-top:8px">
-      ‹ › 換週、「本週」回到今天；點日期看當天單字，可同時選多天。
+      ‹ › 換週；點日期看當天單字，可同時選多天。
     </div>
     <div class="row" style="margin-top:8px">
       <span class="pill" id="dayInfo">已選 0 天</span>
@@ -475,37 +480,28 @@
   <div class="card">
     <div class="sec-h"><span class="sec-n">3</span><span id="listTitle">單字清單</span></div>
     <div class="msg" id="listStat" style="margin-top:0"></div>
-    <!-- 精簡工具列：搜尋＋書庫常駐，其餘收進「更多」 -->
-    <div class="row" id="listBar" style="margin:6px 0 10px;display:none;gap:6px">
-      <input type="text" id="listSearch" placeholder="搜尋單字或中文" style="flex:1;min-width:120px">
-      <select id="listShelf" style="max-width:140px"><option value="all">全部書庫</option></select>
-      <button class="btn ghost sm" id="listMore" title="更多選項">⋯ 更多</button>
+    <!-- 精簡：只留 書庫／熟悉度 兩個選單 -->
+    <div class="row" id="listBar" style="margin:8px 0 10px;display:none;gap:8px">
+      <select id="listShelf" style="flex:1;min-width:0"><option value="all">全部書庫</option></select>
+      <select id="listFilter" style="flex:1;min-width:0">
+        <option value="all">全部熟悉度</option>
+        <option value="new">只看 新</option>
+        <option value="weak">只看 不熟</option>
+        <option value="mid">只看 普通</option>
+        <option value="strong">只看 熟</option>
+      </select>
     </div>
-    <div id="listMoreBox" style="display:none;margin-bottom:10px">
-      <div class="row" style="gap:6px;margin-bottom:8px">
-        <select id="listFilter" style="max-width:130px">
-          <option value="all">全部熟悉度</option>
-          <option value="new">只看 新</option>
-          <option value="weak">只看 不熟</option>
-          <option value="mid">只看 普通</option>
-          <option value="strong">只看 熟</option>
-        </select>
-        <select id="listSort" style="max-width:130px">
-          <option value="default">預設順序</option>
-          <option value="az">英文 A→Z</option>
-          <option value="weak">不熟優先</option>
-        </select>
-      </div>
-      <div class="row" id="listTools" style="gap:6px">
-        <button class="btn ghost sm" id="btnSelAll">全選</button>
-        <button class="btn ghost sm" id="btnSelNone">清除勾選</button>
-        <span class="pill" id="selCount">已勾 0 字</span>
-        <button class="btn ghost sm" id="btnAddToShelf">加入書庫</button>
-        <button class="btn ghost sm" id="btnRemFromShelf">移出書庫</button>
-        <button class="btn sm" id="btnDelSel" disabled style="background:var(--red)">刪除</button>
-      </div>
+    <div class="row" id="selAllRow" style="display:none;gap:10px;align-items:center;margin-bottom:8px">
+      <button class="btn ghost sm" id="btnSelAll">全選</button>
+      <span class="pill" id="selCount">已勾 0 字</span>
+      <span id="listCount" style="font-size:12px;color:var(--mut)"></span>
     </div>
-    <div style="font-size:12px;color:var(--mut);margin-bottom:8px" id="listCount"></div>
+    <div class="actbar" id="listActions" style="display:none">
+      <button class="btn ghost sm" id="btnAddToShelf">＋ 加入書庫</button>
+      <button class="btn ghost sm" id="btnRemFromShelf">－ 移出書庫</button>
+      <button class="btn sm" id="btnDelSel" style="background:var(--red)">刪除</button>
+      <button class="btn ghost sm" id="btnSelNone">取消勾選</button>
+    </div>
     <div class="gridscroll" id="gridScroll"><div class="wgrid" id="grid"></div></div>
     <div class="empty" id="listEmpty" style="display:none">在上方月曆點選有單字的日期，這裡就會列出來。</div>
   </div>
@@ -541,7 +537,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v60 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v61 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -553,7 +549,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='60';
+const APP_VERSION='61';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -883,7 +879,6 @@ function renderCalendar(host,state,opts){
       <button class="btn ghost sm" data-nav="-1" title="上一週">‹</button>
       <b>${mid.getFullYear()} 年 ${mid.getMonth()+1} 月</b>
       <button class="btn ghost sm" data-nav="1" title="下一週">›</button>
-      <button class="btn ghost sm" data-jump="1" style="margin-left:4px">本週</button>
     </div><div class="calweek">`;
   DOW.forEach(d=>h+=`<div class="caldow">${d}</div>`);
   days.forEach(dt=>{
@@ -900,7 +895,6 @@ function renderCalendar(host,state,opts){
     const r=new Date(ref); r.setDate(ref.getDate()+7*parseInt(b.dataset.nav));
     state.ref=ymd(r.getFullYear(),r.getMonth(),r.getDate()); renderCalendar(host,state,opts);
   });
-  const jb=host.querySelector('[data-jump]'); if(jb)jb.onclick=()=>{ state.ref=today(); renderCalendar(host,state,opts); };
   host.querySelectorAll('[data-date]').forEach(c=>c.onclick=()=>opts.onPick(c.dataset.date,+c.dataset.cnt));
 }
 
@@ -1311,6 +1305,7 @@ function renderList(){
   document.getElementById('listEmpty').style.display=entries.length?'none':'block';
   document.getElementById('gridScroll').style.display=entries.length?'block':'none';
   document.getElementById('listBar').style.display=entries.length?'flex':'none';  // 有字才顯示精簡工具列
+  document.getElementById('selAllRow').style.display=entries.length?'flex':'none';
   const counts={new:0,weak:0,mid:0,strong:0};
   entries.forEach(e=>counts[levelOf(e.rec).k]++);
   document.getElementById('listStat').innerHTML=entries.length?
@@ -1325,31 +1320,15 @@ function groupKeyOf(rec,g){
 }
 function drawGrid(){
   let v=currentEntries.slice();
-  const q=(document.getElementById('listSearch').value||'').trim().toLowerCase();
-  const f=document.getElementById('listFilter').value;
-  const sort=document.getElementById('listSort').value;
-  const group=(document.getElementById('listGroup')||{}).value||'none';
-  const shelf=document.getElementById('listShelf').value;
-  if(q) v=v.filter(e=>e.rec.word.toLowerCase().includes(q)||(e.rec.wordZh||'').toLowerCase().includes(q));
+  const f=(document.getElementById('listFilter')||{}).value||'all';
+  const shelf=(document.getElementById('listShelf')||{}).value||'all';
   if(shelf!=='all') v=v.filter(e=>(e.rec.shelves||[]).includes(shelf));
   if(f!=='all') v=v.filter(e=>levelOf(e.rec).k===f);
-  if(sort==='az') v.sort((a,b)=>a.rec.word.toLowerCase().localeCompare(b.rec.word.toLowerCase()));
-  else if(sort==='weak') v.sort((a,b)=>levelOf(a.rec).acc-levelOf(b.rec).acc);
-  if(group!=='none'){ // 穩定排序聚在一起（保留上面的排序為次序）
-    const lvOrder={'不熟':0,'普通':1,'熟':2,'新':3};
-    v.sort((a,b)=>{ const ga=groupKeyOf(a.rec,group),gb=groupKeyOf(b.rec,group);
-      if(group==='level') return (lvOrder[ga]??9)-(lvOrder[gb]??9);
-      return ga<gb?-1:ga>gb?1:0; });
-  }
   viewEntries=v;
   document.getElementById('listCount').textContent =
-    (q||f!=='all') && currentEntries.length ? `顯示 ${v.length} / 共 ${currentEntries.length} 字` : '';
+    (shelf!=='all'||f!=='all') && currentEntries.length ? `顯示 ${v.length} / ${currentEntries.length}` : '';
   const grid=document.getElementById('grid'); grid.innerHTML='';
-  let lastG=null;
   v.forEach(({date,key,rec})=>{
-    if(group!=='none'){ const g=groupKeyOf(rec,group);
-      if(g!==lastG){ lastG=g; const hd=document.createElement('div'); hd.className='grouphd';
-        hd.textContent=({pos:'詞性',level:'熟悉度',az:'字母'}[group])+'：'+g; grid.appendChild(hd); } }
     const lv=levelOf(rec); const id=date+'|'+key;
     const ex=topExample(rec);
     const el=document.createElement('div'); el.className='wcard lv-'+lv.k;
@@ -1381,13 +1360,10 @@ function drawGrid(){
   });
   updateSelCount(); updateQuizPool();
 }
-['listSearch','listFilter','listSort','listShelf'].forEach(id=>{
+['listFilter','listShelf'].forEach(id=>{
   const el=document.getElementById(id);
-  if(el) el.addEventListener(id==='listSearch'?'input':'change',drawGrid);
+  if(el) el.addEventListener('change',drawGrid);
 });
-(function(){ const mb=document.getElementById('listMore'); if(mb)mb.onclick=()=>{
-  const box=document.getElementById('listMoreBox'); const show=box.style.display==='none';
-  box.style.display=show?'block':'none'; mb.textContent=show?'▴ 收合':'⋯ 更多'; }; })();
 function populateShelfFilter(){
   const sel=document.getElementById('listShelf'); if(!sel)return;
   const cur=sel.value;
@@ -1401,7 +1377,7 @@ function populateShelfFilter(){
 function updateSelCount(){
   const n=selected.size;
   document.getElementById('selCount').textContent='已勾 '+n+' 字';
-  document.getElementById('btnDelSel').disabled=n===0;
+  document.getElementById('listActions').style.display=n?'flex':'none';  // 有勾才出現批次操作
 }
 document.getElementById('btnSelAll').onclick=()=>{           // 全選＝目前畫面上顯示的
   viewEntries.forEach(e=>selected.add(e.date+'|'+e.key));
@@ -1624,64 +1600,59 @@ function renderDetail(rec,date,key){
   inner.className='modal reader';
   const sents=(rec.sentences||[]).filter(s=>s.ex).slice(0,3);  // 例句最多 3 句，版面不冗長
   const lv=levelOf(rec);
-  const list=viewEntries.length?viewEntries:currentEntries;
-  const pos=list.findIndex(e=>e.date===date&&e.key===key);
-  const allSh=allShelves();
-  const shHtml=allSh.length? allSh.map(s=>{ const on=(rec.shelves||[]).includes(s);
-      return `<button class="shtag dsh${on?'':' off'}" style="--sc:${shelfColor(s)}" data-s="${escapeHtml(s)}">${escapeHtml(s)}${on?' <span class="shx">✓</span>':''}</button>`; }).join('')
-    : '<span style="font-size:12px;color:var(--mut)">尚無書庫</span>';
+  const mine=rec.shelves||[];
+  const dots=mine.length? mine.map(s=>`<i style="background:${shelfColor(s)}"></i>`).join('') : '<span style="font-size:11px;color:var(--mut)">未分類</span>';
+  const shHtml=allShelves().map(s=>{ const on=mine.includes(s);
+      return `<button class="shelfchip dsh${on?' on':''}" style="--sc:${shelfColor(s)}" data-s="${escapeHtml(s)}">${escapeHtml(s)}</button>`; }).join('')
+    || '<span style="font-size:12px;color:var(--mut)">尚無書庫</span>';
   const opt=(k,label)=>`<button class="roptchip${readParts[k]?' on':''}" data-rp="${k}">${label}</button>`;
   inner.innerHTML=`
     <div class="reader-nav">
-      <button class="btn ${cardAuto.on?'':'ghost'} sm" id="dAuto">${cardAuto.on?'⏸ 停止':'▶ 自動播放'}</button>
-      <span class="row" style="gap:6px">
-        <button class="btn ghost sm" id="dReadOpt" title="選擇要念的內容">⚙ 念什麼</button>
-        <button class="btn ghost sm" onclick="detailMode='edit';showDetail()">編輯</button>
-        <button class="btn ghost sm" onclick="closeDetail()" title="關閉">✕</button>
-      </span>
+      <button class="dshelf-trigger" id="dShelfTrig"><span style="font-size:13px;color:var(--mut)">書庫</span><span class="dshelf-dots">${dots}</span><span style="color:var(--mut);font-size:11px">▾</span></button>
+      <button class="btn ghost sm" onclick="detailMode='edit';showDetail()">編輯</button>
     </div>
-    <div id="dReadOptBox" class="roptbox" style="display:none">
-      <span style="font-size:12px;color:var(--mut)">自動播放要念：</span>
-      ${opt('en','英文')}${opt('pos','詞性')}${opt('zh','中文')}${opt('ex','例句')}${opt('note','補充')}
+    <div id="dShelfPanel" class="dshelf-panel" style="display:none">
+      ${shHtml} <button class="shelfchip" id="dShNew" style="--sc:var(--mut)">＋ 新書庫</button>
     </div>
+    <button class="reader-arrow l" id="dPrev">‹</button>
+    <button class="reader-arrow r" id="dNext">›</button>
     <div class="reader-body">
       <div class="dword">${rec.word} <button class="speak" onclick="speak('${rec.word.replace(/'/g,'')}')">聽</button></div>
       <div class="dph">${rec.phonetic||''}</div>
       <div class="dmean">${rec.pos?'<b style="color:var(--acc)">'+escapeHtml(rec.pos)+'</b> ':''}${escapeHtml((rec.wordZh||'').replace(/\//g,'；'))}</div>
-
-      <div class="dctl">
-        <div class="lvset" style="flex:1">
-          <button class="lvb weak${lv.k==='weak'?' on':''}" onclick="setLevel('${date}','${key}','weak');showDetail();renderList()">不熟</button>
-          <button class="lvb mid${lv.k==='mid'?' on':''}" onclick="setLevel('${date}','${key}','mid');showDetail();renderList()">普通</button>
-          <button class="lvb strong${lv.k==='strong'?' on':''}" onclick="setLevel('${date}','${key}','strong');showDetail();renderList()">熟</button>
-        </div>
-      </div>
-      <div class="dsec-label">書庫　<span style="color:var(--mut);font-weight:400;font-size:11px">點一下加入／移出（✓＝已在）</span></div>
-      <div class="dshelves" id="dShelves">${shHtml} <button class="shelfchip" id="dShNew" style="--sc:var(--mut)">＋ 新書庫</button></div>
-
       <div class="dsec-label">例句</div>
-      ${sents.length? sents.map(s=>`<div class="dex">${exHtml(s.ex,rec.word)} <button class="speak" data-t="${(s.ex||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" onclick="event.stopPropagation();speak(this.dataset.t)">聽</button></div>${s.exZh?'<div class="dexz extrans">'+escapeHtml(s.exZh)+'</div>':''}`).join('') : '<div class="dexz">尚無例句（按上面「編輯」新增）</div>'}
+      ${sents.length? sents.map(s=>`<div class="dex">${exHtml(s.ex,rec.word)} <button class="speak" data-t="${(s.ex||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" onclick="event.stopPropagation();speak(this.dataset.t)">聽</button></div>${s.exZh?'<div class="dexz extrans">'+escapeHtml(s.exZh)+'</div>':''}`).join('') : '<div class="dexz">尚無例句（按右上「編輯」新增）</div>'}
       ${rec.note?`<div class="dsec-label">補充</div><div class="dnote">${escapeHtml(rec.note)}</div>`:''}
     </div>
     <div class="reader-foot">
-      <button class="rbig" id="dPrev"${pos<=0?' disabled':''}>‹ 上一張</button>
-      <span class="rpos">${pos>=0?(pos+1)+' / '+list.length:''}</span>
-      <button class="rbig" id="dNext"${pos<0||pos>=list.length-1?' disabled':''}>下一張 ›</button>
+      <div class="lvset">
+        <button class="lvb weak${lv.k==='weak'?' on':''}" onclick="setLevel('${date}','${key}','weak');showDetail();renderList()">不熟</button>
+        <button class="lvb mid${lv.k==='mid'?' on':''}" onclick="setLevel('${date}','${key}','mid');showDetail();renderList()">普通</button>
+        <button class="lvb strong${lv.k==='strong'?' on':''}" onclick="setLevel('${date}','${key}','strong');showDetail();renderList()">熟</button>
+      </div>
+      <div class="row" style="gap:8px;justify-content:center">
+        <button class="btn ${cardAuto.on?'':'ghost'} sm" id="dAuto" style="flex:1">${cardAuto.on?'⏸ 停止播放':'▶ 自動播放'}</button>
+        <button class="btn ghost sm" id="dReadOpt" style="flex:1">⚙ 念什麼</button>
+      </div>
+      <div id="dReadOptBox" class="roptbox" style="display:none">
+        ${opt('en','英文')}${opt('pos','詞性')}${opt('zh','中文')}${opt('ex','例句')}${opt('note','補充')}
+      </div>
     </div>`;
+  const trig=document.getElementById('dShelfTrig'), panel=document.getElementById('dShelfPanel');
+  trig.onclick=()=>{ panel.style.display=panel.style.display==='none'?'flex':'none'; };
   document.getElementById('dAuto').onclick=toggleCardAuto;
   document.getElementById('dReadOpt').onclick=()=>{ const b=document.getElementById('dReadOptBox');
     b.style.display=b.style.display==='none'?'flex':'none'; };
   inner.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{ const k=b.dataset.rp;
     readParts[k]=!readParts[k]; saveReadParts(); b.classList.toggle('on',readParts[k]); });
-  const pv=document.getElementById('dPrev'), nx=document.getElementById('dNext');
-  if(pv)pv.onclick=()=>{ stopCardAuto(); detailNav(-1); };
-  if(nx)nx.onclick=()=>{ stopCardAuto(); detailNav(1); };
-  inner.querySelectorAll('#dShelves .dsh').forEach(b=>b.onclick=()=>{ const s=b.dataset.s;
+  document.getElementById('dPrev').onclick=()=>{ stopCardAuto(); detailNav(-1); };
+  document.getElementById('dNext').onclick=()=>{ stopCardAuto(); detailNav(1); };
+  panel.querySelectorAll('.dsh').forEach(b=>b.onclick=()=>{ const s=b.dataset.s;
     rec.shelves=rec.shelves||[]; const i=rec.shelves.indexOf(s);
     if(i>=0)rec.shelves.splice(i,1); else rec.shelves.push(s);
-    save(); renderDetail(rec,date,key); populateShelfFilter(); renderList(); });
+    save(); renderDetail(rec,date,key); document.getElementById('dShelfPanel').style.display='flex'; populateShelfFilter(); renderList(); });
   const snb=document.getElementById('dShNew'); if(snb)snb.onclick=()=>{ const n=prompt('新書庫名稱：'); if(!n)return;
-    const nm=addShelf(n); if(nm){ rec.shelves=rec.shelves||[]; if(!rec.shelves.includes(nm))rec.shelves.push(nm); save(); renderDetail(rec,date,key); renderAddShelfChips(); renderList(); } };
+    const nm=addShelf(n); if(nm){ rec.shelves=rec.shelves||[]; if(!rec.shelves.includes(nm))rec.shelves.push(nm); save(); renderDetail(rec,date,key); document.getElementById('dShelfPanel').style.display='flex'; renderAddShelfChips(); renderList(); } };
 }
 function renderEditor(rec,date,key){
   const inner=document.getElementById('ovInner');
