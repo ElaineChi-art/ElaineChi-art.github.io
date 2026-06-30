@@ -105,7 +105,8 @@
   .lvb.on.strong{background:var(--green);color:#06210f;border-color:var(--green)}
   .cardex{font-size:12px;color:var(--mut);margin-top:7px;line-height:1.45;word-break:break-word}
   /* 可捲動框（仿研究雷達），手機也能在框內滑 */
-  .gridscroll{max-height:46vh;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:12px;
+  #listSearch{padding:6px 12px;font-size:13px;border-radius:8px}   /* 與「全選」按鈕同高 */
+  .gridscroll{max-height:66vh;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:12px;
     padding:10px;background:#0d1117;-webkit-overflow-scrolling:touch}
   .gridscroll::-webkit-scrollbar{width:8px}
   .gridscroll::-webkit-scrollbar-thumb{background:#2a3340;border-radius:5px}
@@ -554,7 +555,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v67 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v68 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -566,7 +567,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='67';
+const APP_VERSION='68';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1384,10 +1385,7 @@ function renderList(){
   document.getElementById('listEmpty').style.display=entries.length?'none':'block';
   document.getElementById('gridScroll').style.display=entries.length?'block':'none';
   document.getElementById('listBar').style.display=entries.length?'block':'none';  // 有字才顯示工具列
-  const counts={new:0,weak:0,mid:0,strong:0};
-  entries.forEach(e=>counts[levelOf(e.rec).k]++);
-  document.getElementById('listStat').innerHTML=entries.length?
-    `共 ${entries.length} 字　·　<span style="color:var(--grey)">新 ${counts.new}</span>　<span style="color:var(--red)">不熟 ${counts.weak}</span>　<span style="color:var(--yellow)">普通 ${counts.mid}</span>　<span style="color:var(--green)">熟 ${counts.strong}</span>`:'';
+  document.getElementById('listStat').innerHTML=entries.length?`共 ${entries.length} 字`:'';
   drawGrid();
 }
 function groupKeyOf(rec,g){
@@ -2197,14 +2195,9 @@ function renderFill(body,it){
         const z=zhOf(cw); if(z) c.innerHTML=escapeHtml(cw)+`<span class="optzh">${escapeHtml(z)}</span>`;
       });
       speak(word);
-      const optLines=opts.map(o2=>{ const isC=o2.toLowerCase()===word.toLowerCase();
-        return `<div class="anaopt${isC?' c':''}">${isC?'✓':(o2===o?'✗':'　')} <b>${escapeHtml(o2)}</b>　<span style="color:var(--mut)">${escapeHtml(zhOf(o2)||'—')}</span>${isC?'<span class="anatag ok">正解</span>':(o2===o?'<span class="anatag no">你選的</span>':'')}</div>`;
-      }).join('');
       const usage=(it.rec.note||'').trim();
       document.getElementById('ana').innerHTML=`<div class="analysis">
         <div style="font-size:15px;margin-bottom:8px"><b>${ok?'✓ 答對了':'✗ 答錯了'}</b></div>
-        ${optLines}
-        <div class="anahr"></div>
         <div><b style="color:var(--acc)">${escapeHtml(word)}</b> ${it.rec.phonetic||''} <button class="speak" onclick="speak('${word.replace(/'/g,'')}')">聽</button></div>
         <div style="margin-top:4px">${it.rec.pos?'<span class="cpos">'+escapeHtml(it.rec.pos)+'</span>':''}${escapeHtml(it.rec.wordZh||'')}</div>
         ${ex.ex?`<div style="margin-top:6px">例句：${escapeHtml(ex.ex)}</div>${ex.exZh?'<div class="extrans">'+escapeHtml(ex.exZh)+'</div>':''}`:''}
