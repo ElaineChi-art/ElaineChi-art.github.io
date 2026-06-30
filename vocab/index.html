@@ -87,11 +87,11 @@
   .wcard{background:var(--panel2);border:1px solid var(--line);border-left:5px solid var(--grey);
          border-radius:13px;padding:15px 16px;cursor:pointer;position:relative}
   .wcard:hover{border-color:var(--acc2)}
-  .wcard .en{font-size:17px;font-weight:700;padding-right:24px}
+  .wcard .en{font-size:17px;font-weight:700;padding-right:62px}
   .wcard .ph{font-size:12px;color:var(--mut)}
   .wcard .zh{font-size:13px;color:var(--mut);margin-top:3px}
   .wcard .chk{position:absolute;top:10px;right:10px;width:18px;height:18px;cursor:pointer}
-  .wcard .cardpos{font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums;margin-bottom:1px}
+  .wcard .cardpos{position:absolute;top:11px;right:36px;font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums}
   .lv-new{border-left-color:var(--grey)}
   .lv-weak{border-left-color:var(--red)}
   .lv-mid{border-left-color:var(--yellow)}
@@ -500,11 +500,9 @@
   <!-- 3. WORD LIST -->
   <div class="card">
     <div class="sec-h"><span class="sec-n">3</span><span id="listTitle">單字清單</span></div>
-    <div class="msg" id="listStat" style="margin-top:0"></div>
-    <!-- 精簡：搜尋一行、書庫/熟悉度一行；全選與批次操作只在需要時出現 -->
+    <!-- 書庫/熟悉度一行；全選＋搜尋一行；批次操作只在需要時出現 -->
     <div id="listBar" style="display:none;margin:10px 0 8px">
-      <input type="text" id="listSearch" placeholder="搜尋單字／中文" style="width:100%;margin-bottom:8px">
-      <div class="row" style="gap:8px">
+      <div class="row" style="gap:8px;margin-bottom:8px">
         <select id="listShelf" style="flex:1;min-width:0"><option value="all">全部書庫</option></select>
         <select id="listFilter" style="flex:1;min-width:0">
           <option value="all">全部熟悉度</option>
@@ -514,10 +512,10 @@
           <option value="strong">只看 熟</option>
         </select>
       </div>
-    </div>
-    <div class="row" id="selAllRow" style="display:none;gap:10px;align-items:center;margin-bottom:8px">
-      <button class="btn ghost sm" id="btnSelAll">全選</button>
-      <span id="listCount" style="font-size:12px;color:var(--mut)"></span>
+      <div class="row" style="gap:8px">
+        <button class="btn ghost sm" id="btnSelAll" style="flex:none">全選</button>
+        <input type="text" id="listSearch" placeholder="搜尋單字／中文" style="flex:1;min-width:0">
+      </div>
     </div>
     <div class="actbar" id="listActions" style="display:none">
       <span class="pill" id="selCount">已勾 0</span>
@@ -526,6 +524,8 @@
       <button class="btn sm" id="btnDelSel" style="background:var(--red)">刪除</button>
       <button class="btn ghost sm" id="btnSelNone">取消</button>
     </div>
+    <div class="msg" id="listStat" style="margin:6px 0 4px"></div>
+    <div id="listCount" style="font-size:12px;color:var(--mut);margin-bottom:6px"></div>
     <div class="gridscroll" id="gridScroll"><div class="wgrid" id="grid"></div></div>
     <div class="empty" id="listEmpty" style="display:none">在上方月曆點選有單字的日期，這裡就會列出來。</div>
   </div>
@@ -554,7 +554,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v65 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v66 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -566,7 +566,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='65';
+const APP_VERSION='66';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1383,8 +1383,7 @@ function renderList(){
   document.getElementById('listTitle').textContent = dates.length? dates.join('、')+' 的單字' : '單字清單';
   document.getElementById('listEmpty').style.display=entries.length?'none':'block';
   document.getElementById('gridScroll').style.display=entries.length?'block':'none';
-  document.getElementById('listBar').style.display=entries.length?'block':'none';  // 有字才顯示精簡工具列
-  document.getElementById('selAllRow').style.display=entries.length?'flex':'none';
+  document.getElementById('listBar').style.display=entries.length?'block':'none';  // 有字才顯示工具列
   const counts={new:0,weak:0,mid:0,strong:0};
   entries.forEach(e=>counts[levelOf(e.rec).k]++);
   document.getElementById('listStat').innerHTML=entries.length?
