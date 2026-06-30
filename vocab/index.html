@@ -558,7 +558,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v71 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v72 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -570,7 +570,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='71';
+const APP_VERSION='72';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1130,11 +1130,14 @@ function parseOneMCQ(lines){
     const mm=explTxt.match(new RegExp(o.L+'[^A-D㐀-鿿]*?([㐀-鿿][^A-D、，。）)\\n]{0,12})'));
     if(mm) zh[o.L]=mm[1].trim();
   });
+  // 解析文字清乾淨：去掉行首 emoji/符號/變化選擇器與重複的「法學英文：…」標頭
+  const cleanExpl=explTxt.split('\n')
+    .map(l=>l.replace(/^[︀-️←-⯿\u{1F000}-\u{1FAFF}\s]+/u,'').trim())
+    .filter(l=>l && !/^法學英文\s*[:：]/.test(l)).join('\n');
   return options.map(o=>{
+    // 只放乾淨的：單字＋中文；解析只給正解那個字。題幹(常含OCR雜訊)不當例句，避免髒東西
     const e={word:o.term,pos:'',wordZh:zh[o.L]||'',sentences:[],note:''};
-    if(stemTxt) e.sentences.push({ex:stemTxt,exZh:'',src:'user'});
-    if(o.L===ans){ if(explTxt) e.note='【題目解析・答案'+ans+'】\n'+explTxt; }
-    else if(explTxt) e.note='（出自選擇題，非正解）';
+    if(o.L===ans && cleanExpl) e.note='【題目解析】\n'+cleanExpl;
     return e;
   });
 }
