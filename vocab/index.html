@@ -125,8 +125,8 @@
     .gridscroll{padding:8px}
     select{max-width:none}
   }
-  .cardact{display:flex;gap:6px;margin-top:9px}
-  .cact{flex:none;text-align:center;font-size:12px;padding:4px 11px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--mut);cursor:pointer}
+  .cardact{display:flex;gap:4px;margin-top:8px}
+  .cact{flex:1;text-align:center;font-size:11px;padding:4px 0;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--mut);cursor:pointer}
   .cact:hover{border-color:var(--acc2)}
   .cact:active{background:var(--panel2)}
   /* 拼字建議晶片 */
@@ -558,7 +558,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v70 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v71 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -570,7 +570,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='70';
+const APP_VERSION='71';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
