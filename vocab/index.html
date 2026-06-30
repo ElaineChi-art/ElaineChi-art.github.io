@@ -171,17 +171,20 @@
   .modal h2{font-size:26px;margin-bottom:2px}
   /* 閱讀卡：固定大小、置中、內部捲動、左右邊可點換頁 */
   #ovInner.reader{height:min(86vh,720px);max-height:none;overflow:hidden;padding:0;position:relative;display:flex;flex-direction:column}
-  .reader-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
-  .reader-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 50px 24px;overscroll-behavior:contain;touch-action:pan-y}
+  .reader-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px 8px;flex-shrink:0}
+  .reader-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 50px 24px;overscroll-behavior:contain;touch-action:pan-y}
   html:has(.ov.show){overflow:hidden}
   .ov{overscroll-behavior:contain}
-  /* 收藏（右上角觸發書庫面板） */
-  .dshelf-trigger{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;cursor:pointer;padding:5px 10px;border:1px solid var(--line);border-radius:20px;background:transparent;max-width:70%}
-  .dshelf-trigger.on{border-color:color-mix(in srgb,var(--acc) 35%,var(--line))}
-  .dtagname{font-size:12.5px;font-weight:500;color:var(--tx);background:color-mix(in srgb,var(--acc) 13%,transparent);border-radius:10px;padding:2px 9px}
+  /* 頂列三個一致下拉：書庫 / 熟悉度 / 播放 */
+  .dtrig{display:inline-flex;align-items:center;gap:5px;cursor:pointer;padding:5px 11px;border:1px solid var(--line);
+    border-radius:20px;background:transparent;color:var(--mut);font-size:13px;white-space:nowrap}
+  .dtrig.on{border-color:color-mix(in srgb,var(--acc) 40%,var(--line));color:var(--acc)}
+  .lvdot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .lvdot.lv-weak{background:var(--red)} .lvdot.lv-mid{background:var(--yellow)}
+  .lvdot.lv-strong{background:var(--green)} .lvdot.lv-new{background:var(--grey)}
   .dpos{font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
-  .dshelf-panel{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);
-    background:color-mix(in srgb,var(--tx) 3%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .dpanel{display:flex;flex-wrap:wrap;gap:8px;margin:0 12px 4px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;
+    background:color-mix(in srgb,var(--tx) 4%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
   /* 左右換頁箭頭：加高加大觸控區（原本的形式） */
   .reader-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:46px;height:58%;
     display:flex;align-items:center;justify-content:center;font-size:36px;font-family:var(--serif);
@@ -555,7 +558,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v69 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v70 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -567,7 +570,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='69';
+const APP_VERSION='70';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1706,22 +1709,39 @@ function renderDetail(rec,date,key){
   const collected=mine.length>0;
   const dlist=viewEntries.length?viewEntries:currentEntries;
   const dpos=dlist.findIndex(e=>e.date===date&&e.key===key);
-  const tagNames = collected ? mine.map(s=>`<span class="dtagname">${escapeHtml(s)}</span>`).join('')
-    : '<span style="color:var(--mut);font-size:13px">＋ 加入書庫</span>';
+  const shelfLabel = collected ? (escapeHtml(mine[0])+(mine.length>1?` +${mine.length-1}`:'')) : '加入書庫';
   const shHtml=allShelves().map(s=>{ const on=mine.includes(s);
       return `<button class="shelfchip dsh${on?' on':''}" data-s="${escapeHtml(s)}">${escapeHtml(s)}</button>`; }).join('')
     || '<span style="font-size:12px;color:var(--mut)">尚無書庫，可新增</span>';
   const opt=(k,label)=>`<button class="roptchip${readParts[k]?' on':''}" data-rp="${k}">${label}</button>`;
   inner.innerHTML=`
     <div class="reader-nav">
-      <button class="dshelf-trigger${collected?' on':''}" id="dShelfTrig">${tagNames}<span style="color:var(--mut);font-size:10px;margin-left:1px">▾</span></button>
-      <span class="row" style="gap:8px;align-items:center;flex:none">
+      <div class="row" style="gap:6px;flex-wrap:wrap;flex:1;min-width:0">
+        <button class="dtrig${collected?' on':''}" id="dShelfTrig">📚 ${shelfLabel} ▾</button>
+        <button class="dtrig" id="dLevelTrig"><span class="lvdot lv-${lv.k}"></span>${lv.label} ▾</button>
+        <button class="dtrig${cardAuto.on?' on':''}" id="dPlayTrig">${cardAuto.on?'⏸':'▶'} 播放 ▾</button>
+      </div>
+      <div class="row" style="gap:8px;align-items:center;flex:none">
         ${dpos>=0?`<span class="dpos">${dpos+1} / ${dlist.length}</span>`:''}
         <button class="btn ghost sm" onclick="detailMode='edit';showDetail()">編輯</button>
-      </span>
+      </div>
     </div>
-    <div id="dShelfPanel" class="dshelf-panel" style="display:none">
-      ${shHtml} <button class="shelfchip" id="dShNew" style="--sc:var(--mut)">＋ 新書庫</button>
+    <div id="dShelfPanel" class="dpanel" style="display:none">
+      ${shHtml} <button class="shelfchip" id="dShNew">＋ 新書庫</button>
+    </div>
+    <div id="dLevelPanel" class="dpanel" style="display:none">
+      <div class="lvset" style="flex:1">
+        <button class="lvb weak${lv.k==='weak'?' on':''}" data-lv="weak">不熟</button>
+        <button class="lvb mid${lv.k==='mid'?' on':''}" data-lv="mid">普通</button>
+        <button class="lvb strong${lv.k==='strong'?' on':''}" data-lv="strong">熟</button>
+      </div>
+    </div>
+    <div id="dPlayPanel" class="dpanel" style="display:none;flex-direction:column;align-items:stretch">
+      <button class="btn ${cardAuto.on?'':'ghost'}" id="dAuto" style="width:100%">${cardAuto.on?'⏸ 停止播放':'▶ 開始自動播放'}</button>
+      <div style="font-size:12px;color:var(--mut);margin:4px 0 2px">要念的內容</div>
+      <div class="roptbox" style="justify-content:flex-start">
+        ${opt('en','英文')}${opt('pos','詞性')}${opt('zh','中文')}${opt('ex','例句')}${opt('note','補充')}
+      </div>
     </div>
     <button class="reader-arrow l" id="dPrev">‹</button>
     <button class="reader-arrow r" id="dNext">›</button>
@@ -1732,33 +1752,24 @@ function renderDetail(rec,date,key){
       <div class="dsec-label">例句</div>
       ${sents.length? sents.map(s=>`<div class="dex">${exHtml(s.ex,rec.word)} <button class="speak" data-t="${(s.ex||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" onclick="event.stopPropagation();speak(this.dataset.t)">聽</button></div>${s.exZh?'<div class="dexz extrans">'+escapeHtml(s.exZh)+'</div>':''}`).join('') : '<div class="dexz">尚無例句（按右上「編輯」新增）</div>'}
       ${rec.note?`<div class="dsec-label">補充</div><div class="dnote">${escapeHtml(rec.note)}</div>`:''}
-      <div class="reader-controls">
-        <div class="lvset">
-          <button class="lvb weak${lv.k==='weak'?' on':''}" onclick="setLevel('${date}','${key}','weak');showDetail();renderList()">不熟</button>
-          <button class="lvb mid${lv.k==='mid'?' on':''}" onclick="setLevel('${date}','${key}','mid');showDetail();renderList()">普通</button>
-          <button class="lvb strong${lv.k==='strong'?' on':''}" onclick="setLevel('${date}','${key}','strong');showDetail();renderList()">熟</button>
-        </div>
-        <div class="row" style="gap:8px;justify-content:center">
-          <button class="btn ${cardAuto.on?'':'ghost'} sm" id="dAuto" style="flex:1">${cardAuto.on?'⏸ 停止播放':'▶ 自動播放'}</button>
-          <button class="btn ghost sm" id="dReadOpt" style="flex:1">⚙ 念什麼</button>
-        </div>
-        <div id="dReadOptBox" class="roptbox" style="display:none">
-          ${opt('en','英文')}${opt('pos','詞性')}${opt('zh','中文')}${opt('ex','例句')}${opt('note','補充')}
-        </div>
-      </div>
     </div>`;
-  const trig=document.getElementById('dShelfTrig'), panel=document.getElementById('dShelfPanel');
-  trig.onclick=e=>{ e.stopPropagation(); panel.style.display=panel.style.display==='none'?'flex':'none'; };
-  // 書庫面板開著時，點卡片其他任何地方都關掉
-  inner.onclick=e=>{ if(panel.style.display!=='none' && !e.target.closest('#dShelfPanel') && !e.target.closest('#dShelfTrig')) panel.style.display='none'; };
+  const panels=['dShelfPanel','dLevelPanel','dPlayPanel'];
+  const togglePanel=id=>panels.forEach(p=>{ const el=document.getElementById(p);
+    if(el) el.style.display=(p===id && el.style.display==='none')?'flex':'none'; });
+  document.getElementById('dShelfTrig').onclick=e=>{ e.stopPropagation(); togglePanel('dShelfPanel'); };
+  document.getElementById('dLevelTrig').onclick=e=>{ e.stopPropagation(); togglePanel('dLevelPanel'); };
+  document.getElementById('dPlayTrig').onclick=e=>{ e.stopPropagation(); togglePanel('dPlayPanel'); };
+  // 點面板與觸發鍵以外的任何地方→收起全部下拉
+  inner.onclick=e=>{ if(e.target.closest('.dpanel')||e.target.closest('.dtrig'))return;
+    panels.forEach(p=>{const el=document.getElementById(p); if(el)el.style.display='none';}); };
   document.getElementById('dAuto').onclick=toggleCardAuto;
-  document.getElementById('dReadOpt').onclick=()=>{ const b=document.getElementById('dReadOptBox');
-    b.style.display=b.style.display==='none'?'flex':'none'; };
   inner.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{ const k=b.dataset.rp;
     readParts[k]=!readParts[k]; saveReadParts(); b.classList.toggle('on',readParts[k]); });
+  inner.querySelectorAll('#dLevelPanel [data-lv]').forEach(b=>b.onclick=()=>{
+    setLevel(date,key,b.dataset.lv); renderDetail(rec,date,key); renderList(); });
   document.getElementById('dPrev').onclick=()=>{ stopCardAuto(); detailNav(-1); };
   document.getElementById('dNext').onclick=()=>{ stopCardAuto(); detailNav(1); };
-  panel.querySelectorAll('.dsh').forEach(b=>b.onclick=()=>{ const s=b.dataset.s;
+  inner.querySelectorAll('#dShelfPanel .dsh').forEach(b=>b.onclick=()=>{ const s=b.dataset.s;
     rec.shelves=rec.shelves||[]; const i=rec.shelves.indexOf(s);
     if(i>=0)rec.shelves.splice(i,1); else rec.shelves.push(s);
     save(); renderDetail(rec,date,key); document.getElementById('dShelfPanel').style.display='flex'; populateShelfFilter(); renderList(); });
