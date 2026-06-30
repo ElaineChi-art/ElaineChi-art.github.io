@@ -197,11 +197,15 @@
   .lvedit .lvb{padding:6px 0;font-size:13px}
 
   /* 輸入確認清單 */
-  .revrow{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center}
-  .revrow input{font-size:13px;padding:8px 10px}
-  .revrow .rv-w{flex:1;min-width:110px}
-  .revrow .rv-z{flex:1;min-width:90px}
-  .revrow .rv-e{flex:2;min-width:150px}
+  .revrow{display:block;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+  .revrow input,.revrow textarea{font-size:14px;padding:8px 10px;width:100%;font-family:inherit}
+  .revrow textarea{resize:vertical;line-height:1.55;min-height:40px;white-space:pre-wrap}
+  .revrow .rvtop{display:flex;gap:6px;align-items:center;margin-bottom:5px}
+  .revrow .rvnum{font-size:11px;color:var(--mut);font-weight:700;flex:none}
+  .revrow .rv-w{flex:1;min-width:100px;font-weight:700}
+  .revrow .rv-p{width:78px;flex:none;text-align:center}
+  .revrow .rv-x{flex:none;width:32px;padding:6px 0}
+  .revrow .rvlab{font-size:11px;color:var(--mut);margin:7px 0 3px;font-weight:600}
   #inReview{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
   #toTop{position:fixed;right:16px;bottom:20px;z-index:60;width:46px;height:46px;border-radius:50%;
     border:1px solid var(--line);background:var(--acc2);color:#fff;font-size:20px;cursor:pointer;
@@ -517,7 +521,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v57 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v58 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -529,7 +533,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='57';
+const APP_VERSION='58';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -999,6 +1003,9 @@ function parseGeneral(raw){
       else if(/反義|antonym/i.test(type)) cur.note=(cur.note?cur.note+'\n':'')+'反義：'+content;
       else cur.note=(cur.note?cur.note+'\n':'')+'近義：'+content;
       continue; }
+    // 例句尚未結束(句尾無標點)的續行→不論長短都接回例句，不要當成新單字（修手機換行）
+    const hasMark=/[㐀-鿿]/.test(line)||/[A-Za-z][^()]*\(\s*[a-zA-Z.]{1,6}\s*\)/.test(line);
+    if(cur && blob && !hasMark && !/[.!?。！？”"’']\s*$/.test(blob)){ blob+=' '+line; continue; }
     if(isHeadwordLine(line)){
       flush();
       if(!/[㐀-鿿]/.test(line)&&!/\(/.test(line)&&/[,，]/.test(line)){   // 純英文逗號清單
@@ -1106,26 +1113,40 @@ function drawReview(){
         const bad=e.suspect && !long && !e.confirmed; if(bad)mis=true;
         const style=(long||bad)?' style="border-color:var(--red)"':'';
         const sug = bad ? `<div class="sugbar" data-i="${i}">${(e.suggest&&e.suggest.length)?'你是不是要打：'+e.suggest.map(s=>`<button class="sugchip" data-w="${(s||'').replace(/"/g,'')}">${s}</button>`).join(''):'<span style="color:var(--red)">可能拼錯</span>'}<button class="sugchip ok" data-ok="1">仍加入</button></div>` : '';
-        return `<div class="revrow" data-i="${i}">
-          <input class="rv-w" placeholder="單字"${style}>
+        return `<div class="revrow" data-i="${i}"${style}>
+          <div class="rvtop">
+            <span class="rvnum">${i+1}</span>
+            <input class="rv-w" placeholder="單字">
+            <input class="rv-p" placeholder="詞性">
+            ${bad?'<span style="color:var(--red);font-size:12px">查無</span>':''}
+            <button class="srm rv-x" title="移除這列">✕</button>
+          </div>
           <input class="rv-z" placeholder="中文意思">
-          <input class="rv-e" placeholder="例句（可留空）">
-          ${bad?'<span style="color:var(--red);font-size:12px">查無</span>':''}
-          <button class="srm rv-x" title="移除這列">✕</button></div>${sug}`;
+          <div class="rvlab">例句</div>
+          <textarea class="rv-e" rows="2" placeholder="例句（可留空，加入後自動帶字典例句）"></textarea>
+          <div class="rvlab">補充／解析</div>
+          <textarea class="rv-n" rows="2" placeholder="補充：詞性說明、解析、近義字…（可留空）"></textarea>
+        </div>${sug}`;
       }).join('')
     + `<button class="btn ghost sm" id="revAdd" style="margin-top:4px">＋ 再加一列</button>`
     + (mis?'<div style="font-size:12px;color:var(--red);margin-top:6px">紅框的字字典查不到、可能拼錯——可點上面建議直接更正，或按「仍加入」保留。<span class="devhint">（片語、人名可忽略）</span></div>':'')
     + (warn?'<div class="devhint" style="font-size:12px;color:var(--yellow);margin-top:6px">有一列看起來把整句當成單字了，請確認。</div>':'')
     + '<div class="devhint" style="font-size:12px;opacity:.7;margin-top:6px">例句留空沒關係，加入後會自動帶字典例句。</div>';
+  const grow=t=>{ t.style.height='auto'; t.style.height=Math.min(t.scrollHeight,260)+'px'; };
   host.querySelectorAll('.revrow').forEach(row=>{
     const i=+row.dataset.i, e=reviewEntries[i];
-    row.querySelector('.rv-w').value=e.word||'';
-    row.querySelector('.rv-z').value=e.wordZh||'';
-    row.querySelector('.rv-e').value=(e.sentences&&e.sentences[0]&&e.sentences[0].ex)||'';
-    row.querySelector('.rv-w').oninput=ev=>{ e.word=ev.target.value; e.suspect=false; e.suggest=null; };
-    row.querySelector('.rv-z').oninput=ev=>e.wordZh=ev.target.value;
-    row.querySelector('.rv-e').oninput=ev=>{ if(!e.sentences)e.sentences=[];
-      if(!e.sentences[0])e.sentences[0]={ex:'',exZh:''}; e.sentences[0].ex=ev.target.value; };
+    const we=row.querySelector('.rv-w'), pe=row.querySelector('.rv-p'),
+          ze=row.querySelector('.rv-z'), ee=row.querySelector('.rv-e'), ne=row.querySelector('.rv-n');
+    we.value=e.word||''; pe.value=e.pos||''; ze.value=e.wordZh||'';
+    ee.value=(e.sentences&&e.sentences.map(s=>s.ex).filter(Boolean).join('\n'))||'';
+    ne.value=e.note||'';
+    requestAnimationFrame(()=>{ grow(ee); grow(ne); });
+    we.oninput=ev=>{ e.word=ev.target.value; e.suspect=false; e.suggest=null; };
+    pe.oninput=ev=>e.pos=ev.target.value;
+    ze.oninput=ev=>e.wordZh=ev.target.value;
+    ee.oninput=ev=>{ const arr=ev.target.value.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+      e.sentences=arr.length?arr.map(ex=>({ex,exZh:'',src:'user'})):[]; grow(ev.target); };
+    ne.oninput=ev=>{ e.note=ev.target.value; grow(ev.target); };
     row.querySelector('.rv-x').onclick=()=>{ reviewEntries.splice(i,1); drawReview(); };
   });
   host.querySelectorAll('.sugbar').forEach(bar=>{
