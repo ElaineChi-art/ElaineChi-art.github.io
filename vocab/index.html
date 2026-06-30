@@ -174,8 +174,9 @@
   html:has(.ov.show){overflow:hidden}
   .ov{overscroll-behavior:contain}
   /* 收藏（右上角觸發書庫面板） */
-  .dshelf-trigger{display:inline-flex;align-items:center;gap:5px;cursor:pointer;padding:6px 13px;border:1px solid var(--line);border-radius:20px;background:transparent;color:var(--mut);font-size:14px}
-  .dshelf-trigger.on{color:var(--acc);border-color:color-mix(in srgb,var(--acc) 45%,var(--line))}
+  .dshelf-trigger{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;cursor:pointer;padding:5px 10px;border:1px solid var(--line);border-radius:20px;background:transparent;max-width:70%}
+  .dshelf-trigger.on{border-color:color-mix(in srgb,var(--acc) 35%,var(--line))}
+  .dtagname{font-size:12.5px;font-weight:500;color:var(--tx);background:color-mix(in srgb,var(--acc) 13%,transparent);border-radius:10px;padding:2px 9px}
   .dshelf-panel{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);
     background:color-mix(in srgb,var(--tx) 3%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
   /* 左右換頁箭頭：加高加大觸控區（原本的形式） */
@@ -217,6 +218,7 @@
   .revrow .rv-p{width:78px;flex:none;text-align:center}
   .revrow .rv-x{flex:none;width:32px;padding:6px 0}
   .revrow .rvlab{font-size:11px;color:var(--mut);margin:7px 0 3px;font-weight:600}
+  .autotag{font-size:10px;font-weight:600;color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 45%,var(--line));border-radius:8px;padding:1px 7px;margin-left:7px}
   #inReview{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
   #toTop{position:fixed;right:16px;bottom:20px;z-index:60;width:46px;height:46px;border-radius:50%;
     border:1px solid var(--line);background:var(--acc2);color:#fff;font-size:20px;cursor:pointer;
@@ -490,28 +492,28 @@
   <div class="card">
     <div class="sec-h"><span class="sec-n">3</span><span id="listTitle">單字清單</span></div>
     <div class="msg" id="listStat" style="margin-top:0"></div>
-    <!-- 精簡：只留 書庫／熟悉度 兩個選單 -->
-    <div class="row" id="listBar" style="margin:8px 0 10px;display:none;gap:8px">
-      <select id="listShelf" style="flex:1;min-width:0"><option value="all">全部書庫</option></select>
-      <select id="listFilter" style="flex:1;min-width:0">
-        <option value="all">全部熟悉度</option>
-        <option value="new">只看 新</option>
-        <option value="weak">只看 不熟</option>
-        <option value="mid">只看 普通</option>
-        <option value="strong">只看 熟</option>
+    <!-- 精簡：搜尋＋書庫＋熟悉度 一排；全選與批次操作只在需要時出現 -->
+    <div class="row" id="listBar" style="margin:8px 0 8px;display:none;gap:8px">
+      <input type="text" id="listSearch" placeholder="搜尋單字／中文" style="flex:1;min-width:120px">
+      <select id="listShelf" style="flex:none;max-width:38%"><option value="all">全部書庫</option></select>
+      <select id="listFilter" style="flex:none;max-width:34%">
+        <option value="all">熟悉度</option>
+        <option value="new">新</option>
+        <option value="weak">不熟</option>
+        <option value="mid">普通</option>
+        <option value="strong">熟</option>
       </select>
     </div>
-    <div class="row" id="selAllRow" style="display:none;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:nowrap">
-      <span class="pill" id="selCount" style="flex:none">已勾 0</span>
-      <input type="text" id="listSearch" placeholder="搜尋單字／中文" style="flex:1;min-width:0">
-      <button class="btn ghost sm" id="btnSelAll" style="flex:none">全選</button>
+    <div class="row" id="selAllRow" style="display:none;gap:10px;align-items:center;margin-bottom:8px">
+      <button class="btn ghost sm" id="btnSelAll">全選</button>
+      <span id="listCount" style="font-size:12px;color:var(--mut)"></span>
     </div>
-    <div id="listCount" style="font-size:12px;color:var(--mut);margin-bottom:6px"></div>
     <div class="actbar" id="listActions" style="display:none">
+      <span class="pill" id="selCount">已勾 0</span>
       <button class="btn ghost sm" id="btnAddToShelf">＋ 加入書庫</button>
-      <button class="btn ghost sm" id="btnRemFromShelf">－ 移出書庫</button>
+      <button class="btn ghost sm" id="btnRemFromShelf">－ 移出</button>
       <button class="btn sm" id="btnDelSel" style="background:var(--red)">刪除</button>
-      <button class="btn ghost sm" id="btnSelNone">取消勾選</button>
+      <button class="btn ghost sm" id="btnSelNone">取消</button>
     </div>
     <div class="gridscroll" id="gridScroll"><div class="wgrid" id="grid"></div></div>
     <div class="empty" id="listEmpty" style="display:none">在上方月曆點選有單字的日期，這裡就會列出來。</div>
@@ -548,7 +550,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v62 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v63 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -560,7 +562,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='62';
+const APP_VERSION='63';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -997,6 +999,22 @@ function entryToLine(e){
 // 把輸入框文字解析成 entry 陣列（預覽與送出共用）
 // 標籤型清單：例句:/近似字:/反義: 或 word (n.) 中文 等格式
 const LABEL_RE=/^\s*(例句|例|造句|近似字|相似字|相似|同義字|同義|近義|反義字|反義詞|反義|synonym|antonym|e\.?g\.?)\s*[:：]\s*(.*)$/i;
+const SYN_RE=/(近似字|相似字|相似|同義字|同義|近義|反義字|反義詞|反義)/;       // 近反義標籤
+// 自動除錯：把 OCR 跑掉的標籤(像 151|#): / 15|J: / iF)還原成「例句：」「近似字：」
+function preCleanOCR(raw){
+  return (raw||'').split('\n').map(line=>{
+    line=line.replace(/\s+$/,'');
+    // 行首被 OCR 弄亂、含數字/豎線/井號又接冒號 → 多半是「例句：」
+    line=line.replace(/^[\dIlO|#()．.\s]*[A-Za-z]{0,3}[\dIlO|#()．.\s]*[:：]\s*/, m=>/[\d|#]/.test(m)?'例句：':m);
+    // 「近似」OCR 常變 iF / 1F / lF（含小寫 i）
+    line=line.replace(/^[1IilL]{0,2}F\s*[:：]?\s*(?=[A-Za-z])/,'近似字：');
+    return line;
+  }).join('\n');
+}
+// 同/近義字清單：用 / ; , 隔開的短詞，無句號（無標籤時也能判斷）
+function isSynList(s){ s=(s||'').trim(); if(!s||/[.!?]$/.test(s))return false;
+  const pcs=s.split(/[\/;,，、]/).map(x=>x.trim()).filter(Boolean);
+  return pcs.length>=2 && pcs.every(p=>/^[A-Za-z][A-Za-z' -]*$/.test(p) && p.split(/\s+/).length<=2) && s.length<60; }
 function posZh(p){ p=(p||'').toLowerCase().replace(/[.\s]/g,'');
   return ({n:'名詞',v:'動詞',vt:'動詞',vi:'動詞',adj:'形容詞',adv:'副詞',phr:'片語',prep:'介系詞',conj:'連接詞',pron:'代名詞',art:'冠詞',aux:'助動詞',num:'數詞',int:'感嘆詞'})[p]||''; }
 function isHeadwordLine(line){
@@ -1010,6 +1028,10 @@ function isHeadwordLine(line){
 // 解析一筆「單字行」：word (詞性) 中文 [例句...]
 function parseHeadword(line){
   let s=line.replace(/^\s*\d+\s*[.)、]\s*/,'');
+  // 先把黏在後面的「近似字：…」「例句：…」標籤抽出來(常見 OCR：document(n.)文件近似字：file)
+  let synNote='', exTail='';
+  s=s.replace(/(?:近似字|相似字?|相似|同義字?|近義|反義字?|反義詞|反義)\s*[:：]?\s*([^\n]*)$/,(m,r)=>{ synNote=(r||'').trim(); return ' '; });
+  s=s.replace(/(?:例句|造句)\s*[:：]\s*([^\n]*)$/,(m,r)=>{ exTail=(r||'').trim(); return ' '; });
   const pm=s.match(/\(\s*([a-zA-Z.]+)\s*\)/);
   const pos=pm?posZh(pm[1]):'';
   s=s.replace(/\([^)]*\)/g,' ');
@@ -1020,6 +1042,8 @@ function parseHeadword(line){
   segs.forEach((x,i)=>{ if(i===wi)return;
     if(x.type==='zh'){ if(!e.wordZh)e.wordZh=x.text; else e.note+=(e.note?'\n':'')+x.text; }
     else enBlob+=(enBlob?' ':'')+x.text; });
+  if(exTail) enBlob+=(enBlob?' ':'')+exTail;
+  if(synNote) e.note=(e.note?e.note+'\n':'')+'近義：'+synNote;
   splitSentences(enBlob).forEach(t=>e.sentences.push({ex:t,exZh:'',src:'user'}));
   return e;
 }
@@ -1049,6 +1073,7 @@ function parseGeneral(raw){
       entries.push(cur);
     } else if(cur){
       if(/[㐀-鿿]/.test(line)&&!/[A-Za-z]/.test(line)) cur.note=(cur.note?cur.note+'\n':'')+line;  // 純中文續行＝補充意思
+      else if(isSynList(line)) cur.note=(cur.note?cur.note+'\n':'')+'近義：'+line;                  // 同/近義字清單(無標籤也認)
       else blob+=(blob?' ':'')+line;                                                              // 英文續行＝例句
     }
   }
@@ -1127,6 +1152,7 @@ function parseMCQ(raw){
 function parseInputEntries(raw){
   // 正規化：全形括號/豎線 → 半形，讓「（n.）」這種也認得出詞性與單字行
   raw=(raw||'').replace(/（/g,'(').replace(/）/g,')').replace(/｜/g,'|');
+  raw=preCleanOCR(raw);                                   // 自動把 OCR 跑掉的標籤還原
   if(looksLikeMCQ(raw)){ const e=parseMCQ(raw); if(e&&e.length) return e; }
   const flat=raw.replace(/\r/g,'').replace(/\n/g,' ');
   const seq=splitBySequentialNumbers(flat);      // 數字編號(可換行/貼成一行/OCR容錯)
@@ -1196,8 +1222,9 @@ function drawReview(){
             ${bad?'<span style="color:var(--red);font-size:12px">查無</span>':''}
             <button class="srm rv-x" title="移除這列">✕</button>
           </div>
-          <input class="rv-z" placeholder="中文意思">
-          <div class="rvlab">例句</div>
+          <div class="rvlab">中文意思${e._zhAuto?'<span class="autotag">自動翻譯・請確認</span>':''}</div>
+          <input class="rv-z" placeholder="中文意思（留空會自動翻譯）">
+          <div class="rvlab">例句${e._exAuto?'<span class="autotag">自動補上・請確認</span>':''}</div>
           <textarea class="rv-e" rows="2" placeholder="例句（可留空，加入後自動帶字典例句）"></textarea>
           <div class="rvlab">補充／解析</div>
           <textarea class="rv-n" rows="2" placeholder="補充：詞性說明、解析、近義字…（可留空）"></textarea>
@@ -1216,11 +1243,11 @@ function drawReview(){
     ee.value=(e.sentences&&e.sentences.map(s=>s.ex).filter(Boolean).join('\n'))||'';
     ne.value=e.note||'';
     requestAnimationFrame(()=>{ grow(ee); grow(ne); });
-    we.oninput=ev=>{ e.word=ev.target.value; e.suspect=false; e.suggest=null; };
+    we.oninput=ev=>{ e.word=ev.target.value; e.suspect=false; e.suggest=null; e._zhTried=false; e._exTried=false; };
     pe.oninput=ev=>e.pos=ev.target.value;
-    ze.oninput=ev=>e.wordZh=ev.target.value;
+    ze.oninput=ev=>{ e.wordZh=ev.target.value; e._zhAuto=false; };
     ee.oninput=ev=>{ const arr=ev.target.value.split(/\n+/).map(s=>s.trim()).filter(Boolean);
-      e.sentences=arr.length?arr.map(ex=>({ex,exZh:'',src:'user'})):[]; grow(ev.target); };
+      e.sentences=arr.length?arr.map(ex=>({ex,exZh:'',src:'user'})):[]; e._exAuto=false; grow(ev.target); };
     ne.oninput=ev=>{ e.note=ev.target.value; grow(ev.target); };
     row.querySelector('.rv-x').onclick=()=>{ reviewEntries.splice(i,1); drawReview(); };
   });
@@ -1235,10 +1262,35 @@ function drawReview(){
   });
   host.querySelector('#revAdd').onclick=()=>{ reviewEntries.push({word:'',wordZh:'',sentences:[],note:''}); drawReview(); };
 }
+let autofillTimer=null;
 function refreshReview(){ // 文字框變動 → 重新解析成初稿
   reviewEntries=parseInputEntries(document.getElementById('inWords').value);
   drawReview();
   clearTimeout(spellTimer); spellTimer=setTimeout(runSpellCheck,700); // 停止打字後再檢查拼字
+  clearTimeout(autofillTimer); autofillTimer=setTimeout(autofillReview,950); // 停止打字後自動補中文/例句
+}
+// 抓字典例句（給沒有句子的字自動補一句）
+async function fetchDictExample(w){
+  try{ const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w));
+    if(!r.ok)return''; const j=await r.json();
+    for(const en of j) for(const m of (en.meanings||[])) for(const d of (m.definitions||[])) if(d.example) return d.example;
+  }catch(e){} return ''; }
+// 自動補上：沒中文→翻譯、沒例句→字典例句，並標記是系統補的(給使用者確認)
+async function autofillReview(){
+  const snapshot=reviewEntries;
+  for(const e of snapshot){
+    if(reviewEntries!==snapshot) return;                 // 使用者又改了→停手
+    const w=(e.word||'').trim();
+    if(w && !e.wordZh && !e._zhTried){ e._zhTried=true;
+      const z=await translate(w); if(z && !e.wordZh){ e.wordZh=z; e._zhAuto=true; drawReview(); } }
+  }
+  for(const e of snapshot){
+    if(reviewEntries!==snapshot) return;
+    const w=(e.word||'').trim();
+    const hasEx=(e.sentences||[]).some(s=>s.ex&&s.ex.trim());
+    if(w && /^[A-Za-z][A-Za-z' -]*$/.test(w) && !hasEx && !e._exTried){ e._exTried=true;
+      const ex=await fetchDictExample(w); if(ex){ e.sentences=[{ex,exZh:'',src:'dict'}]; e._exAuto=true; drawReview(); } }
+  }
 }
 /* ---- 拼字偵測＋建議 ---- */
 const spellCache={}; let spellTimer=null, spellRun=0;
@@ -1628,13 +1680,15 @@ function renderDetail(rec,date,key){
   const lv=levelOf(rec);
   const mine=rec.shelves||[];
   const collected=mine.length>0;
+  const tagNames = collected ? mine.map(s=>`<span class="dtagname">${escapeHtml(s)}</span>`).join('')
+    : '<span style="color:var(--mut);font-size:13px">＋ 加入書庫</span>';
   const shHtml=allShelves().map(s=>{ const on=mine.includes(s);
       return `<button class="shelfchip dsh${on?' on':''}" data-s="${escapeHtml(s)}">${escapeHtml(s)}</button>`; }).join('')
     || '<span style="font-size:12px;color:var(--mut)">尚無書庫，可新增</span>';
   const opt=(k,label)=>`<button class="roptchip${readParts[k]?' on':''}" data-rp="${k}">${label}</button>`;
   inner.innerHTML=`
     <div class="reader-nav">
-      <button class="dshelf-trigger${collected?' on':''}" id="dShelfTrig">${collected?'★':'☆'} <span style="font-size:13px">收藏${mine.length?'（'+mine.length+'）':''}</span></button>
+      <button class="dshelf-trigger${collected?' on':''}" id="dShelfTrig">${tagNames}<span style="color:var(--mut);font-size:10px;margin-left:1px">▾</span></button>
       <button class="btn ghost sm" onclick="detailMode='edit';showDetail()">編輯</button>
     </div>
     <div id="dShelfPanel" class="dshelf-panel" style="display:none">
