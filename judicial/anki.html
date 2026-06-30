@@ -30,6 +30,7 @@
       if(navigator.standalone===true || (window.matchMedia&&matchMedia('(display-mode: standalone)').matches))
         document.documentElement.classList.add('standalone');
       var th=localStorage.getItem('ankiTheme')||'sapphire'; if(th!=='wine') document.documentElement.setAttribute('data-theme',th);
+      var fs=localStorage.getItem('ankiFont'); if(fs&&fs!=='m') document.documentElement.setAttribute('data-fs',fs);
     }catch(e){}
   })();
 </script>
@@ -206,6 +207,21 @@
   .flash .ft{font-family:var(--serif)} .opt:hover{border-color:var(--acc)}
   .grouphd{color:var(--acc);font-family:var(--serif);font-size:15px;font-weight:600}
   .modal h2{font-family:var(--serif);font-weight:600}
+  /* 字級倍率（只放大文字、不縮版面）；小/中/大/特大 */
+  :root{--fs:1}
+  html[data-fs="s"]{--fs:.92} html[data-fs="l"]{--fs:1.22} html[data-fs="xl"]{--fs:1.5}
+  .wcard .en{font-size:calc(19px*var(--fs))}
+  .wcard .ph{font-size:calc(12px*var(--fs))} .wcard .zh{font-size:calc(12px*var(--fs))}
+  .cardex{font-size:calc(12.5px*var(--fs))}
+  .flash .ft{font-size:calc(22px*var(--fs))} .flash .bk{font-size:calc(14.5px*var(--fs))}
+  .qstem,.opt{font-size:calc(15px*var(--fs))}
+  .fsbtn{padding:8px 14px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--tx);cursor:pointer;font-family:inherit}
+  .fsbtn.on{border-color:var(--acc);color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+  /* 放大字卡視窗 */
+  .bigfront{font-family:var(--serif);font-size:calc(27px*var(--fs));font-weight:600;color:var(--acc);line-height:1.4;text-align:center;margin-top:6px}
+  .bigmeta{color:var(--mut);font-size:calc(12.5px*var(--fs));text-align:center;margin:8px 0 16px}
+  .bigbody{font-size:calc(15.5px*var(--fs));line-height:1.95}
+  .bigbody .seg .k{font-size:calc(12px*var(--fs))}
   #toTop{position:fixed;right:16px;bottom:20px;z-index:60;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--acc2);color:#fff;font-size:20px;cursor:pointer;display:none;box-shadow:0 4px 14px rgba(0,0,0,.4)}
   #toTop.show{display:block}
   @media (max-width:560px){ .wrap{padding:16px 12px 90px} .card{padding:14px 12px} .calgrid{gap:4px} .caldow{font-size:11px} }
@@ -306,7 +322,15 @@
 </div>
 
 <!-- modals -->
-<div class="ov" id="ovTheme"><div class="modal"><button class="x" data-close>×</button><h2>外觀</h2><div class="msg">選一個主題（跟單字頁同一套）。</div><div class="themegrid" id="themeGrid"></div></div></div>
+<div class="ov" id="ovTheme"><div class="modal"><button class="x" data-close>×</button><h2>外觀</h2>
+  <div class="msg" style="margin-top:0">字級（放大文字、不會亂版面）</div>
+  <div class="row" style="margin-top:6px">
+    <button class="fsbtn" data-fs="s">小</button><button class="fsbtn" data-fs="m">中</button>
+    <button class="fsbtn" data-fs="l">大</button><button class="fsbtn" data-fs="xl">特大</button>
+  </div>
+  <div class="msg" style="margin-top:14px">主題（跟單字頁同一套）</div>
+  <div class="themegrid" id="themeGrid"></div></div></div>
+<div class="ov" id="ovCard"><div class="modal"><button class="x" data-close>×</button><div id="ovCardBody"></div></div></div>
 <div class="ov" id="ovVoice"><div class="modal"><button class="x" data-close>×</button><h2>語音</h2>
   <label class="fld">語速 <span id="rateVal">1.0</span>x</label>
   <input type="range" id="rate" min="0.6" max="1.6" step="0.1" value="1" style="width:100%">
@@ -345,7 +369,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v18';
+const APP_VERSION='v19';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -589,14 +613,40 @@ $('#grid').addEventListener('change',e=>{ const chk=e.target.closest('.chk'); if
 $('#grid').addEventListener('click',e=>{
   const ql=e.target.closest('.qrefline'); if(ql&&ql.dataset.q){ openQ(ql.dataset.q); return; }
   const ca=e.target.closest('.cact'); if(ca){ const c=DB.cards[ca.dataset.id]; if(!c)return;
-    if(ca.dataset.act==='say') speak(c.front+'。故事。'+c.story+'。口訣。'+(c.mnemonic||''));
+    if(ca.dataset.act==='say') speak(sayText(c));
     else if(ca.dataset.act==='orig'&&c.qref) openQ(c.qref);
     else if(ca.dataset.act==='pick') openPick(c.id); return; }
   const lv=e.target.closest('.lvb'); if(lv){ const c=DB.cards[lv.dataset.id]; if(!c)return;
     c.level=c.level===lv.dataset.lv?'':lv.dataset.lv; c.stats.last=Date.now(); save(); renderList(); return; }
   if(e.target.closest('.chk'))return;
-  const w=e.target.closest('.wcard'); if(w){ const id=w.dataset.id; expanded.has(id)?expanded.delete(id):expanded.add(id); w.classList.toggle('open'); }
+  const w=e.target.closest('.wcard'); if(w) openCard(w.dataset.id);   // 點卡片→放大視窗
 });
+const sayText=c=>c.front+'。故事。'+c.story+'。口訣。'+(c.mnemonic||'')+(c.detail?'。關鍵。'+c.detail:'');
+/* 放大字卡視窗（可調字級、朗讀、標熟度、看原題） */
+function openCard(id){
+  const c=DB.cards[id]; if(!c)return; const q=c.qref?qByKey(c.qref):null;
+  $('#ovCardBody').innerHTML=`
+    <div class="bigfront">${esc(c.front)}</div>
+    <div class="bigmeta">📚 ${esc(sysOfCard(c))} ‧ 🕸️ ${esc(c.deck)} ‧ 📅 ${dispDate(c.date)}</div>
+    <div class="bigbody">${flipBackHtml(c)}</div>
+    <div class="lvset" style="max-width:340px;margin:16px auto 0">
+      <button class="lvb weak ${c.level==='weak'?'on':''}" data-lv="weak">不熟</button>
+      <button class="lvb mid ${c.level==='mid'?'on':''}" data-lv="mid">普通</button>
+      <button class="lvb strong ${c.level==='strong'?'on':''}" data-lv="strong">熟</button></div>
+    <div class="row" style="justify-content:center;margin-top:14px">
+      <button class="btn" id="bcSpeak">🔊 朗讀</button>
+      <button class="btn ghost sm" id="bcFont">字級 A±</button>
+      ${q?`<button class="btn ghost sm" id="bcOrig">🔗 原題複習</button>`:`<button class="btn ghost sm" id="bcPick">🔗 指定原題</button>`}
+    </div>`;
+  $('#bcSpeak').onclick=()=>speak(sayText(c));
+  $('#bcFont').onclick=()=>{ const o=['m','l','xl','s'], cur=localStorage.getItem('ankiFont')||'m'; applyFont(o[(o.indexOf(cur)+1)%o.length]); };
+  const oq=$('#bcOrig'); if(oq)oq.onclick=()=>openQ(c.qref);
+  const pk=$('#bcPick'); if(pk)pk.onclick=()=>{ $('#ovCard').classList.remove('show'); openPick(c.id); };
+  $('#ovCardBody').querySelectorAll('.lvb').forEach(b=>b.onclick=()=>{ c.level=c.level===b.dataset.lv?'':b.dataset.lv; c.stats.last=Date.now(); save();
+    $('#ovCardBody').querySelectorAll('.lvb').forEach(x=>x.classList.toggle('on',x.dataset.lv===c.level)); renderList(); });
+  const ql=$('#ovCardBody').querySelector('.qrefline'); if(ql&&c.qref)ql.onclick=()=>openQ(c.qref);
+  openOv('#ovCard');
+}
 
 /* 原題複習 modal（點卡片清單的「出自原題」開啟，含朗讀解析） */
 const optLetter=i=>'ABCDEFG'[i];
@@ -839,7 +889,10 @@ function renderThemeGrid(){ const cur=curTheme();
 function openOv(id){ $(id).classList.add('show'); }
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{ stopSpeak(); b.closest('.ov').classList.remove('show'); });
 document.querySelectorAll('.ov').forEach(o=>o.onclick=e=>{ if(e.target===o){ stopSpeak(); o.classList.remove('show'); } });
-$('#btnTheme').onclick=()=>{ renderThemeGrid(); openOv('#ovTheme'); };
+function applyFont(f){ if(f==='m')document.documentElement.removeAttribute('data-fs'); else document.documentElement.setAttribute('data-fs',f);
+  try{localStorage.setItem('ankiFont',f);}catch(e){} document.querySelectorAll('.fsbtn').forEach(b=>b.classList.toggle('on',b.dataset.fs===f)); }
+$('#btnTheme').onclick=()=>{ renderThemeGrid(); const cur=localStorage.getItem('ankiFont')||'m';
+  document.querySelectorAll('.fsbtn').forEach(b=>{ b.classList.toggle('on',b.dataset.fs===cur); b.onclick=()=>applyFont(b.dataset.fs); }); openOv('#ovTheme'); };
 $('#btnVoice').onclick=()=>{ $('#rate').value=speakRate; $('#rateVal').textContent=speakRate.toFixed(1); $('#voicePick').innerHTML=buildVoicePicker(); wireVoicePicker(); openOv('#ovVoice'); };
 $('#rate').oninput=e=>{ speakRate=parseFloat(e.target.value); localStorage.setItem('ankiRate',speakRate); $('#rateVal').textContent=speakRate.toFixed(1); };
 $('#btnShare').onclick=()=>{ $('#ownerState').textContent=localStorage.getItem('ankiOwner')==='1'?'目前：我的裝置':'目前：訪客'; $('#backupMsg').textContent=''; openOv('#ovShare'); };
