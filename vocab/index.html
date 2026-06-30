@@ -91,6 +91,7 @@
   .wcard .ph{font-size:12px;color:var(--mut)}
   .wcard .zh{font-size:13px;color:var(--mut);margin-top:3px}
   .wcard .chk{position:absolute;top:10px;right:10px;width:18px;height:18px;cursor:pointer}
+  .wcard .cardpos{font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums;margin-bottom:1px}
   .lv-new{border-left-color:var(--grey)}
   .lv-weak{border-left-color:var(--red)}
   .lv-mid{border-left-color:var(--yellow)}
@@ -534,13 +535,6 @@
     <div class="sec-h"><span class="sec-n">4</span>測驗（用上面勾選的單字）</div>
     <div id="quizSetup">
       <div style="font-size:14px;margin-bottom:2px">已勾選 <b id="quizBasket">0</b> 字</div>
-      <label class="fld" style="margin-top:8px">依熟悉度快速勾選</label>
-      <div class="lvfilter">
-        <label><input type="checkbox" class="lvf" value="weak"><span style="color:var(--red)">不熟</span></label>
-        <label><input type="checkbox" class="lvf" value="mid"><span style="color:var(--yellow)">普通</span></label>
-        <label><input type="checkbox" class="lvf" value="strong"><span style="color:var(--green)">熟</span></label>
-        <label><input type="checkbox" class="lvf" value="new"><span style="color:var(--grey)">新</span></label>
-      </div>
       <div class="msg" id="quizPoolInfo" style="min-height:18px">尚未勾選任何單字。</div>
       <label class="fld" style="margin-top:6px">測驗方式</label>
       <div class="row">
@@ -560,7 +554,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v64 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v65 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -572,7 +566,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='64';
+const APP_VERSION='65';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1415,11 +1409,13 @@ function drawGrid(){
   document.getElementById('listCount').textContent =
     (q||shelf!=='all'||f!=='all') && currentEntries.length ? `顯示 ${v.length} / ${currentEntries.length}` : '';
   const grid=document.getElementById('grid'); grid.innerHTML='';
-  v.forEach(({date,key,rec})=>{
+  const total=v.length;
+  v.forEach(({date,key,rec},idx)=>{
     const lv=levelOf(rec); const id=date+'|'+key;
     const ex=topExample(rec);
     const el=document.createElement('div'); el.className='wcard lv-'+lv.k;
     el.innerHTML=`<input type="checkbox" class="chk"${selected.has(id)?' checked':''}>
+      <div class="cardpos">${idx+1} / ${total}</div>
       <div class="en">${rec.word}</div>
       <div class="ph">${rec.phonetic||''}${listMulti?` <span style="color:var(--mut)">${date}</span>`:''}</div>
       <div class="zh">${rec.pos?'<span class="cpos">'+escapeHtml(rec.pos)+'</span>':''}${escapeHtml(rec.wordZh||'（無翻譯）')}</div>
@@ -1934,7 +1930,7 @@ document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>startQuiz(b.datas
 function startQuiz(type){
   const msg=document.getElementById('quizMsg');
   let pool=gatherPool();
-  if(!pool.length){msg.textContent='請先勾選要測驗的單字（清單裡勾，或用熟悉度快速勾選）。';return}
+  if(!pool.length){msg.textContent='請先在上方單字清單勾選要測驗的字。';return}
   pool=pool.slice().sort(()=>Math.random()-0.5);
   Q={type,items:pool,i:0,score:0,answered:false,results:[]};
   msg.textContent='';
