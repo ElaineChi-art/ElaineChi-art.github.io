@@ -173,11 +173,11 @@
   .reader-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 50px 24px;overscroll-behavior:contain;touch-action:pan-y}
   html:has(.ov.show){overflow:hidden}
   .ov{overscroll-behavior:contain}
-  /* 書庫下拉（右上角觸發） */
-  .dshelf-trigger{display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:5px 11px;border:1px solid var(--line);border-radius:20px;background:transparent}
-  .dshelf-dots{display:inline-flex;align-items:center;gap:3px}
-  .dshelf-dots i{display:inline-block;width:11px;height:11px;border-radius:50%}
-  .dshelf-panel{display:flex;flex-wrap:wrap;gap:8px;padding:11px 16px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  /* 收藏（右上角觸發書庫面板） */
+  .dshelf-trigger{display:inline-flex;align-items:center;gap:5px;cursor:pointer;padding:6px 13px;border:1px solid var(--line);border-radius:20px;background:transparent;color:var(--mut);font-size:14px}
+  .dshelf-trigger.on{color:var(--acc);border-color:color-mix(in srgb,var(--acc) 45%,var(--line))}
+  .dshelf-panel{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);
+    background:color-mix(in srgb,var(--tx) 3%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
   /* 左右換頁箭頭：加高加大觸控區（原本的形式） */
   .reader-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:46px;height:58%;
     display:flex;align-items:center;justify-content:center;font-size:36px;font-family:var(--serif);
@@ -241,10 +241,18 @@
   .opt{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);
        color:var(--tx);border-radius:10px;padding:13px 16px;margin-bottom:9px;cursor:pointer;font-size:16px}
   .opt:hover{border-color:var(--acc2)}
-  .opt.correct{background:#1c4029;border-color:var(--green)}
-  .opt.wrong{background:#46211f;border-color:var(--red)}
+  .opt.correct{background:color-mix(in srgb,var(--green) 22%,var(--panel2));border-color:var(--green);color:var(--tx);font-weight:600}
+  .opt.wrong{background:color-mix(in srgb,var(--red) 18%,var(--panel2));border-color:var(--red);color:var(--tx)}
+  .opt.dim{opacity:.5}
+  .optzh{float:right;color:var(--mut);font-weight:400;font-size:14px}
   .progress{font-size:13px;color:var(--mut);margin-bottom:12px}
   .analysis{background:var(--panel2);border-radius:10px;padding:14px;margin-top:14px;text-align:left;font-size:14px;line-height:1.7}
+  .anaopt{padding:4px 0;font-size:14px}
+  .anaopt.c{color:var(--green)}
+  .anatag{font-size:11px;padding:1px 8px;border-radius:10px;margin-left:6px}
+  .anatag.ok{color:var(--green);border:1px solid var(--green)}
+  .anatag.no{color:var(--red);border:1px solid var(--red)}
+  .anahr{height:1px;background:var(--line);margin:10px 0}
   .scorebox{font-size:18px;line-height:1.9}
   .big{font-size:46px;font-weight:800}
   .autonow{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:24px 18px;text-align:center}
@@ -362,14 +370,16 @@
   .chiprow{display:flex;flex-wrap:wrap;gap:8px}
   .actbar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:10px;
     padding:8px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:11px}
-  .shelfchip{font-size:13px;font-weight:600;padding:7px 14px;border-radius:20px;border:2px solid var(--sc,var(--line));background:transparent;color:var(--sc,var(--mut));cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-  .shelfchip::before{content:'';width:11px;height:11px;border-radius:50%;background:var(--sc,var(--grey));flex:none}
-  .shelfchip.on{border-color:var(--sc,var(--acc));color:#10131a;background:var(--sc,var(--acc))}
-  .shelfchip.on::before{background:rgba(0,0,0,.4)}
+  /* 書庫標籤：極簡、毛玻璃、以邊框與狀態區分（不用鮮豔顏色） */
+  .shelfchip{font-size:13px;font-weight:500;padding:7px 14px;border-radius:11px;border:1px solid var(--line);
+    background:color-mix(in srgb,var(--tx) 4%,transparent);color:var(--mut);cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .shelfchip.on{border-color:var(--acc);color:var(--tx);background:color-mix(in srgb,var(--acc) 13%,transparent);
+    box-shadow:0 1px 8px color-mix(in srgb,var(--acc) 16%,transparent)}
+  .shelfchip.on::after{content:'✓';font-size:11px;color:var(--acc);font-weight:700}
   /* 書庫小色標（卡片/大字卡） */
-  .shtag{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:20px;
-    border:1px solid var(--sc,var(--line));color:var(--tx);background:color-mix(in srgb,var(--sc,var(--line)) 16%,transparent);white-space:nowrap}
-  .shtag::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--sc,var(--grey));flex:none}
+  .shtag{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 11px;border-radius:9px;
+    border:1px solid var(--line);color:var(--tx);background:color-mix(in srgb,var(--tx) 5%,transparent);white-space:nowrap}
   .shtag.off{color:var(--mut);background:transparent;opacity:.7}
   .shtag .shx{margin-left:1px;color:var(--mut);font-weight:700}
   .dex .tapw{cursor:pointer;border-bottom:1px dashed transparent}
@@ -491,11 +501,12 @@
         <option value="strong">只看 熟</option>
       </select>
     </div>
-    <div class="row" id="selAllRow" style="display:none;gap:10px;align-items:center;margin-bottom:8px">
-      <button class="btn ghost sm" id="btnSelAll">全選</button>
-      <span class="pill" id="selCount">已勾 0 字</span>
-      <span id="listCount" style="font-size:12px;color:var(--mut)"></span>
+    <div class="row" id="selAllRow" style="display:none;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:nowrap">
+      <span class="pill" id="selCount" style="flex:none">已勾 0</span>
+      <input type="text" id="listSearch" placeholder="搜尋單字／中文" style="flex:1;min-width:0">
+      <button class="btn ghost sm" id="btnSelAll" style="flex:none">全選</button>
     </div>
+    <div id="listCount" style="font-size:12px;color:var(--mut);margin-bottom:6px"></div>
     <div class="actbar" id="listActions" style="display:none">
       <button class="btn ghost sm" id="btnAddToShelf">＋ 加入書庫</button>
       <button class="btn ghost sm" id="btnRemFromShelf">－ 移出書庫</button>
@@ -537,7 +548,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v61 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v62 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -549,7 +560,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='61';
+const APP_VERSION='62';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1114,6 +1125,8 @@ function parseMCQ(raw){
   return out;
 }
 function parseInputEntries(raw){
+  // 正規化：全形括號/豎線 → 半形，讓「（n.）」這種也認得出詞性與單字行
+  raw=(raw||'').replace(/（/g,'(').replace(/）/g,')').replace(/｜/g,'|');
   if(looksLikeMCQ(raw)){ const e=parseMCQ(raw); if(e&&e.length) return e; }
   const flat=raw.replace(/\r/g,'').replace(/\n/g,' ');
   const seq=splitBySequentialNumbers(flat);      // 數字編號(可換行/貼成一行/OCR容錯)
@@ -1156,7 +1169,17 @@ function redistributeByContent(entries){
 let reviewEntries=[];
 function drawReview(){
   const host=document.getElementById('inReview');
-  if(!reviewEntries.length){ host.innerHTML=''; return; }
+  if(!reviewEntries.length){
+    const hasText=(document.getElementById('inWords').value||'').trim().length>0;
+    host.innerHTML = hasText ? `<div style="font-size:13px;color:var(--mut);background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:12px;margin-top:10px;line-height:1.7">
+      偵測不到單字。可能是格式被打亂（例如複製時跑掉、標籤變亂碼）。<br>
+      建議：每個單字自成一行、英文在前；或先<b>手動加一列</b>再貼上中文與例句。
+      <div style="margin-top:8px"><button class="btn ghost sm" id="revAddEmpty">＋ 手動加一列</button></div>
+    </div>` : '';
+    const ae=document.getElementById('revAddEmpty');
+    if(ae)ae.onclick=()=>{ reviewEntries.push({word:'',pos:'',wordZh:'',sentences:[],note:''}); drawReview(); };
+    return;
+  }
   let warn=false, mis=false;
   host.innerHTML=
     `<div style="font-size:13px;margin-bottom:8px">將加入 <b style="color:var(--acc)">${reviewEntries.length}</b> 個單字 —— 可直接修正（單字／中文／例句），確認後按「加入單字」：</div>`
@@ -1320,13 +1343,15 @@ function groupKeyOf(rec,g){
 }
 function drawGrid(){
   let v=currentEntries.slice();
+  const q=((document.getElementById('listSearch')||{}).value||'').trim().toLowerCase();
   const f=(document.getElementById('listFilter')||{}).value||'all';
   const shelf=(document.getElementById('listShelf')||{}).value||'all';
+  if(q) v=v.filter(e=>e.rec.word.toLowerCase().includes(q)||(e.rec.wordZh||'').toLowerCase().includes(q));
   if(shelf!=='all') v=v.filter(e=>(e.rec.shelves||[]).includes(shelf));
   if(f!=='all') v=v.filter(e=>levelOf(e.rec).k===f);
   viewEntries=v;
   document.getElementById('listCount').textContent =
-    (shelf!=='all'||f!=='all') && currentEntries.length ? `顯示 ${v.length} / ${currentEntries.length}` : '';
+    (q||shelf!=='all'||f!=='all') && currentEntries.length ? `顯示 ${v.length} / ${currentEntries.length}` : '';
   const grid=document.getElementById('grid'); grid.innerHTML='';
   v.forEach(({date,key,rec})=>{
     const lv=levelOf(rec); const id=date+'|'+key;
@@ -1364,6 +1389,7 @@ function drawGrid(){
   const el=document.getElementById(id);
   if(el) el.addEventListener('change',drawGrid);
 });
+(function(){ const se=document.getElementById('listSearch'); if(se)se.addEventListener('input',drawGrid); })();
 function populateShelfFilter(){
   const sel=document.getElementById('listShelf'); if(!sel)return;
   const cur=sel.value;
@@ -1601,14 +1627,14 @@ function renderDetail(rec,date,key){
   const sents=(rec.sentences||[]).filter(s=>s.ex).slice(0,3);  // 例句最多 3 句，版面不冗長
   const lv=levelOf(rec);
   const mine=rec.shelves||[];
-  const dots=mine.length? mine.map(s=>`<i style="background:${shelfColor(s)}"></i>`).join('') : '<span style="font-size:11px;color:var(--mut)">未分類</span>';
+  const collected=mine.length>0;
   const shHtml=allShelves().map(s=>{ const on=mine.includes(s);
-      return `<button class="shelfchip dsh${on?' on':''}" style="--sc:${shelfColor(s)}" data-s="${escapeHtml(s)}">${escapeHtml(s)}</button>`; }).join('')
-    || '<span style="font-size:12px;color:var(--mut)">尚無書庫</span>';
+      return `<button class="shelfchip dsh${on?' on':''}" data-s="${escapeHtml(s)}">${escapeHtml(s)}</button>`; }).join('')
+    || '<span style="font-size:12px;color:var(--mut)">尚無書庫，可新增</span>';
   const opt=(k,label)=>`<button class="roptchip${readParts[k]?' on':''}" data-rp="${k}">${label}</button>`;
   inner.innerHTML=`
     <div class="reader-nav">
-      <button class="dshelf-trigger" id="dShelfTrig"><span style="font-size:13px;color:var(--mut)">書庫</span><span class="dshelf-dots">${dots}</span><span style="color:var(--mut);font-size:11px">▾</span></button>
+      <button class="dshelf-trigger${collected?' on':''}" id="dShelfTrig">${collected?'★':'☆'} <span style="font-size:13px">收藏${mine.length?'（'+mine.length+'）':''}</span></button>
       <button class="btn ghost sm" onclick="detailMode='edit';showDetail()">編輯</button>
     </div>
     <div id="dShelfPanel" class="dshelf-panel" style="display:none">
@@ -2073,26 +2099,40 @@ function renderFill(body,it){
     <div id="opts"></div><div id="ana"></div>`;
   const ob=document.getElementById('opts');
   opts.forEach(o=>{
-    const b=document.createElement('button'); b.className='opt'; b.textContent=o;
+    const b=document.createElement('button'); b.className='opt'; b.dataset.w=o;
+    b.innerHTML=`${escapeHtml(o)}`;          // 作答前不顯示中文
     b.onclick=()=>{
       if(Q.answered)return;
       const ok=o.toLowerCase()===word.toLowerCase();
       advance(ok,it); markByResult(it.date,it.key,ok);
       [...ob.children].forEach(c=>{
-        if(c.textContent.toLowerCase()===word.toLowerCase())c.classList.add('correct');
-        else if(c===b)c.classList.add('wrong');
+        const cw=c.dataset.w;
+        if(cw.toLowerCase()===word.toLowerCase()) c.classList.add('correct');
+        else if(c===b) c.classList.add('wrong'); else c.classList.add('dim');
+        const z=zhOf(cw); if(z) c.innerHTML=escapeHtml(cw)+`<span class="optzh">${escapeHtml(z)}</span>`;
       });
       speak(word);
+      const optLines=opts.map(o2=>{ const isC=o2.toLowerCase()===word.toLowerCase();
+        return `<div class="anaopt${isC?' c':''}">${isC?'✓':(o2===o?'✗':'　')} <b>${escapeHtml(o2)}</b>　<span style="color:var(--mut)">${escapeHtml(zhOf(o2)||'—')}</span>${isC?'<span class="anatag ok">正解</span>':(o2===o?'<span class="anatag no">你選的</span>':'')}</div>`;
+      }).join('');
+      const usage=(it.rec.note||'').trim();
       document.getElementById('ana').innerHTML=`<div class="analysis">
-        <b>${ok?'✓ 答對了！':'✗ 答錯了'}</b>　正解：<b>${word}</b> ${it.rec.phonetic||''} <button class="speak" onclick="speak('${word.replace(/'/g,'')}')">聽</button><br>
-        中文：${it.rec.wordZh||''}<br>
-        定義：${ex.def||'—'}<br>例句：${ex.ex}<br>${ex.exZh?'<span class="extrans">例句中文：'+ex.exZh+'<br></span>':''}
-        <div style="font-size:12px;color:var(--mut);margin-top:8px">調整熟悉度（同步到上面清單）：</div>${quizLvHtml(it.date,it.key)}
+        <div style="font-size:15px;margin-bottom:8px"><b>${ok?'✓ 答對了':'✗ 答錯了'}</b></div>
+        ${optLines}
+        <div class="anahr"></div>
+        <div><b style="color:var(--acc)">${escapeHtml(word)}</b> ${it.rec.phonetic||''} <button class="speak" onclick="speak('${word.replace(/'/g,'')}')">聽</button></div>
+        <div style="margin-top:4px">${it.rec.pos?'<span class="cpos">'+escapeHtml(it.rec.pos)+'</span>':''}${escapeHtml(it.rec.wordZh||'')}</div>
+        ${ex.ex?`<div style="margin-top:6px">例句：${escapeHtml(ex.ex)}</div>${ex.exZh?'<div class="extrans">'+escapeHtml(ex.exZh)+'</div>':''}`:''}
+        ${usage?`<div class="anahr"></div><div style="white-space:pre-wrap;font-size:13px;line-height:1.7">${escapeHtml(usage)}</div>`:''}
+        <div style="font-size:12px;color:var(--mut);margin-top:10px">調整熟悉度（同步到上面清單）：</div>${quizLvHtml(it.date,it.key)}
         <button class="btn sm" style="margin-top:12px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
     };
     ob.appendChild(b);
   });
 }
+// 找某個英文字在資料庫裡的中文（給測驗解析用）
+function zhOf(w){ w=(w||'').toLowerCase(); let z='';
+  eachWord(r=>{ if(!z && (r.word||'').toLowerCase()===w) z=r.wordZh||''; }); return z; }
 
 /* --- spelling --- */
 function renderSpell(body,it){
