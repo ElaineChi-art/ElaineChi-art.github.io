@@ -83,11 +83,11 @@
   .speak:hover{background:#26303d}
 
   /* word grid */
-  .wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:12px}
+  .wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:10px}
   .wcard{background:var(--panel2);border:1px solid var(--line);border-left:5px solid var(--grey);
-         border-radius:13px;padding:15px 16px;cursor:pointer;position:relative}
+         border-radius:11px;padding:12px;cursor:pointer;position:relative}
   .wcard:hover{border-color:var(--acc2)}
-  .wcard .en{font-size:17px;font-weight:700;padding-right:62px}
+  .wcard .en{font-size:17px;font-weight:700;padding-right:52px}
   .wcard .ph{font-size:12px;color:var(--mut)}
   .wcard .zh{font-size:13px;color:var(--mut);margin-top:3px}
   .wcard .chk{position:absolute;top:10px;right:10px;width:18px;height:18px;cursor:pointer}
@@ -141,9 +141,9 @@
   html[data-fs="l"]{--fs:1.2}
   html[data-fs="xl"]{--fs:1.45}
   body{font-size:calc(15px*var(--fs))}
-  .wcard .en{font-size:calc(22px*var(--fs))}
-  .wcard .zh{font-size:calc(15px*var(--fs))}
-  .cardex{font-size:calc(13px*var(--fs))}
+  .wcard .en{font-size:calc(20px*var(--fs))}
+  .wcard .zh{font-size:calc(14px*var(--fs))}
+  .cardex{font-size:calc(12.5px*var(--fs))}
   .dword{font-size:calc(40px*var(--fs))}
   .dph{font-size:calc(18px*var(--fs))}
   .dmean{font-size:calc(21px*var(--fs))}
@@ -151,7 +151,7 @@
   .dexz{font-size:calc(16px*var(--fs))}
   .dnote{font-size:calc(15px*var(--fs))}
   /* 卡片：統一、乾淨 */
-  .wcard{display:flex;flex-direction:column;min-height:148px;gap:3px}
+  .wcard{display:flex;flex-direction:column;min-height:124px;gap:2px}
   .wcard .en{font-family:var(--sans);font-weight:700;font-style:normal}
   .wcard .ph{font-style:normal;font-family:var(--sans)}
   .wcard .zh{word-break:break-word}
@@ -554,7 +554,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v66 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v67 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -566,7 +566,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='66';
+const APP_VERSION='67';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
