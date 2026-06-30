@@ -170,15 +170,23 @@
   /* 閱讀卡：固定大小、置中、內部捲動、左右邊可點換頁 */
   #ovInner.reader{height:min(86vh,720px);max-height:none;overflow:hidden;padding:0;position:relative;display:flex;flex-direction:column}
   .reader-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
-  .reader-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 42px 30px;overscroll-behavior:contain;touch-action:pan-y}
+  .reader-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 20px 26px;overscroll-behavior:contain;touch-action:pan-y}
   html:has(.ov.show){overflow:hidden}
   .ov{overscroll-behavior:contain}
-  .reader-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:44px;height:84px;
-    display:flex;align-items:center;justify-content:center;font-size:32px;font-family:var(--serif);
-    color:var(--mut);background:transparent;border:none;cursor:pointer;border-radius:12px}
-  .reader-arrow.l{left:2px} .reader-arrow.r{right:2px}
-  .reader-arrow:hover{color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent)}
-  .reader-arrow:active{color:var(--acc);transform:translateY(-50%) scale(.9)}
+  /* 念什麼選項列 */
+  .roptbox{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .roptchip{font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer}
+  .roptchip.on{border-color:var(--acc);color:var(--tx);background:color-mix(in srgb,var(--acc) 16%,transparent)}
+  /* 卡上熟悉度/書庫操作 */
+  .dctl{margin:14px 0 4px}
+  .dshelves{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+  /* 上一張/下一張大按鈕 */
+  .reader-foot{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line);flex-shrink:0;background:var(--panel)}
+  .rbig{flex:1;min-height:50px;font-size:16px;font-weight:700;border-radius:12px;border:1px solid var(--line);
+    background:var(--panel2);color:var(--tx);cursor:pointer}
+  .rbig:active{transform:scale(.97);border-color:var(--acc)}
+  .rbig:disabled{opacity:.35;cursor:default}
+  .rpos{font-size:12px;color:var(--mut);min-width:54px;text-align:center}
   .x{float:right;cursor:pointer;color:var(--mut);font-size:22px;line-height:1;border:none;background:none}
   .msg{font-size:14px;color:var(--mut);margin-top:8px;min-height:20px}
   .empty{color:var(--mut);font-size:14px;text-align:center;padding:26px}
@@ -240,11 +248,14 @@
   input[type=range]{accent-color:var(--acc2)}
 
   /* calendar */
-  .cal{max-width:440px;margin:0 auto}
-  .calhead{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:10px}
-  .calhead b{font-size:16px;min-width:120px;text-align:center}
+  .cal{max-width:480px;margin:0 auto}
+  .calhead{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px}
+  .calhead b{font-size:16px;min-width:104px;text-align:center}
+  .calweek{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
   .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
   .caldow{text-align:center;font-size:12px;color:var(--mut);padding:2px 0}
+  .calweek .calcell{aspect-ratio:auto;min-height:52px;padding:6px 0}
+  .calcell .cd{font-size:15px;font-weight:600}
   .calcell{aspect-ratio:1/1;background:var(--panel2);border:1px solid var(--line);border-radius:9px;
     display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
     position:relative;font-size:14px;gap:1px;user-select:none}
@@ -345,8 +356,15 @@
   .themesw:hover{border-color:var(--acc)}
   .themesw.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
   .fsbtn.on{border-color:var(--acc);color:var(--acc)}
-  .shelfchip{font-size:12px;padding:5px 11px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer}
-  .shelfchip.on{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent)}
+  .shelfchip{font-size:12px;padding:5px 11px;border-radius:20px;border:1px solid var(--sc,var(--line));background:transparent;color:var(--mut);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+  .shelfchip::before{content:'';width:9px;height:9px;border-radius:50%;background:var(--sc,var(--grey));flex:none;opacity:.85}
+  .shelfchip.on{border-color:var(--sc,var(--acc));color:var(--tx);background:color-mix(in srgb,var(--sc,var(--acc)) 20%,transparent)}
+  /* 書庫小色標（卡片/大字卡） */
+  .shtag{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:20px;
+    border:1px solid var(--sc,var(--line));color:var(--tx);background:color-mix(in srgb,var(--sc,var(--line)) 16%,transparent);white-space:nowrap}
+  .shtag::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--sc,var(--grey));flex:none}
+  .shtag.off{color:var(--mut);background:transparent;opacity:.7}
+  .shtag .shx{margin-left:1px;color:var(--mut);font-weight:700}
   .dex .tapw{cursor:pointer;border-bottom:1px dashed transparent}
   .dex .tapw:active,.dex .tapw:hover{border-bottom-color:var(--acc)}
   /* 沉浸式閱讀版詳情頁 */
@@ -443,7 +461,7 @@
     <div class="sec-h"><span class="sec-n">2</span>單字庫</div>
     <div class="cal" id="cal"></div>
     <div class="devhint" style="font-size:12px;color:var(--mut);margin-top:8px">
-      點日期看當天單字，可同時選多天。
+      ‹ › 換週、「本週」回到今天；點日期看當天單字，可同時選多天。
     </div>
     <div class="row" style="margin-top:8px">
       <span class="pill" id="dayInfo">已選 0 天</span>
@@ -457,33 +475,35 @@
   <div class="card">
     <div class="sec-h"><span class="sec-n">3</span><span id="listTitle">單字清單</span></div>
     <div class="msg" id="listStat" style="margin-top:0"></div>
-    <div class="row" id="listTools" style="margin:4px 0 10px;display:none">
-      <button class="btn ghost sm" id="btnSelAll">全選</button>
-      <button class="btn ghost sm" id="btnSelNone">清除勾選</button>
-      <span class="pill" id="selCount">已勾 0 字</span>
-      <button class="btn ghost sm" id="btnAddToShelf">加入書庫</button>
-      <button class="btn ghost sm" id="btnRemFromShelf">移出書庫</button>
-      <button class="btn sm" id="btnDelSel" disabled style="background:var(--red)">刪除</button>
+    <!-- 精簡工具列：搜尋＋書庫常駐，其餘收進「更多」 -->
+    <div class="row" id="listBar" style="margin:6px 0 10px;display:none;gap:6px">
+      <input type="text" id="listSearch" placeholder="搜尋單字或中文" style="flex:1;min-width:120px">
+      <select id="listShelf" style="max-width:140px"><option value="all">全部書庫</option></select>
+      <button class="btn ghost sm" id="listMore" title="更多選項">⋯ 更多</button>
     </div>
-    <div class="devhint" style="font-size:12px;color:var(--mut);margin-bottom:10px">
-      點卡片編輯；右上勾選要測驗的字；卡片下方標記
-      <span style="color:var(--red)">不熟</span>・<span style="color:var(--yellow)">普通</span>・<span style="color:var(--green)">熟</span>。
-    </div>
-    <div class="row" id="listFilterBar" style="margin-bottom:10px;display:none">
-      <input type="text" id="listSearch" placeholder="搜尋單字或中文" style="flex:1;min-width:150px">
-      <select id="listShelf" style="max-width:150px"><option value="all">全部書庫</option></select>
-      <select id="listFilter" style="max-width:120px">
-        <option value="all">全部熟悉度</option>
-        <option value="new">只看 新</option>
-        <option value="weak">只看 不熟</option>
-        <option value="mid">只看 普通</option>
-        <option value="strong">只看 熟</option>
-      </select>
-      <select id="listSort" style="max-width:130px">
-        <option value="default">預設順序</option>
-        <option value="az">英文 A→Z</option>
-        <option value="weak">不熟優先</option>
-      </select>
+    <div id="listMoreBox" style="display:none;margin-bottom:10px">
+      <div class="row" style="gap:6px;margin-bottom:8px">
+        <select id="listFilter" style="max-width:130px">
+          <option value="all">全部熟悉度</option>
+          <option value="new">只看 新</option>
+          <option value="weak">只看 不熟</option>
+          <option value="mid">只看 普通</option>
+          <option value="strong">只看 熟</option>
+        </select>
+        <select id="listSort" style="max-width:130px">
+          <option value="default">預設順序</option>
+          <option value="az">英文 A→Z</option>
+          <option value="weak">不熟優先</option>
+        </select>
+      </div>
+      <div class="row" id="listTools" style="gap:6px">
+        <button class="btn ghost sm" id="btnSelAll">全選</button>
+        <button class="btn ghost sm" id="btnSelNone">清除勾選</button>
+        <span class="pill" id="selCount">已勾 0 字</span>
+        <button class="btn ghost sm" id="btnAddToShelf">加入書庫</button>
+        <button class="btn ghost sm" id="btnRemFromShelf">移出書庫</button>
+        <button class="btn sm" id="btnDelSel" disabled style="background:var(--red)">刪除</button>
+      </div>
     </div>
     <div style="font-size:12px;color:var(--mut);margin-bottom:8px" id="listCount"></div>
     <div class="gridscroll" id="gridScroll"><div class="wgrid" id="grid"></div></div>
@@ -521,7 +541,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v59 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v60 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -533,7 +553,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='59';
+const APP_VERSION='60';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -572,6 +592,9 @@ function mergeShelf(from,to){ if(from===to)return;
   eachWord(r=>{ if(r.shelves&&r.shelves.includes(from)) r.shelves=[...new Set(r.shelves.map(s=>s===from?to:s))]; });
   SHELVES=SHELVES.filter(s=>s!==from); saveShelves(); save(); }
 function countInShelf(name){ let n=0; eachWord(r=>{ if((r.shelves||[]).includes(name))n++; }); return n; }
+// 每個書庫一個固定顏色（名稱雜湊→調色盤），讓使用者一眼分辨
+const SHELF_PALETTE=['#7fb5ff','#3ec97a','#e8b94a','#ef6b6b','#b98bff','#4fd1c5','#f08bc0','#9fbb5b','#ff9f6b','#6bb0d6','#d99bff','#5bd6a8'];
+function shelfColor(name){ name=name||''; let h=0; for(let i=0;i<name.length;i++)h=(h*31+name.charCodeAt(i))>>>0; return SHELF_PALETTE[h%SHELF_PALETTE.length]; }
 
 /* ============ speech ============ */
 let voices=[];
@@ -848,32 +871,36 @@ function markByResult(date,key,ok){
 /* ============ reusable calendar ============ */
 const DOW=['日','一','二','三','四','五','六'];
 function ymd(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
+// 只顯示一週（手機友善）：上方年月＋週導覽，下方 日一二三四五六 一排七格
 function renderCalendar(host,state,opts){
-  const {year,month}=state;
-  const startDow=new Date(year,month,1).getDay();
-  const days=new Date(year,month+1,0).getDate();
+  if(!state.ref) state.ref=today();
+  const [ry,rm,rd]=state.ref.split('-').map(Number);
+  const ref=new Date(ry,rm-1,rd);
+  const sun=new Date(ref); sun.setDate(ref.getDate()-ref.getDay());
+  const days=[]; for(let i=0;i<7;i++){ const d=new Date(sun); d.setDate(sun.getDate()+i); days.push(d); }
+  const mid=days[3];
   let h=`<div class="calhead">
-    <button class="btn ghost sm" data-nav="-1">‹</button>
-    <b>${year} 年 ${month+1} 月</b>
-    <button class="btn ghost sm" data-nav="1">›</button></div><div class="calgrid">`;
+      <button class="btn ghost sm" data-nav="-1" title="上一週">‹</button>
+      <b>${mid.getFullYear()} 年 ${mid.getMonth()+1} 月</b>
+      <button class="btn ghost sm" data-nav="1" title="下一週">›</button>
+      <button class="btn ghost sm" data-jump="1" style="margin-left:4px">本週</button>
+    </div><div class="calweek">`;
   DOW.forEach(d=>h+=`<div class="caldow">${d}</div>`);
-  for(let i=0;i<startDow;i++)h+=`<div class="calcell empty"></div>`;
-  for(let d=1;d<=days;d++){
-    const date=ymd(year,month,d);
+  days.forEach(dt=>{
+    const date=ymd(dt.getFullYear(),dt.getMonth(),dt.getDate());
     const cnt=(DB[date]&&Object.keys(DB[date].words).length)||0;
     const cls=['calcell', cnt?'has':'muted'];
     if(date===today())cls.push('today');
     if(opts.selected&&opts.selected.has(date))cls.push('sel');
     h+=`<div class="${cls.join(' ')}" data-date="${date}" data-cnt="${cnt}">
-      <div>${d}</div>${cnt?`<div class="cnt">${cnt}</div>`:''}</div>`;
-  }
+      <div class="cd">${dt.getDate()}</div>${cnt?`<div class="cnt">${cnt}</div>`:'<div class="cnt" style="visibility:hidden">0</div>'}</div>`;
+  });
   host.innerHTML=h+'</div>';
   host.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{
-    state.month+=parseInt(b.dataset.nav);
-    if(state.month<0){state.month=11;state.year--;}
-    if(state.month>11){state.month=0;state.year++;}
-    renderCalendar(host,state,opts);
+    const r=new Date(ref); r.setDate(ref.getDate()+7*parseInt(b.dataset.nav));
+    state.ref=ymd(r.getFullYear(),r.getMonth(),r.getDate()); renderCalendar(host,state,opts);
   });
+  const jb=host.querySelector('[data-jump]'); if(jb)jb.onclick=()=>{ state.ref=today(); renderCalendar(host,state,opts); };
   host.querySelectorAll('[data-date]').forEach(c=>c.onclick=()=>opts.onPick(c.dataset.date,+c.dataset.cnt));
 }
 
@@ -881,7 +908,7 @@ function renderCalendar(host,state,opts){
 const daySel=new Set();   // selected days on calendar
 const selected=new Set(); // checked words (quiz basket) "date|key"
 let currentEntries=[];
-const calState={year:new Date().getFullYear(),month:new Date().getMonth()};
+const calState={ref:today()};   // 顯示週的錨點日期
 
 /* ============ 1. INPUT ============ */
 let adding=false, undoSnap=null, undoInput=null;
@@ -920,7 +947,7 @@ async function addWords(){
     if(addShelfSel.size) rec.shelves=[...new Set([...(rec.shelves||[]),...addShelfSel])];
     save(); done++;
   }
-  if(done){ daySel.clear(); daySel.add(date); const p=date.split('-'); calState.year=+p[0]; calState.month=+p[1]-1; }
+  if(done){ daySel.clear(); daySel.add(date); calState.ref=date; }
   if(kept.length){ // 留下可能拼錯的，等你更正（不會被加進去）
     reviewEntries=kept;
     document.getElementById('inWords').value=kept.map(entryToLine).join('\n');
@@ -1233,7 +1260,7 @@ const addShelfSel=new Set();
 function renderAddShelfChips(){
   const host=document.getElementById('addShelfChips'); if(!host)return;
   const shelves=allShelves();
-  host.innerHTML = shelves.length? shelves.map(s=>`<button class="shelfchip${addShelfSel.has(s)?' on':''}" data-s="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join('')
+  host.innerHTML = shelves.length? shelves.map(s=>`<button class="shelfchip${addShelfSel.has(s)?' on':''}" style="--sc:${shelfColor(s)}" data-s="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join('')
     : '<span style="font-size:12px;color:var(--mut)">尚無書庫，可不選或新增</span>';
   host.querySelectorAll('.shelfchip').forEach(b=>b.onclick=()=>{ const s=b.dataset.s;
     if(addShelfSel.has(s))addShelfSel.delete(s); else addShelfSel.add(s); renderAddShelfChips(); });
@@ -1255,8 +1282,10 @@ function renderCal(){
   });
   document.getElementById('dayInfo').textContent='已選 '+daySel.size+' 天';
 }
-document.getElementById('calAllMonth').onclick=()=>{
-  const y=calState.year,m=calState.month;
+document.getElementById('calAllMonth').onclick=()=>{           // 選目前顯示那週所屬月份的所有日期
+  const [ry,rm,rd]=calState.ref.split('-').map(Number);
+  const ref=new Date(ry,rm-1,rd); const mid=new Date(ref); mid.setDate(ref.getDate()-ref.getDay()+3);
+  const y=mid.getFullYear(), m=mid.getMonth();
   allDates().forEach(dt=>{const p=dt.split('-');if(+p[0]===y&&+p[1]-1===m)daySel.add(dt);});
   renderCal(); renderList();
 };
@@ -1266,7 +1295,6 @@ document.getElementById('calClear').onclick=()=>{daySel.clear();renderCal();rend
 /* ============ 3. WORD LIST ============ */
 let viewEntries=[], listMulti=false;
 function renderList(){
-  populateShelfFilter();
   const dates=[...daySel].sort();
   listMulti=dates.length>1;
   // 多天合併時同一個英文字只留一份（內容最豐富者；同等則取較新那天）
@@ -1278,11 +1306,11 @@ function renderList(){
   });});
   let entries=Object.values(byKey).map(({date,key,rec})=>({date,key,rec}));
   currentEntries=entries;
+  populateShelfFilter();
   document.getElementById('listTitle').textContent = dates.length? dates.join('、')+' 的單字' : '單字清單';
   document.getElementById('listEmpty').style.display=entries.length?'none':'block';
   document.getElementById('gridScroll').style.display=entries.length?'block':'none';
-  document.getElementById('listTools').style.display=entries.length?'flex':'none';
-  document.getElementById('listFilterBar').style.display=entries.length>8?'flex':'none'; // 字多才顯示工具列
+  document.getElementById('listBar').style.display=entries.length?'flex':'none';  // 有字才顯示精簡工具列
   const counts={new:0,weak:0,mid:0,strong:0};
   entries.forEach(e=>counts[levelOf(e.rec).k]++);
   document.getElementById('listStat').innerHTML=entries.length?
@@ -1357,10 +1385,17 @@ function drawGrid(){
   const el=document.getElementById(id);
   if(el) el.addEventListener(id==='listSearch'?'input':'change',drawGrid);
 });
+(function(){ const mb=document.getElementById('listMore'); if(mb)mb.onclick=()=>{
+  const box=document.getElementById('listMoreBox'); const show=box.style.display==='none';
+  box.style.display=show?'block':'none'; mb.textContent=show?'▴ 收合':'⋯ 更多'; }; })();
 function populateShelfFilter(){
   const sel=document.getElementById('listShelf'); if(!sel)return;
   const cur=sel.value;
-  sel.innerHTML='<option value="all">全部書庫</option>'+allShelves().map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}（${countInShelf(s)}）</option>`).join('');
+  // 計算「目前選的日期」裡每個書庫有幾個字（不是總量）
+  const dayCnt={}; currentEntries.forEach(e=>(e.rec.shelves||[]).forEach(s=>{dayCnt[s]=(dayCnt[s]||0)+1;}));
+  const total=currentEntries.length;
+  sel.innerHTML=`<option value="all">全部書庫（${total}）</option>`+
+    allShelves().map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}（${dayCnt[s]||0}）</option>`).join('');
   if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
 }
 function updateSelCount(){
@@ -1441,7 +1476,7 @@ function refresh(){ renderCal(); renderList(); }
 
 /* ============ word detail modal (editable) ============ */
 const ov=document.getElementById('ov');
-ov.onclick=e=>{if(e.target===ov)ov.classList.remove('show')};
+ov.onclick=e=>{if(e.target===ov){stopCardAuto();ov.classList.remove('show');}};
 // 彈窗開啟時把背景完全鎖住（iOS 也固定，不會跟著動）
 let _lockY=0;
 new MutationObserver(()=>{
@@ -1492,8 +1527,8 @@ async function openWord(date,key){
   detailMode='read';
   ov.classList.add('show');
   renderDetail(rec,date,key);
-  // 翻譯交給背景(結束才重畫)，這裡只負責穩定發音、不被重畫打斷
-  setTimeout(()=>{ if(curWord && curWord.key===key && ov.classList.contains('show')) speak(rec.word); }, 320);
+  // 翻譯交給背景(結束才重畫)，這裡只負責穩定發音、不被重畫打斷（自動播放中不重複發音）
+  setTimeout(()=>{ if(!cardAuto.on && curWord && curWord.key===key && ov.classList.contains('show')) speak(rec.word); }, 320);
   bgTranslate();
 }
 function harvest(rec){
@@ -1543,27 +1578,110 @@ async function lookupWord(w){
   alert('已加入「'+w+'」到書庫「'+shelves.join('、')+'」（'+date+'）');
 }
 let detailMode='read';
+/* ===== 大字卡自動播放（可選要念的內容；預設只念 英文＋詞性＋中文）===== */
+let readParts=Object.assign({en:true,pos:true,zh:true,ex:false,note:false},JSON.parse(localStorage.getItem('vocabReadParts')||'{}'));
+function saveReadParts(){ localStorage.setItem('vocabReadParts',JSON.stringify(readParts)); }
+let cardAuto={on:false,wake:null};
+async function playDetail(rec){
+  const seq=[];
+  if(readParts.en){ seq.push(()=>sayOnce(rec.word,'en-US')); seq.push(()=>wait(220)); }
+  const zhbits=(readParts.zh?cleanZh(rec.wordZh||''):'')+(readParts.pos&&rec.pos?('，'+rec.pos):'');
+  if(zhbits.trim()){ seq.push(()=>sayOnce(zhbits.replace(/^，/,''),'zh-TW')); seq.push(()=>wait(260)); }
+  if(readParts.ex){ const t=topExample(rec); if(t&&t.ex){ seq.push(()=>sayOnce(t.ex,'en-US')); seq.push(()=>wait(240));
+      if(t.exZh){ seq.push(()=>sayOnce(cleanZh(t.exZh),'zh-TW')); seq.push(()=>wait(200)); } } }
+  if(readParts.note && rec.note){ seq.push(()=>sayOnce(cleanZh(rec.note).slice(0,140),'zh-TW')); seq.push(()=>wait(200)); }
+  for(const st of seq){ if(!cardAuto.on)return; await st(); if(!cardAuto.on)return; }
+}
+async function cardAutoLoop(){
+  while(cardAuto.on && curWord){
+    renderDetail(curWord.rec,curWord.date,curWord.key);   // 高亮目前播放卡
+    await playDetail(curWord.rec);
+    if(!cardAuto.on)break;
+    await wait(550); if(!cardAuto.on)break;
+    const list=viewEntries.length?viewEntries:currentEntries;
+    const i=list.findIndex(e=>e.date===curWord.date&&e.key===curWord.key);
+    if(i<0 || i+1>=list.length){ stopCardAuto(); break; }   // 播到最後一張就停
+    const nx=list[i+1]; curWord={rec:DB[nx.date].words[nx.key],date:nx.date,key:nx.key};
+    initEditable(curWord.rec); bgTranslate();
+  }
+}
+function startCardAuto(){ if(cardAuto.on||!curWord)return; cardAuto.on=true;
+  if(typeof setupMedia==='function')setupMedia();
+  cardAutoLoop();
+  if('wakeLock' in navigator){ navigator.wakeLock.request('screen').then(w=>{cardAuto.wake=w;}).catch(()=>{}); }
+}
+function stopCardAuto(){ if(!cardAuto.on){return;} cardAuto.on=false;
+  try{speechSynthesis.cancel();}catch(e){} try{clearTimeout(auto._t);}catch(e){}
+  if(cardAuto.wake){ try{cardAuto.wake.release();}catch(e){} cardAuto.wake=null; }
+  if(curWord && ov.classList.contains('show')) renderDetail(curWord.rec,curWord.date,curWord.key);
+}
+function toggleCardAuto(){ if(cardAuto.on)stopCardAuto(); else startCardAuto(); }
+function closeDetail(){ stopCardAuto(); ov.classList.remove('show'); }
 function showDetail(){ if(!curWord)return; if(detailMode==='edit')renderEditor(curWord.rec,curWord.date,curWord.key); else renderDetail(curWord.rec,curWord.date,curWord.key); }
-// 沉浸式閱讀版詳情頁（點旁邊關閉、左右滑切換、編輯用鉛筆進入）
+// 沉浸式閱讀版詳情頁（自動播放、書庫/熟悉度直接操作、上下張大按鈕、左右滑切換）
 function renderDetail(rec,date,key){
   const inner=document.getElementById('ovInner');
   inner.className='modal reader';
   const sents=(rec.sentences||[]).filter(s=>s.ex).slice(0,3);  // 例句最多 3 句，版面不冗長
+  const lv=levelOf(rec);
+  const list=viewEntries.length?viewEntries:currentEntries;
+  const pos=list.findIndex(e=>e.date===date&&e.key===key);
+  const allSh=allShelves();
+  const shHtml=allSh.length? allSh.map(s=>{ const on=(rec.shelves||[]).includes(s);
+      return `<button class="shtag dsh${on?'':' off'}" style="--sc:${shelfColor(s)}" data-s="${escapeHtml(s)}">${escapeHtml(s)}${on?' <span class="shx">✓</span>':''}</button>`; }).join('')
+    : '<span style="font-size:12px;color:var(--mut)">尚無書庫</span>';
+  const opt=(k,label)=>`<button class="roptchip${readParts[k]?' on':''}" data-rp="${k}">${label}</button>`;
   inner.innerHTML=`
     <div class="reader-nav">
-      <span style="font-size:12px;color:var(--mut)">點旁邊空白關閉</span>
-      <button class="btn ghost sm" onclick="detailMode='edit';showDetail()">編輯</button>
+      <button class="btn ${cardAuto.on?'':'ghost'} sm" id="dAuto">${cardAuto.on?'⏸ 停止':'▶ 自動播放'}</button>
+      <span class="row" style="gap:6px">
+        <button class="btn ghost sm" id="dReadOpt" title="選擇要念的內容">⚙ 念什麼</button>
+        <button class="btn ghost sm" onclick="detailMode='edit';showDetail()">編輯</button>
+        <button class="btn ghost sm" onclick="closeDetail()" title="關閉">✕</button>
+      </span>
     </div>
-    <button class="reader-arrow l" onclick="detailNav(-1)">‹</button>
-    <button class="reader-arrow r" onclick="detailNav(1)">›</button>
-    <div class="reader-body" style="padding-left:48px;padding-right:48px">
+    <div id="dReadOptBox" class="roptbox" style="display:none">
+      <span style="font-size:12px;color:var(--mut)">自動播放要念：</span>
+      ${opt('en','英文')}${opt('pos','詞性')}${opt('zh','中文')}${opt('ex','例句')}${opt('note','補充')}
+    </div>
+    <div class="reader-body">
       <div class="dword">${rec.word} <button class="speak" onclick="speak('${rec.word.replace(/'/g,'')}')">聽</button></div>
       <div class="dph">${rec.phonetic||''}</div>
       <div class="dmean">${rec.pos?'<b style="color:var(--acc)">'+escapeHtml(rec.pos)+'</b> ':''}${escapeHtml((rec.wordZh||'').replace(/\//g,'；'))}</div>
+
+      <div class="dctl">
+        <div class="lvset" style="flex:1">
+          <button class="lvb weak${lv.k==='weak'?' on':''}" onclick="setLevel('${date}','${key}','weak');showDetail();renderList()">不熟</button>
+          <button class="lvb mid${lv.k==='mid'?' on':''}" onclick="setLevel('${date}','${key}','mid');showDetail();renderList()">普通</button>
+          <button class="lvb strong${lv.k==='strong'?' on':''}" onclick="setLevel('${date}','${key}','strong');showDetail();renderList()">熟</button>
+        </div>
+      </div>
+      <div class="dsec-label">書庫　<span style="color:var(--mut);font-weight:400;font-size:11px">點一下加入／移出（✓＝已在）</span></div>
+      <div class="dshelves" id="dShelves">${shHtml} <button class="shelfchip" id="dShNew" style="--sc:var(--mut)">＋ 新書庫</button></div>
+
       <div class="dsec-label">例句</div>
       ${sents.length? sents.map(s=>`<div class="dex">${exHtml(s.ex,rec.word)} <button class="speak" data-t="${(s.ex||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" onclick="event.stopPropagation();speak(this.dataset.t)">聽</button></div>${s.exZh?'<div class="dexz extrans">'+escapeHtml(s.exZh)+'</div>':''}`).join('') : '<div class="dexz">尚無例句（按上面「編輯」新增）</div>'}
       ${rec.note?`<div class="dsec-label">補充</div><div class="dnote">${escapeHtml(rec.note)}</div>`:''}
+    </div>
+    <div class="reader-foot">
+      <button class="rbig" id="dPrev"${pos<=0?' disabled':''}>‹ 上一張</button>
+      <span class="rpos">${pos>=0?(pos+1)+' / '+list.length:''}</span>
+      <button class="rbig" id="dNext"${pos<0||pos>=list.length-1?' disabled':''}>下一張 ›</button>
     </div>`;
+  document.getElementById('dAuto').onclick=toggleCardAuto;
+  document.getElementById('dReadOpt').onclick=()=>{ const b=document.getElementById('dReadOptBox');
+    b.style.display=b.style.display==='none'?'flex':'none'; };
+  inner.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{ const k=b.dataset.rp;
+    readParts[k]=!readParts[k]; saveReadParts(); b.classList.toggle('on',readParts[k]); });
+  const pv=document.getElementById('dPrev'), nx=document.getElementById('dNext');
+  if(pv)pv.onclick=()=>{ stopCardAuto(); detailNav(-1); };
+  if(nx)nx.onclick=()=>{ stopCardAuto(); detailNav(1); };
+  inner.querySelectorAll('#dShelves .dsh').forEach(b=>b.onclick=()=>{ const s=b.dataset.s;
+    rec.shelves=rec.shelves||[]; const i=rec.shelves.indexOf(s);
+    if(i>=0)rec.shelves.splice(i,1); else rec.shelves.push(s);
+    save(); renderDetail(rec,date,key); populateShelfFilter(); renderList(); });
+  const snb=document.getElementById('dShNew'); if(snb)snb.onclick=()=>{ const n=prompt('新書庫名稱：'); if(!n)return;
+    const nm=addShelf(n); if(nm){ rec.shelves=rec.shelves||[]; if(!rec.shelves.includes(nm))rec.shelves.push(nm); save(); renderDetail(rec,date,key); renderAddShelfChips(); renderList(); } };
 }
 function renderEditor(rec,date,key){
   const inner=document.getElementById('ovInner');
@@ -1644,7 +1762,7 @@ function renderEditor(rec,date,key){
   document.getElementById('edDone').onclick=()=>{ harvest(rec); save(); detailMode='read'; renderList(); showDetail(); };
   (function renderEdShelves(){
     const host=document.getElementById('edShelves'); if(!host)return;
-    host.innerHTML = allShelves().map(s=>`<button class="shelfchip${(rec.shelves||[]).includes(s)?' on':''}" data-s="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join('')
+    host.innerHTML = allShelves().map(s=>`<button class="shelfchip${(rec.shelves||[]).includes(s)?' on':''}" style="--sc:${shelfColor(s)}" data-s="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join('')
       + '<button class="btn ghost sm" id="edShelfNew">＋ 新書庫</button>';
     host.querySelectorAll('.shelfchip').forEach(b=>b.onclick=()=>{ const s=b.dataset.s; rec.shelves=rec.shelves||[];
       const i=rec.shelves.indexOf(s); if(i>=0)rec.shelves.splice(i,1); else rec.shelves.push(s); save(); renderEdShelves(); renderList(); });
@@ -1683,7 +1801,7 @@ function delSentence(date,key,i){
 function quizThisWord(date,key,type){
   ov.classList.remove('show');
   if(!daySel.has(date)){ daySel.add(date);
-    const p=date.split('-'); calState.year=+p[0]; calState.month=+p[1]-1; }
+    calState.ref=date; }
   selected.clear(); selected.add(date+'|'+key);
   document.querySelectorAll('.lvf').forEach(c=>c.checked=false);
   refresh();
@@ -1947,9 +2065,14 @@ document.addEventListener('visibilitychange',async()=>{
 
 /* --- fill in blank --- */
 function findExample(rec){
-  if(rec.sentences) for(const s of rec.sentences) if(s.ex) return {def:rec.defEn||rec.wordZh||'',ex:s.ex,exZh:s.exZh||''};
+  const sents=(rec.sentences||[]).filter(s=>s.ex);
+  const re=new RegExp('\\b'+(rec.word||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');
+  const has=s=>re.test(s.ex);
+  // 填空優先用「使用者自己、且含該單字」的句子→其次含該字的任何句→其次我的句→任何句
+  const pick = sents.find(s=>s.src==='user'&&has(s)) || sents.find(has) || sents.find(s=>s.src==='user') || sents[0];
+  if(pick) return {def:rec.defEn||rec.wordZh||'',ex:pick.ex,exZh:pick.exZh||''};
   if(rec.custom) for(const c of rec.custom) if(c.ex) return {def:rec.wordZh||'',ex:c.ex,exZh:c.exZh||''};
-  for(const m of rec.meanings) for(const d of m.defs) if(d.ex) return d;
+  for(const m of (rec.meanings||[])) for(const d of (m.defs||[])) if(d.ex) return d;
   return null;
 }
 function renderFill(body,it){
@@ -2193,17 +2316,20 @@ function openShelfManager(){
      </div>
      <div id="shList">${ list.length? list.map(s=>`
         <div class="row" data-s="${escapeHtml(s)}" style="justify-content:space-between;border-top:1px solid var(--line);padding:8px 0">
-          <span>${escapeHtml(s)} <span style="color:var(--mut);font-size:12px">${countInShelf(s)} 字</span></span>
+          <span class="shtag" style="--sc:${shelfColor(s)}">${escapeHtml(s)}</span>
           <span class="row" style="gap:6px">
+            <span style="color:var(--mut);font-size:12px">${countInShelf(s)} 字</span>
             <button class="btn ghost sm sh-ren">改名</button>
             <button class="btn ghost sm sh-del" style="color:var(--red);border-color:var(--red)">刪除</button>
           </span>
         </div>`).join('') : '<div style="color:var(--mut);font-size:13px">還沒有書庫，上面可新增。</div>' }</div>
-     ${ list.length>1? `<div class="edsec" style="margin-top:14px">
-        <div style="margin-bottom:6px">合併書庫</div>
+     ${ list.length>1? `<div style="margin-top:14px">
+        <button class="btn ghost sm" id="shMergeToggle" style="color:var(--mut)">進階：合併書庫 ▾</button>
+        <div id="shMergeBox" class="edsec" style="display:none;margin-top:10px">
+        <div style="margin-bottom:6px;font-size:13px;color:var(--mut)">把左邊書庫的字全部併入右邊，左邊書庫會消失。</div>
         <div class="row"><select id="shFrom">${list.map(s=>`<option>${escapeHtml(s)}</option>`).join('')}</select>
         <span>→</span><select id="shTo">${list.map(s=>`<option>${escapeHtml(s)}</option>`).join('')}</select>
-        <button class="btn ghost sm" id="shMerge">合併</button></div></div>`:''}`;
+        <button class="btn ghost sm" id="shMerge">合併</button></div></div></div>`:''}`;
   document.getElementById('ov').classList.add('show');
   document.getElementById('shAdd').onclick=()=>{ if(addShelf(document.getElementById('shNew').value)){ renderAddShelfChips(); openShelfManager(); refresh(); } };
   document.querySelectorAll('#shList [data-s]').forEach(row=>{
@@ -2211,6 +2337,10 @@ function openShelfManager(){
     row.querySelector('.sh-ren').onclick=()=>{ const n=prompt('改名：',s); if(n&&n.trim()){ renameShelf(s,n.trim()); renderAddShelfChips(); openShelfManager(); refresh(); } };
     row.querySelector('.sh-del').onclick=()=>{ if(confirm('刪除書庫「'+s+'」？（單字不會刪，只是移出此書庫）')){ deleteShelf(s); addShelfSel.delete(s); renderAddShelfChips(); openShelfManager(); refresh(); } };
   });
+  const mtog=document.getElementById('shMergeToggle');
+  if(mtog) mtog.onclick=()=>{ const box=document.getElementById('shMergeBox');
+    const show=box.style.display==='none'; box.style.display=show?'block':'none';
+    mtog.textContent='進階：合併書庫 '+(show?'▴':'▾'); };
   const mg=document.getElementById('shMerge');
   if(mg) mg.onclick=()=>{ const f=document.getElementById('shFrom').value, t=document.getElementById('shTo').value;
     if(f===t){alert('請選不同書庫');return;} if(confirm('把「'+f+'」併入「'+t+'」？')){ mergeShelf(f,t); renderAddShelfChips(); openShelfManager(); refresh(); } };
@@ -2257,7 +2387,7 @@ function migrateSentenceSrc(){
 (function init(){
   migrateSentenceSrc();   // 自動把舊資料中你自己打的例句標成「我的」
   const start = DB[today()] ? today() : allDates()[0];
-  if(start){ daySel.add(start); const p=start.split('-'); calState.year=+p[0]; calState.month=+p[1]-1; }
+  if(start){ daySel.add(start); calState.ref=start; }
   renderCal(); renderList();
   setTimeout(bgTranslate, 1500); // 載入後背景補翻譯
 })();
