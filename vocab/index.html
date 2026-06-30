@@ -517,7 +517,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v55 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v56 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -529,7 +529,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='55';
+const APP_VERSION='56';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -909,6 +909,7 @@ async function addWords(){
     if(!rec){ rec=await buildWord(e.word); if(!rec)continue; d.words[key]=rec; }
     initEditable(rec);
     if(e.wordZh) rec.wordZh=e.wordZh;
+    if(e.pos) rec.pos=e.pos;
     mergeSentences(rec, e.sentences);
     userFirstSentences(rec);
     if(e.note) rec.note=(rec.note?rec.note+'\n':'')+e.note;
@@ -958,16 +959,68 @@ function entryToLine(e){
   return parts.join(' | ');
 }
 // 把輸入框文字解析成 entry 陣列（預覽與送出共用）
+// 標籤型清單：例句:/近似字:/反義: 或 word (n.) 中文 等格式
+const LABEL_RE=/^\s*(例句|例|造句|近似字|相似字|相似|同義字|同義|近義|反義字|反義詞|反義|synonym|antonym|e\.?g\.?)\s*[:：]\s*(.*)$/i;
+function posZh(p){ p=(p||'').toLowerCase().replace(/[.\s]/g,'');
+  return ({n:'名詞',v:'動詞',vt:'動詞',vi:'動詞',adj:'形容詞',adv:'副詞',phr:'片語',prep:'介系詞',conj:'連接詞',pron:'代名詞',art:'冠詞',aux:'助動詞',num:'數詞',int:'感嘆詞'})[p]||''; }
+function isHeadwordLine(line){
+  if(LABEL_RE.test(line)) return false;
+  const s=line.replace(/^\s*\d+\s*[.)、]\s*/,'');
+  if(!/^[A-Za-z]/.test(s)) return false;                 // 不是英文開頭→當續行/中文
+  if(/[㐀-鿿]/.test(s)) return true;                      // 有中文＝單字行
+  if(/\(\s*[a-zA-Z.]{1,5}\s*\)/.test(s)) return true;      // 有(詞性)＝單字行
+  return s.split(/\s+/).filter(Boolean).length<=3;        // 純英文且短＝單字；長＝例句續行
+}
+// 解析一筆「單字行」：word (詞性) 中文 [例句...]
+function parseHeadword(line){
+  let s=line.replace(/^\s*\d+\s*[.)、]\s*/,'');
+  const pm=s.match(/\(\s*([a-zA-Z.]+)\s*\)/);
+  const pos=pm?posZh(pm[1]):'';
+  s=s.replace(/\([^)]*\)/g,' ');
+  const segs=segmentByLang(s);
+  const wi=segs.findIndex(x=>x.type==='en');
+  const e={word:wi>=0?segs[wi].text:'',pos,wordZh:'',sentences:[],note:''};
+  let enBlob='';
+  segs.forEach((x,i)=>{ if(i===wi)return;
+    if(x.type==='zh'){ if(!e.wordZh)e.wordZh=x.text; else e.note+=(e.note?'\n':'')+x.text; }
+    else enBlob+=(enBlob?' ':'')+x.text; });
+  splitSentences(enBlob).forEach(t=>e.sentences.push({ex:t,exZh:'',src:'user'}));
+  return e;
+}
+// 通用解析（不依賴標籤/編號/排版）：單字行 + 其後英文行＝例句(多行接成完整句)
+function parseGeneral(raw){
+  const lines=raw.split(/\n/).map(s=>s.trim()).filter(Boolean);
+  const entries=[]; let cur=null, blob='';
+  const flush=()=>{ if(cur){ splitSentences(blob).forEach(t=>cur.sentences.push({ex:t,exZh:'',src:'user'})); blob=''; } };
+  for(const line of lines){
+    const m=line.match(LABEL_RE);
+    if(m && cur){ const type=m[1], content=(m[2]||'').trim();
+      if(/例|造句|e\.?g/i.test(type)) blob+=(blob?' ':'')+content;
+      else if(/反義|antonym/i.test(type)) cur.note=(cur.note?cur.note+'\n':'')+'反義：'+content;
+      else cur.note=(cur.note?cur.note+'\n':'')+'近義：'+content;
+      continue; }
+    if(isHeadwordLine(line)){
+      flush();
+      if(!/[㐀-鿿]/.test(line)&&!/\(/.test(line)&&/[,，]/.test(line)){   // 純英文逗號清單
+        const pcs=line.split(/[,，]/).map(s=>s.trim()).filter(Boolean);
+        if(pcs.every(p=>p.split(/\s+/).filter(Boolean).length<=3)){ pcs.forEach(w=>entries.push({word:w,pos:'',wordZh:'',sentences:[],note:''})); cur=null; continue; }
+      }
+      cur=parseHeadword(line);
+      if(cur.sentences.length){ blob=cur.sentences.map(s=>s.ex).join(' '); cur.sentences=[]; }
+      entries.push(cur);
+    } else if(cur){
+      if(/[㐀-鿿]/.test(line)&&!/[A-Za-z]/.test(line)) cur.note=(cur.note?cur.note+'\n':'')+line;  // 純中文續行＝補充意思
+      else blob+=(blob?' ':'')+line;                                                              // 英文續行＝例句
+    }
+  }
+  flush();
+  return entries.filter(e=>e.word);
+}
 function parseInputEntries(raw){
-  const entries=[];
-  splitEntries(raw).forEach(item=>{
-    const plain = !/[|｜㐀-鿿]/.test(item) && /[,，]/.test(item);
-    const pieces = plain ? item.split(/[,，]/).map(s=>s.trim()).filter(Boolean) : null;
-    if(plain && pieces.every(p=>p.split(/\s+/).length<=3)){
-      pieces.forEach(w=>entries.push({word:w,wordZh:'',sentences:[],note:''}));
-    }else{ const e=parseEntry(item); if(e)entries.push(e); }
-  });
-  return redistributeByContent(entries);
+  const flat=raw.replace(/\r/g,'').replace(/\n/g,' ');
+  const seq=splitBySequentialNumbers(flat);      // 數字編號(可換行/貼成一行/OCR容錯)
+  let entries = (seq && seq.length>=2) ? seq.map(parseHeadword).filter(e=>e&&e.word) : parseGeneral(raw);
+  return redistributeByContent(entries);          // 例句集中成一塊時用內容比對校正
 }
 // 把一段文字切成一句句
 function splitSentences(text){
