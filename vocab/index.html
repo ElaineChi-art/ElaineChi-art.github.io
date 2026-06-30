@@ -517,7 +517,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v56 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v57 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -529,7 +529,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='56';
+const APP_VERSION='57';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1016,7 +1016,46 @@ function parseGeneral(raw){
   flush();
   return entries.filter(e=>e.word);
 }
+// 選擇題：自動拆出選項當單字＋題幹當例句＋解析存進答案那個字
+function looksLikeMCQ(raw){
+  const opts=(raw.match(/^\s*[A-DＡ-Ｄ][\s.、:：)]\s*[^\n]*[A-Za-z]/gm)||[]).length;
+  return opts>=3;
+}
+function parseMCQ(raw){
+  const lines=raw.replace(/\r/g,'').split(/\n/).map(s=>s.trim());
+  const optRe=/^([A-DＡ-Ｄ])[\s.、:：)]+\s*(.+)$/;
+  const norm=c=>c.normalize('NFKC');
+  let stem=[],options=[],expl=[],phase='stem';
+  for(const line of lines){
+    if(!line)continue;
+    if(/^[🖊⚖✅❌📝💡]|^(答案|解析|正解|說明)/.test(line)){ phase='expl'; expl.push(line); continue; }
+    const m=line.match(optRe);
+    if(phase!=='expl' && m && /[A-Za-z]/.test(m[2]) && m[2].trim().split(/\s+/).length<=6){
+      phase='opt'; options.push({L:norm(m[1]),term:m[2].trim().replace(/\s*[（(].*$/,'')}); continue;
+    }
+    if(phase==='stem') stem.push(line);
+    else expl.push(line);                 // 選項之後、非選項行＝解析
+  }
+  if(options.length<2) return null;
+  const stemTxt=stem.join(' ').replace(/\s+/g,' ').trim();
+  const explTxt=expl.join('\n').trim();
+  const am=explTxt.match(/(?:答案|正解|✅)\s*[:：]?\s*([A-DＡ-Ｄ])/);
+  const ans=am?norm(am[1]):'';
+  const zh={};                            // 各選項中文(從解析就近抓，抓不到留空讓翻譯補)
+  options.forEach(o=>{
+    const mm=explTxt.match(new RegExp(o.L+'[^A-D㐀-鿿]*?([㐀-鿿][^A-D、，。）)\\n]{0,12})'));
+    if(mm) zh[o.L]=mm[1].trim();
+  });
+  return options.map(o=>{
+    const e={word:o.term,pos:'',wordZh:zh[o.L]||'',sentences:[],note:''};
+    if(stemTxt) e.sentences.push({ex:stemTxt,exZh:'',src:'user'});
+    if(o.L===ans){ if(explTxt) e.note='【題目解析・答案'+ans+'】\n'+explTxt; }
+    else if(explTxt) e.note='（出自選擇題，非正解）';
+    return e;
+  });
+}
 function parseInputEntries(raw){
+  if(looksLikeMCQ(raw)){ const e=parseMCQ(raw); if(e&&e.length) return e; }
   const flat=raw.replace(/\r/g,'').replace(/\n/g,' ');
   const seq=splitBySequentialNumbers(flat);      // 數字編號(可換行/貼成一行/OCR容錯)
   let entries = (seq && seq.length>=2) ? seq.map(parseHeadword).filter(e=>e&&e.word) : parseGeneral(raw);
