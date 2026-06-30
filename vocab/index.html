@@ -521,7 +521,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v58 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v59 ・ 2026-06-30</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -533,7 +533,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='58';
+const APP_VERSION='59';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1028,13 +1028,25 @@ function looksLikeMCQ(raw){
   const opts=(raw.match(/^\s*[A-DＡ-Ｄ][\s.、:：)]\s*[^\n]*[A-Za-z]/gm)||[]).length;
   return opts>=3;
 }
-function parseMCQ(raw){
-  const lines=raw.replace(/\r/g,'').split(/\n/).map(s=>s.trim());
+const NOISE_RE=/·\s*\d+\s*題|^法學英文.*·|^\s*🔊/;   // 分類標頭等非題目噪音行
+// 把多題切成各自的區塊（以 📄 題號行為界；沒有 📄 就整段一題）
+function splitQuestions(raw){
+  const lines=raw.replace(/\r/g,'').split(/\n/);
+  const blocks=[]; let cur=null;
+  for(const ln of lines){
+    if(/^\s*📄/.test(ln)){ cur=[]; blocks.push(cur); }
+    if(cur) cur.push(ln);
+  }
+  return blocks.length?blocks:[lines];
+}
+function parseOneMCQ(lines){
   const optRe=/^([A-DＡ-Ｄ])[\s.、:：)]+\s*(.+)$/;
   const norm=c=>c.normalize('NFKC');
-  let stem=[],options=[],expl=[],phase='stem';
-  for(const line of lines){
-    if(!line)continue;
+  let stem=[],options=[],expl=[],phase='stem',hdrAns='';
+  for(let line of lines){
+    line=line.trim(); if(!line)continue;
+    if(/^📄/.test(line)){ const a=line.match(/答案\s*([A-DＡ-Ｄ])/); if(a)hdrAns=norm(a[1]); continue; }
+    if(NOISE_RE.test(line)) continue;
     if(/^[🖊⚖✅❌📝💡]|^(答案|解析|正解|說明)/.test(line)){ phase='expl'; expl.push(line); continue; }
     const m=line.match(optRe);
     if(phase!=='expl' && m && /[A-Za-z]/.test(m[2]) && m[2].trim().split(/\s+/).length<=6){
@@ -1043,11 +1055,11 @@ function parseMCQ(raw){
     if(phase==='stem') stem.push(line);
     else expl.push(line);                 // 選項之後、非選項行＝解析
   }
-  if(options.length<2) return null;
+  if(options.length<2) return [];
   const stemTxt=stem.join(' ').replace(/\s+/g,' ').trim();
-  const explTxt=expl.join('\n').trim();
+  const explTxt=expl.filter(l=>!NOISE_RE.test(l)).join('\n').trim();
   const am=explTxt.match(/(?:答案|正解|✅)\s*[:：]?\s*([A-DＡ-Ｄ])/);
-  const ans=am?norm(am[1]):'';
+  const ans=am?norm(am[1]):hdrAns;
   const zh={};                            // 各選項中文(從解析就近抓，抓不到留空讓翻譯補)
   options.forEach(o=>{
     const mm=explTxt.match(new RegExp(o.L+'[^A-D㐀-鿿]*?([㐀-鿿][^A-D、，。）)\\n]{0,12})'));
@@ -1060,6 +1072,25 @@ function parseMCQ(raw){
     else if(explTxt) e.note='（出自選擇題，非正解）';
     return e;
   });
+}
+function parseMCQ(raw){
+  let all=[];
+  splitQuestions(raw).forEach(b=>{ all=all.concat(parseOneMCQ(b)); });
+  // 同一個字（跨題重複）合併：累加例句、保留解析
+  const byKey={}, out=[];
+  all.forEach(e=>{
+    const k=(e.word||'').toLowerCase();
+    if(!k) return;
+    if(!byKey[k]){ byKey[k]=e; out.push(e); return; }
+    const t=byKey[k];
+    (e.sentences||[]).forEach(s=>{ if(s.ex && !t.sentences.some(x=>x.ex===s.ex)) t.sentences.push(s); });
+    const real=str=>str&&str.indexOf('【題目解析')>=0;
+    if(real(e.note)) t.note = real(t.note) ? t.note+'\n\n'+e.note : e.note;
+    else if(e.note && !t.note) t.note=e.note;
+    if(!t.wordZh && e.wordZh) t.wordZh=e.wordZh;
+    if(!t.pos && e.pos) t.pos=e.pos;
+  });
+  return out;
 }
 function parseInputEntries(raw){
   if(looksLikeMCQ(raw)){ const e=parseMCQ(raw); if(e&&e.length) return e; }
