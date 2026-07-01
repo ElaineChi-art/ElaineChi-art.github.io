@@ -63,12 +63,14 @@
   .reader{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:100%;max-width:760px;height:min(90vh,860px);display:flex;flex-direction:column;position:relative;overflow:hidden}
   .rnav{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);flex-shrink:0}
   .rtitle{font-family:var(--serif);font-weight:600;font-size:15px;color:var(--acc);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .rbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:24px 26px;display:flex;flex-direction:column;justify-content:center}
-  .rkind{align-self:center;font-size:12px;color:var(--mut);letter-spacing:1px;margin-bottom:14px}
-  .rtext{font-size:calc(21px*var(--fs));line-height:2;color:var(--tx);text-align:left}
-  .rtext.head{font-family:var(--serif);font-weight:600;font-size:calc(26px*var(--fs));color:var(--acc);text-align:center}
-  .rtext.tip{color:var(--green)}
-  .rtext .hl{color:var(--acc);font-weight:700}
+  .rbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:22px 26px 40px}
+  .para{font-size:calc(18px*var(--fs));line-height:2.05;color:var(--tx);text-align:left;margin-bottom:15px}
+  .para.head{font-family:var(--serif);font-weight:600;font-size:calc(24px*var(--fs));color:var(--acc);text-align:center;margin:4px 0 18px}
+  .para.tip{color:var(--green)}
+  .para.point{color:var(--tx)}
+  .para .hl{color:var(--acc);font-weight:700}
+  .sent{border-radius:5px;padding:1px 3px;cursor:pointer;transition:background-color .15s}
+  .sent.cur{background:color-mix(in srgb,var(--acc) 30%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--acc) 45%,transparent)}
   .rarrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:40px;height:84px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--mut);font-size:32px;cursor:pointer;font-family:var(--serif)}
   .rarrow.l{left:2px} .rarrow.r{right:2px} .rarrow:hover{color:var(--acc)}
   .rctrl{border-top:1px solid var(--line);padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));flex-shrink:0}
@@ -118,7 +120,7 @@
   </div>
   <button class="rarrow l" id="rPrev">‹</button>
   <button class="rarrow r" id="rNext">›</button>
-  <div class="rbody"><div class="rkind" id="rKind"></div><div class="rtext" id="rText"></div></div>
+  <div class="rbody" id="rBody"></div>
   <div class="rctrl">
     <div class="main">
       <button class="btn ghost sm" id="rBack">◀ 上一段</button>
@@ -149,7 +151,7 @@
 
 <script>
 "use strict";
-const APP_VERSION='v1';
+const APP_VERSION='v2';
 const LS='readDocs_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -196,38 +198,46 @@ $('#addBtn').onclick=()=>{ const t=$('#inp').value; const ds=splitDocs(t);
   if(!ds.length){ $('#addMsg').textContent='⚠ 沒有可加入的內容'; return; }
   DOCS.push(...ds); save(); $('#inp').value=''; $('#addMsg').textContent=`✓ 加入 ${ds.length} 篇`; renderDocs(); };
 $('#playRawBtn').onclick=()=>{ const t=$('#inp').value.trim(); if(!t){ $('#addMsg').textContent='⚠ 先貼上內容'; return; }
-  openReader({title:'（未儲存）',segs:segsOf(t)}); };
-$('#playAllBtn').onclick=()=>{ if(!DOCS.length)return; const segs=[]; DOCS.forEach(d=>{ segs.push('◆ '+d.title); segs.push(...segsOf(d.text)); });
-  openReader({title:'全部連續朗讀',segs}); };
+  openReader({title:'（未儲存）',lines:segsOf(t)}); };
+$('#playAllBtn').onclick=()=>{ if(!DOCS.length)return; const lines=[]; DOCS.forEach(d=>{ lines.push('◆ '+d.title); lines.push(...segsOf(d.text)); });
+  openReader({title:'全部連續朗讀',lines}); };
 
-/* ---- 朗讀器 ---- */
-let R={segs:[],idx:0,playing:false,title:''};
-function openDoc(id){ const d=DOCS.find(x=>x.id===id); if(!d)return; openReader({title:d.title,segs:segsOf(d.text)}); }
-function openReader(o){ R.segs=o.segs; R.idx=0; R.title=o.title; R.playing=false; $('#ov').classList.add('show'); renderR(); play(); }
+/* ---- 朗讀器：整題顯示，逐句往下念、念到哪反白 ---- */
+let R={units:[],idx:0,playing:false,title:''};
+function openDoc(id){ const d=DOCS.find(x=>x.id===id); if(!d)return; openReader({title:d.title,lines:segsOf(d.text)}); }
 function kindOf(s){ if(/^題型|^◆/.test(s))return 'head'; if(/^💡|考場膝蓋反射/.test(s))return 'tip'; if(/^【.*】/.test(s))return 'point'; return ''; }
-function renderR(){
-  const s=R.segs[R.idx]||''; const k=kindOf(s);
-  $('#rTitle').textContent=R.title;
-  $('#rProg').textContent=(R.segs.length?R.idx+1:0)+' / '+R.segs.length;
-  $('#rKind').textContent = k==='head'?'題型':k==='tip'?'考場膝蓋反射':k==='point'?'爭點':'案例／解析';
-  const rt=$('#rText'); rt.className='rtext'+(k==='head'?' head':k==='tip'?' tip':'');
-  rt.innerHTML=md(s.replace(/^◆\s*/,''));
-  $('#rPlay').textContent=R.playing?'⏸ 暫停':'▶ 播放';
+function splitSentences(line){ if(kindOf(line)) return [line];
+  const p=line.replace(/([。！？])/g,'$1\u0001').split('\u0001').map(s=>s.trim()).filter(Boolean); return p.length?p:[line]; }
+function openReader(o){ R.title=o.title; R.idx=0; R.playing=false;
+  R.units=[]; let html='';
+  (o.lines||[]).forEach(line=>{ const k=kindOf(line);
+    const cls='para'+(k==='head'?' head':k==='tip'?' tip':k==='point'?' point':'');
+    const sents=splitSentences(line);
+    html+=`<div class="${cls}">`+ sents.map(s=>{ const i=R.units.length; R.units.push(s);
+      return `<span class="sent" data-i="${i}">${md(s.replace(/^◆\s*/,''))}</span>`; }).join(' ') +`</div>`;
+  });
+  $('#rBody').innerHTML=html; $('#rTitle').textContent=R.title;
   $('#rRate').value=speakRate; $('#rRateV').textContent=speakRate.toFixed(1)+'x';
+  $('#ov').classList.add('show'); highlight(0); updateProg();
+  play();
 }
-async function play(){ if(!R.segs.length)return; R.playing=true; renderR();
+function highlight(i){ const b=$('#rBody'); b.querySelectorAll('.sent.cur').forEach(e=>e.classList.remove('cur'));
+  const cur=b.querySelector('.sent[data-i="'+i+'"]'); if(cur){ cur.classList.add('cur'); cur.scrollIntoView({block:'center',behavior:'smooth'}); } }
+function updateProg(){ $('#rProg').textContent=(R.units.length?R.idx+1:0)+' / '+R.units.length; $('#rPlay').textContent=R.playing?'⏸ 暫停':'▶ 播放'; }
+async function play(){ if(!R.units.length)return; R.playing=true; updateProg();
   while(R.playing){
     if(!$('#ov').classList.contains('show')){ R.playing=false; break; }
-    if(R.idx>=R.segs.length){ R.playing=false; renderR(); break; }
-    renderR();
-    await sayOnce(speakClean(R.segs[R.idx]));
+    if(R.idx>=R.units.length){ R.playing=false; updateProg(); break; }
+    highlight(R.idx); updateProg();
+    await sayOnce(speakClean(R.units[R.idx]));
     if(!R.playing) break;
     R.idx++;
   }
-  renderR();
+  updateProg();
 }
-function pause(){ R.playing=false; stopSpeak(); renderR(); }
-function rnav(d){ const wasPlaying=R.playing; pause(); R.idx=Math.max(0,Math.min(R.segs.length-1,R.idx+d)); renderR(); if(wasPlaying) play(); }
+function pause(){ R.playing=false; stopSpeak(); updateProg(); }
+function rnav(d){ const wasPlaying=R.playing; pause(); R.idx=Math.max(0,Math.min(R.units.length-1,R.idx+d)); highlight(R.idx); updateProg(); if(wasPlaying) play(); }
+$('#rBody').addEventListener('click',e=>{ const s=e.target.closest('.sent'); if(!s)return; const was=R.playing; pause(); R.idx=+s.dataset.i; highlight(R.idx); updateProg(); if(was) play(); });
 $('#rPlay').onclick=()=>{ R.playing?pause():play(); };
 $('#rBack').onclick=()=>rnav(-1); $('#rFwd').onclick=()=>rnav(1);
 $('#rPrev').onclick=()=>rnav(-1); $('#rNext').onclick=()=>rnav(1);
