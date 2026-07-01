@@ -56,6 +56,13 @@
   .doc .tt{font-family:var(--serif);font-weight:600;font-size:15.5px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .doc .tm{color:var(--mut);font-size:11.5px;margin-top:2px}
   .empty{color:var(--mut);text-align:center;padding:26px;font-size:14px;line-height:1.7}
+  .chiprow{display:flex;gap:7px;flex-wrap:wrap}
+  .shelfchip{font-size:13px;padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--panel2);color:var(--mut);cursor:pointer;font-family:inherit}
+  .shelfchip:hover{border-color:var(--acc)}
+  .shelfchip.on{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent);font-weight:600}
+  .shelfchip .n{opacity:.65;font-size:11px;margin-left:3px}
+  .dchk{width:18px;height:18px;accent-color:var(--acc2);flex-shrink:0;cursor:pointer}
+  .stag{display:inline-block;font-size:11px;color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 32%,transparent);border-radius:9px;padding:0 6px;margin-right:4px}
   input[type=range]{accent-color:var(--acc2)} select{background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:7px 9px;font-family:inherit}
   /* 朗讀器 overlay */
   .ov{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;z-index:100}
@@ -104,8 +111,16 @@
   </div>
 
   <div class="card">
-    <div class="sec-h"><span class="sec-n">2</span>我的篇章</div>
-    <div class="row" style="margin-bottom:10px"><input type="text" id="q" placeholder="搜尋標題" style="flex:1;min-width:140px;background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:9px 11px;font-family:inherit"><button class="btn ghost sm" id="playAllBtn">▶ 全部連續朗讀</button></div>
+    <div class="sec-h"><span class="sec-n">2</span>我的書櫃</div>
+    <div class="chiprow" id="shelfBar" style="margin-bottom:10px"></div>
+    <div class="row" id="shelfManage" style="margin-bottom:10px;display:none"><button class="btn ghost sm" id="shRename">✏️ 改名</button><button class="btn ghost sm" id="shDel" style="color:var(--red)">🗑 刪此書櫃</button></div>
+    <div class="row" style="margin-bottom:10px"><input type="text" id="q" placeholder="搜尋標題" style="flex:1;min-width:140px;background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:9px 11px;font-family:inherit"><button class="btn ghost sm" id="playAllBtn">▶ 連續朗讀</button></div>
+    <div class="row" id="selTools" style="margin-bottom:10px;display:none">
+      <span class="pill" id="selInfo">已選 0</span>
+      <button class="btn ghost sm" id="assignBtn">📚 加入書櫃</button>
+      <button class="btn ghost sm" id="selClr">清除選取</button>
+      <button class="btn ghost sm" id="selDel" style="color:var(--red)">刪除</button>
+    </div>
     <div id="docList"></div>
   </div>
   <div class="msg" style="text-align:center;opacity:.7" id="foot"></div>
@@ -140,6 +155,14 @@
   <div class="msg">主題</div><div class="row" id="themeRow" style="margin-top:6px"></div>
   <div class="row" style="margin-top:16px"><button class="btn ghost sm" data-close>關閉</button></div>
 </div></div>
+<!-- 書櫃選擇 -->
+<div class="ov" id="ovShelf" style="align-items:flex-start"><div class="reader" style="height:auto;max-width:540px;padding:22px;margin-top:8vh">
+  <h2 style="font-family:var(--serif)">選擇書櫃</h2>
+  <div class="msg" id="shelfMsg" style="margin-top:6px"></div>
+  <div class="chiprow" id="shelfPick" style="margin:12px 0"></div>
+  <div class="row"><input type="text" id="newShelf" placeholder="新書櫃名稱" style="flex:1;min-width:130px;background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:9px 11px;font-family:inherit"><button class="btn sm" id="newShelfBtn">＋ 新增並加入</button></div>
+  <div class="row" style="margin-top:16px"><button class="btn" data-close>完成</button></div>
+</div></div>
 <!-- 語音 -->
 <div class="ov" id="ovVoice" style="align-items:flex-start"><div class="reader" style="height:auto;max-width:560px;padding:22px;margin-top:8vh"><h2 style="font-family:var(--serif)">語音</h2>
   <div class="msg" style="margin-top:8px">語音（挑最順耳的中文語音，會記在這台）</div>
@@ -151,7 +174,7 @@
 
 <script>
 "use strict";
-const APP_VERSION='v3';
+const APP_VERSION='v4';
 const LS='readDocs_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -177,30 +200,83 @@ function splitDocs(text){
 function segsOf(text){ return text.split(/\r?\n/).map(s=>s.trim()).filter(s=>s && !isMeta(s) && !/^[-=—─]{2,}$/.test(s)); }
 
 /* ---- 清單 ---- */
-function renderDocs(){
-  const q=($('#q').value||'').trim();
-  let list=DOCS.slice().reverse();
-  if(q) list=list.filter(d=>d.title.includes(q)||d.text.includes(q));
-  $('#docList').innerHTML = list.length ? list.map(d=>`
-    <div class="doc" data-id="${d.id}">
-      <div class="t" data-open="${d.id}"><div class="tt">${esc(d.title)}</div><div class="tm">${segsOf(d.text).length} 段 ‧ ${new Date(d.ts).toLocaleDateString()}</div></div>
-      <button class="btn sm" data-open="${d.id}">▶ 播</button>
-      <button class="btn ghost sm" data-del="${d.id}">刪</button>
-    </div>`).join('') : '<div class="empty">還沒有篇章。上面貼上內容按「加入並收好」。</div>';
-  $('#foot').textContent=`朗讀器 ${APP_VERSION} ‧ 共 ${DOCS.length} 篇 ‧ 資料存於本機`;
+/* ---- 書櫃 ---- */
+let SHELVES=JSON.parse(localStorage.getItem('readShelves')||'[]');
+let curShelf='全部', selDocs=new Set(), shelfTarget=[];
+const saveShelves=()=>localStorage.setItem('readShelves',JSON.stringify(SHELVES));
+const allShelves=()=>{ const set=new Set(SHELVES); DOCS.forEach(d=>(d.shelves||[]).forEach(s=>set.add(s))); return [...set]; };
+const addShelf=n=>{ n=(n||'').trim(); if(n&&!SHELVES.includes(n)){SHELVES.push(n);saveShelves();} return n; };
+const countInShelf=n=>DOCS.filter(d=>(d.shelves||[]).includes(n)).length;
+function filteredDocs(){ const q=($('#q').value||'').trim(); let list=DOCS.slice().reverse();
+  if(curShelf==='未分類') list=list.filter(d=>!(d.shelves&&d.shelves.length));
+  else if(curShelf!=='全部') list=list.filter(d=>(d.shelves||[]).includes(curShelf));
+  if(q) list=list.filter(d=>d.title.includes(q)||d.text.includes(q)); return list; }
+function renderShelfBar(){
+  let h=`<button class="shelfchip ${curShelf==='全部'?'on':''}" data-sf="全部">全部<span class="n">${DOCS.length}</span></button>`;
+  h+=`<button class="shelfchip ${curShelf==='未分類'?'on':''}" data-sf="未分類">未分類<span class="n">${DOCS.filter(d=>!(d.shelves&&d.shelves.length)).length}</span></button>`;
+  allShelves().forEach(s=> h+=`<button class="shelfchip ${curShelf===s?'on':''}" data-sf="${esc(s)}">${esc(s)}<span class="n">${countInShelf(s)}</span></button>`);
+  h+=`<button class="shelfchip" id="newShelfChip">＋ 新書櫃</button>`;
+  $('#shelfBar').innerHTML=h;
+  $('#shelfBar').querySelectorAll('[data-sf]').forEach(b=> b.onclick=()=>{ curShelf=b.dataset.sf; renderShelfBar(); renderDocs(); });
+  $('#newShelfChip').onclick=()=>{ const n=prompt('新書櫃名稱'); if(n&&addShelf(n)){ curShelf=n.trim(); renderShelfBar(); renderDocs(); } };
+  const real=curShelf!=='全部'&&curShelf!=='未分類';
+  $('#shelfManage').style.display=real?'flex':'none';
 }
+$('#shRename').onclick=()=>{ const o=curShelf, n=(prompt('書櫃改名為：',o)||'').trim(); if(!n||n===o)return;
+  SHELVES=[...new Set(SHELVES.map(s=>s===o?n:s))]; DOCS.forEach(d=>{if(d.shelves)d.shelves=[...new Set(d.shelves.map(s=>s===o?n:s))];}); saveShelves(); save(); curShelf=n; renderShelfBar(); renderDocs(); };
+$('#shDel').onclick=()=>{ const o=curShelf; if(!confirm('刪除書櫃「'+o+'」？（篇章不會刪，只是移出此櫃）'))return;
+  SHELVES=SHELVES.filter(s=>s!==o); DOCS.forEach(d=>{if(d.shelves)d.shelves=d.shelves.filter(s=>s!==o);}); saveShelves(); save(); curShelf='全部'; renderShelfBar(); renderDocs(); };
+
+function renderDocs(){
+  const list=filteredDocs();
+  $('#docList').innerHTML = list.length ? list.map(d=>{
+    const tags=(d.shelves||[]).map(s=>`<span class="stag">${esc(s)}</span>`).join('');
+    return `<div class="doc" data-id="${d.id}">
+      <input type="checkbox" class="dchk" data-id="${d.id}" ${selDocs.has(d.id)?'checked':''}>
+      <div class="t" data-open="${d.id}"><div class="tt">${esc(d.title)}</div><div class="tm">${tags}${segsOf(d.text).length} 段 ‧ ${new Date(d.ts).toLocaleDateString()}</div></div>
+      <button class="btn sm" data-open="${d.id}">▶ 播</button>
+      <button class="btn ghost sm" data-shelf="${d.id}">📚</button>
+      <button class="btn ghost sm" data-del="${d.id}">刪</button>
+    </div>`; }).join('') : '<div class="empty">這個書櫃還沒有篇章。上面貼上內容按「加入並收好」，或到「全部」勾選篇章加入書櫃。</div>';
+  renderSelTools();
+  $('#foot').textContent=`朗讀器 ${APP_VERSION} ‧ 共 ${DOCS.length} 篇 ‧ ${allShelves().length} 個書櫃 ‧ 存於本機`;
+}
+function renderSelTools(){ $('#selTools').style.display=selDocs.size?'flex':'none'; $('#selInfo').textContent='已選 '+selDocs.size; }
+$('#docList').addEventListener('change',e=>{ const c=e.target.closest('.dchk'); if(!c)return;
+  c.checked?selDocs.add(c.dataset.id):selDocs.delete(c.dataset.id); c.closest('.doc'); renderSelTools(); });
 $('#docList').addEventListener('click',e=>{
+  const sh=e.target.closest('[data-shelf]'); if(sh){ openShelfPicker([sh.dataset.shelf]); return; }
   const o=e.target.closest('[data-open]'); if(o){ openDoc(o.dataset.open); return; }
-  const d=e.target.closest('[data-del]'); if(d){ if(confirm('刪除這篇？')){ DOCS=DOCS.filter(x=>x.id!==d.dataset.del); save(); renderDocs(); } }
+  const d=e.target.closest('[data-del]'); if(d){ if(confirm('刪除這篇？')){ DOCS=DOCS.filter(x=>x.id!==d.dataset.del); selDocs.delete(d.dataset.del); save(); renderShelfBar(); renderDocs(); } }
 });
+$('#assignBtn').onclick=()=>{ if(selDocs.size) openShelfPicker([...selDocs]); };
+$('#selClr').onclick=()=>{ selDocs.clear(); renderDocs(); };
+$('#selDel').onclick=()=>{ if(!selDocs.size)return; if(confirm('刪除勾選的 '+selDocs.size+' 篇？')){ DOCS=DOCS.filter(x=>!selDocs.has(x.id)); selDocs.clear(); save(); renderShelfBar(); renderDocs(); } };
 $('#q').oninput=renderDocs;
+
+/* 書櫃選擇器：對 shelfTarget（單篇或勾選多篇）多選加入/移出書櫃 */
+function openShelfPicker(ids){ shelfTarget=ids; $('#shelfMsg').textContent='套用到 '+ids.length+' 篇（點書櫃可加入/移出，可多選）'; renderShelfPick(); $('#ovShelf').classList.add('show'); }
+function renderShelfPick(){
+  const docs=shelfTarget.map(id=>DOCS.find(d=>d.id===id)).filter(Boolean);
+  const on=s=>docs.length&&docs.every(d=>(d.shelves||[]).includes(s));
+  const list=allShelves();
+  $('#shelfPick').innerHTML = list.length? list.map(s=>`<button class="shelfchip ${on(s)?'on':''}" data-s="${esc(s)}">${esc(s)}</button>`).join('') : '<span class="msg" style="margin:0">還沒有書櫃，下面新增一個。</span>';
+  $('#shelfPick').querySelectorAll('[data-s]').forEach(b=> b.onclick=()=>toggleShelf(b.dataset.s));
+}
+function toggleShelf(s){ const docs=shelfTarget.map(id=>DOCS.find(d=>d.id===id)).filter(Boolean);
+  const allHave=docs.length&&docs.every(d=>(d.shelves||[]).includes(s));
+  docs.forEach(d=>{ d.shelves=d.shelves||[]; if(allHave)d.shelves=d.shelves.filter(x=>x!==s); else if(!d.shelves.includes(s))d.shelves.push(s); });
+  save(); renderShelfPick(); renderShelfBar(); renderDocs(); }
+$('#newShelfBtn').onclick=()=>{ const n=addShelf($('#newShelf').value); if(!n)return; $('#newShelf').value=''; if(!(shelfTarget.length&&shelfTarget.every(id=>{const d=DOCS.find(x=>x.id===id);return d&&(d.shelves||[]).includes(n);}))) toggleShelf(n); else { renderShelfPick(); renderShelfBar(); } };
+document.querySelectorAll('#ovShelf [data-close]').forEach(b=>b.onclick=()=>$('#ovShelf').classList.remove('show'));
+$('#ovShelf').onclick=e=>{ if(e.target===$('#ovShelf'))$('#ovShelf').classList.remove('show'); };
 $('#addBtn').onclick=()=>{ const t=$('#inp').value; const ds=splitDocs(t);
   if(!ds.length){ $('#addMsg').textContent='⚠ 沒有可加入的內容'; return; }
   DOCS.push(...ds); save(); $('#inp').value=''; $('#addMsg').textContent=`✓ 加入 ${ds.length} 篇`; renderDocs(); };
 $('#playRawBtn').onclick=()=>{ const t=$('#inp').value.trim(); if(!t){ $('#addMsg').textContent='⚠ 先貼上內容'; return; }
   openReader({title:'（未儲存）',lines:segsOf(t)}); };
-$('#playAllBtn').onclick=()=>{ if(!DOCS.length)return; const lines=[]; DOCS.forEach(d=>{ lines.push('◆ '+d.title); lines.push(...segsOf(d.text)); });
-  openReader({title:'全部連續朗讀',lines}); };
+$('#playAllBtn').onclick=()=>{ const src=filteredDocs().slice().reverse(); if(!src.length)return; const lines=[]; src.forEach(d=>{ lines.push('◆ '+d.title); lines.push(...segsOf(d.text)); });
+  openReader({title:'連續朗讀 ‧ '+curShelf,lines}); };
 
 /* ---- 朗讀器：整題顯示，逐句往下念、念到哪反白 ---- */
 let R={units:[],idx:0,playing:false,title:''};
@@ -289,7 +365,7 @@ $('#ovTheme').onclick=e=>{ if(e.target===$('#ovTheme'))$('#ovTheme').classList.r
 $('#ovVoice').onclick=e=>{ if(e.target===$('#ovVoice'))$('#ovVoice').classList.remove('show'); };
 
 /* ---- 啟動 ---- */
-renderDocs();
+renderShelfBar(); renderDocs();
 async function checkUpdate(){ try{ const r=await fetch('read-version.json?_='+Date.now(),{cache:'no-store'}); if(!r.ok)return; const j=await r.json(),v=j&&j.v!=null?String(j.v):null; if(!v||v===APP_VERSION)return; const cur=new URL(location.href).searchParams.get('_v'); if(cur===v)return; const u=new URL(location.href);u.searchParams.set('_v',v);location.replace(u.toString()); }catch(e){} }
 checkUpdate(); setInterval(checkUpdate,60000);
 </script>
