@@ -151,7 +151,7 @@
 
 <script>
 "use strict";
-const APP_VERSION='v2';
+const APP_VERSION='v3';
 const LS='readDocs_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -224,20 +224,23 @@ function openReader(o){ R.title=o.title; R.idx=0; R.playing=false;
 function highlight(i){ const b=$('#rBody'); b.querySelectorAll('.sent.cur').forEach(e=>e.classList.remove('cur'));
   const cur=b.querySelector('.sent[data-i="'+i+'"]'); if(cur){ cur.classList.add('cur'); cur.scrollIntoView({block:'center',behavior:'smooth'}); } }
 function updateProg(){ $('#rProg').textContent=(R.units.length?R.idx+1:0)+' / '+R.units.length; $('#rPlay').textContent=R.playing?'⏸ 暫停':'▶ 播放'; }
-async function play(){ if(!R.units.length)return; R.playing=true; updateProg();
-  while(R.playing){
+R.gen=0;
+async function play(){ if(!R.units.length)return; R.playing=true; const g=++R.gen; updateProg();
+  while(R.playing && g===R.gen){
     if(!$('#ov').classList.contains('show')){ R.playing=false; break; }
-    if(R.idx>=R.units.length){ R.playing=false; updateProg(); break; }
+    if(R.idx>=R.units.length){ R.playing=false; break; }
     highlight(R.idx); updateProg();
     await sayOnce(speakClean(R.units[R.idx]));
-    if(!R.playing) break;
+    if(!R.playing || g!==R.gen) break;   // 被暫停或有新迴圈接手→退出，避免兩個迴圈搶反白
     R.idx++;
   }
-  updateProg();
+  if(g===R.gen) updateProg();
 }
-function pause(){ R.playing=false; stopSpeak(); updateProg(); }
-function rnav(d){ const wasPlaying=R.playing; pause(); R.idx=Math.max(0,Math.min(R.units.length-1,R.idx+d)); highlight(R.idx); updateProg(); if(wasPlaying) play(); }
-$('#rBody').addEventListener('click',e=>{ const s=e.target.closest('.sent'); if(!s)return; const was=R.playing; pause(); R.idx=+s.dataset.i; highlight(R.idx); updateProg(); if(was) play(); });
+function pause(){ R.playing=false; R.gen++; stopSpeak(); updateProg(); }   // gen++ 讓正在等待的舊迴圈確實結束
+function goto(i,keepPlaying){ const was=keepPlaying!=null?keepPlaying:R.playing; pause();
+  R.idx=Math.max(0,Math.min(R.units.length-1,i)); highlight(R.idx); updateProg(); if(was) play(); }
+function rnav(d){ goto(R.idx+d); }
+$('#rBody').addEventListener('click',e=>{ const s=e.target.closest('.sent'); if(!s)return; goto(+s.dataset.i); });
 $('#rPlay').onclick=()=>{ R.playing?pause():play(); };
 $('#rBack').onclick=()=>rnav(-1); $('#rFwd').onclick=()=>rnav(1);
 $('#rPrev').onclick=()=>rnav(-1); $('#rNext').onclick=()=>rnav(1);
