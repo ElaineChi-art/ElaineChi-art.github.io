@@ -297,6 +297,7 @@
     </div>
     <div class="row" style="margin-bottom:10px">
       <span class="pill" id="basketInfo">🧺 測驗籃 0</span>
+      <button class="btn ghost sm" id="autoListBtn">▶ 自動播放</button>
       <button class="btn ghost sm" id="selAllBtn">全部加入測驗籃</button>
       <button class="btn ghost sm" id="selClrBtn">清除勾選</button>
       <button class="btn ghost sm" id="delBtn" style="color:var(--red);border-color:var(--red)">刪除勾選</button>
@@ -377,7 +378,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v20';
+const APP_VERSION='v21';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -630,8 +631,22 @@ $('#grid').addEventListener('click',e=>{
   const w=e.target.closest('.wcard'); if(w) openCard(w.dataset.id);   // 點卡片→放大視窗
 });
 const sayText=c=>c.front+'。故事。'+c.story+'。口訣。'+(c.mnemonic||'')+(c.detail?'。關鍵。'+c.detail:'');
-/* 放大字卡＝閱讀器：全高大視窗＋左右 ‹ › 翻卡＋字級可調（仿單字頁） */
-let cardPool=[], cardIdx=0;
+/* 放大字卡＝閱讀器：全高大視窗＋左右 ‹ › 翻卡＋字級可調＋自動播放（仿單字頁） */
+let cardPool=[], cardIdx=0, rdAuto=false;
+async function readerPlay(){
+  if(!cardPool.length)return; rdAuto=true; renderCardReader();
+  while(rdAuto){
+    if(!$('#ovCard').classList.contains('show')){ rdAuto=false; break; }
+    const c=cardPool[cardIdx];
+    await sayOnce('考點。'+c.front); if(!rdAuto)break; await awaitMs(250);
+    await sayOnce('故事。'+c.story); if(!rdAuto)break; await awaitMs(200);
+    if(c.mnemonic){ await sayOnce('口訣。'+c.mnemonic); if(!rdAuto)break; await awaitMs(200); }
+    if(c.detail){ await sayOnce('關鍵。'+c.detail); if(!rdAuto)break; await awaitMs(200); }
+    await awaitMs(500); if(!rdAuto)break;
+    cardIdx=(cardIdx+1)%cardPool.length; renderCardReader();
+  }
+}
+function readerStop(){ rdAuto=false; stopSpeak(); if($('#ovCard').classList.contains('show')) renderCardReader(); }
 function openCard(id){ cardPool=listPool(); cardIdx=cardPool.findIndex(c=>c.id===id);
   if(cardIdx<0){ const c=DB.cards[id]; if(!c)return; cardPool=[c]; cardIdx=0; }
   renderCardReader(); openOv('#ovCard'); }
@@ -642,7 +657,7 @@ function renderCardReader(){
     <div class="reader-nav">
       <button class="btn ghost sm" id="rdClose">✕ 關閉</button>
       <span style="font-size:12px;color:var(--mut)">${cardIdx+1} / ${cardPool.length}</span>
-      <span class="row" style="gap:6px"><button class="btn ghost sm" id="rdSpeak">🔊 朗讀</button><button class="btn ghost sm" id="rdFont">字級 A±</button></span>
+      <span class="row" style="gap:6px"><button class="btn ghost sm" id="rdSpeak">🔊 朗讀</button><button class="btn ghost sm" id="rdAutoBtn">${rdAuto?'⏹ 停止':'▶ 自動'}</button><button class="btn ghost sm" id="rdFont">字級 A±</button></span>
     </div>
     <button class="reader-arrow l" id="rdPrev">‹</button>
     <button class="reader-arrow r" id="rdNext">›</button>
@@ -658,10 +673,11 @@ function renderCardReader(){
         ${q?`<button class="btn ghost sm" id="bcOrig">🔗 原題複習</button>`:`<button class="btn ghost sm" id="bcPick">🔗 指定原題</button>`}
       </div>
     </div>`;
-  $('#rdClose').onclick=()=>{ stopSpeak(); $('#ovCard').classList.remove('show'); };
+  $('#rdClose').onclick=()=>{ readerStop(); $('#ovCard').classList.remove('show'); };
   $('#rdSpeak').onclick=()=>speak(sayText(c));
+  $('#rdAutoBtn').onclick=()=>{ rdAuto?readerStop():readerPlay(); };
   $('#rdFont').onclick=()=>{ const o=['m','l','xl','s'], cur=localStorage.getItem('ankiFont')||'m'; applyFont(o[(o.indexOf(cur)+1)%o.length]); };
-  $('#rdPrev').onclick=()=>cardNav(-1); $('#rdNext').onclick=()=>cardNav(1);
+  $('#rdPrev').onclick=()=>{ if(rdAuto)readerStop(); cardNav(-1); }; $('#rdNext').onclick=()=>{ if(rdAuto)readerStop(); cardNav(1); };
   const oq=$('#bcOrig'); if(oq)oq.onclick=()=>openQ(c.qref);
   const pk=$('#bcPick'); if(pk)pk.onclick=()=>{ $('#ovCard').classList.remove('show'); openPick(c.id); };
   $('#ovCardModal').querySelectorAll('.lvb').forEach(b=>b.onclick=()=>{ c.level=c.level===b.dataset.lv?'':b.dataset.lv; c.stats.last=Date.now(); save();
@@ -714,6 +730,7 @@ function renderPickResults(qstr){
 }
 $('#pickSearch').oninput=e=>renderPickResults(e.target.value);
 function renderBasket(){ $('#basketInfo').textContent=`🧺 測驗籃 ${selected.size}`; }
+$('#autoListBtn').onclick=()=>{ const p=listPool(); if(!p.length){alert('這個篩選下沒有卡片');return;} cardPool=p; cardIdx=0; openOv('#ovCard'); readerPlay(); };
 $('#selAllBtn').onclick=()=>{ listPool().forEach(c=>selected.add(c.id)); renderList(); };
 $('#selClrBtn').onclick=()=>{ selected.clear(); renderList(); };
 $('#delBtn').onclick=()=>{ if(!selected.size){alert('先勾選要刪除的卡');return;}
