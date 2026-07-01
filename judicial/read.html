@@ -78,6 +78,10 @@
   .para .hl{color:var(--acc);font-weight:700}
   .sent{border-radius:5px;padding:1px 3px;cursor:pointer;transition:background-color .15s}
   .sent.cur{background:color-mix(in srgb,var(--acc) 30%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--acc) 45%,transparent)}
+  .notesblk{margin-top:22px;border-top:1px dashed var(--line);padding-top:14px}
+  .noteslbl{font-size:13px;color:var(--acc);font-weight:600;margin-bottom:8px}
+  #rNote{width:100%;min-height:120px;background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:12px;font-size:calc(15px*var(--fs));line-height:1.7;font-family:inherit;resize:vertical;outline:none}
+  #rNote:focus{border-color:var(--acc)}
   .rarrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:40px;height:84px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--mut);font-size:32px;cursor:pointer;font-family:var(--serif)}
   .rarrow.l{left:2px} .rarrow.r{right:2px} .rarrow:hover{color:var(--acc)}
   .rctrl{border-top:1px solid var(--line);padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));flex-shrink:0}
@@ -174,7 +178,7 @@
 
 <script>
 "use strict";
-const APP_VERSION='v4';
+const APP_VERSION='v5';
 const LS='readDocs_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -233,7 +237,7 @@ function renderDocs(){
     const tags=(d.shelves||[]).map(s=>`<span class="stag">${esc(s)}</span>`).join('');
     return `<div class="doc" data-id="${d.id}">
       <input type="checkbox" class="dchk" data-id="${d.id}" ${selDocs.has(d.id)?'checked':''}>
-      <div class="t" data-open="${d.id}"><div class="tt">${esc(d.title)}</div><div class="tm">${tags}${segsOf(d.text).length} 段 ‧ ${new Date(d.ts).toLocaleDateString()}</div></div>
+      <div class="t" data-open="${d.id}"><div class="tt">${d.note&&d.note.trim()?'📝 ':''}${esc(d.title)}</div><div class="tm">${tags}${segsOf(d.text).length} 段 ‧ ${new Date(d.ts).toLocaleDateString()}</div></div>
       <button class="btn sm" data-open="${d.id}">▶ 播</button>
       <button class="btn ghost sm" data-shelf="${d.id}">📚</button>
       <button class="btn ghost sm" data-del="${d.id}">刪</button>
@@ -280,11 +284,11 @@ $('#playAllBtn').onclick=()=>{ const src=filteredDocs().slice().reverse(); if(!s
 
 /* ---- 朗讀器：整題顯示，逐句往下念、念到哪反白 ---- */
 let R={units:[],idx:0,playing:false,title:''};
-function openDoc(id){ const d=DOCS.find(x=>x.id===id); if(!d)return; openReader({title:d.title,lines:segsOf(d.text)}); }
+function openDoc(id){ const d=DOCS.find(x=>x.id===id); if(!d)return; openReader({title:d.title,lines:segsOf(d.text),id:d.id}); }
 function kindOf(s){ if(/^題型|^◆/.test(s))return 'head'; if(/^💡|考場膝蓋反射/.test(s))return 'tip'; if(/^【.*】/.test(s))return 'point'; return ''; }
 function splitSentences(line){ if(kindOf(line)) return [line];
   const p=line.replace(/([。！？])/g,'$1\u0001').split('\u0001').map(s=>s.trim()).filter(Boolean); return p.length?p:[line]; }
-function openReader(o){ R.title=o.title; R.idx=0; R.playing=false;
+function openReader(o){ R.title=o.title; R.idx=0; R.playing=false; R.docId=o.id||null;
   R.units=[]; let html='';
   (o.lines||[]).forEach(line=>{ const k=kindOf(line);
     const cls='para'+(k==='head'?' head':k==='tip'?' tip':k==='point'?' point':'');
@@ -292,13 +296,20 @@ function openReader(o){ R.title=o.title; R.idx=0; R.playing=false;
     html+=`<div class="${cls}">`+ sents.map(s=>{ const i=R.units.length; R.units.push(s);
       return `<span class="sent" data-i="${i}">${md(s.replace(/^◆\s*/,''))}</span>`; }).join(' ') +`</div>`;
   });
+  if(R.docId) html+=`<div class="notesblk"><div class="noteslbl">📝 我的筆記 <span class="prog" id="noteState"></span></div><textarea id="rNote" placeholder="邊看邊寫筆記，會自動儲存…"></textarea></div>`;
   $('#rBody').innerHTML=html; $('#rTitle').textContent=R.title;
   $('#rRate').value=speakRate; $('#rRateV').textContent=speakRate.toFixed(1)+'x';
+  wireNote();
   $('#ov').classList.add('show'); highlight(0); updateProg();
   play();
 }
+let noteTimer=null;
+function wireNote(){ const ta=$('#rNote'); if(!ta)return; const d=DOCS.find(x=>x.id===R.docId); if(d)ta.value=d.note||'';
+  ta.oninput=()=>{ const dd=DOCS.find(x=>x.id===R.docId); if(!dd)return; dd.note=ta.value; $('#noteState').textContent='儲存中…';
+    clearTimeout(noteTimer); noteTimer=setTimeout(()=>{ save(); $('#noteState').textContent='已儲存 ✓'; },400); }; }
 function highlight(i){ const b=$('#rBody'); b.querySelectorAll('.sent.cur').forEach(e=>e.classList.remove('cur'));
-  const cur=b.querySelector('.sent[data-i="'+i+'"]'); if(cur){ cur.classList.add('cur'); cur.scrollIntoView({block:'center',behavior:'smooth'}); } }
+  const cur=b.querySelector('.sent[data-i="'+i+'"]'); if(cur){ cur.classList.add('cur');
+    const ae=document.activeElement; if(!ae||ae.id!=='rNote') cur.scrollIntoView({block:'center',behavior:'smooth'}); } }
 function updateProg(){ $('#rProg').textContent=(R.units.length?R.idx+1:0)+' / '+R.units.length; $('#rPlay').textContent=R.playing?'⏸ 暫停':'▶ 播放'; }
 R.gen=0;
 async function play(){ if(!R.units.length)return; R.playing=true; const g=++R.gen; updateProg();
