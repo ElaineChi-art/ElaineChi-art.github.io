@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>🔊 申論朗讀器 ‧ 司法官律師複習</title>
+<meta name="theme-color" content="#0a0d12">
+<link rel="manifest" href="read-manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="朗讀器">
+<link rel="apple-touch-icon" href="anki-icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+  (function(){ try{
+    if(navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)) document.documentElement.classList.add('standalone');
+    var th=localStorage.getItem('ankiTheme')||'sapphire'; if(th!=='wine') document.documentElement.setAttribute('data-theme',th);
+    var fs=localStorage.getItem('ankiFont'); if(fs&&fs!=='m') document.documentElement.setAttribute('data-fs',fs);
+  }catch(e){} })();
+</script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{ --bg:#100c0d;--panel:#1a1516;--panel2:#221b1c;--line:#332a2b;--tx:#ece3da;--mut:#9b8d84;--acc:#c8a86a;--acc2:#7d3a44;
+    --green:#86a07c;--red:#b97070;--nav:#0c0809;--glow:#1a1314;--serif:"Cormorant Garamond","Noto Serif TC",Georgia,serif;--fs:1}
+  html[data-theme="sapphire"]{--bg:#0a0d12;--panel:#141921;--panel2:#1b2230;--line:#28323f;--nav:#070a0e;--glow:#142033;--tx:#e7edf4;--mut:#8b97a8;--acc:#a7c4e6;--acc2:#33598a;--green:#82a37f;--red:#bd7a7a}
+  html[data-theme="emerald"]{--bg:#0a0f0d;--panel:#121916;--panel2:#19211d;--line:#26312b;--nav:#070b09;--glow:#0f201a;--tx:#e7efe9;--mut:#8ba093;--acc:#7fc9a6;--acc2:#2e6b57;--green:#86a07c;--red:#bd7a7a}
+  html[data-theme="amethyst"]{--bg:#0f0a12;--panel:#181320;--panel2:#1f1929;--line:#2e2738;--nav:#0a070d;--glow:#1c1430;--tx:#ece4f2;--mut:#9b8fa6;--acc:#c9a7e0;--acc2:#5e3a78;--green:#86a07c;--red:#bd7a7a}
+  html[data-theme="graphite"]{--bg:#0e0f10;--panel:#17181a;--panel2:#1e2023;--line:#2c2f33;--nav:#090a0b;--glow:#191b1e;--tx:#e9ebee;--mut:#969aa0;--acc:#c2c7ce;--acc2:#474c54;--green:#86a07c;--red:#bd7a7a}
+  html[data-theme="parchment"]{--bg:#ece3d2;--panel:#f6f0e5;--panel2:#fbf6ee;--line:#dccfb9;--nav:#e2d6c1;--glow:#f1ead9;--tx:#3a322a;--mut:#7c715f;--acc:#9c6f3a;--acc2:#7d3a44;--green:#5f7d57;--red:#a85a5a}
+  html[data-fs="s"]{--fs:.92} html[data-fs="l"]{--fs:1.22} html[data-fs="xl"]{--fs:1.5}
+  html,body{max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}
+  body{font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;color:var(--tx);min-height:100vh;letter-spacing:.2px;
+    background:radial-gradient(1200px 700px at 50% -10%,var(--glow) 0%,var(--bg) 60%);-webkit-font-smoothing:antialiased}
+  *{transition:background-color .22s,border-color .22s,color .22s}
+  .topnav{display:flex;gap:6px;background:var(--nav);padding:8px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30;overflow-x:auto;padding-top:calc(8px + env(safe-area-inset-top,0px))}
+  .topnav a{color:#9aa4b2;text-decoration:none;font-size:14px;font-weight:600;padding:9px 16px;border-radius:8px;white-space:nowrap}
+  .topnav a:hover{background:#161922} .topnav a.active{background:color-mix(in srgb,var(--acc) 12%,transparent);color:var(--acc)}
+  html.standalone .topnav{display:none}
+  .wrap{max-width:900px;margin:0 auto;padding:20px 18px 90px}
+  h1{font-family:var(--serif);font-weight:600;font-size:30px} .sub{color:var(--mut);font-size:13px;letter-spacing:1.2px;margin-bottom:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 12px 30px -22px #000}
+  .sec-h{font-family:var(--serif);font-weight:600;font-size:19px;margin-bottom:12px;display:flex;align-items:center;gap:9px}
+  .sec-n{color:var(--acc);border:1px solid var(--acc);width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-family:var(--serif)}
+  textarea{width:100%;min-height:150px;background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:12px;font-size:14px;line-height:1.7;font-family:inherit;resize:vertical;outline:none}
+  textarea:focus{border-color:var(--acc)}
+  .btn{background:var(--acc2);color:#f3e7e3;border:none;border-radius:9px;padding:11px 18px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn:hover{filter:brightness(1.1)} .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--tx)} .btn.ghost:hover{border-color:var(--acc)}
+  .btn.sm{padding:7px 13px;font-size:13px}
+  .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .msg{color:var(--mut);font-size:12.5px;margin-top:8px;line-height:1.6}
+  .doc{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--panel2)}
+  .doc .t{flex:1;min-width:0;cursor:pointer}
+  .doc .tt{font-family:var(--serif);font-weight:600;font-size:15.5px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .doc .tm{color:var(--mut);font-size:11.5px;margin-top:2px}
+  .empty{color:var(--mut);text-align:center;padding:26px;font-size:14px;line-height:1.7}
+  input[type=range]{accent-color:var(--acc2)} select{background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:7px 9px;font-family:inherit}
+  /* 朗讀器 overlay */
+  .ov{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;z-index:100}
+  .ov.show{display:flex;align-items:center;justify-content:center;padding:14px}
+  .reader{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:100%;max-width:760px;height:min(90vh,860px);display:flex;flex-direction:column;position:relative;overflow:hidden}
+  .rnav{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);flex-shrink:0}
+  .rtitle{font-family:var(--serif);font-weight:600;font-size:15px;color:var(--acc);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:24px 26px;display:flex;flex-direction:column;justify-content:center}
+  .rkind{align-self:center;font-size:12px;color:var(--mut);letter-spacing:1px;margin-bottom:14px}
+  .rtext{font-size:calc(21px*var(--fs));line-height:2;color:var(--tx);text-align:left}
+  .rtext.head{font-family:var(--serif);font-weight:600;font-size:calc(26px*var(--fs));color:var(--acc);text-align:center}
+  .rtext.tip{color:var(--green)}
+  .rtext .hl{color:var(--acc);font-weight:700}
+  .rarrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:40px;height:84px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--mut);font-size:32px;cursor:pointer;font-family:var(--serif)}
+  .rarrow.l{left:2px} .rarrow.r{right:2px} .rarrow:hover{color:var(--acc)}
+  .rctrl{border-top:1px solid var(--line);padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));flex-shrink:0}
+  .rctrl .main{display:flex;justify-content:center;align-items:center;gap:10px}
+  .rctrl .sub{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;color:var(--mut);font-size:12.5px}
+  .prog{color:var(--mut);font-size:12px}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="https://elainechi-art.github.io/">🏠 首頁</a>
+  <a href="https://elainechi-art.github.io/judicial/">📚 司法官・律師複習</a>
+  <a href="anki.html">🗂️ Anki 記憶卡</a>
+  <a class="active" href="read.html">🔊 申論朗讀器</a>
+</nav>
+<div class="wrap">
+  <div class="row" style="justify-content:space-between;align-items:flex-start">
+    <div><h1>Lector</h1><div class="sub">申論朗讀器 ‧ 貼上就念給你聽</div></div>
+    <div class="row" style="gap:8px"><button class="btn ghost sm" id="btnTheme">外觀</button><button class="btn ghost sm" id="btnVoice">語音</button></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-h"><span class="sec-n">1</span>貼上你整理好的申論</div>
+    <textarea id="inp" placeholder="把整理好的內容貼進來（可一次貼多個「題型 X-X-X…」，會自動分成一篇一篇）。之後想加更多，隨時再貼再按加入。"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="addBtn">➕ 加入並收好</button>
+      <button class="btn ghost sm" id="playRawBtn">▶ 直接朗讀（不儲存）</button>
+      <span class="msg" id="addMsg" style="margin:0"></span>
+    </div>
+    <div class="msg">會依「題型」自動分篇；AI 開場白（沒問題／我將…）會自動略過不念。</div>
+  </div>
+
+  <div class="card">
+    <div class="sec-h"><span class="sec-n">2</span>我的篇章</div>
+    <div class="row" style="margin-bottom:10px"><input type="text" id="q" placeholder="搜尋標題" style="flex:1;min-width:140px;background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:9px 11px;font-family:inherit"><button class="btn ghost sm" id="playAllBtn">▶ 全部連續朗讀</button></div>
+    <div id="docList"></div>
+  </div>
+  <div class="msg" style="text-align:center;opacity:.7" id="foot"></div>
+</div>
+
+<!-- 朗讀器 -->
+<div class="ov" id="ov"><div class="reader">
+  <div class="rnav">
+    <button class="btn ghost sm" id="rClose">✕ 關閉</button>
+    <span class="rtitle" id="rTitle"></span>
+    <span class="row" style="gap:6px"><button class="btn ghost sm" id="rFont">字級 A±</button></span>
+  </div>
+  <button class="rarrow l" id="rPrev">‹</button>
+  <button class="rarrow r" id="rNext">›</button>
+  <div class="rbody"><div class="rkind" id="rKind"></div><div class="rtext" id="rText"></div></div>
+  <div class="rctrl">
+    <div class="main">
+      <button class="btn ghost sm" id="rBack">◀ 上一段</button>
+      <button class="btn" id="rPlay" style="min-width:110px">▶ 播放</button>
+      <button class="btn ghost sm" id="rFwd">下一段 ▶</button>
+    </div>
+    <div class="sub">
+      <span class="prog" id="rProg">0 / 0</span>
+      <span>速度</span><input type="range" id="rRate" min="0.6" max="1.4" step="0.1" style="width:130px"><span id="rRateV" class="prog"></span>
+    </div>
+  </div>
+</div></div>
+
+<!-- 外觀 -->
+<div class="ov" id="ovTheme" style="align-items:flex-start"><div class="reader" style="height:auto;max-width:560px;padding:22px;margin-top:8vh"><h2 style="font-family:var(--serif)">外觀</h2>
+  <div class="msg">字級</div><div class="row" id="fsRow" style="margin:6px 0 14px"></div>
+  <div class="msg">主題</div><div class="row" id="themeRow" style="margin-top:6px"></div>
+  <div class="row" style="margin-top:16px"><button class="btn ghost sm" data-close>關閉</button></div>
+</div></div>
+<!-- 語音 -->
+<div class="ov" id="ovVoice" style="align-items:flex-start"><div class="reader" style="height:auto;max-width:560px;padding:22px;margin-top:8vh"><h2 style="font-family:var(--serif)">語音</h2>
+  <div class="msg" style="margin-top:8px">語音（挑最順耳的中文語音，會記在這台）</div>
+  <div id="voicePick" style="margin-top:6px"></div>
+  <div class="msg" style="margin-top:14px">速度 <span id="vRateV"></span></div>
+  <input type="range" id="vRate" min="0.6" max="1.4" step="0.1" style="width:100%">
+  <div class="row" style="margin-top:16px"><button class="btn ghost sm" data-close>關閉</button></div>
+</div></div>
+
+<script>
+"use strict";
+const APP_VERSION='v1';
+const LS='readDocs_v1';
+const $=s=>document.querySelector(s);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const md=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b class="hl">$1</b>');
+
+/* ---- 資料 ---- */
+let DOCS=load();
+function load(){ try{return JSON.parse(localStorage.getItem(LS))||[];}catch(e){return [];} }
+function save(){ localStorage.setItem(LS,JSON.stringify(DOCS)); }
+const isMeta=l=>/^(沒問題|我將|好的[，,]|以下|接著為您|接續為您)/.test(l.trim());
+const isHeader=l=>/^題型/.test(l.trim());
+/* 把一段貼上文字依「題型」切成多篇 */
+function splitDocs(text){
+  const lines=text.split(/\r?\n/); const out=[]; let cur=null;
+  for(let raw of lines){ const l=raw.trim(); if(!l) continue;
+    if(isHeader(l)){ cur={title:l.replace(/：.*$/,'').slice(0,60),text:l+'\n'}; out.push(cur); }
+    else if(cur){ cur.text+=l+'\n'; }
+    else if(!isMeta(l)){ cur={title:l.slice(0,40),text:l+'\n'}; out.push(cur); }
+  }
+  return out.map(d=>({id:'d'+Math.random().toString(36).slice(2,9)+Date.now().toString(36),title:d.title,text:d.text.trim(),ts:Date.now()}));
+}
+/* 一篇 → 可朗讀段落（過濾空行/AI開場白） */
+function segsOf(text){ return text.split(/\r?\n/).map(s=>s.trim()).filter(s=>s && !isMeta(s) && !/^[-=—─]{2,}$/.test(s)); }
+
+/* ---- 清單 ---- */
+function renderDocs(){
+  const q=($('#q').value||'').trim();
+  let list=DOCS.slice().reverse();
+  if(q) list=list.filter(d=>d.title.includes(q)||d.text.includes(q));
+  $('#docList').innerHTML = list.length ? list.map(d=>`
+    <div class="doc" data-id="${d.id}">
+      <div class="t" data-open="${d.id}"><div class="tt">${esc(d.title)}</div><div class="tm">${segsOf(d.text).length} 段 ‧ ${new Date(d.ts).toLocaleDateString()}</div></div>
+      <button class="btn sm" data-open="${d.id}">▶ 播</button>
+      <button class="btn ghost sm" data-del="${d.id}">刪</button>
+    </div>`).join('') : '<div class="empty">還沒有篇章。上面貼上內容按「加入並收好」。</div>';
+  $('#foot').textContent=`朗讀器 ${APP_VERSION} ‧ 共 ${DOCS.length} 篇 ‧ 資料存於本機`;
+}
+$('#docList').addEventListener('click',e=>{
+  const o=e.target.closest('[data-open]'); if(o){ openDoc(o.dataset.open); return; }
+  const d=e.target.closest('[data-del]'); if(d){ if(confirm('刪除這篇？')){ DOCS=DOCS.filter(x=>x.id!==d.dataset.del); save(); renderDocs(); } }
+});
+$('#q').oninput=renderDocs;
+$('#addBtn').onclick=()=>{ const t=$('#inp').value; const ds=splitDocs(t);
+  if(!ds.length){ $('#addMsg').textContent='⚠ 沒有可加入的內容'; return; }
+  DOCS.push(...ds); save(); $('#inp').value=''; $('#addMsg').textContent=`✓ 加入 ${ds.length} 篇`; renderDocs(); };
+$('#playRawBtn').onclick=()=>{ const t=$('#inp').value.trim(); if(!t){ $('#addMsg').textContent='⚠ 先貼上內容'; return; }
+  openReader({title:'（未儲存）',segs:segsOf(t)}); };
+$('#playAllBtn').onclick=()=>{ if(!DOCS.length)return; const segs=[]; DOCS.forEach(d=>{ segs.push('◆ '+d.title); segs.push(...segsOf(d.text)); });
+  openReader({title:'全部連續朗讀',segs}); };
+
+/* ---- 朗讀器 ---- */
+let R={segs:[],idx:0,playing:false,title:''};
+function openDoc(id){ const d=DOCS.find(x=>x.id===id); if(!d)return; openReader({title:d.title,segs:segsOf(d.text)}); }
+function openReader(o){ R.segs=o.segs; R.idx=0; R.title=o.title; R.playing=false; $('#ov').classList.add('show'); renderR(); play(); }
+function kindOf(s){ if(/^題型|^◆/.test(s))return 'head'; if(/^💡|考場膝蓋反射/.test(s))return 'tip'; if(/^【.*】/.test(s))return 'point'; return ''; }
+function renderR(){
+  const s=R.segs[R.idx]||''; const k=kindOf(s);
+  $('#rTitle').textContent=R.title;
+  $('#rProg').textContent=(R.segs.length?R.idx+1:0)+' / '+R.segs.length;
+  $('#rKind').textContent = k==='head'?'題型':k==='tip'?'考場膝蓋反射':k==='point'?'爭點':'案例／解析';
+  const rt=$('#rText'); rt.className='rtext'+(k==='head'?' head':k==='tip'?' tip':'');
+  rt.innerHTML=md(s.replace(/^◆\s*/,''));
+  $('#rPlay').textContent=R.playing?'⏸ 暫停':'▶ 播放';
+  $('#rRate').value=speakRate; $('#rRateV').textContent=speakRate.toFixed(1)+'x';
+}
+async function play(){ if(!R.segs.length)return; R.playing=true; renderR();
+  while(R.playing){
+    if(!$('#ov').classList.contains('show')){ R.playing=false; break; }
+    if(R.idx>=R.segs.length){ R.playing=false; renderR(); break; }
+    renderR();
+    await sayOnce(speakClean(R.segs[R.idx]));
+    if(!R.playing) break;
+    R.idx++;
+  }
+  renderR();
+}
+function pause(){ R.playing=false; stopSpeak(); renderR(); }
+function rnav(d){ const wasPlaying=R.playing; pause(); R.idx=Math.max(0,Math.min(R.segs.length-1,R.idx+d)); renderR(); if(wasPlaying) play(); }
+$('#rPlay').onclick=()=>{ R.playing?pause():play(); };
+$('#rBack').onclick=()=>rnav(-1); $('#rFwd').onclick=()=>rnav(1);
+$('#rPrev').onclick=()=>rnav(-1); $('#rNext').onclick=()=>rnav(1);
+$('#rClose').onclick=()=>{ pause(); $('#ov').classList.remove('show'); };
+$('#ov').onclick=e=>{ if(e.target===$('#ov')){ pause(); $('#ov').classList.remove('show'); } };
+$('#rFont').onclick=()=>cycleFont();
+$('#rRate').oninput=e=>{ speakRate=+e.target.value; localStorage.setItem('ankiRate',speakRate); $('#rRateV').textContent=speakRate.toFixed(1)+'x'; };
+
+/* ---- 語音 ---- */
+let voices=[]; function loadVoices(){ try{voices=speechSynthesis.getVoices();}catch(e){voices=[];} }
+loadVoices(); if(window.speechSynthesis) speechSynthesis.onvoiceschanged=loadVoices;
+let voicePref=JSON.parse(localStorage.getItem('ankiVoice')||'{}');
+let speakRate=parseFloat(localStorage.getItem('ankiRate')||'1');
+function bestVoice(){ const c=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang)); if(voicePref.zh){const p=c.find(v=>v.name===voicePref.zh);if(p)return p;} return c.find(v=>v.lang==='zh-TW')||c[0]||null; }
+function speakClean(t){ return String(t)
+  .replace(/\*\*/g,'').replace(/💡/g,'').replace(/[【】◆]/g,'').replace(/^題型\s*/,'題型，')
+  .replace(/\$\s*\\?rightarrow\s*\$/g,'，則，').replace(/→/g,'，則，')
+  .replace(/§\s*(\d+)(?:-(\d+))?/g,(m,a,b)=>'第'+a+(b?'之'+b:'')+'條')
+  .replace(/Ⅰ/g,'第一項').replace(/Ⅱ/g,'第二項').replace(/Ⅲ/g,'第三項').replace(/Ⅳ/g,'第四項')
+  .replace(/[#\x60]/g,'').replace(/\s+/g,' ').trim(); }
+function sayOnce(text){ return new Promise(res=>{ if(!text||!window.speechSynthesis){res();return;}
+  try{ const u=new SpeechSynthesisUtterance(text); u.lang='zh-TW'; u.rate=speakRate; const v=bestVoice(); if(v)u.voice=v; u.onend=res; u.onerror=res; speechSynthesis.speak(u); }catch(e){res();} }); }
+function stopSpeak(){ try{speechSynthesis.cancel();}catch(e){} }
+
+/* ---- 外觀 / 字級 / 語音 modal ---- */
+const THEMES=[['wine','酒紅'],['sapphire','藍寶石'],['emerald','翡翠'],['amethyst','紫晶'],['graphite','石墨'],['parchment','羊皮紙']];
+const FS=[['s','小'],['m','中'],['l','大'],['xl','特大']];
+function applyTheme(t){ localStorage.setItem('ankiTheme',t); if(t==='wine')document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',t); renderTheme(); }
+function applyFont(f){ localStorage.setItem('ankiFont',f); if(f==='m')document.documentElement.removeAttribute('data-fs'); else document.documentElement.setAttribute('data-fs',f); renderTheme(); }
+function cycleFont(){ const o=['m','l','xl','s'],cur=localStorage.getItem('ankiFont')||'m'; applyFont(o[(o.indexOf(cur)+1)%o.length]); }
+function renderTheme(){ const ct=localStorage.getItem('ankiTheme')||'sapphire', cf=localStorage.getItem('ankiFont')||'m';
+  $('#themeRow').innerHTML=THEMES.map(([id,nm])=>`<button class="btn ghost sm ${ct===id?'':''}" data-t="${id}" style="${ct===id?'border-color:var(--acc);color:var(--acc)':''}">${nm}</button>`).join('');
+  $('#fsRow').innerHTML=FS.map(([id,nm])=>`<button class="btn ghost sm" data-f="${id}" style="${cf===id?'border-color:var(--acc);color:var(--acc)':''}">${nm}</button>`).join('');
+  $('#themeRow').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>applyTheme(b.dataset.t));
+  $('#fsRow').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>applyFont(b.dataset.f)); }
+function buildVoicePicker(){ loadVoices(); const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
+  if(!zh.length) return '<div class="msg" style="margin:0">這裝置沒有可選的中文語音（iPhone Safari 常只有內建那種，仍可念）。</div>';
+  return `<div class="row">中文 <select id="vZh" style="flex:1;min-width:150px">${zh.map(v=>`<option value="${esc(v.name)}"${voicePref.zh===v.name?' selected':''}>${esc(v.name)}（${v.lang}）</option>`).join('')}</select><button class="btn ghost sm" id="vTest">試聽</button></div>`; }
+function wireVoicePicker(){ const z=$('#vZh'); if(z)z.onchange=()=>{voicePref.zh=z.value;localStorage.setItem('ankiVoice',JSON.stringify(voicePref));speak('這是中文語音試聽');}; const t=$('#vTest'); if(t)t.onclick=()=>speak('這是中文語音試聽'); }
+function speak(t){ stopSpeak(); sayOnce(speakClean(t)); }
+$('#btnTheme').onclick=()=>{ renderTheme(); $('#ovTheme').classList.add('show'); };
+$('#btnVoice').onclick=()=>{ $('#voicePick').innerHTML=buildVoicePicker(); wireVoicePicker(); $('#vRate').value=speakRate; $('#vRateV').textContent=speakRate.toFixed(1)+'x'; $('#ovVoice').classList.add('show'); };
+$('#vRate').oninput=e=>{ speakRate=+e.target.value; localStorage.setItem('ankiRate',speakRate); $('#vRateV').textContent=speakRate.toFixed(1)+'x'; };
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.ov').classList.remove('show'));
+$('#ovTheme').onclick=e=>{ if(e.target===$('#ovTheme'))$('#ovTheme').classList.remove('show'); };
+$('#ovVoice').onclick=e=>{ if(e.target===$('#ovVoice'))$('#ovVoice').classList.remove('show'); };
+
+/* ---- 啟動 ---- */
+renderDocs();
+async function checkUpdate(){ try{ const r=await fetch('read-version.json?_='+Date.now(),{cache:'no-store'}); if(!r.ok)return; const j=await r.json(),v=j&&j.v!=null?String(j.v):null; if(!v||v===APP_VERSION)return; const cur=new URL(location.href).searchParams.get('_v'); if(cur===v)return; const u=new URL(location.href);u.searchParams.set('_v',v);location.replace(u.toString()); }catch(e){} }
+checkUpdate(); setInterval(checkUpdate,60000);
+</script>
+</body>
+</html>

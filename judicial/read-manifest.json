@@ -1,0 +1,13 @@
+{
+  "name": "司法官・律師 申論朗讀器",
+  "short_name": "朗讀器",
+  "start_url": "read.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0d12",
+  "theme_color": "#0a0d12",
+  "icons": [
+    { "src": "anki-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
