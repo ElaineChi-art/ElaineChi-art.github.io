@@ -149,6 +149,8 @@ async function readProvider(){
 }
 const fmt=(w)=>Number(ethers.formatEther(w)).toFixed(4);
 
+function setText(id,v){ const el=document.getElementById(id); if(el.textContent!==v) el.textContent=v; }
+let lastSig="";
 async function load(){
   try{
     const p=await readProvider();
@@ -156,24 +158,31 @@ async function load(){
     const [t,n,cnt,ts,ownr]=await Promise.all([
       c.totalReceived(),c.payeesCount(),c.paymentCount(),c.totalShares(),c.owner()]);
     ownerAddr=ownr.toLowerCase();
-    document.getElementById('total').textContent=fmt(t);
-    document.getElementById('count').textContent=cnt.toString();
-    document.getElementById('npayees').textContent=n.toString();
-    const bar=document.getElementById('bar'); bar.innerHTML="";
-    const list=document.getElementById('payeeList'); list.innerHTML="";
+    setText('total',fmt(t)); setText('count',cnt.toString()); setText('npayees',n.toString());
     const total=Number(ts);
+    // 先把資料收集起來
+    const rows=[];
     for(let i=0;i<Number(n);i++){
       const addr=await c.payees(i);
       const [sh,bal]=await Promise.all([c.shareOf(addr),p.getBalance(addr)]);
-      const pct=total>0?Math.round(Number(sh)/total*100):0;
-      const col=COLORS[i%COLORS.length];
-      const seg=document.createElement('div'); seg.style.background=col; seg.style.width=pct+"%"; seg.textContent=pct+"%"; bar.appendChild(seg);
-      const row=document.createElement('div'); row.className="payee";
-      row.innerHTML=`<div class="who"><span class="dot" style="background:${col}"></span>收款人 ${i+1}（份數 ${sh}）<small>${addr}</small></div><div class="bal">${fmt(bal)} ETH<small>${pct}%</small></div>`;
-      list.appendChild(row);
+      rows.push({addr, sh:sh.toString(), bal:fmt(bal), pct: total>0?Math.round(Number(sh)/total*100):0});
+    }
+    // 只有「資料真的變了」才重畫，避免每次更新都閃
+    const sig=JSON.stringify(rows);
+    if(sig!==lastSig){
+      lastSig=sig;
+      const bar=document.getElementById('bar'); bar.innerHTML="";
+      const list=document.getElementById('payeeList'); list.innerHTML="";
+      rows.forEach((r,i)=>{
+        const col=COLORS[i%COLORS.length];
+        const seg=document.createElement('div'); seg.style.background=col; seg.style.width=r.pct+"%"; seg.textContent=r.pct+"%"; bar.appendChild(seg);
+        const row=document.createElement('div'); row.className="payee";
+        row.innerHTML=`<div class="who"><span class="dot" style="background:${col}"></span>收款人 ${i+1}（份數 ${r.sh}）<small>${r.addr}</small></div><div class="bal">${r.bal} ETH<small>${r.pct}%</small></div>`;
+        list.appendChild(row);
+      });
     }
     document.getElementById('ownerArea').style.display=(connectedAddr && connectedAddr===ownerAddr)?"block":"none";
-    setStatus("✅ 已讀取鏈上資料 · "+new Date().toLocaleTimeString(),"ok");
+    setStatus("✅ 資料已同步(每 20 秒自動更新一次)","ok");
   }catch(e){ setStatus("⚠️ 讀取失敗："+(e.message||e),"err"); }
 }
 
@@ -217,7 +226,7 @@ setStatus("載入 ethers.js…");
 loadEthers().then(()=>{
   SEPOLIA_NET=new ethers.Network("sepolia",11155111);
   setStatus("讀取鏈上資料…");
-  load(); setInterval(load,15000);
+  load(); setInterval(load,20000);
 }).catch(e=>{ setStatus("⚠️ "+e.message,"err"); });
 </script>
 </body>
