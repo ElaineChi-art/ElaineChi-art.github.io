@@ -35,7 +35,7 @@
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
   input{background:#0f1116;border:1px solid #2a2f3a;color:#e8e6e0;border-radius:10px;padding:10px 12px;font-size:14px}
   input.amt{width:110px}input.share{width:90px}input.address{flex:1;min-width:200px}
-  .status{margin-top:14px;font-size:13px;color:#9aa4b2;min-height:18px}
+  .status{margin-top:14px;font-size:13px;color:#9aa4b2;min-height:18px;word-break:break-word}
   .ok{color:#8ff0b0}.err{color:#ff9a9a}
   .ownerbox{border-top:1px dashed #2a2f3a;margin-top:14px;padding-top:14px}
   .hint{font-size:12px;color:#8a8576;margin-top:4px}
@@ -68,7 +68,6 @@
       <input id="amount" class="amt" type="number" step="0.001" value="0.005"> <span>ETH</span>
       <button class="btn-primary" id="payBtn" onclick="pay()">付款分潤</button>
     </div>
-
     <div class="ownerbox" id="ownerArea" style="display:none">
       <h2>👑 擁有者功能(只有合約擁有者能用)</h2>
       <div class="row">
@@ -81,10 +80,9 @@
         <input id="setShare" class="share" type="number" placeholder="新份數" value="30">
         <button onclick="changeShare()">✏️ 改比例</button>
       </div>
-      <div class="hint">份數是相對的：例如 50/25/25，某人拿「他的份數 ÷ 總份數」。</div>
+      <div class="hint">份數是相對的：50/25/25 時總份數 100，某人拿「他的份數 ÷ 總份數」。</div>
     </div>
-
-    <div class="status" id="status"></div>
+    <div class="status" id="status">初始化中…</div>
   </div>
 
   <div class="foot">
@@ -93,10 +91,15 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
 <script>
+// 任何未捕捉的錯誤都顯示在畫面上，方便除錯
+window.addEventListener('error', function(ev){
+  var s=document.getElementById('status');
+  if(s){ s.textContent="⚠️ 錯誤："+(ev.message||'資源載入失敗'); s.className="status err"; }
+});
+
 const CONTRACT="0x6E44Ad35de5Aa0c33750f9a24FeB94A5b730a503";
-const RPCS=["https://sepolia.drpc.org","https://sepolia.gateway.tenderly.co","https://0xrpc.io/sep","https://api.zan.top/eth-sepolia","https://ethereum-sepolia-rpc.publicnode.com"];
+const RPCS=["https://sepolia.drpc.org","https://sepolia.gateway.tenderly.co","https://0xrpc.io/sep","https://api.zan.top/eth-sepolia"];
 const SEPOLIA_HEX="0xaa36a7";
 const COLORS=["#7fb5ff","#f0d68a","#8ff0b0","#d6a3ff","#ff9a9a","#7ee0d0","#ffb27f"];
 const ABI=[
@@ -115,17 +118,36 @@ const ES="https://sepolia.etherscan.io/address/"+CONTRACT;
 document.getElementById('ethlink').textContent="合約："+CONTRACT+" ↗";
 document.getElementById('ethlink').href=ES;
 document.getElementById('etherfoot').href=ES;
-let connectedAddr=null, ownerAddr=null;
+let connectedAddr=null, ownerAddr=null, SEPOLIA_NET=null;
+function setStatus(m,c){const s=document.getElementById('status');s.textContent=m;s.className="status "+(c||"");}
 
-const SEPOLIA_NET=new ethers.Network("sepolia",11155111);
+// 依序嘗試多個 CDN 載入 ethers.js
+function loadEthers(){
+  const urls=[
+    "https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js",
+    "https://unpkg.com/ethers@6.13.4/dist/ethers.umd.min.js"
+  ];
+  return new Promise((resolve,reject)=>{
+    let i=0;
+    (function next(){
+      if(i>=urls.length){ reject(new Error("ethers.js 載入失敗(你的網路可能擋了這些 CDN)")); return; }
+      const s=document.createElement('script');
+      s.src=urls[i++]; s.onload=resolve; s.onerror=next;
+      document.head.appendChild(s);
+    })();
+  });
+}
+
 async function readProvider(){
+  let lastErr;
   for(const u of RPCS){
-    try{ const p=new ethers.JsonRpcProvider(u,SEPOLIA_NET,{staticNetwork:SEPOLIA_NET}); await p.getBlockNumber(); return p; }catch(e){}
+    try{ const p=new ethers.JsonRpcProvider(u,SEPOLIA_NET,{staticNetwork:SEPOLIA_NET}); await p.getBlockNumber(); return p; }
+    catch(e){ lastErr=e; }
   }
-  throw new Error("所有 RPC 都連不上");
+  throw new Error("所有 RPC 都連不上"+(lastErr?("："+lastErr.message):""));
 }
 const fmt=(w)=>Number(ethers.formatEther(w)).toFixed(4);
-function setStatus(m,c){const s=document.getElementById('status');s.textContent=m;s.className="status "+(c||"");}
 
 async function load(){
   try{
@@ -137,7 +159,6 @@ async function load(){
     document.getElementById('total').textContent=fmt(t);
     document.getElementById('count').textContent=cnt.toString();
     document.getElementById('npayees').textContent=n.toString();
-    // 讀每個收款人
     const bar=document.getElementById('bar'); bar.innerHTML="";
     const list=document.getElementById('payeeList'); list.innerHTML="";
     const total=Number(ts);
@@ -146,20 +167,14 @@ async function load(){
       const [sh,bal]=await Promise.all([c.shareOf(addr),p.getBalance(addr)]);
       const pct=total>0?Math.round(Number(sh)/total*100):0;
       const col=COLORS[i%COLORS.length];
-      const seg=document.createElement('div'); seg.style.background=col; seg.style.width=pct+"%";
-      seg.textContent=pct+"%"; bar.appendChild(seg);
+      const seg=document.createElement('div'); seg.style.background=col; seg.style.width=pct+"%"; seg.textContent=pct+"%"; bar.appendChild(seg);
       const row=document.createElement('div'); row.className="payee";
-      row.innerHTML=`<div class="who"><span class="dot" style="background:${col}"></span>收款人 ${i+1}（份數 ${sh}）<small>${addr}</small></div>`+
-                    `<div class="bal">${fmt(bal)} ETH<small>${pct}%</small></div>`;
+      row.innerHTML=`<div class="who"><span class="dot" style="background:${col}"></span>收款人 ${i+1}（份數 ${sh}）<small>${addr}</small></div><div class="bal">${fmt(bal)} ETH<small>${pct}%</small></div>`;
       list.appendChild(row);
     }
-    // 若已連錢包且是擁有者，顯示擁有者功能
-    document.getElementById('ownerArea').style.display=
-      (connectedAddr && connectedAddr===ownerAddr) ? "block" : "none";
+    document.getElementById('ownerArea').style.display=(connectedAddr && connectedAddr===ownerAddr)?"block":"none";
     setStatus("✅ 已讀取鏈上資料 · "+new Date().toLocaleTimeString(),"ok");
-  }catch(e){
-    setStatus("⚠️ 讀取鏈上資料失敗："+(e.message||e)+"（可能是節點忙碌，稍等會自動再試）","err");
-  }
+  }catch(e){ setStatus("⚠️ 讀取失敗："+(e.message||e),"err"); }
 }
 
 async function getSigner(){
@@ -170,7 +185,6 @@ async function getSigner(){
   }
   return await new ethers.BrowserProvider(window.ethereum).getSigner();
 }
-
 async function connect(){
   if(!window.ethereum){ setStatus("找不到 MetaMask，請先安裝。","err"); return; }
   try{
@@ -180,11 +194,9 @@ async function connect(){
     connectedAddr=(await s.getAddress()).toLowerCase();
     document.getElementById('connectBtn').textContent="✅ "+connectedAddr.slice(0,6)+"…"+connectedAddr.slice(-4);
     document.getElementById('payArea').style.display="flex";
-    setStatus("錢包已連接。","ok");
-    load();
+    setStatus("錢包已連接。","ok"); load();
   }catch(e){ setStatus("連接失敗："+(e.message||e),"err"); }
 }
-
 async function sendTx(fn){
   if(!window.ethereum){ setStatus("請先安裝 MetaMask。","err"); return; }
   try{
@@ -193,30 +205,20 @@ async function sendTx(fn){
     const c=new ethers.Contract(CONTRACT,ABI,s);
     const tx=await fn(c);
     setStatus("交易送出，等待上鏈… "+tx.hash.slice(0,12)+"…");
-    await tx.wait();
-    setStatus("✅ 成功！","ok");
-    load();
+    await tx.wait(); setStatus("✅ 成功！","ok"); load();
   }catch(e){ setStatus("失敗："+(e.shortMessage||e.message||e),"err"); }
 }
+function pay(){ sendTx(c=>c.pay({value:ethers.parseEther(document.getElementById('amount').value)})); }
+function addPayee(){ const a=document.getElementById('addAddr').value.trim(); if(!a){setStatus("請填地址。","err");return;} sendTx(c=>c.addPayee(a,document.getElementById('addShare').value)); }
+function changeShare(){ const a=document.getElementById('setAddr').value.trim(); if(!a){setStatus("請填地址。","err");return;} sendTx(c=>c.setShare(a,document.getElementById('setShare').value)); }
 
-function pay(){
-  const amt=document.getElementById('amount').value;
-  sendTx(c=>c.pay({value:ethers.parseEther(amt)}));
-}
-function addPayee(){
-  const a=document.getElementById('addAddr').value.trim();
-  const s=document.getElementById('addShare').value;
-  if(!a){ setStatus("請填新收款人地址。","err"); return; }
-  sendTx(c=>c.addPayee(a,s));
-}
-function changeShare(){
-  const a=document.getElementById('setAddr').value.trim();
-  const s=document.getElementById('setShare').value;
-  if(!a){ setStatus("請填要修改的地址。","err"); return; }
-  sendTx(c=>c.setShare(a,s));
-}
-
-load(); setInterval(load,15000);
+// 啟動
+setStatus("載入 ethers.js…");
+loadEthers().then(()=>{
+  SEPOLIA_NET=new ethers.Network("sepolia",11155111);
+  setStatus("讀取鏈上資料…");
+  load(); setInterval(load,15000);
+}).catch(e=>{ setStatus("⚠️ "+e.message,"err"); });
 </script>
 </body>
 </html>
