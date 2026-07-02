@@ -651,10 +651,29 @@ function cleanForSpeech(t){
     .replace(/[【】→•·▶◀↺✔（）()]/g,' ')
     .replace(/\n+/g,'。').replace(/\s+/g,' ').trim();
 }
+function pickVoice(){
+  const vs=speechSynthesis.getVoices();
+  const score=v=>{
+    const lang=(v.lang||"").toLowerCase().replace("_","-"), n=(v.name||"").toLowerCase();
+    let s;
+    if(lang==="zh-tw"||lang.startsWith("zh-hant")) s=100;
+    else if(lang==="zh-hk") s=60;
+    else if(lang.startsWith("zh")) s=40;
+    else return -1;
+    if(/premium|enhanced|neural|natural|siri|美佳|mei.?jia|婷婷|ting.?ting/.test(n)) s+=25;
+    if(/compact|eloquence|novelty|whisper|zarvox|robot/.test(n)) s-=40;
+    if(v.localService) s+=3;
+    return s;
+  };
+  let best=null,bs=-1;
+  vs.forEach(v=>{const sc=score(v); if(sc>bs){bs=sc;best=v;}});
+  return best;
+}
+if("speechSynthesis" in window){ try{speechSynthesis.getVoices();}catch(e){} speechSynthesis.onvoiceschanged=()=>{}; }
 function speak(t){
   t=cleanForSpeech(t); if(!t) return;
-  const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.rate=speechRate();
-  const v=speechSynthesis.getVoices().find(v=>/zh|TW|Chinese|Mei|Ting|Han/i.test(v.lang+v.name));if(v)u.voice=v;
+  const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.rate=speechRate();u.pitch=1;u.volume=1;
+  const v=pickVoice(); if(v){u.voice=v; u.lang=v.lang||"zh-TW";}
   speechSynthesis.cancel();speechSynthesis.speak(u);}
 function readQ(){const q=window._q,L=["A","B","C","D"];
   speak("第"+q.num+"題。"+q.stem+" "+q.options.map((o,i)=>"選項"+L[i]+"，"+o).join("。"));

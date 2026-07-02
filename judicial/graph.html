@@ -623,15 +623,34 @@ document.getElementById("search").addEventListener("input",e=>{
   el.onchange=()=>localStorage.setItem("sjg_rate",el.value);})();
 function speechRate(){const el=document.getElementById("rate");return el?(parseFloat(el.value)||1):1;}
 let _audioBtn=null;
-function pickVoice(){return speechSynthesis.getVoices().find(v=>/zh|TW|Chinese|Mei|Ting|Han/i.test(v.lang+v.name));}
+function pickVoice(){
+  const vs=speechSynthesis.getVoices();
+  const score=v=>{
+    const lang=(v.lang||"").toLowerCase().replace("_","-"), n=(v.name||"").toLowerCase();
+    let s;
+    if(lang==="zh-tw"||lang.startsWith("zh-hant")) s=100;
+    else if(lang==="zh-hk") s=60;
+    else if(lang.startsWith("zh")) s=40;              // zh-CN 等
+    else return -1;                                   // 非中文一律不選
+    if(/premium|enhanced|neural|natural|siri|美佳|mei.?jia|婷婷|ting.?ting/.test(n)) s+=25;
+    if(/compact|eloquence|novelty|whisper|zarvox|robot/.test(n)) s-=40;   // 排除機器/怪音
+    if(v.localService) s+=3;
+    return s;
+  };
+  let best=null,bs=-1;
+  vs.forEach(v=>{const sc=score(v); if(sc>bs){bs=sc;best=v;}});
+  return best;
+}
+// 有些瀏覽器首次 getVoices() 為空，載入後預熱
+if("speechSynthesis" in window){ try{speechSynthesis.getVoices();}catch(e){} speechSynthesis.onvoiceschanged=()=>{}; }
 function stopSpeak(){speechSynthesis.cancel();if(_audioBtn){_audioBtn.classList.remove("on");_audioBtn=null;}}
 function speak(text,btn){
   if(!("speechSynthesis" in window)){alert("此瀏覽器不支援語音朗讀");return;}
   if(btn&&btn===_audioBtn&&speechSynthesis.speaking){stopSpeak();return;} // 再按一次＝停
   stopSpeak();
   const u=new SpeechSynthesisUtterance(text);
-  u.lang="zh-TW"; u.rate=speechRate();
-  const v=pickVoice(); if(v)u.voice=v;
+  u.lang="zh-TW"; u.rate=speechRate(); u.pitch=1; u.volume=1;
+  const v=pickVoice(); if(v){u.voice=v; u.lang=v.lang||"zh-TW";}
   u.onend=u.onerror=()=>{if(btn)btn.classList.remove("on");if(_audioBtn===btn)_audioBtn=null;};
   if(btn){btn.classList.add("on");_audioBtn=btn;}
   speechSynthesis.speak(u);

@@ -290,13 +290,32 @@ function buildSide(){
 }
 
 /* ===== 語音 ===== */
+function pickVoice(){
+  const vs=speechSynthesis.getVoices();
+  const score=v=>{
+    const lang=(v.lang||"").toLowerCase().replace("_","-"), n=(v.name||"").toLowerCase();
+    let s;
+    if(lang==="zh-tw"||lang.startsWith("zh-hant")) s=100;
+    else if(lang==="zh-hk") s=60;
+    else if(lang.startsWith("zh")) s=40;
+    else return -1;
+    if(/premium|enhanced|neural|natural|siri|美佳|mei.?jia|婷婷|ting.?ting/.test(n)) s+=25;
+    if(/compact|eloquence|novelty|whisper|zarvox|robot/.test(n)) s-=40;
+    if(v.localService) s+=3;
+    return s;
+  };
+  let best=null,bs=-1;
+  vs.forEach(v=>{const sc=score(v); if(sc>bs){bs=sc;best=v;}});
+  return best;
+}
+if("speechSynthesis" in window){ try{speechSynthesis.getVoices();}catch(e){} speechSynthesis.onvoiceschanged=()=>{}; }
 function speak(t,btn){
   if(!("speechSynthesis"in window))return;
   if(btn&&btn._on){speechSynthesis.cancel();btn._on=false;btn.classList.remove("on");return;}
   speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";
+  const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.pitch=1;u.volume=1;
   const rt=localStorage.getItem("sjg_rate"); if(rt)u.rate=parseFloat(rt)||1;
-  const v=speechSynthesis.getVoices().find(v=>/zh|TW|Chinese|Mei|Ting|Han/i.test(v.lang+v.name));if(v)u.voice=v;
+  const v=pickVoice(); if(v){u.voice=v; u.lang=v.lang||"zh-TW";}
   if(btn){btn._on=true;btn.classList.add("on");u.onend=u.onerror=()=>{btn._on=false;btn.classList.remove("on");};}
   speechSynthesis.speak(u);
 }
