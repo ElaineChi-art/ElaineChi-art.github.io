@@ -154,7 +154,7 @@ async function load(){
     const p=await readProvider();
     const c=new ethers.Contract(CONTRACT,ABI,p);
     const [t,n,cnt,ts,ownr]=await Promise.all([
-      c.totalReceived(),c.paymentCount(),c.payeesCount(),c.totalShares(),c.owner()]);
+      c.totalReceived(),c.payeesCount(),c.paymentCount(),c.totalShares(),c.owner()]);
     ownerAddr=ownr.toLowerCase();
     document.getElementById('total').textContent=fmt(t);
     document.getElementById('count').textContent=cnt.toString();
