@@ -3,231 +3,275 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Music Royalty dApp · 音樂版稅智慧合約</title>
-<meta name="description" content="A working Ethereum dApp: configurable music royalty smart contract that auto-splits payments by share. By Elaine Chi.">
+<title>RoyaltySplit — Music Royalty dApp</title>
+<meta name="description" content="A production-style Ethereum dApp: a configurable music-royalty smart contract that auto-splits payments on-chain. By Elaine Chi.">
 <style>
+  :root{
+    --bg:#0a0d14; --surface:#121722; --surface2:#0f131c; --line:#222a39;
+    --text:#e8ebf2; --muted:#8b95a9; --faint:#5c6678;
+    --accent:#8b7cff; --accent2:#4d8dff; --ok:#3ddc97; --err:#ff6b7d;
+    --grad:linear-gradient(135deg,#8b7cff,#4d8dff);
+  }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:"Inter","PingFang TC",system-ui,sans-serif;background:linear-gradient(160deg,#14161c,#26262f);
-       color:#e8e6e0;min-height:100vh;padding:26px 16px 60px}
-  .wrap{max-width:760px;margin:0 auto}
-  h1{font-size:25px;text-align:center}
-  .sub{text-align:center;color:#9aa4b2;font-size:14px;margin:6px 0 4px}
-  .addr{text-align:center;font-size:12px;margin-bottom:20px}
-  .addr a{color:#7fb5ff;text-decoration:none;word-break:break-all}
-  .card{background:#1b1e26;border:1px solid #2a2f3a;border-radius:16px;padding:20px;margin-bottom:16px}
-  .stats{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-  .stat{flex:1;min-width:130px;text-align:center;background:#20242e;border-radius:12px;padding:14px}
-  .stat .n{font-size:28px;font-weight:800;color:#7fb5ff}
-  .stat .l{font-size:13px;color:#9aa4b2;margin-top:4px}
-  h2{font-size:15px;color:#9aa4b2;margin-bottom:12px}
-  #bar{display:flex;height:30px;border-radius:8px;overflow:hidden;margin:4px 0 14px}
-  #bar div{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0b0d12;min-width:0;overflow:hidden}
-  .payee{display:flex;align-items:center;justify-content:space-between;padding:11px 4px;border-bottom:1px solid #262b36}
-  .payee:last-child{border:none}
-  .who{font-weight:700;font-size:14px}.who small{display:block;color:#8a8576;font-weight:400;font-size:11px;word-break:break-all}
-  .bal{font-size:15px;font-weight:800;text-align:right}.bal small{display:block;color:#9aa4b2;font-weight:400;font-size:11px}
-  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle}
-  button{background:#1f3a56;color:#7fb5ff;border:1px solid #2b5680;border-radius:10px;
-         padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer}
-  button:hover{background:#254a6e}
-  button:disabled{opacity:.5;cursor:not-allowed}
-  .btn-primary{background:#7fb5ff;color:#0b0d12;border:none}.btn-primary:hover{background:#9cc7ff}
-  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
-  input{background:#0f1116;border:1px solid #2a2f3a;color:#e8e6e0;border-radius:10px;padding:10px 12px;font-size:14px}
-  input.amt{width:110px}input.share{width:90px}input.address{flex:1;min-width:200px}
-  .status{margin-top:14px;font-size:13px;color:#9aa4b2;min-height:18px;word-break:break-word}
-  .ok{color:#8ff0b0}.err{color:#ff9a9a}
-  .ownerbox{border-top:1px dashed #2a2f3a;margin-top:14px;padding-top:14px}
-  .hint{font-size:12px;color:#8a8576;margin-top:4px}
-  .foot{text-align:center;color:#8a8576;font-size:12px;margin-top:22px;line-height:1.8}
-  .foot a{color:#8a8576}
-  .badge{display:inline-block;font-size:11px;background:#122a1c;color:#8ff0b0;border:1px solid #2f6b47;border-radius:20px;padding:2px 10px;margin-left:6px}
+  html{scroll-behavior:smooth}
+  body{font-family:"Inter","PingFang TC",system-ui,-apple-system,sans-serif;
+       background:radial-gradient(1200px 600px at 80% -10%,#1a1633 0,transparent 60%),
+                  radial-gradient(1000px 500px at -10% 10%,#0e2036 0,transparent 55%),var(--bg);
+       color:var(--text);min-height:100vh;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:840px;margin:0 auto;padding:0 18px 80px}
+
+  /* NAV */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;position:sticky;top:0;
+      background:linear-gradient(var(--bg),rgba(10,13,20,.6) 70%,transparent);z-index:20;backdrop-filter:blur(6px)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:.2px}
+  .brand .logo{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-size:16px}
+  .netbadge{font-size:11px;color:#a9b6ff;background:#191b3a;border:1px solid #2f2f66;border-radius:999px;padding:3px 10px;margin-left:4px}
+  .pill{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);
+        border-radius:999px;padding:6px 8px 6px 6px;font-size:13px;font-weight:600;cursor:pointer}
+  .pill .av{width:22px;height:22px;border-radius:50%}
+  .btn{background:var(--grad);color:#fff;border:none;border-radius:12px;padding:10px 18px;
+       font-size:14px;font-weight:700;cursor:pointer;transition:.15s;box-shadow:0 6px 20px rgba(109,92,255,.35)}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(109,92,255,.45)}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+  .btn.ghost{background:var(--surface);border:1px solid var(--line);color:var(--text);box-shadow:none}
+  .btn.ghost:hover{border-color:var(--accent)}
+
+  /* HERO */
+  header.hero{text-align:center;padding:34px 0 26px}
+  header.hero h1{font-size:34px;font-weight:800;letter-spacing:-.5px}
+  header.hero .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  header.hero p{color:var(--muted);margin-top:8px;font-size:15px}
+
+  .card{background:linear-gradient(180deg,var(--surface),var(--surface2));border:1px solid var(--line);
+        border-radius:20px;padding:22px;margin-bottom:18px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+  .card h3{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:16px;font-weight:700}
+
+  .top{display:grid;grid-template-columns:170px 1fr;gap:24px;align-items:center}
+  @media(max-width:560px){.top{grid-template-columns:1fr}}
+  .donutwrap{position:relative;width:170px;height:170px;margin:0 auto}
+  .donutwrap .center{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+  .donutwrap .center b{font-size:26px;display:block}
+  .donutwrap .center span{font-size:12px;color:var(--muted)}
+  .kpis{display:flex;gap:12px;flex-wrap:wrap}
+  .kpi{flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .kpi .n{font-size:24px;font-weight:800}
+  .kpi .l{font-size:12px;color:var(--muted);margin-top:2px}
+
+  .payee{display:flex;align-items:center;gap:12px;padding:12px 6px;border-top:1px solid var(--line)}
+  .payee:first-child{border-top:none}
+  .av{width:34px;height:34px;border-radius:50%;flex-shrink:0}
+  .payee .info{flex:1;min-width:0}
+  .payee .info b{font-size:14px}
+  .payee .info small{display:block;color:var(--faint);font-size:11px;font-family:ui-monospace,monospace;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .payee .right{text-align:right}
+  .payee .right b{font-size:14px}
+  .payee .right small{display:block;color:var(--muted);font-size:12px}
+  .chip{font-size:11px;font-weight:700;color:#0a0d14;border-radius:6px;padding:2px 7px}
+
+  .field{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  input{background:var(--surface2);border:1px solid var(--line);color:var(--text);border-radius:12px;
+        padding:12px 14px;font-size:15px;outline:none;transition:.15s}
+  input:focus{border-color:var(--accent)}
+  input.amt{width:130px} input.share{width:100px} input.address{flex:1;min-width:220px;font-family:ui-monospace,monospace;font-size:13px}
+  .quick{display:flex;gap:8px;margin:12px 0}
+  .quick button{background:var(--surface2);border:1px solid var(--line);color:var(--muted);border-radius:10px;
+        padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer}
+  .quick button:hover{color:var(--text);border-color:var(--accent)}
+  .divider{border:none;border-top:1px dashed var(--line);margin:18px 0}
+  .hint{font-size:12px;color:var(--faint);margin-top:8px}
+
+  .foot{text-align:center;color:var(--faint);font-size:12px;margin-top:24px;line-height:1.9}
+  .foot a{color:var(--muted);text-decoration:none} .foot a:hover{color:var(--accent2)}
+
+  /* TOASTS */
+  #toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:10px;z-index:50;max-width:340px}
+  .toast{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);
+         border-radius:12px;padding:12px 14px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:slide .25s ease}
+  .toast.ok{border-left-color:var(--ok)} .toast.err{border-left-color:var(--err)}
+  .toast a{color:var(--accent2)}
+  @keyframes slide{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+  .sync{font-size:12px;color:var(--faint);text-align:center;margin-top:6px}
+  .skeleton{color:var(--faint)}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>🎵 Music Royalty dApp <span class="badge">Sepolia testnet</span></h1>
-  <div class="sub">可設定的音樂版稅智慧合約 · 付款自動按比例分潤</div>
-  <div class="addr"><a id="ethlink" target="_blank"></a></div>
+  <nav>
+    <div class="brand"><span class="logo">🎵</span> RoyaltySplit <span class="netbadge">● Sepolia</span></div>
+    <button class="btn" id="connectBtn" onclick="connect()">連接錢包</button>
+  </nav>
+
+  <header class="hero">
+    <h1>音樂版稅 <span class="grad">自動分潤</span></h1>
+    <p>把付款按比例、即時、無法竄改地分給每個人 — 一個真正部署在以太坊上的智慧合約</p>
+  </header>
 
   <div class="card">
-    <div class="stats">
-      <div class="stat"><div class="n" id="total">…</div><div class="l">總收入 (ETH)</div></div>
-      <div class="stat"><div class="n" id="count">…</div><div class="l">付款次數</div></div>
-      <div class="stat"><div class="n" id="npayees">…</div><div class="l">收款人數</div></div>
+    <h3>合約總覽</h3>
+    <div class="top">
+      <div class="donutwrap">
+        <svg id="donut" viewBox="0 0 120 120" width="170" height="170"></svg>
+        <div class="center"><div><b id="npayees" class="skeleton">–</b><span>位收款人</span></div></div>
+      </div>
+      <div>
+        <div class="kpis">
+          <div class="kpi"><div class="n" id="total" class="skeleton">–</div><div class="l">總收入 (ETH)</div></div>
+          <div class="kpi"><div class="n" id="count" class="skeleton">–</div><div class="l">付款次數</div></div>
+        </div>
+        <div id="payeeList" style="margin-top:10px"></div>
+      </div>
     </div>
-    <div style="font-size:13px;color:#9aa4b2;margin:14px 0 2px">分潤比例</div>
-    <div id="bar"></div>
-    <div id="payeeList"></div>
+    <div class="sync" id="sync">連線中…</div>
   </div>
 
   <div class="card">
-    <h2>💰 付款(任何人都能付)</h2>
-    <button id="connectBtn" onclick="connect()">🦊 連接錢包</button>
-    <div class="row" id="payArea" style="display:none">
-      <input id="amount" class="amt" type="number" step="0.001" value="0.005"> <span>ETH</span>
-      <button class="btn-primary" id="payBtn" onclick="pay()">付款分潤</button>
+    <h3>付款分潤</h3>
+    <div class="quick">
+      <button onclick="setAmt('0.001')">0.001</button>
+      <button onclick="setAmt('0.002')">0.002</button>
+      <button onclick="setAmt('0.005')">0.005</button>
     </div>
-    <div class="ownerbox" id="ownerArea" style="display:none">
-      <h2>👑 擁有者功能(只有合約擁有者能用)</h2>
-      <div class="row">
-        <input id="addAddr" class="address" placeholder="新收款人地址 0x...">
+    <div class="field">
+      <input id="amount" class="amt" type="number" step="0.001" value="0.002">
+      <span style="color:var(--muted)">ETH</span>
+      <button class="btn" id="payBtn" onclick="pay()">💰 付款並分潤</button>
+    </div>
+    <div class="hint">任何人都能付款；合約會自動按下方比例分給每位收款人。</div>
+
+    <div id="ownerArea" style="display:none">
+      <hr class="divider">
+      <h3>👑 擁有者功能</h3>
+      <div class="field" style="margin-bottom:10px">
+        <input id="addAddr" class="address" placeholder="新收款人地址 0x…">
         <input id="addShare" class="share" type="number" placeholder="份數" value="10">
-        <button onclick="addPayee()">➕ 加人</button>
+        <button class="btn ghost" onclick="addPayee()">➕ 加人</button>
       </div>
-      <div class="row">
-        <input id="setAddr" class="address" placeholder="要改的收款人地址 0x...">
-        <input id="setShare" class="share" type="number" placeholder="新份數" value="30">
-        <button onclick="changeShare()">✏️ 改比例</button>
+      <div class="field">
+        <input id="setAddr" class="address" placeholder="要修改的收款人地址 0x…">
+        <input id="setShare" class="share" type="number" placeholder="新份數" value="50">
+        <button class="btn ghost" onclick="changeShare()">✏️ 改比例</button>
       </div>
-      <div class="hint">份數是相對的：50/25/25 時總份數 100，某人拿「他的份數 ÷ 總份數」。</div>
+      <div class="hint">份數是相對值：例如 50 / 25 / 25，總份數 100，某人拿「份數 ÷ 總份數」。</div>
     </div>
-    <div class="status" id="status">初始化中…</div>
   </div>
 
   <div class="foot">
-    Built by Elaine Chi · Solidity + ethers.js · <a id="etherfoot" target="_blank">在 Etherscan 上驗證</a><br>
-    部署在 Ethereum Sepolia 測試網的真實智慧合約（非模擬）。
+    <a id="ethlink" target="_blank">合約在 Etherscan 驗證 ↗</a> · Built by Elaine Chi<br>
+    Solidity · ethers.js · 部署於 Ethereum Sepolia 測試網（真實合約，非模擬）
   </div>
 </div>
+<div id="toasts"></div>
 
 <script>
-// 任何未捕捉的錯誤都顯示在畫面上，方便除錯
-window.addEventListener('error', function(ev){
-  var s=document.getElementById('status');
-  if(s){ s.textContent="⚠️ 錯誤："+(ev.message||'資源載入失敗'); s.className="status err"; }
-});
+window.addEventListener('error',e=>toast("⚠️ "+(e.message||'資源載入失敗'),'err'));
 
 const CONTRACT="0x6E44Ad35de5Aa0c33750f9a24FeB94A5b730a503";
 const RPCS=["https://sepolia.drpc.org","https://sepolia.gateway.tenderly.co","https://0xrpc.io/sep","https://api.zan.top/eth-sepolia"];
 const SEPOLIA_HEX="0xaa36a7";
-const COLORS=["#7fb5ff","#f0d68a","#8ff0b0","#d6a3ff","#ff9a9a","#7ee0d0","#ffb27f"];
+const COLORS=["#8b7cff","#4d8dff","#3ddc97","#f4b740","#ff6b9d","#41d6c3","#c98bff"];
 const ABI=[
-  "function owner() view returns (address)",
-  "function payeesCount() view returns (uint256)",
-  "function payees(uint256) view returns (address)",
-  "function shareOf(address) view returns (uint256)",
-  "function totalShares() view returns (uint256)",
-  "function totalReceived() view returns (uint256)",
-  "function paymentCount() view returns (uint256)",
-  "function pay() payable",
-  "function addPayee(address,uint256)",
-  "function setShare(address,uint256)"
+  "function owner() view returns (address)","function payeesCount() view returns (uint256)",
+  "function payees(uint256) view returns (address)","function shareOf(address) view returns (uint256)",
+  "function totalShares() view returns (uint256)","function totalReceived() view returns (uint256)",
+  "function paymentCount() view returns (uint256)","function pay() payable",
+  "function addPayee(address,uint256)","function setShare(address,uint256)"
 ];
 const ES="https://sepolia.etherscan.io/address/"+CONTRACT;
-document.getElementById('ethlink').textContent="合約："+CONTRACT+" ↗";
 document.getElementById('ethlink').href=ES;
-document.getElementById('etherfoot').href=ES;
 let connectedAddr=null, ownerAddr=null, SEPOLIA_NET=null;
-function setStatus(m,c){const s=document.getElementById('status');s.textContent=m;s.className="status "+(c||"");}
 
-// 依序嘗試多個 CDN 載入 ethers.js
+function toast(msg,type,link){
+  const t=document.createElement('div'); t.className="toast "+(type||"");
+  t.innerHTML=msg+(link?` <a href="${link}" target="_blank">查看 ↗</a>`:"");
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(()=>{t.style.opacity=0;setTimeout(()=>t.remove(),300)}, link?9000:5000);
+}
+const short=a=>a.slice(0,6)+"…"+a.slice(-4);
+function avatar(addr){ // 由地址產生的漸層頭像
+  let h1=0,h2=0; for(let i=0;i<addr.length;i++){h1=(h1*31+addr.charCodeAt(i))%360; h2=(h2*17+addr.charCodeAt(i)*3)%360;}
+  return `linear-gradient(135deg,hsl(${h1},70%,58%),hsl(${h2},68%,46%))`;
+}
+function setAmt(v){document.getElementById('amount').value=v;}
+
 function loadEthers(){
-  const urls=[
-    "https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js",
+  const urls=["https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js",
     "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js",
-    "https://unpkg.com/ethers@6.13.4/dist/ethers.umd.min.js"
-  ];
-  return new Promise((resolve,reject)=>{
-    let i=0;
-    (function next(){
-      if(i>=urls.length){ reject(new Error("ethers.js 載入失敗(你的網路可能擋了這些 CDN)")); return; }
-      const s=document.createElement('script');
-      s.src=urls[i++]; s.onload=resolve; s.onerror=next;
-      document.head.appendChild(s);
-    })();
-  });
+    "https://unpkg.com/ethers@6.13.4/dist/ethers.umd.min.js"];
+  return new Promise((res,rej)=>{let i=0;(function n(){if(i>=urls.length){rej(new Error("ethers.js 載入失敗"));return;}
+    const s=document.createElement('script');s.src=urls[i++];s.onload=res;s.onerror=n;document.head.appendChild(s);})();});
 }
-
 async function readProvider(){
-  let lastErr;
-  for(const u of RPCS){
-    try{ const p=new ethers.JsonRpcProvider(u,SEPOLIA_NET,{staticNetwork:SEPOLIA_NET,batchMaxCount:1}); await p.getBlockNumber(); return p; }
-    catch(e){ lastErr=e; }
-  }
-  throw new Error("所有 RPC 都連不上"+(lastErr?("："+lastErr.message):""));
+  let e; for(const u of RPCS){try{const p=new ethers.JsonRpcProvider(u,SEPOLIA_NET,{staticNetwork:SEPOLIA_NET,batchMaxCount:1});await p.getBlockNumber();return p;}catch(x){e=x;}}
+  throw new Error("RPC 連不上"+(e?"："+e.message:""));
 }
-const fmt=(w)=>Number(ethers.formatEther(w)).toFixed(4);
+const fmt=w=>Number(ethers.formatEther(w)).toFixed(4);
 
-function setText(id,v){ const el=document.getElementById(id); if(el.textContent!==v) el.textContent=v; }
+function drawDonut(rows){
+  const svg=document.getElementById('donut'); const C=2*Math.PI*46; let off=0;
+  let s=`<circle cx="60" cy="60" r="46" fill="none" stroke="#1c2333" stroke-width="12"/>`;
+  s+=`<g transform="rotate(-90 60 60)">`;
+  rows.forEach((r,i)=>{const len=C*r.pct/100; const col=COLORS[i%COLORS.length];
+    s+=`<circle cx="60" cy="60" r="46" fill="none" stroke="${col}" stroke-width="12" stroke-linecap="round"
+        stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}"/>`; off+=len;});
+  s+=`</g>`; svg.innerHTML=s;
+}
+
 let lastSig="";
 async function load(){
   try{
-    const p=await readProvider();
-    const c=new ethers.Contract(CONTRACT,ABI,p);
-    const [t,n,cnt,ts,ownr]=await Promise.all([
-      c.totalReceived(),c.payeesCount(),c.paymentCount(),c.totalShares(),c.owner()]);
+    const p=await readProvider(); const c=new ethers.Contract(CONTRACT,ABI,p);
+    const [t,n,cnt,ts,ownr]=await Promise.all([c.totalReceived(),c.payeesCount(),c.paymentCount(),c.totalShares(),c.owner()]);
     ownerAddr=ownr.toLowerCase();
-    setText('total',fmt(t)); setText('count',cnt.toString()); setText('npayees',n.toString());
-    const total=Number(ts);
-    // 先把資料收集起來
-    const rows=[];
-    for(let i=0;i<Number(n);i++){
-      const addr=await c.payees(i);
-      const [sh,bal]=await Promise.all([c.shareOf(addr),p.getBalance(addr)]);
-      rows.push({addr, sh:sh.toString(), bal:fmt(bal), pct: total>0?Math.round(Number(sh)/total*100):0});
-    }
-    // 只有「資料真的變了」才重畫，避免每次更新都閃
+    document.getElementById('total').textContent=fmt(t);
+    document.getElementById('count').textContent=cnt.toString();
+    document.getElementById('npayees').textContent=n.toString();
+    const total=Number(ts); const rows=[];
+    for(let i=0;i<Number(n);i++){const a=await c.payees(i); const [sh,bal]=await Promise.all([c.shareOf(a),p.getBalance(a)]);
+      rows.push({a,sh:sh.toString(),bal:fmt(bal),pct:total>0?Math.round(Number(sh)/total*100):0});}
     const sig=JSON.stringify(rows);
-    if(sig!==lastSig){
-      lastSig=sig;
-      const bar=document.getElementById('bar'); bar.innerHTML="";
+    if(sig!==lastSig){lastSig=sig; drawDonut(rows);
       const list=document.getElementById('payeeList'); list.innerHTML="";
-      rows.forEach((r,i)=>{
-        const col=COLORS[i%COLORS.length];
-        const seg=document.createElement('div'); seg.style.background=col; seg.style.width=r.pct+"%"; seg.textContent=r.pct+"%"; bar.appendChild(seg);
-        const row=document.createElement('div'); row.className="payee";
-        row.innerHTML=`<div class="who"><span class="dot" style="background:${col}"></span>收款人 ${i+1}（份數 ${r.sh}）<small>${r.addr}</small></div><div class="bal">${r.bal} ETH<small>${r.pct}%</small></div>`;
-        list.appendChild(row);
-      });
+      rows.forEach((r,i)=>{const col=COLORS[i%COLORS.length]; const row=document.createElement('div'); row.className="payee";
+        row.innerHTML=`<div class="av" style="background:${avatar(r.a)}"></div>
+          <div class="info"><b>收款人 ${i+1}</b> <small>${r.a}</small></div>
+          <div class="right"><b>${r.bal} ETH</b><small><span class="chip" style="background:${col}">${r.pct}%</span> · 份數 ${r.sh}</small></div>`;
+        list.appendChild(row);});
     }
-    document.getElementById('ownerArea').style.display=(connectedAddr && connectedAddr===ownerAddr)?"block":"none";
-    setStatus("✅ 資料已同步(每 20 秒自動更新一次)","ok");
-  }catch(e){ setStatus("⚠️ 讀取失敗："+(e.message||e),"err"); }
+    document.getElementById('ownerArea').style.display=(connectedAddr&&connectedAddr===ownerAddr)?"block":"none";
+    document.getElementById('sync').textContent="● 已同步鏈上資料 · 每 20 秒自動更新";
+  }catch(e){ document.getElementById('sync').textContent="⚠️ 讀取失敗："+(e.message||e); }
 }
 
 async function getSigner(){
-  const bp=new ethers.BrowserProvider(window.ethereum);
-  const net=await bp.getNetwork();
-  if(net.chainId!==11155111n){
-    try{ await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:SEPOLIA_HEX}]}); }catch(e){}
-  }
+  const bp=new ethers.BrowserProvider(window.ethereum); const net=await bp.getNetwork();
+  if(net.chainId!==11155111n){try{await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:SEPOLIA_HEX}]});}catch(e){}}
   return await new ethers.BrowserProvider(window.ethereum).getSigner();
 }
 async function connect(){
-  if(!window.ethereum){ setStatus("找不到 MetaMask，請先安裝。","err"); return; }
-  try{
-    setStatus("連接中…");
-    await window.ethereum.request({method:"eth_requestAccounts"});
-    const s=await getSigner();
-    connectedAddr=(await s.getAddress()).toLowerCase();
-    document.getElementById('connectBtn').textContent="✅ "+connectedAddr.slice(0,6)+"…"+connectedAddr.slice(-4);
-    document.getElementById('payArea').style.display="flex";
-    setStatus("錢包已連接。","ok"); load();
-  }catch(e){ setStatus("連接失敗："+(e.message||e),"err"); }
+  if(!window.ethereum){toast("找不到 MetaMask，請先安裝瀏覽器擴充功能。","err");return;}
+  try{ await window.ethereum.request({method:"eth_requestAccounts"});
+    const s=await getSigner(); connectedAddr=(await s.getAddress()).toLowerCase();
+    const btn=document.getElementById('connectBtn');
+    btn.outerHTML=`<div class="pill" title="${connectedAddr}"><div class="av" style="background:${avatar(connectedAddr)}"></div>${short(connectedAddr)}</div>`;
+    toast("錢包已連接 "+short(connectedAddr),"ok"); load();
+  }catch(e){toast("連接失敗："+(e.message||e),"err");}
 }
-async function sendTx(fn){
-  if(!window.ethereum){ setStatus("請先安裝 MetaMask。","err"); return; }
-  try{
-    setStatus("請在 MetaMask 確認交易…");
-    const s=await getSigner();
-    const c=new ethers.Contract(CONTRACT,ABI,s);
-    const tx=await fn(c);
-    setStatus("交易送出，等待上鏈… "+tx.hash.slice(0,12)+"…");
-    await tx.wait(); setStatus("✅ 成功！","ok"); load();
-  }catch(e){ setStatus("失敗："+(e.shortMessage||e.message||e),"err"); }
+async function sendTx(fn,label){
+  if(!window.ethereum){toast("請先連接錢包。","err");return;}
+  try{ toast((label||"交易")+"：請在 MetaMask 確認…");
+    const s=await getSigner(); const c=new ethers.Contract(CONTRACT,ABI,s); const tx=await fn(c);
+    toast("交易送出，等待上鏈…", null, "https://sepolia.etherscan.io/tx/"+tx.hash);
+    await tx.wait(); toast("✅ "+(label||"交易")+" 成功！","ok","https://sepolia.etherscan.io/tx/"+tx.hash); load();
+  }catch(e){toast("失敗："+(e.shortMessage||e.message||e),"err");}
 }
-function pay(){ sendTx(c=>c.pay({value:ethers.parseEther(document.getElementById('amount').value)})); }
-function addPayee(){ const a=document.getElementById('addAddr').value.trim(); if(!a){setStatus("請填地址。","err");return;} sendTx(c=>c.addPayee(a,document.getElementById('addShare').value)); }
-function changeShare(){ const a=document.getElementById('setAddr').value.trim(); if(!a){setStatus("請填地址。","err");return;} sendTx(c=>c.setShare(a,document.getElementById('setShare').value)); }
+function pay(){sendTx(c=>c.pay({value:ethers.parseEther(document.getElementById('amount').value)}),"付款分潤");}
+function addPayee(){const a=document.getElementById('addAddr').value.trim();if(!a){toast("請填新收款人地址。","err");return;}sendTx(c=>c.addPayee(a,document.getElementById('addShare').value),"加人");}
+function changeShare(){const a=document.getElementById('setAddr').value.trim();if(!a){toast("請填要修改的地址。","err");return;}sendTx(c=>c.setShare(a,document.getElementById('setShare').value),"改比例");}
 
-// 啟動
-setStatus("載入 ethers.js…");
-loadEthers().then(()=>{
-  SEPOLIA_NET=new ethers.Network("sepolia",11155111);
-  setStatus("讀取鏈上資料…");
-  load(); setInterval(load,20000);
-}).catch(e=>{ setStatus("⚠️ "+e.message,"err"); });
+document.getElementById('sync').textContent="載入中…";
+loadEthers().then(()=>{SEPOLIA_NET=new ethers.Network("sepolia",11155111);load();setInterval(load,20000);})
+  .catch(e=>document.getElementById('sync').textContent="⚠️ "+e.message);
 </script>
 </body>
 </html>
