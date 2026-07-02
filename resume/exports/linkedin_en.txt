@@ -1,7 +1,7 @@
 (LinkedIn About — put headline.txt line 1 in your Headline, this text in About)
 
-Elaine Chi — LegalTech & FinTech Compliance · AI & Blockchain Builder
-I turn financial law and regulation into products that actually run.
+Elaine Chi — Blockchain & Full-Stack Developer · Web3 / FinTech
+I build Web3 & AI products — and I understand the law and finance behind them.
 📍 Taiwan · 開放遠端與海外機會 / Open to remote & overseas
 
 About
@@ -11,15 +11,15 @@ I'm a Technology Law LL.M. candidate at NYCU (a top national university in Taiwa
 
 But I don't just write legal memos — I ship. My thesis on smart-contract law and music NFTs became a working, interactive product. I've independently built and launched 6+ live tools, including a smart-contract digital twin with opcode-level EVM tracing and an LSTM financial dashboard that auto-updates every trading day.
 
-I'm looking for roles where law, finance and code meet — FinTech/RegTech compliance, Web3 legal, or AI governance — remote or international welcome.
+I'm looking for developer roles — blockchain/smart-contract, full-stack, or AI engineering — where my law & finance background is a rare edge. Remote or international welcome.
 
 Let's talk → chengyuchi849@gmail.com
 
 Core Skills
-  Law & Compliance: 金融刑事法 / 白領犯罪, 虛擬資產 / Web3 法遵, 智慧財產權 / 著作權, 金融監理 / 法令遵循, 公平交易法, 訴訟實務書狀撰寫
+  Blockchain / Web3: 智慧合約 Smart Contracts, EVM opcode 級分析, 音樂 NFT / 版稅分配, 虛擬資產服務法
   AI / Data: Python, 大型語言模型 (LLM) 應用, 生成式 AI, LSTM 時序預測, 新聞情緒分析, 自動資料聚合
-  Blockchain: 智慧合約, 音樂 NFT / 版稅分配, 虛擬資產服務法, EVM opcode 級分析
-  Product & Frontend: JavaScript / HTML / CSS, 互動式 3D 數位孿生, 資料視覺化, 中英雙語與語音 (TTS) 介面
+  Frontend / Product: JavaScript / HTML / CSS, 互動式 3D 數位孿生, 資料視覺化, 響應式 RWD, 中英雙語與語音 (TTS) 介面
+  Domain Edge · Law & Finance: 金融刑事法 / 白領犯罪, 金融監理 / 法令遵循, 智慧財產權 / 著作權, 虛擬資產法規
 
 Selected Work
 • Music Royalty OS — Smart-Contract Digital Twin  [Opcode-level EVM tracing · 6 stakeholder roles · EN / ZH voice]
