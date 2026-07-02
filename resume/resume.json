@@ -5,22 +5,22 @@
     "name": "Elaine Chi",
     "photo": "img/photo.png",
     "headline": {
-      "en": "Blockchain & Full-Stack Developer | Smart Contracts · Python · LLM · AI | I build Web3 & FinTech products — with a law & finance edge",
-      "zh": "區塊鏈・全端工程師 | 智慧合約・Python・LLM・AI | 打造 Web3 與金融科技產品，兼具法律金融背景"
+      "en": "Full-Stack Web Developer | JavaScript · Python · AI (LLM) | I ship FinTech & LegalTech web products — with a law & finance edge",
+      "zh": "全端網頁開發者 | JavaScript・Python・AI (LLM) | 打造金融科技與法律科技網頁產品，兼具法律金融背景"
     },
     "title": {
-      "en": "Blockchain & Full-Stack Developer · Web3 / FinTech",
-      "zh": "區塊鏈・全端工程師 · Web3／金融科技"
+      "en": "Full-Stack Web Developer · FinTech / LegalTech / AI",
+      "zh": "全端網頁開發者 · 金融科技／法律科技／AI"
     },
     "tagline": {
-      "en": "I build Web3 & AI products — and I understand the law and finance behind them.",
-      "zh": "我打造 Web3 與 AI 產品，也懂背後的法律與金融。"
+      "en": "I build web & AI products — and I understand the law and finance behind them.",
+      "zh": "我打造網頁與 AI 產品，也懂背後的法律與金融。"
     },
     "location": "Taiwan · 開放遠端與海外機會 / Open to remote & overseas",
     "open_to_work": true,
     "target_roles": {
-      "en": ["Blockchain / Smart-Contract Developer", "Full-Stack Developer", "AI Engineer", "Web3 / FinTech Engineer"],
-      "zh": ["區塊鏈／智慧合約工程師", "全端工程師", "AI 工程師", "Web3／金融科技工程師"]
+      "en": ["Full-Stack Developer", "Front-End Developer", "LegalTech / FinTech Product", "Web Developer"],
+      "zh": ["全端工程師", "前端工程師", "法律科技／金融科技產品", "網頁工程師"]
     },
     "email": "chengyuchi849@gmail.com",
     "phone": "",
@@ -30,19 +30,19 @@
   },
 
   "summary": {
-    "en": "Most people who understand financial law can't build software. Most engineers don't understand financial regulation. I do both.\n\nI'm a Technology Law LL.M. candidate at NYCU (a top national university in Taiwan), specializing in financial crime, FinTech and virtual-asset (Web3) compliance. I've interned at the Financial Crimes Division of the Taipei District Court and the Financial Ombudsman Institution, and worked as a research assistant on white-collar crime and financial supervision.\n\nBut I don't just write legal memos — I ship. My thesis on smart-contract law and music NFTs became a working, interactive product. I've independently built and launched 6+ live tools, including a smart-contract digital twin with opcode-level EVM tracing and an LSTM financial dashboard that auto-updates every trading day.\n\nI'm looking for developer roles — blockchain/smart-contract, full-stack, or AI engineering — where my law & finance background is a rare edge. Remote or international welcome.\n\nLet's talk → chengyuchi849@gmail.com",
-    "zh": "懂金融法規的人，通常不會寫程式；會寫程式的人，通常不懂金融法規。我，兩個都會。\n\n我是陽明交通大學科技法律研究所碩士生，專攻金融犯罪、金融科技與虛擬資產（Web3）法遵。曾在台北地方法院金融重罪專庭（重金庭）、金融消費者評議中心實習，並擔任白領犯罪與金融監理的研究助理。\n\n但我不只是寫法律報告——我做得出來。我的碩論（智慧合約 × 音樂 NFT）被我做成了一個真正能互動的產品；我也獨立開發並上線了 6+ 個工具，包括逐 opcode 追蹤的智慧合約數位孿生、每個交易日自動更新的 LSTM 金融儀表板。\n\n我在找工程師職位——區塊鏈／智慧合約、全端、或 AI 工程——而我的法律與金融背景會是別人沒有的優勢。遠端或海外尤佳。\n\n聊聊 → chengyuchi849@gmail.com"
+    "en": "Most people who understand financial law can't build software. Most engineers don't understand financial regulation. I do both.\n\nI'm a Technology Law LL.M. candidate at NYCU (a top national university in Taiwan), specializing in financial crime, FinTech and virtual-asset (Web3) compliance. I've interned at the Financial Crimes Division of the Taipei District Court and the Financial Ombudsman Institution, and worked as a research assistant on white-collar crime and financial supervision.\n\nBut I don't just write legal memos — I ship. I've independently built and launched 6+ live web products (directing AI tools end to end), including an interactive visualization of how smart-contract royalty splits work and a financial dashboard combining market data with news sentiment.\n\nI'm looking for developer roles — full-stack / front-end web, or AI-focused product work — where my law & finance background is a rare edge. Remote or international welcome.\n\nLet's talk → chengyuchi849@gmail.com",
+    "zh": "懂金融法規的人，通常不會寫程式；會寫程式的人，通常不懂金融法規。我，兩個都會。\n\n我是陽明交通大學科技法律研究所碩士生，專攻金融犯罪、金融科技與虛擬資產（Web3）法遵。曾在台北地方法院金融重罪專庭（重金庭）、金融消費者評議中心實習，並擔任白領犯罪與金融監理的研究助理。\n\n但我不只是寫法律報告——我做得出來。我獨立做出並上線了 6+ 個網頁產品（從頭到尾主導、用 AI 工具協作完成），包括把智慧合約版稅流程視覺化的互動作品，以及結合行情與新聞情緒的金融儀表板。\n\n我在找工程師職位——全端／前端網頁、或 AI 相關產品開發——而我的法律與金融背景會是別人沒有的優勢。遠端或海外尤佳。\n\n聊聊 → chengyuchi849@gmail.com"
   },
 
   "skills": [
-    { "cat": {"en": "Blockchain / Web3", "zh": "區塊鏈 / Web3"},
-      "items": ["智慧合約 Smart Contracts", "EVM opcode 級分析", "音樂 NFT / 版稅分配", "虛擬資產服務法"] },
-    { "cat": {"en": "AI / Data", "zh": "AI / 資料"},
-      "items": ["Python", "大型語言模型 (LLM) 應用", "生成式 AI", "LSTM 時序預測", "新聞情緒分析", "自動資料聚合"] },
-    { "cat": {"en": "Frontend / Product", "zh": "前端 / 產品"},
-      "items": ["JavaScript / HTML / CSS", "互動式 3D 數位孿生", "資料視覺化", "響應式 RWD", "中英雙語與語音 (TTS) 介面"] },
+    { "cat": {"en": "Frontend / Full-Stack Web", "zh": "前端 / 全端網頁"},
+      "items": ["JavaScript / HTML / CSS", "互動式網頁與 3D 視覺化", "資料視覺化", "響應式 RWD", "API 整合", "GitHub Pages 部署", "中英雙語與語音 (TTS) 介面"] },
+    { "cat": {"en": "AI-Native Building", "zh": "AI 協作開發"},
+      "items": ["Claude Code / AI 工具主導開發", "Python", "大型語言模型 (LLM) 應用", "生成式 AI", "自動資料聚合"] },
     { "cat": {"en": "Domain Edge · Law & Finance", "zh": "領域優勢 · 法律金融"},
-      "items": ["金融刑事法 / 白領犯罪", "金融監理 / 法令遵循", "智慧財產權 / 著作權", "虛擬資產法規"] }
+      "items": ["金融刑事法 / 白領犯罪", "金融監理 / 法令遵循", "智慧財產權 / 著作權", "虛擬資產法規"] },
+    { "cat": {"en": "Blockchain · Web3 (concept & visualization)", "zh": "區塊鏈・Web3（概念與視覺化）"},
+      "items": ["智慧合約概念", "EVM / opcode 理解", "音樂 NFT / 版稅設計", "虛擬資產服務法"] }
   ],
 
   "experience": [
@@ -88,14 +88,14 @@
 
   "projects": [
     {
-      "name": {"en": "Music Royalty OS — Smart-Contract Digital Twin", "zh": "音樂版稅 OS · 智慧合約數位孿生"},
-      "role": {"en": "Solo design & engineering · ties to my LL.M. thesis", "zh": "獨立設計與開發 · 呼應碩論主題"},
+      "name": {"en": "Music Royalty OS — Smart-Contract Visualization", "zh": "音樂版稅 OS · 智慧合約視覺化"},
+      "role": {"en": "Solo build (AI-assisted) · ties to my LL.M. thesis", "zh": "獨立製作（AI 協作）· 呼應碩論主題"},
       "url": "https://elainechi-art.github.io/music-os/ecosystem.html",
       "problem": {"en": "Music royalty splits via smart contracts are opaque — stakeholders can't see how money actually flows on-chain.", "zh": "音樂版稅用智慧合約分配時黑箱，各方看不到錢實際在鏈上怎麼流動。"},
-      "approach": {"en": "Built an interactive 3D digital twin with a contract execution lab that traces royalty splits opcode-by-opcode through EVM storage, plus a full single-track lifecycle simulation.", "zh": "打造互動式 3D 數位孿生，內含合約執行實驗室，逐 opcode 追蹤版稅分配如何寫進 EVM storage，並模擬單曲完整生命週期。"},
-      "impact": {"en": "Turns an invisible on-chain legal process into something six stakeholder roles can understand — a working demo of my thesis on smart-contract law & music NFTs.", "zh": "把看不見的鏈上法律流程變成六種角色都看得懂的體驗，等於是碩論(智慧合約×音樂NFT)的可運作示範。"},
-      "metrics": [{"en": "Opcode-level EVM tracing", "zh": "opcode 級 EVM 追蹤"}, {"en": "6 stakeholder roles", "zh": "6 種角色視角"}, {"en": "EN / ZH voice", "zh": "中英語音"}],
-      "stack": ["JavaScript", "3D", "Smart Contracts", "EVM", "虛擬資產法"],
+      "approach": {"en": "Built an interactive 3D visualization that walks step-by-step through how smart-contract royalty splits move through EVM storage, plus a single-track lifecycle simulation.", "zh": "打造互動式 3D 視覺化，一步步呈現智慧合約版稅分配如何流經 EVM storage，並模擬單曲完整生命週期。"},
+      "impact": {"en": "Turns an invisible on-chain process into something six stakeholder roles can understand — a visual companion to my thesis on smart-contract law & music NFTs.", "zh": "把看不見的鏈上流程變成六種角色都看得懂的體驗，是碩論（智慧合約×音樂NFT）的視覺化延伸。"},
+      "metrics": [{"en": "Step-by-step EVM walkthrough", "zh": "逐步呈現 EVM 流程"}, {"en": "6 stakeholder roles", "zh": "6 種角色視角"}, {"en": "EN / ZH voice", "zh": "中英語音"}],
+      "stack": ["JavaScript", "3D visualization", "Smart-contract concepts", "虛擬資產法"],
       "usage": ""
     },
     {

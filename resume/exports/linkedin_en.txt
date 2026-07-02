@@ -1,7 +1,7 @@
 (LinkedIn About — put headline.txt line 1 in your Headline, this text in About)
 
-Elaine Chi — Blockchain & Full-Stack Developer · Web3 / FinTech
-I build Web3 & AI products — and I understand the law and finance behind them.
+Elaine Chi — Full-Stack Web Developer · FinTech / LegalTech / AI
+I build web & AI products — and I understand the law and finance behind them.
 📍 Taiwan · 開放遠端與海外機會 / Open to remote & overseas
 
 About
@@ -9,23 +9,23 @@ Most people who understand financial law can't build software. Most engineers do
 
 I'm a Technology Law LL.M. candidate at NYCU (a top national university in Taiwan), specializing in financial crime, FinTech and virtual-asset (Web3) compliance. I've interned at the Financial Crimes Division of the Taipei District Court and the Financial Ombudsman Institution, and worked as a research assistant on white-collar crime and financial supervision.
 
-But I don't just write legal memos — I ship. My thesis on smart-contract law and music NFTs became a working, interactive product. I've independently built and launched 6+ live tools, including a smart-contract digital twin with opcode-level EVM tracing and an LSTM financial dashboard that auto-updates every trading day.
+But I don't just write legal memos — I ship. I've independently built and launched 6+ live web products (directing AI tools end to end), including an interactive visualization of how smart-contract royalty splits work and a financial dashboard combining market data with news sentiment.
 
-I'm looking for developer roles — blockchain/smart-contract, full-stack, or AI engineering — where my law & finance background is a rare edge. Remote or international welcome.
+I'm looking for developer roles — full-stack / front-end web, or AI-focused product work — where my law & finance background is a rare edge. Remote or international welcome.
 
 Let's talk → chengyuchi849@gmail.com
 
 Core Skills
-  Blockchain / Web3: 智慧合約 Smart Contracts, EVM opcode 級分析, 音樂 NFT / 版稅分配, 虛擬資產服務法
-  AI / Data: Python, 大型語言模型 (LLM) 應用, 生成式 AI, LSTM 時序預測, 新聞情緒分析, 自動資料聚合
-  Frontend / Product: JavaScript / HTML / CSS, 互動式 3D 數位孿生, 資料視覺化, 響應式 RWD, 中英雙語與語音 (TTS) 介面
+  Frontend / Full-Stack Web: JavaScript / HTML / CSS, 互動式網頁與 3D 視覺化, 資料視覺化, 響應式 RWD, API 整合, GitHub Pages 部署, 中英雙語與語音 (TTS) 介面
+  AI-Native Building: Claude Code / AI 工具主導開發, Python, 大型語言模型 (LLM) 應用, 生成式 AI, 自動資料聚合
   Domain Edge · Law & Finance: 金融刑事法 / 白領犯罪, 金融監理 / 法令遵循, 智慧財產權 / 著作權, 虛擬資產法規
+  Blockchain · Web3 (concept & visualization): 智慧合約概念, EVM / opcode 理解, 音樂 NFT / 版稅設計, 虛擬資產服務法
 
 Selected Work
-• Music Royalty OS — Smart-Contract Digital Twin  [Opcode-level EVM tracing · 6 stakeholder roles · EN / ZH voice]
+• Music Royalty OS — Smart-Contract Visualization  [Step-by-step EVM walkthrough · 6 stakeholder roles · EN / ZH voice]
   Problem: Music royalty splits via smart contracts are opaque — stakeholders can't see how money actually flows on-chain.
-  Approach: Built an interactive 3D digital twin with a contract execution lab that traces royalty splits opcode-by-opcode through EVM storage, plus a full single-track lifecycle simulation.
-  Impact: Turns an invisible on-chain legal process into something six stakeholder roles can understand — a working demo of my thesis on smart-contract law & music NFTs.
+  Approach: Built an interactive 3D visualization that walks step-by-step through how smart-contract royalty splits move through EVM storage, plus a single-track lifecycle simulation.
+  Impact: Turns an invisible on-chain process into something six stakeholder roles can understand — a visual companion to my thesis on smart-contract law & music NFTs.
   https://elainechi-art.github.io/music-os/ecosystem.html
 • Taiwan Stock AI Dashboard  [3 markets · Auto-updates daily · LSTM + sentiment]
   Problem: Retail investors juggle price charts and news separately, with no daily forward view.
