@@ -138,12 +138,19 @@ async function connect(){
 }
 
 async function pay(){
-  if(!signer){ setStatus("請先連接錢包。","err"); return; }
+  if(!window.ethereum){ setStatus("找不到 MetaMask。","err"); return; }
   const amt=document.getElementById('amount').value;
   try{
     document.getElementById('payBtn').disabled=true;
     setStatus("請在 MetaMask 確認交易…");
-    const c=new ethers.Contract(CONTRACT,ABI,signer);
+    // 每次付款都用「當下網路」重新建立 provider，避免中途切網路報錯
+    const bp=new ethers.BrowserProvider(window.ethereum);
+    const net=await bp.getNetwork();
+    if(net.chainId!==11155111n){
+      try{ await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:SEPOLIA_HEX}]}); }catch(e){}
+    }
+    const s=await new ethers.BrowserProvider(window.ethereum).getSigner();
+    const c=new ethers.Contract(CONTRACT,ABI,s);
     const tx=await c.pay({value:ethers.parseEther(amt)});
     setStatus("交易送出,等待上鏈… "+tx.hash.slice(0,12)+"…");
     await tx.wait();
