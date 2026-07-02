@@ -173,7 +173,7 @@ window.addEventListener('error',e=>toast("⚠️ "+(e.message||'資源載入失�
 
 const CONTRACT="0x6E44Ad35de5Aa0c33750f9a24FeB94A5b730a503";
 const DEPLOY_BLOCK=11187130;
-const RPCS=["https://sepolia.drpc.org","https://sepolia.gateway.tenderly.co","https://0xrpc.io/sep","https://api.zan.top/eth-sepolia"];
+const RPCS=["https://sepolia.gateway.tenderly.co","https://0xrpc.io/sep","https://sepolia.drpc.org","https://api.zan.top/eth-sepolia"];
 const SEPOLIA_HEX="0xaa36a7";
 const COLORS=["#8b7cff","#4d8dff","#3ddc97","#f4b740","#ff6b9d","#41d6c3","#c98bff"];
 const ABI=[
@@ -208,7 +208,7 @@ function loadEthers(){
     const s=document.createElement('script');s.src=urls[i++];s.onload=res;s.onerror=n;document.head.appendChild(s);})();});
 }
 async function readProvider(){
-  let e; for(const u of RPCS){try{const p=new ethers.JsonRpcProvider(u,SEPOLIA_NET,{staticNetwork:SEPOLIA_NET,batchMaxCount:1});await p.getBlockNumber();return p;}catch(x){e=x;}}
+  let e; for(const u of RPCS){try{const p=new ethers.JsonRpcProvider(u,SEPOLIA_NET,{staticNetwork:SEPOLIA_NET,batchMaxCount:3});await p.getBlockNumber();return p;}catch(x){e=x;}}
   throw new Error("RPC 連不上"+(e?"："+e.message:""));
 }
 const fmt=w=>Number(ethers.formatEther(w)).toFixed(4);
@@ -255,7 +255,7 @@ async function loadHistory(){
   // 輪流試每個節點，用第一個真的回傳事件的（有些免費節點不供 logs）
   for(const url of RPCS){
     try{
-      const p=new ethers.JsonRpcProvider(url,SEPOLIA_NET,{staticNetwork:SEPOLIA_NET,batchMaxCount:1});
+      const p=new ethers.JsonRpcProvider(url,SEPOLIA_NET,{staticNetwork:SEPOLIA_NET,batchMaxCount:3});
       const c=new ethers.Contract(CONTRACT,ABI,p);
       const evs=await c.queryFilter(c.filters.RoyaltyPaid(), DEPLOY_BLOCK, "latest");
       if(evs.length===0) continue; // 這個節點沒回，換下一個
