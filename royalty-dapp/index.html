@@ -156,6 +156,11 @@
     </div>
   </div>
 
+  <div class="card">
+    <h3>交易紀錄</h3>
+    <div id="history"><div class="hint">載入中…</div></div>
+  </div>
+
   <div class="foot">
     <a id="ethlink" target="_blank">合約在 Etherscan 驗證 ↗</a> · Built by Elaine Chi<br>
     Solidity · ethers.js · 部署於 Ethereum Sepolia 測試網（真實合約，非模擬）
@@ -167,6 +172,7 @@
 window.addEventListener('error',e=>toast("⚠️ "+(e.message||'資源載入失敗'),'err'));
 
 const CONTRACT="0x6E44Ad35de5Aa0c33750f9a24FeB94A5b730a503";
+const DEPLOY_BLOCK=11187130;
 const RPCS=["https://sepolia.drpc.org","https://sepolia.gateway.tenderly.co","https://0xrpc.io/sep","https://api.zan.top/eth-sepolia"];
 const SEPOLIA_HEX="0xaa36a7";
 const COLORS=["#8b7cff","#4d8dff","#3ddc97","#f4b740","#ff6b9d","#41d6c3","#c98bff"];
@@ -240,7 +246,29 @@ async function load(){
     }
     document.getElementById('ownerArea').style.display=(connectedAddr&&connectedAddr===ownerAddr)?"block":"none";
     document.getElementById('sync').textContent="● 已同步鏈上資料 · 每 20 秒自動更新";
+    loadHistory(p,c);
   }catch(e){ document.getElementById('sync').textContent="⚠️ 讀取失敗："+(e.message||e); }
+}
+
+let lastHistSig="";
+async function loadHistory(p,c){
+  try{
+    const evs=await c.queryFilter(c.filters.RoyaltyPaid(), DEPLOY_BLOCK, "latest");
+    evs.reverse(); // 最新在最上面
+    const sig=evs.map(e=>e.transactionHash).join(",");
+    if(sig===lastHistSig) return; lastHistSig=sig;
+    const box=document.getElementById('history'); box.innerHTML="";
+    if(evs.length===0){ box.innerHTML='<div class="hint">目前還沒有付款紀錄。付一筆款，這裡就會出現。</div>'; return; }
+    for(const e of evs.slice(0,15)){
+      let when=""; try{ const b=await p.getBlock(e.blockNumber); when=new Date(Number(b.timestamp)*1000).toLocaleString(); }catch(x){}
+      const payer=e.args[0], amt=fmt(e.args[1]);
+      const row=document.createElement('div'); row.className="payee";
+      row.innerHTML=`<div class="av" style="background:${avatar(payer)}"></div>
+        <div class="info"><b>付款 ${amt} ETH</b><small>${payer}</small></div>
+        <div class="right"><a href="https://sepolia.etherscan.io/tx/${e.transactionHash}" target="_blank" style="color:var(--accent2);font-size:12px;text-decoration:none">查看 ↗</a><small>${when}</small></div>`;
+      box.appendChild(row);
+    }
+  }catch(err){ document.getElementById('history').innerHTML='<div class="hint">交易紀錄讀取失敗（節點可能限制查詢範圍）：'+(err.message||err)+'</div>'; }
 }
 
 async function getSigner(){
