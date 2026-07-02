@@ -5,12 +5,12 @@
     "name": "Elaine Chi",
     "photo": "img/photo.png",
     "headline": {
-      "en": "Full-Stack Web Developer | JavaScript · Python · AI (LLM) | I ship FinTech & LegalTech web products — with a law & finance edge",
-      "zh": "全端網頁開發者 | JavaScript・Python・AI (LLM) | 打造金融科技與法律科技網頁產品，兼具法律金融背景"
+      "en": "Full-Stack & Web3 Developer | Solidity · JavaScript · ethers.js · Python · AI | I design & deploy smart contracts and ship dApps — with a law & finance edge",
+      "zh": "全端・Web3 工程師 | Solidity・JavaScript・ethers.js・Python・AI | 設計並部署智慧合約、打造 dApp，兼具法律金融背景"
     },
     "title": {
-      "en": "Full-Stack Web Developer · FinTech / LegalTech / AI",
-      "zh": "全端網頁開發者 · 金融科技／法律科技／AI"
+      "en": "Full-Stack & Web3 Developer · Smart Contracts · FinTech / LegalTech",
+      "zh": "全端・Web3 工程師 · 智慧合約 · 金融科技／法律科技"
     },
     "tagline": {
       "en": "I build web & AI products — and I understand the law and finance behind them.",
@@ -19,8 +19,8 @@
     "location": "Taiwan · 開放遠端與海外機會 / Open to remote & overseas",
     "open_to_work": true,
     "target_roles": {
-      "en": ["Full-Stack Developer", "Front-End Developer", "LegalTech / FinTech Product", "Web Developer"],
-      "zh": ["全端工程師", "前端工程師", "法律科技／金融科技產品", "網頁工程師"]
+      "en": ["Full-Stack Developer", "Blockchain / Smart-Contract Developer", "Web3 / dApp Developer", "LegalTech / FinTech"],
+      "zh": ["全端工程師", "區塊鏈／智慧合約工程師", "Web3／dApp 工程師", "法律科技／金融科技"]
     },
     "email": "chengyuchi849@gmail.com",
     "phone": "",
@@ -30,8 +30,8 @@
   },
 
   "summary": {
-    "en": "Most people who understand financial law can't build software. Most engineers don't understand financial regulation. I do both.\n\nI'm a Technology Law LL.M. candidate at NYCU (a top national university in Taiwan), specializing in financial crime, FinTech and virtual-asset (Web3) compliance. I've interned at the Financial Crimes Division of the Taipei District Court and the Financial Ombudsman Institution, and worked as a research assistant on white-collar crime and financial supervision.\n\nBut I don't just write legal memos — I ship. I've independently built and launched 6+ live web products (directing AI tools end to end), including an interactive visualization of how smart-contract royalty splits work and a financial dashboard combining market data with news sentiment.\n\nI'm looking for developer roles — full-stack / front-end web, or AI-focused product work — where my law & finance background is a rare edge. Remote or international welcome.\n\nLet's talk → chengyuchi849@gmail.com",
-    "zh": "懂金融法規的人，通常不會寫程式；會寫程式的人，通常不懂金融法規。我，兩個都會。\n\n我是陽明交通大學科技法律研究所碩士生，專攻金融犯罪、金融科技與虛擬資產（Web3）法遵。曾在台北地方法院金融重罪專庭（重金庭）、金融消費者評議中心實習，並擔任白領犯罪與金融監理的研究助理。\n\n但我不只是寫法律報告——我做得出來。我獨立做出並上線了 6+ 個網頁產品（從頭到尾主導、用 AI 工具協作完成），包括把智慧合約版稅流程視覺化的互動作品，以及結合行情與新聞情緒的金融儀表板。\n\n我在找工程師職位——全端／前端網頁、或 AI 相關產品開發——而我的法律與金融背景會是別人沒有的優勢。遠端或海外尤佳。\n\n聊聊 → chengyuchi849@gmail.com"
+    "en": "Most people who understand financial law can't build software. Most engineers don't understand financial regulation. I do both.\n\nI'm a Technology Law LL.M. candidate at NYCU (a top national university in Taiwan), specializing in financial crime, FinTech and virtual-asset (Web3) compliance. I've interned at the Financial Crimes Division of the Taipei District Court and the Financial Ombudsman Institution, and worked as a research assistant on white-collar crime and financial supervision.\n\nBut I don't just write legal memos — I ship. I've independently built and launched 6+ live web products (directing AI tools end to end), including a music-royalty smart contract I designed, tested and deployed to Ethereum with a wallet-connected dApp, and a financial dashboard combining market data with news sentiment.\n\nI'm looking for developer roles — full-stack, Web3 / smart-contract, or AI-focused product work — where my law & finance background is a rare edge. Remote or international welcome.\n\nLet's talk → chengyuchi849@gmail.com",
+    "zh": "懂金融法規的人，通常不會寫程式；會寫程式的人，通常不懂金融法規。我，兩個都會。\n\n我是陽明交通大學科技法律研究所碩士生，專攻金融犯罪、金融科技與虛擬資產（Web3）法遵。曾在台北地方法院金融重罪專庭（重金庭）、金融消費者評議中心實習，並擔任白領犯罪與金融監理的研究助理。\n\n但我不只是寫法律報告——我做得出來。我獨立做出並上線了 6+ 個網頁產品（從頭到尾主導、用 AI 工具協作完成），包括我親手設計、測試並部署到 Ethereum 的音樂版稅智慧合約（含可連錢包的 dApp），以及結合行情與新聞情緒的金融儀表板。\n\n我在找工程師職位——全端、Web3／智慧合約、或 AI 相關產品開發——而我的法律與金融背景會是別人沒有的優勢。遠端或海外尤佳。\n\n聊聊 → chengyuchi849@gmail.com"
   },
 
   "skills": [
@@ -41,8 +41,8 @@
       "items": ["Claude Code / AI 工具主導開發", "Python", "大型語言模型 (LLM) 應用", "生成式 AI", "自動資料聚合"] },
     { "cat": {"en": "Domain Edge · Law & Finance", "zh": "領域優勢 · 法律金融"},
       "items": ["金融刑事法 / 白領犯罪", "金融監理 / 法令遵循", "智慧財產權 / 著作權", "虛擬資產法規"] },
-    { "cat": {"en": "Blockchain · Web3 (concept & visualization)", "zh": "區塊鏈・Web3（概念與視覺化）"},
-      "items": ["智慧合約概念", "EVM / opcode 理解", "音樂 NFT / 版稅設計", "虛擬資產服務法"] }
+    { "cat": {"en": "Blockchain / Web3", "zh": "區塊鏈 / Web3"},
+      "items": ["Solidity 智慧合約", "Foundry 測試 / 部署", "ethers.js dApp", "EVM / opcode", "部署並驗證於測試網", "虛擬資產法規"] }
   ],
 
   "experience": [
@@ -87,6 +87,17 @@
   ],
 
   "projects": [
+    {
+      "name": {"en": "RoyaltySplit — Music Royalty dApp", "zh": "RoyaltySplit — 音樂版稅 dApp"},
+      "role": {"en": "Solo — smart contract + full dApp", "zh": "獨立 — 智慧合約 + 完整 dApp"},
+      "url": "https://elainechi-art.github.io/royalty-dapp/",
+      "problem": {"en": "Music royalty splits are opaque and manual — no transparent, automatic way to pay everyone their share.", "zh": "音樂版稅分潤黑箱又手動，沒有透明、自動把錢分給每個人的方式。"},
+      "approach": {"en": "Designed, tested (Foundry) and deployed a configurable royalty smart contract to Ethereum Sepolia — auto-splits any payment by share, with on-chain events, running totals and owner controls (add payee / change ratio). Built a wallet-connected dApp (ethers.js) with a live split chart and on-chain transaction history; verified the contract source on-chain.", "zh": "用 Foundry 設計、測試並部署一個可設定的版稅智慧合約到 Ethereum Sepolia — 付款自動按比例分帳，含鏈上事件、累計統計與擁有者權限（加人／改比例）。打造可連錢包的前端 dApp（ethers.js），含即時分潤圖與鏈上交易紀錄；合約原始碼已鏈上驗證。"},
+      "impact": {"en": "A fully working, publicly verifiable dApp — anyone can connect a wallet, pay, and watch royalties split on-chain in real time. Contract + tests + frontend, end to end.", "zh": "一個完整可運作、公開可驗證的 dApp — 任何人都能連錢包付款、即時看版稅在鏈上自動分帳。合約 + 測試 + 前端，一手包辦。"},
+      "metrics": [{"en": "Deployed & verified on Sepolia", "zh": "Sepolia 部署並驗證"}, {"en": "Wallet connect + live tx history", "zh": "連錢包 + 即時交易紀錄"}, {"en": "Solidity · Foundry · ethers.js", "zh": "Solidity · Foundry · ethers.js"}],
+      "stack": ["Solidity", "Foundry", "ethers.js", "Smart Contracts", "Web3"],
+      "usage": ""
+    },
     {
       "name": {"en": "Music Royalty OS — Smart-Contract Visualization", "zh": "音樂版稅 OS · 智慧合約視覺化"},
       "role": {"en": "Solo build (AI-assisted) · ties to my LL.M. thesis", "zh": "獨立製作（AI 協作）· 呼應碩論主題"},

@@ -1,6 +1,6 @@
 (LinkedIn About — put headline.txt line 1 in your Headline, this text in About)
 
-Elaine Chi — Full-Stack Web Developer · FinTech / LegalTech / AI
+Elaine Chi — Full-Stack & Web3 Developer · Smart Contracts · FinTech / LegalTech
 I build web & AI products — and I understand the law and finance behind them.
 📍 Taiwan · 開放遠端與海外機會 / Open to remote & overseas
 
@@ -9,9 +9,9 @@ Most people who understand financial law can't build software. Most engineers do
 
 I'm a Technology Law LL.M. candidate at NYCU (a top national university in Taiwan), specializing in financial crime, FinTech and virtual-asset (Web3) compliance. I've interned at the Financial Crimes Division of the Taipei District Court and the Financial Ombudsman Institution, and worked as a research assistant on white-collar crime and financial supervision.
 
-But I don't just write legal memos — I ship. I've independently built and launched 6+ live web products (directing AI tools end to end), including an interactive visualization of how smart-contract royalty splits work and a financial dashboard combining market data with news sentiment.
+But I don't just write legal memos — I ship. I've independently built and launched 6+ live web products (directing AI tools end to end), including a music-royalty smart contract I designed, tested and deployed to Ethereum with a wallet-connected dApp, and a financial dashboard combining market data with news sentiment.
 
-I'm looking for developer roles — full-stack / front-end web, or AI-focused product work — where my law & finance background is a rare edge. Remote or international welcome.
+I'm looking for developer roles — full-stack, Web3 / smart-contract, or AI-focused product work — where my law & finance background is a rare edge. Remote or international welcome.
 
 Let's talk → chengyuchi849@gmail.com
 
@@ -19,9 +19,14 @@ Core Skills
   Frontend / Full-Stack Web: JavaScript / HTML / CSS, 互動式網頁與 3D 視覺化, 資料視覺化, 響應式 RWD, API 整合, GitHub Pages 部署, 中英雙語與語音 (TTS) 介面
   AI-Native Building: Claude Code / AI 工具主導開發, Python, 大型語言模型 (LLM) 應用, 生成式 AI, 自動資料聚合
   Domain Edge · Law & Finance: 金融刑事法 / 白領犯罪, 金融監理 / 法令遵循, 智慧財產權 / 著作權, 虛擬資產法規
-  Blockchain · Web3 (concept & visualization): 智慧合約概念, EVM / opcode 理解, 音樂 NFT / 版稅設計, 虛擬資產服務法
+  Blockchain / Web3: Solidity 智慧合約, Foundry 測試 / 部署, ethers.js dApp, EVM / opcode, 部署並驗證於測試網, 虛擬資產法規
 
 Selected Work
+• RoyaltySplit — Music Royalty dApp  [Deployed & verified on Sepolia · Wallet connect + live tx history · Solidity · Foundry · ethers.js]
+  Problem: Music royalty splits are opaque and manual — no transparent, automatic way to pay everyone their share.
+  Approach: Designed, tested (Foundry) and deployed a configurable royalty smart contract to Ethereum Sepolia — auto-splits any payment by share, with on-chain events, running totals and owner controls (add payee / change ratio). Built a wallet-connected dApp (ethers.js) with a live split chart and on-chain transaction history; verified the contract source on-chain.
+  Impact: A fully working, publicly verifiable dApp — anyone can connect a wallet, pay, and watch royalties split on-chain in real time. Contract + tests + frontend, end to end.
+  https://elainechi-art.github.io/royalty-dapp/
 • Music Royalty OS — Smart-Contract Visualization  [Step-by-step EVM walkthrough · 6 stakeholder roles · EN / ZH voice]
   Problem: Music royalty splits via smart contracts are opaque — stakeholders can't see how money actually flows on-chain.
   Approach: Built an interactive 3D visualization that walks step-by-step through how smart-contract royalty splits move through EVM storage, plus a single-track lifecycle simulation.

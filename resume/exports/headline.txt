@@ -1,5 +1,5 @@
 LinkedIn / 104 標題（複製其一，前 80 字最關鍵，勿寫 open to work）
 
-[EN] Full-Stack Web Developer | JavaScript · Python · AI (LLM) | I ship FinTech & LegalTech web products — with a law & finance edge
+[EN] Full-Stack & Web3 Developer | Solidity · JavaScript · ethers.js · Python · AI | I design & deploy smart contracts and ship dApps — with a law & finance edge
 
-[中] 全端網頁開發者 | JavaScript・Python・AI (LLM) | 打造金融科技與法律科技網頁產品，兼具法律金融背景
+[中] 全端・Web3 工程師 | Solidity・JavaScript・ethers.js・Python・AI | 設計並部署智慧合約、打造 dApp，兼具法律金融背景
