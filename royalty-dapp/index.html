@@ -181,7 +181,8 @@ const ABI=[
   "function payees(uint256) view returns (address)","function shareOf(address) view returns (uint256)",
   "function totalShares() view returns (uint256)","function totalReceived() view returns (uint256)",
   "function paymentCount() view returns (uint256)","function pay() payable",
-  "function addPayee(address,uint256)","function setShare(address,uint256)"
+  "function addPayee(address,uint256)","function setShare(address,uint256)",
+  "event RoyaltyPaid(address indexed payer, uint256 amount)"
 ];
 const ES="https://sepolia.etherscan.io/address/"+CONTRACT;
 document.getElementById('ethlink').href=ES;
