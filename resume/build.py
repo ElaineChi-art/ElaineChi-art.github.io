@@ -46,6 +46,12 @@ def span2(v):
     """輸出同時含中英兩份文字的元素，靠 body class 切換顯示。"""
     return f'<span class="en">{e(L(v,"en"))}</span><span class="zh">{e(L(v,"zh"))}</span>'
 
+def span2br(v):
+    """同 span2，但保留換行（\\n → <br>），給 About 這種多段文字用。"""
+    en = e(L(v, "en")).replace("\n", "<br>")
+    zh = e(L(v, "zh")).replace("\n", "<br>")
+    return f'<span class="en">{en}</span><span class="zh">{zh}</span>'
+
 def build_html(d):
     p = d["profile"]
     today = datetime.date.today().isoformat()
@@ -113,6 +119,7 @@ def build_html(d):
 
     desc_meta = e(L(d.get("summary"), "en")[:155])
     open_badge = '<span class="oa"><span class="en">🟢 Open to opportunities</span><span class="zh">🟢 開放工作機會</span></span>' if p.get("open_to_work") else ''
+    photo_html = f'<img class="avatar" src="{e(p["photo"])}" alt="{e(p.get("name",""))}">' if p.get("photo") else ''
 
     return f'''<!DOCTYPE html>
 <html lang="en">
@@ -141,6 +148,8 @@ def build_html(d):
        padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;margin-left:6px}}
   .langbar button.on{{background:#1f3a56;color:#7fb5ff;border-color:#2b5680}}
   header{{padding:28px 0 32px;text-align:center}}
+  .avatar{{width:150px;height:150px;border-radius:50%;object-fit:cover;object-position:center top;
+       border:3px solid #7fb5ff;box-shadow:0 6px 20px rgba(0,0,0,.35);margin-bottom:18px}}
   .oa{{display:inline-block;font-size:13px;color:#8ff0b0;border:1px solid #2f6b47;background:#122a1c;border-radius:20px;padding:4px 14px;margin-bottom:16px}}
   h1{{font-size:42px;letter-spacing:1px}}
   .role{{color:#7fb5ff;font-size:19px;font-weight:600;margin:8px 0}}
@@ -184,7 +193,8 @@ def build_html(d):
     <button id="b-zh" onclick="setLang('zh')">中文</button>
   </div>
   <header>
-    {open_badge}
+    {photo_html}
+    <div>{open_badge}</div>
     <h1>{e(p.get("name",""))}</h1>
     <div class="role">{span2(p.get("title",""))}</div>
     <div class="tagline">{span2(p.get("tagline",""))}</div>
@@ -193,7 +203,7 @@ def build_html(d):
     <div class="targets">{roles_html}</div>
   </header>
 
-  <section><h2><span class="en">About</span><span class="zh">關於我</span></h2><p class="summary">{span2(d.get("summary",""))}</p></section>
+  <section><h2><span class="en">About</span><span class="zh">關於我</span></h2><p class="summary">{span2br(d.get("summary",""))}</p></section>
 
   <section><h2><span class="en">Core Skills</span><span class="zh">核心技能</span></h2>{skills_html}</section>
 

@@ -1,44 +1,67 @@
 (LinkedIn About — put headline.txt line 1 in your Headline, this text in About)
 
-Elaine Chi — Full-Stack AI Product Engineer
-I ship end-to-end products where deep tech (AI · blockchain) meets hard domains (law · finance).
-📍 Taiwan · Open to remote worldwide
+Elaine Chi — LegalTech & FinTech Compliance · AI & Blockchain Builder
+I turn financial law and regulation into products that actually run.
+📍 Taiwan · 開放遠端與海外機會 / Open to remote & overseas
 
 About
-I'm a full-stack AI product engineer who ships end-to-end — from data pipelines and ML models to interactive front-ends and UX. I build at the intersection of AI, blockchain, and regulated domains (law & finance), where deep tech meets hard domain knowledge. Independently designed and shipped 6+ live products: an interactive 3D digital twin of music-royalty smart contracts with opcode-level execution, an LSTM stock dashboard with news-sentiment that auto-updates every trading day, and a legal-exam platform covering 1,800 official questions across 4 domains and 6 years.
+Most people who understand financial law can't build software. Most engineers don't understand financial regulation. I do both.
+
+I'm a Technology Law LL.M. candidate at NYCU (a top national university in Taiwan), specializing in financial crime, FinTech and virtual-asset (Web3) compliance. I've interned at the Financial Crimes Division of the Taipei District Court and the Financial Ombudsman Institution, and worked as a research assistant on white-collar crime and financial supervision.
+
+But I don't just write legal memos — I ship. My thesis on smart-contract law and music NFTs became a working, interactive product. I've independently built and launched 6+ live tools, including a smart-contract digital twin with opcode-level EVM tracing and an LSTM financial dashboard that auto-updates every trading day.
+
+I'm looking for roles where law, finance and code meet — FinTech/RegTech compliance, Web3 legal, or AI governance — remote or international welcome.
+
+Let's talk → chengyuchi849@gmail.com
 
 Core Skills
-  Frontend & Interactive: JavaScript / HTML / CSS, Interactive 3D digital twins, Data visualization, Responsive design, Bilingual & voice (TTS) UI
-  AI / Data: Python, LSTM time-series forecasting, News sentiment analysis, Automated data pipelines, API integration
-  Blockchain: Smart contracts, Music royalty / NFT distribution, EVM opcode-level analysis
-  Design & Domain: UX / information architecture, Product visual design, LegalTech (exams & case law), FinTech / financial crime / IP
+  Law & Compliance: 金融刑事法 / 白領犯罪, 虛擬資產 / Web3 法遵, 智慧財產權 / 著作權, 金融監理 / 法令遵循, 公平交易法, 訴訟實務書狀撰寫
+  AI / Data: Python, 大型語言模型 (LLM) 應用, 生成式 AI, LSTM 時序預測, 新聞情緒分析, 自動資料聚合
+  Blockchain: 智慧合約, 音樂 NFT / 版稅分配, 虛擬資產服務法, EVM opcode 級分析
+  Product & Frontend: JavaScript / HTML / CSS, 互動式 3D 數位孿生, 資料視覺化, 中英雙語與語音 (TTS) 介面
 
 Selected Work
 • Music Royalty OS — Smart-Contract Digital Twin  [Opcode-level EVM tracing · 6 stakeholder roles · EN / ZH voice]
   Problem: Music royalty splits via smart contracts are opaque — stakeholders can't see how money actually flows on-chain.
   Approach: Built an interactive 3D digital twin with a contract execution lab that traces royalty splits opcode-by-opcode through EVM storage, plus a full single-track lifecycle simulation.
-  Impact: Turns an invisible on-chain process into something six stakeholder roles can understand, in EN/ZH with voice narration and presentation mode.
+  Impact: Turns an invisible on-chain legal process into something six stakeholder roles can understand — a working demo of my thesis on smart-contract law & music NFTs.
   https://elainechi-art.github.io/music-os/ecosystem.html
 • Taiwan Stock AI Dashboard  [3 markets · Auto-updates daily · LSTM + sentiment]
   Problem: Retail investors juggle price charts and news separately, with no daily forward view.
   Approach: Combined LSTM time-series forecasting with news-sentiment analysis across Taiwan, US and crypto markets in one live dashboard.
   Impact: Auto-updates every trading day with zero manual work, giving a one-glance forward signal across three markets.
   https://elainechi-art.github.io/taiwan-stock-dashboard/
+• Research Radar — Law & Finance Intelligence  [4 research fields · Daily auto-aggregation · News + papers + judgments]
+  Problem: Staying current across IP, blockchain, AI and financial-crime research means checking many sources daily.
+  Approach: Auto-aggregates news, papers and full-text court judgments across four research fields, daily.
+  Impact: One daily feed replaces manual multi-source monitoring — built for my own legal research.
+  https://elainechi-art.github.io/research-radar/
 • Judicial Exam Prep Platform  [1,800 official questions · 4 domains · 6 years · Self-test + TTS]
   Problem: Bar/judicial candidates drown in scattered past papers with no structured, testable way to review.
   Approach: Structured 1,800 official exam questions across 4 domains and 6 years by exam-day session, with mask-answer self-testing and TTS read-aloud.
   Impact: One organized, self-quizzing hub replaces dozens of loose PDFs.
   https://elainechi-art.github.io/judicial/
-• Research Radar  [4 research fields · Daily auto-aggregation]
-  Problem: Staying current across IP, blockchain, AI and financial-crime research means checking many sources daily.
-  Approach: Auto-aggregates news, papers and full-text court judgments across four research fields, daily.
-  Impact: One daily feed replaces manual multi-source monitoring.
-  https://elainechi-art.github.io/research-radar/
 • Daily English Vocabulary Builder  [3 quiz modes · Free dictionary + translation API · TTS pronunciation]
   Problem: Vocabulary apps are either paid or don't tie learning to spaced testing.
   Approach: Integrated free dictionary + translation APIs to auto-generate pronunciation, examples, translation and grammar, with flashcard / fill-in / spelling quizzes.
   Impact: A fully free daily learning loop with self-scoring and weak-word review.
   https://elainechi-art.github.io/vocab/
+
+Experience
+• Judicial Intern — Financial Crimes Division · 台灣台北地方法院 · 金融重罪專庭（重金庭） (2026)
+  Interned at the court division handling major financial-crime cases; observed financial-crime adjudication and case handling first-hand.
+• Research Assistant · 陽明交大科法所 · 白領犯罪 / 金融刑法研究 (碩士期間 / During master's)
+  Researched overseas anti-corruption (FCPA), financial supervision policy, loan fraud, mis-selling, trade-secret management, non-compete, and defense rights at the investigation stage; produced research briefings.
+• Intern · 金融消費者評議中心 (碩士期間 / During master's)
+  Hands-on with financial-consumer dispute resolution and ombudsman practice.
+• Teaching Assistant · 陽明交大科法所 (碩士期間 / During master's)
+  TA for Copyright Law Seminar, Litigation Drafting, and Financial Law & Supervision.
+• Legal Consultation Executive Secretary · 華岡法律服務中心 (大學期間 / During undergrad)
+  Coordinated legal-consultation services; also delivered criminal-law legal-literacy outreach.
+
+Education
+• 國立陽明交通大學 National Yang Ming Chiao Tung University (NYCU) LL.M. Candidate, Institute of Technology Law (Law Group) — Thesis: legal integration of smart contracts with the Virtual Asset Service Act & music NFTs. GPA ~3.7. Notable: LLM Applications (A), Litigation Drafting (A+), White-Collar & Economic Criminal Law (A), Generative AI, Legal Tech & Informatics. (在學 / In progress)
 
 Contact
   https://elainechi-art.github.io/

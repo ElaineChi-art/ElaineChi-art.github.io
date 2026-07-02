@@ -1,44 +1,67 @@
 （貼到 104 自傳欄；標題見 headline.txt，專長在 104『專長』另外勾選）
 
-Elaine Chi — 全端 AI 產品工程師
-我打造從 0 到 1 的完整產品，讓深科技（AI・區塊鏈）遇上硬領域（法律・金融）。
-📍 Taiwan · Open to remote worldwide
+Elaine Chi — 法律科技・金融法遵 · AI 與區塊鏈開發者
+把金融法規，變成真正跑得動的產品。
+📍 Taiwan · 開放遠端與海外機會 / Open to remote & overseas
 
 ■ 關於我
-我是能獨立從 0 到 1 交付的全端 AI 產品工程師 — 從資料管線、機器學習模型，到前端互動與 UX 一手包辦。我專注在 AI、區塊鏈與受監管領域（法律、金融）的交會處，讓深科技遇上硬領域知識。已獨立設計並上線 6+ 個產品：音樂版稅智慧合約的互動式 3D 數位孿生（含 opcode 級執行）、結合新聞情緒、每個交易日自動更新的 LSTM 股市儀表板，以及涵蓋 1,800 題官方考題、跨 4 大領域 6 年的法律考試平台。
+懂金融法規的人，通常不會寫程式；會寫程式的人，通常不懂金融法規。我，兩個都會。
+
+我是陽明交通大學科技法律研究所碩士生，專攻金融犯罪、金融科技與虛擬資產（Web3）法遵。曾在台北地方法院金融重罪專庭（重金庭）、金融消費者評議中心實習，並擔任白領犯罪與金融監理的研究助理。
+
+但我不只是寫法律報告——我做得出來。我的碩論（智慧合約 × 音樂 NFT）被我做成了一個真正能互動的產品；我也獨立開發並上線了 6+ 個工具，包括逐 opcode 追蹤的智慧合約數位孿生、每個交易日自動更新的 LSTM 金融儀表板。
+
+我在找「法律 × 金融 × 程式」交會的職位——金融科技法遵、Web3 法務、AI 治理，遠端或海外尤佳。
+
+聊聊 → chengyuchi849@gmail.com
 
 ■ 核心技能
-  前端 & 互動: JavaScript / HTML / CSS, Interactive 3D digital twins, Data visualization, Responsive design, Bilingual & voice (TTS) UI
-  AI / 資料: Python, LSTM time-series forecasting, News sentiment analysis, Automated data pipelines, API integration
-  區塊鏈: Smart contracts, Music royalty / NFT distribution, EVM opcode-level analysis
-  設計 & 領域: UX / information architecture, Product visual design, LegalTech (exams & case law), FinTech / financial crime / IP
+  法律 & 法遵: 金融刑事法 / 白領犯罪, 虛擬資產 / Web3 法遵, 智慧財產權 / 著作權, 金融監理 / 法令遵循, 公平交易法, 訴訟實務書狀撰寫
+  AI / 資料: Python, 大型語言模型 (LLM) 應用, 生成式 AI, LSTM 時序預測, 新聞情緒分析, 自動資料聚合
+  區塊鏈: 智慧合約, 音樂 NFT / 版稅分配, 虛擬資產服務法, EVM opcode 級分析
+  產品 & 前端: JavaScript / HTML / CSS, 互動式 3D 數位孿生, 資料視覺化, 中英雙語與語音 (TTS) 介面
 
 ■ 精選作品
 • 音樂版稅 OS · 智慧合約數位孿生  [opcode 級 EVM 追蹤 · 6 種角色視角 · 中英語音]
   問題: 音樂版稅用智慧合約分配時黑箱，各方看不到錢實際在鏈上怎麼流動。
   做法: 打造互動式 3D 數位孿生，內含合約執行實驗室，逐 opcode 追蹤版稅分配如何寫進 EVM storage，並模擬單曲完整生命週期。
-  影響: 把看不見的鏈上流程變成六種角色都看得懂的體驗，中英雙語、語音導覽與演講模式。
+  影響: 把看不見的鏈上法律流程變成六種角色都看得懂的體驗，等於是碩論(智慧合約×音樂NFT)的可運作示範。
   https://elainechi-art.github.io/music-os/ecosystem.html
 • 台股 AI 儀表板  [3 大市場 · 每日自動更新 · LSTM + 情緒分析]
   問題: 散戶看盤與看新聞是分開的，缺少每日的前瞻預測。
   做法: 把 LSTM 時序預測與新聞情緒分析結合，涵蓋台股、美股、加密貨幣，整合成單一即時儀表板。
   影響: 每個交易日全自動更新、零人工，三大市場的前瞻訊號一眼掌握。
   https://elainechi-art.github.io/taiwan-stock-dashboard/
+• 研究雷達 · 法律金融情報  [4 大領域 · 每日自動聚合 · 新聞+論文+判決]
+  問題: 要同時追蹤智財、區塊鏈、AI、金融犯罪的最新研究，得每天翻很多來源。
+  做法: 每日自動聚合四大領域的新聞、論文與判決全文。
+  影響: 一個每日情報流取代人工多來源監看，為自己的法律研究而做。
+  https://elainechi-art.github.io/research-radar/
 • 司法官・律師複習平台  [1,800 題官方考題 · 4 領域・6 年 · 自測 + 語音]
   問題: 考生被散落各處的歷屆考題淹沒，缺乏有結構、可自測的複習方式。
   做法: 把 1,800 題官方考題依考試當天節次結構化，涵蓋 4 大領域 6 年，支援遮答案自測與語音念題。
   影響: 一個有條理、能自測的入口，取代幾十份零散 PDF。
   https://elainechi-art.github.io/judicial/
-• 研究雷達  [4 大領域 · 每日自動聚合]
-  問題: 要同時追蹤智財、區塊鏈、AI、金融犯罪的最新研究，得每天翻很多來源。
-  做法: 每日自動聚合四大領域的新聞、論文與判決全文。
-  影響: 一個每日情報流，取代人工多來源監看。
-  https://elainechi-art.github.io/research-radar/
 • 每日英文單字庫  [3 種測驗 · 免費字典＋翻譯 API · 語音發音]
   問題: 背單字工具不是要付費，就是沒把學習和間隔測驗連起來。
   做法: 整合免費字典＋翻譯 API 自動產生發音、例句、翻譯與文法，搭配翻卡／填空／拼字三種測驗。
   影響: 完全免費的每日學習循環，含學習評分與弱點單字複習。
   https://elainechi-art.github.io/vocab/
+
+■ 經歷
+• 實習生 · 台灣台北地方法院 · 金融重罪專庭（重金庭） (2026)
+  於審理重大金融犯罪案件的專庭實習，實地接觸金融刑事審判流程與案件實務。
+• 研究助理 · 陽明交大科法所 · 白領犯罪 / 金融刑法研究 (碩士期間 / During master's)
+  研究海外反貪腐法(FCPA)、金融監理政策、金融詐貸、金融業不當銷售、營業秘密管理、國際競業禁止、偵查階段辯護權等金融刑事議題，並製作研究簡報。
+• 實習生 · 金融消費者評議中心 (碩士期間 / During master's)
+  參與金融消費爭議評議實務。
+• 教學助教 · 陽明交大科法所 (碩士期間 / During master's)
+  擔任著作權法專題、訴訟撰寫、金融法治與監理課程教學助教。
+• 法律諮詢執行秘書 · 華岡法律服務中心 (大學期間 / During undergrad)
+  統籌法律諮詢服務，並參與向陽公益基金會法治教育出隊之刑事法教育。
+
+■ 學歷
+• 國立陽明交通大學 National Yang Ming Chiao Tung University (NYCU) 科技法律研究所（法律組）碩士（在學）— 碩論：智慧合約之法制整合與智慧財產權保障，以虛擬資產服務法與音樂 NFT 為中心。GPA 約 3.7。亮點課程：大型語言模型應用與實作(A)、訴訟實務書狀撰寫(A+)、白領犯罪與經濟刑法(A)、生成式 AI、法律科技與法律資訊學。 (在學 / In progress)
 
 ■ 聯絡
   https://elainechi-art.github.io/
