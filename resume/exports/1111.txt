@@ -1,0 +1,45 @@
+（貼到 1111 自傳／專長欄）
+
+Elaine Chi — 全端 AI 產品工程師
+我打造從 0 到 1 的完整產品，讓深科技（AI・區塊鏈）遇上硬領域（法律・金融）。
+📍 Taiwan · Open to remote worldwide
+
+■ 關於我
+我是能獨立從 0 到 1 交付的全端 AI 產品工程師 — 從資料管線、機器學習模型，到前端互動與 UX 一手包辦。我專注在 AI、區塊鏈與受監管領域（法律、金融）的交會處，讓深科技遇上硬領域知識。已獨立設計並上線 6+ 個產品：音樂版稅智慧合約的互動式 3D 數位孿生（含 opcode 級執行）、結合新聞情緒、每個交易日自動更新的 LSTM 股市儀表板，以及涵蓋 1,800 題官方考題、跨 4 大領域 6 年的法律考試平台。
+
+■ 核心技能
+  前端 & 互動: JavaScript / HTML / CSS, Interactive 3D digital twins, Data visualization, Responsive design, Bilingual & voice (TTS) UI
+  AI / 資料: Python, LSTM time-series forecasting, News sentiment analysis, Automated data pipelines, API integration
+  區塊鏈: Smart contracts, Music royalty / NFT distribution, EVM opcode-level analysis
+  設計 & 領域: UX / information architecture, Product visual design, LegalTech (exams & case law), FinTech / financial crime / IP
+
+■ 精選作品
+• 音樂版稅 OS · 智慧合約數位孿生  [opcode 級 EVM 追蹤 · 6 種角色視角 · 中英語音]
+  問題: 音樂版稅用智慧合約分配時黑箱，各方看不到錢實際在鏈上怎麼流動。
+  做法: 打造互動式 3D 數位孿生，內含合約執行實驗室，逐 opcode 追蹤版稅分配如何寫進 EVM storage，並模擬單曲完整生命週期。
+  影響: 把看不見的鏈上流程變成六種角色都看得懂的體驗，中英雙語、語音導覽與演講模式。
+  https://elainechi-art.github.io/music-os/ecosystem.html
+• 台股 AI 儀表板  [3 大市場 · 每日自動更新 · LSTM + 情緒分析]
+  問題: 散戶看盤與看新聞是分開的，缺少每日的前瞻預測。
+  做法: 把 LSTM 時序預測與新聞情緒分析結合，涵蓋台股、美股、加密貨幣，整合成單一即時儀表板。
+  影響: 每個交易日全自動更新、零人工，三大市場的前瞻訊號一眼掌握。
+  https://elainechi-art.github.io/taiwan-stock-dashboard/
+• 司法官・律師複習平台  [1,800 題官方考題 · 4 領域・6 年 · 自測 + 語音]
+  問題: 考生被散落各處的歷屆考題淹沒，缺乏有結構、可自測的複習方式。
+  做法: 把 1,800 題官方考題依考試當天節次結構化，涵蓋 4 大領域 6 年，支援遮答案自測與語音念題。
+  影響: 一個有條理、能自測的入口，取代幾十份零散 PDF。
+  https://elainechi-art.github.io/judicial/
+• 研究雷達  [4 大領域 · 每日自動聚合]
+  問題: 要同時追蹤智財、區塊鏈、AI、金融犯罪的最新研究，得每天翻很多來源。
+  做法: 每日自動聚合四大領域的新聞、論文與判決全文。
+  影響: 一個每日情報流，取代人工多來源監看。
+  https://elainechi-art.github.io/research-radar/
+• 每日英文單字庫  [3 種測驗 · 免費字典＋翻譯 API · 語音發音]
+  問題: 背單字工具不是要付費，就是沒把學習和間隔測驗連起來。
+  做法: 整合免費字典＋翻譯 API 自動產生發音、例句、翻譯與文法，搭配翻卡／填空／拼字三種測驗。
+  影響: 完全免費的每日學習循環，含學習評分與弱點單字複習。
+  https://elainechi-art.github.io/vocab/
+
+■ 聯絡
+  https://elainechi-art.github.io/
+  chengyuchi849@gmail.com

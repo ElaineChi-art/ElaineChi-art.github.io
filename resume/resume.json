@@ -1,0 +1,119 @@
+{
+  "_note": "履歷單一資料來源（中英雙語）。改完跑 build.py 就會同步網站與各平台文案。每個 project 用『問題→做法→影響』案例格式，metrics 放可量化的硬事實。usage 欄位放真實使用數據（裝了流量分析後填），空的話網站不顯示。",
+
+  "profile": {
+    "name": "Elaine Chi",
+    "headline": {
+      "en": "Full-Stack AI Product Engineer | Python · JavaScript · LSTM · Smart Contracts | Turning law, finance & blockchain into shipped products",
+      "zh": "全端 AI 產品工程師 | Python・JavaScript・LSTM・智慧合約 | 把法律、金融與區塊鏈變成上線的產品"
+    },
+    "title": {
+      "en": "Full-Stack AI Product Engineer",
+      "zh": "全端 AI 產品工程師"
+    },
+    "tagline": {
+      "en": "I ship end-to-end products where deep tech (AI · blockchain) meets hard domains (law · finance).",
+      "zh": "我打造從 0 到 1 的完整產品，讓深科技（AI・區塊鏈）遇上硬領域（法律・金融）。"
+    },
+    "location": "Taiwan · Open to remote worldwide",
+    "open_to_work": true,
+    "target_roles": {
+      "en": ["Full-Stack / AI Engineer", "AI Product Engineer", "FinTech / LegalTech Engineer"],
+      "zh": ["全端 / AI 工程師", "AI 產品工程師", "FinTech / 法律科技工程師"]
+    },
+    "email": "chengyuchi849@gmail.com",
+    "phone": "",
+    "github": "https://github.com/ElaineChi-art",
+    "website": "https://elainechi-art.github.io/",
+    "linkedin": "TODO：填你的 LinkedIn 網址，沒有先留 \"\""
+  },
+
+  "summary": {
+    "en": "I'm a full-stack AI product engineer who ships end-to-end — from data pipelines and ML models to interactive front-ends and UX. I build at the intersection of AI, blockchain, and regulated domains (law & finance), where deep tech meets hard domain knowledge. Independently designed and shipped 6+ live products: an interactive 3D digital twin of music-royalty smart contracts with opcode-level execution, an LSTM stock dashboard with news-sentiment that auto-updates every trading day, and a legal-exam platform covering 1,800 official questions across 4 domains and 6 years.",
+    "zh": "我是能獨立從 0 到 1 交付的全端 AI 產品工程師 — 從資料管線、機器學習模型，到前端互動與 UX 一手包辦。我專注在 AI、區塊鏈與受監管領域（法律、金融）的交會處，讓深科技遇上硬領域知識。已獨立設計並上線 6+ 個產品：音樂版稅智慧合約的互動式 3D 數位孿生（含 opcode 級執行）、結合新聞情緒、每個交易日自動更新的 LSTM 股市儀表板，以及涵蓋 1,800 題官方考題、跨 4 大領域 6 年的法律考試平台。"
+  },
+
+  "skills": [
+    { "cat": {"en": "Frontend & Interactive", "zh": "前端 & 互動"},
+      "items": ["JavaScript / HTML / CSS", "Interactive 3D digital twins", "Data visualization", "Responsive design", "Bilingual & voice (TTS) UI"] },
+    { "cat": {"en": "AI / Data", "zh": "AI / 資料"},
+      "items": ["Python", "LSTM time-series forecasting", "News sentiment analysis", "Automated data pipelines", "API integration"] },
+    { "cat": {"en": "Blockchain", "zh": "區塊鏈"},
+      "items": ["Smart contracts", "Music royalty / NFT distribution", "EVM opcode-level analysis"] },
+    { "cat": {"en": "Design & Domain", "zh": "設計 & 領域"},
+      "items": ["UX / information architecture", "Product visual design", "LegalTech (exams & case law)", "FinTech / financial crime / IP"] }
+  ],
+
+  "projects": [
+    {
+      "name": {"en": "Music Royalty OS — Smart-Contract Digital Twin", "zh": "音樂版稅 OS · 智慧合約數位孿生"},
+      "role": {"en": "Solo design & engineering", "zh": "獨立設計與開發"},
+      "url": "https://elainechi-art.github.io/music-os/ecosystem.html",
+      "problem": {"en": "Music royalty splits via smart contracts are opaque — stakeholders can't see how money actually flows on-chain.", "zh": "音樂版稅用智慧合約分配時黑箱，各方看不到錢實際在鏈上怎麼流動。"},
+      "approach": {"en": "Built an interactive 3D digital twin with a contract execution lab that traces royalty splits opcode-by-opcode through EVM storage, plus a full single-track lifecycle simulation.", "zh": "打造互動式 3D 數位孿生，內含合約執行實驗室，逐 opcode 追蹤版稅分配如何寫進 EVM storage，並模擬單曲完整生命週期。"},
+      "impact": {"en": "Turns an invisible on-chain process into something six stakeholder roles can understand, in EN/ZH with voice narration and presentation mode.", "zh": "把看不見的鏈上流程變成六種角色都看得懂的體驗，中英雙語、語音導覽與演講模式。"},
+      "metrics": [{"en": "Opcode-level EVM tracing", "zh": "opcode 級 EVM 追蹤"}, {"en": "6 stakeholder roles", "zh": "6 種角色視角"}, {"en": "EN / ZH voice", "zh": "中英語音"}],
+      "stack": ["JavaScript", "3D", "Smart Contracts", "EVM"],
+      "usage": ""
+    },
+    {
+      "name": {"en": "Taiwan Stock AI Dashboard", "zh": "台股 AI 儀表板"},
+      "role": {"en": "Solo engineering", "zh": "獨立開發"},
+      "url": "https://elainechi-art.github.io/taiwan-stock-dashboard/",
+      "problem": {"en": "Retail investors juggle price charts and news separately, with no daily forward view.", "zh": "散戶看盤與看新聞是分開的，缺少每日的前瞻預測。"},
+      "approach": {"en": "Combined LSTM time-series forecasting with news-sentiment analysis across Taiwan, US and crypto markets in one live dashboard.", "zh": "把 LSTM 時序預測與新聞情緒分析結合，涵蓋台股、美股、加密貨幣，整合成單一即時儀表板。"},
+      "impact": {"en": "Auto-updates every trading day with zero manual work, giving a one-glance forward signal across three markets.", "zh": "每個交易日全自動更新、零人工，三大市場的前瞻訊號一眼掌握。"},
+      "metrics": [{"en": "3 markets", "zh": "3 大市場"}, {"en": "Auto-updates daily", "zh": "每日自動更新"}, {"en": "LSTM + sentiment", "zh": "LSTM + 情緒分析"}],
+      "stack": ["Python", "LSTM", "Sentiment Analysis", "Automation"],
+      "usage": ""
+    },
+    {
+      "name": {"en": "Judicial Exam Prep Platform", "zh": "司法官・律師複習平台"},
+      "role": {"en": "Solo design & engineering", "zh": "獨立設計與開發"},
+      "url": "https://elainechi-art.github.io/judicial/",
+      "problem": {"en": "Bar/judicial candidates drown in scattered past papers with no structured, testable way to review.", "zh": "考生被散落各處的歷屆考題淹沒，缺乏有結構、可自測的複習方式。"},
+      "approach": {"en": "Structured 1,800 official exam questions across 4 domains and 6 years by exam-day session, with mask-answer self-testing and TTS read-aloud.", "zh": "把 1,800 題官方考題依考試當天節次結構化，涵蓋 4 大領域 6 年，支援遮答案自測與語音念題。"},
+      "impact": {"en": "One organized, self-quizzing hub replaces dozens of loose PDFs.", "zh": "一個有條理、能自測的入口，取代幾十份零散 PDF。"},
+      "metrics": [{"en": "1,800 official questions", "zh": "1,800 題官方考題"}, {"en": "4 domains · 6 years", "zh": "4 領域・6 年"}, {"en": "Self-test + TTS", "zh": "自測 + 語音"}],
+      "stack": ["JavaScript", "Data structuring", "TTS"],
+      "usage": ""
+    },
+    {
+      "name": {"en": "Research Radar", "zh": "研究雷達"},
+      "role": {"en": "Solo engineering", "zh": "獨立開發"},
+      "url": "https://elainechi-art.github.io/research-radar/",
+      "problem": {"en": "Staying current across IP, blockchain, AI and financial-crime research means checking many sources daily.", "zh": "要同時追蹤智財、區塊鏈、AI、金融犯罪的最新研究，得每天翻很多來源。"},
+      "approach": {"en": "Auto-aggregates news, papers and full-text court judgments across four research fields, daily.", "zh": "每日自動聚合四大領域的新聞、論文與判決全文。"},
+      "impact": {"en": "One daily feed replaces manual multi-source monitoring.", "zh": "一個每日情報流，取代人工多來源監看。"},
+      "metrics": [{"en": "4 research fields", "zh": "4 大領域"}, {"en": "Daily auto-aggregation", "zh": "每日自動聚合"}],
+      "stack": ["Python", "Automation", "Data aggregation"],
+      "usage": ""
+    },
+    {
+      "name": {"en": "Daily English Vocabulary Builder", "zh": "每日英文單字庫"},
+      "role": {"en": "Solo design & engineering", "zh": "獨立設計與開發"},
+      "url": "https://elainechi-art.github.io/vocab/",
+      "problem": {"en": "Vocabulary apps are either paid or don't tie learning to spaced testing.", "zh": "背單字工具不是要付費，就是沒把學習和間隔測驗連起來。"},
+      "approach": {"en": "Integrated free dictionary + translation APIs to auto-generate pronunciation, examples, translation and grammar, with flashcard / fill-in / spelling quizzes.", "zh": "整合免費字典＋翻譯 API 自動產生發音、例句、翻譯與文法，搭配翻卡／填空／拼字三種測驗。"},
+      "impact": {"en": "A fully free daily learning loop with self-scoring and weak-word review.", "zh": "完全免費的每日學習循環，含學習評分與弱點單字複習。"},
+      "metrics": [{"en": "3 quiz modes", "zh": "3 種測驗"}, {"en": "Free dictionary + translation API", "zh": "免費字典＋翻譯 API"}, {"en": "TTS pronunciation", "zh": "語音發音"}],
+      "stack": ["JavaScript", "API integration", "TTS"],
+      "usage": ""
+    }
+  ],
+
+  "experience": [
+    {
+      "_note": "TODO：填正式工作/接案經歷（用『動詞 + 成果 + 數字』寫，例：Built X that Y, cutting Z by 40%）。沒有正式經歷可整個設成 []，網站會不顯示。",
+      "org": "TODO", "role": {"en": "TODO", "zh": "TODO"}, "period": "TODO",
+      "desc": {"en": "TODO", "zh": "TODO"}
+    }
+  ],
+
+  "education": [
+    {
+      "_note": "TODO：學歷。沒有要放就設成 []。",
+      "school": "TODO", "degree": {"en": "TODO", "zh": "TODO"}, "period": "TODO"
+    }
+  ]
+}
