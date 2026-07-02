@@ -142,7 +142,7 @@ function loadEthers(){
 async function readProvider(){
   let lastErr;
   for(const u of RPCS){
-    try{ const p=new ethers.JsonRpcProvider(u,SEPOLIA_NET,{staticNetwork:SEPOLIA_NET}); await p.getBlockNumber(); return p; }
+    try{ const p=new ethers.JsonRpcProvider(u,SEPOLIA_NET,{staticNetwork:SEPOLIA_NET,batchMaxCount:1}); await p.getBlockNumber(); return p; }
     catch(e){ lastErr=e; }
   }
   throw new Error("所有 RPC 都連不上"+(lastErr?("："+lastErr.message):""));
