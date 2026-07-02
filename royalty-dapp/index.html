@@ -4,163 +4,213 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Music Royalty dApp · 音樂版稅智慧合約</title>
-<meta name="description" content="A working Ethereum dApp: music royalty smart contract that auto-splits payments 50/25/25. By Elaine Chi.">
+<meta name="description" content="A working Ethereum dApp: configurable music royalty smart contract that auto-splits payments by share. By Elaine Chi.">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:"Inter","PingFang TC",system-ui,sans-serif;background:linear-gradient(160deg,#14161c,#26262f);
        color:#e8e6e0;min-height:100vh;padding:26px 16px 60px}
   .wrap{max-width:760px;margin:0 auto}
-  h1{font-size:26px;text-align:center}
+  h1{font-size:25px;text-align:center}
   .sub{text-align:center;color:#9aa4b2;font-size:14px;margin:6px 0 4px}
   .addr{text-align:center;font-size:12px;margin-bottom:20px}
   .addr a{color:#7fb5ff;text-decoration:none;word-break:break-all}
-  .card{background:#1b1e26;border:1px solid #2a2f3a;border-radius:16px;padding:22px;margin-bottom:16px}
+  .card{background:#1b1e26;border:1px solid #2a2f3a;border-radius:16px;padding:20px;margin-bottom:16px}
   .stats{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-  .stat{flex:1;min-width:140px;text-align:center;background:#20242e;border-radius:12px;padding:16px}
-  .stat .n{font-size:30px;font-weight:800;color:#7fb5ff}
+  .stat{flex:1;min-width:130px;text-align:center;background:#20242e;border-radius:12px;padding:14px}
+  .stat .n{font-size:28px;font-weight:800;color:#7fb5ff}
   .stat .l{font-size:13px;color:#9aa4b2;margin-top:4px}
-  .bar{display:flex;height:34px;border-radius:8px;overflow:hidden;margin:12px 0 4px}
-  .bar div{display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#0b0d12}
+  h2{font-size:15px;color:#9aa4b2;margin-bottom:12px}
+  #bar{display:flex;height:30px;border-radius:8px;overflow:hidden;margin:4px 0 14px}
+  #bar div{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0b0d12;min-width:0;overflow:hidden}
   .payee{display:flex;align-items:center;justify-content:space-between;padding:11px 4px;border-bottom:1px solid #262b36}
   .payee:last-child{border:none}
-  .who{font-weight:700}.who small{display:block;color:#8a8576;font-weight:400;font-size:11px;word-break:break-all}
-  .bal{font-size:17px;font-weight:800}
+  .who{font-weight:700;font-size:14px}.who small{display:block;color:#8a8576;font-weight:400;font-size:11px;word-break:break-all}
+  .bal{font-size:15px;font-weight:800;text-align:right}.bal small{display:block;color:#9aa4b2;font-weight:400;font-size:11px}
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle}
-  h2{font-size:15px;color:#9aa4b2;margin-bottom:12px}
   button{background:#1f3a56;color:#7fb5ff;border:1px solid #2b5680;border-radius:10px;
-         padding:11px 22px;font-size:15px;font-weight:700;cursor:pointer}
+         padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer}
   button:hover{background:#254a6e}
   button:disabled{opacity:.5;cursor:not-allowed}
-  .btn-primary{background:#7fb5ff;color:#0b0d12;border:none}
-  .btn-primary:hover{background:#9cc7ff}
-  .payrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
-  input{background:#0f1116;border:1px solid #2a2f3a;color:#e8e6e0;border-radius:10px;
-        padding:11px 14px;font-size:15px;width:120px}
+  .btn-primary{background:#7fb5ff;color:#0b0d12;border:none}.btn-primary:hover{background:#9cc7ff}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  input{background:#0f1116;border:1px solid #2a2f3a;color:#e8e6e0;border-radius:10px;padding:10px 12px;font-size:14px}
+  input.amt{width:110px}input.share{width:90px}input.address{flex:1;min-width:200px}
   .status{margin-top:14px;font-size:13px;color:#9aa4b2;min-height:18px}
   .ok{color:#8ff0b0}.err{color:#ff9a9a}
-  .foot{text-align:center;color:#8a8576;font-size:12px;margin-top:24px;line-height:1.8}
+  .ownerbox{border-top:1px dashed #2a2f3a;margin-top:14px;padding-top:14px}
+  .hint{font-size:12px;color:#8a8576;margin-top:4px}
+  .foot{text-align:center;color:#8a8576;font-size:12px;margin-top:22px;line-height:1.8}
   .foot a{color:#8a8576}
-  .badge{display:inline-block;font-size:11px;background:#122a1c;color:#8ff0b0;border:1px solid #2f6b47;
-         border-radius:20px;padding:2px 10px;margin-left:6px}
+  .badge{display:inline-block;font-size:11px;background:#122a1c;color:#8ff0b0;border:1px solid #2f6b47;border-radius:20px;padding:2px 10px;margin-left:6px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>🎵 Music Royalty dApp <span class="badge">Sepolia testnet</span></h1>
-  <div class="sub">音樂版稅智慧合約 · 付款自動按 50 / 25 / 25 分潤</div>
-  <div class="addr"><a id="ethlink" target="_blank">合約：0xA39BD3B2bA11Fa3Bc44D3106b7C338BCaD8996AC ↗</a></div>
+  <div class="sub">可設定的音樂版稅智慧合約 · 付款自動按比例分潤</div>
+  <div class="addr"><a id="ethlink" target="_blank"></a></div>
 
   <div class="card">
     <div class="stats">
       <div class="stat"><div class="n" id="total">…</div><div class="l">總收入 (ETH)</div></div>
       <div class="stat"><div class="n" id="count">…</div><div class="l">付款次數</div></div>
+      <div class="stat"><div class="n" id="npayees">…</div><div class="l">收款人數</div></div>
     </div>
-    <div class="bar">
-      <div style="background:#7fb5ff">藝人 50%</div>
-      <div style="background:#f0d68a">製作 25%</div>
-      <div style="background:#8ff0b0">平台 25%</div>
-    </div>
-    <div class="payee"><div class="who"><span class="dot" style="background:#7fb5ff"></span>藝人 Artist<small>0x177fEc47c404785c02474ad45dD73faCEBC9CE11</small></div><div class="bal" id="balA">…</div></div>
-    <div class="payee"><div class="who"><span class="dot" style="background:#f0d68a"></span>製作人 Producer<small>0xb5F06294aAD135afc76e75Cad83019685aeEBEe2</small></div><div class="bal" id="balP">…</div></div>
-    <div class="payee"><div class="who"><span class="dot" style="background:#8ff0b0"></span>平台 Platform<small>0xc0cF2FBDcba380ADa427E56EF4332E5428d98E31</small></div><div class="bal" id="balF">…</div></div>
+    <div style="font-size:13px;color:#9aa4b2;margin:14px 0 2px">分潤比例</div>
+    <div id="bar"></div>
+    <div id="payeeList"></div>
   </div>
 
   <div class="card">
-    <h2>💰 用你的錢包付款(需要 MetaMask + Sepolia 測試幣)</h2>
+    <h2>💰 付款(任何人都能付)</h2>
     <button id="connectBtn" onclick="connect()">🦊 連接錢包</button>
-    <div class="payrow" id="payArea" style="display:none">
-      <input id="amount" type="number" step="0.001" value="0.005"> <span>ETH</span>
+    <div class="row" id="payArea" style="display:none">
+      <input id="amount" class="amt" type="number" step="0.001" value="0.005"> <span>ETH</span>
       <button class="btn-primary" id="payBtn" onclick="pay()">付款分潤</button>
     </div>
+
+    <div class="ownerbox" id="ownerArea" style="display:none">
+      <h2>👑 擁有者功能(只有合約擁有者能用)</h2>
+      <div class="row">
+        <input id="addAddr" class="address" placeholder="新收款人地址 0x...">
+        <input id="addShare" class="share" type="number" placeholder="份數" value="10">
+        <button onclick="addPayee()">➕ 加人</button>
+      </div>
+      <div class="row">
+        <input id="setAddr" class="address" placeholder="要改的收款人地址 0x...">
+        <input id="setShare" class="share" type="number" placeholder="新份數" value="30">
+        <button onclick="changeShare()">✏️ 改比例</button>
+      </div>
+      <div class="hint">份數是相對的：例如 50/25/25，某人拿「他的份數 ÷ 總份數」。</div>
+    </div>
+
     <div class="status" id="status"></div>
   </div>
 
   <div class="foot">
     Built by Elaine Chi · Solidity + ethers.js · <a id="etherfoot" target="_blank">在 Etherscan 上驗證</a><br>
-    這是部署在 Ethereum Sepolia 測試網的真實智慧合約(非模擬)。
+    部署在 Ethereum Sepolia 測試網的真實智慧合約（非模擬）。
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
 <script>
-const CONTRACT = "0xA39BD3B2bA11Fa3Bc44D3106b7C338BCaD8996AC";
-const ARTIST="0x177fEc47c404785c02474ad45dD73faCEBC9CE11";
-const PRODUCER="0xb5F06294aAD135afc76e75Cad83019685aeEBEe2";
-const PLATFORM="0xc0cF2FBDcba380ADa427E56EF4332E5428d98E31";
-const RPCS=["https://ethereum-sepolia-rpc.publicnode.com","https://1rpc.io/sepolia","https://rpc.sepolia.org"];
+const CONTRACT="0x6E44Ad35de5Aa0c33750f9a24FeB94A5b730a503";
+const RPCS=["https://1rpc.io/sepolia","https://ethereum-sepolia-rpc.publicnode.com","https://rpc.sepolia.org"];
 const SEPOLIA_HEX="0xaa36a7";
+const COLORS=["#7fb5ff","#f0d68a","#8ff0b0","#d6a3ff","#ff9a9a","#7ee0d0","#ffb27f"];
 const ABI=[
+  "function owner() view returns (address)",
+  "function payeesCount() view returns (uint256)",
+  "function payees(uint256) view returns (address)",
+  "function shareOf(address) view returns (uint256)",
+  "function totalShares() view returns (uint256)",
   "function totalReceived() view returns (uint256)",
   "function paymentCount() view returns (uint256)",
-  "function pay() payable"
+  "function pay() payable",
+  "function addPayee(address,uint256)",
+  "function setShare(address,uint256)"
 ];
 const ES="https://sepolia.etherscan.io/address/"+CONTRACT;
+document.getElementById('ethlink').textContent="合約："+CONTRACT+" ↗";
 document.getElementById('ethlink').href=ES;
 document.getElementById('etherfoot').href=ES;
-let signer=null;
+let connectedAddr=null, ownerAddr=null;
 
 async function readProvider(){
   for(const u of RPCS){ try{const p=new ethers.JsonRpcProvider(u); await p.getBlockNumber(); return p;}catch(e){} }
   throw new Error("RPC 連不上");
 }
 const fmt=(w)=>Number(ethers.formatEther(w)).toFixed(4);
-function setStatus(msg,cls){const s=document.getElementById('status');s.textContent=msg;s.className="status "+(cls||"");}
+function setStatus(m,c){const s=document.getElementById('status');s.textContent=m;s.className="status "+(c||"");}
 
 async function load(){
   try{
     const p=await readProvider();
     const c=new ethers.Contract(CONTRACT,ABI,p);
-    const [t,n,a,b,f]=await Promise.all([c.totalReceived(),c.paymentCount(),
-      p.getBalance(ARTIST),p.getBalance(PRODUCER),p.getBalance(PLATFORM)]);
-    total.textContent=fmt(t); count.textContent=n.toString();
-    balA.textContent=fmt(a)+" ETH"; balP.textContent=fmt(b)+" ETH"; balF.textContent=fmt(f)+" ETH";
+    const [t,n,cnt,ts,ownr]=await Promise.all([
+      c.totalReceived(),c.paymentCount(),c.payeesCount(),c.totalShares(),c.owner()]);
+    ownerAddr=ownr.toLowerCase();
+    document.getElementById('total').textContent=fmt(t);
+    document.getElementById('count').textContent=cnt.toString();
+    document.getElementById('npayees').textContent=n.toString();
+    // 讀每個收款人
+    const bar=document.getElementById('bar'); bar.innerHTML="";
+    const list=document.getElementById('payeeList'); list.innerHTML="";
+    const total=Number(ts);
+    for(let i=0;i<Number(n);i++){
+      const addr=await c.payees(i);
+      const [sh,bal]=await Promise.all([c.shareOf(addr),p.getBalance(addr)]);
+      const pct=total>0?Math.round(Number(sh)/total*100):0;
+      const col=COLORS[i%COLORS.length];
+      const seg=document.createElement('div'); seg.style.background=col; seg.style.width=pct+"%";
+      seg.textContent=pct+"%"; bar.appendChild(seg);
+      const row=document.createElement('div'); row.className="payee";
+      row.innerHTML=`<div class="who"><span class="dot" style="background:${col}"></span>收款人 ${i+1}（份數 ${sh}）<small>${addr}</small></div>`+
+                    `<div class="bal">${fmt(bal)} ETH<small>${pct}%</small></div>`;
+      list.appendChild(row);
+    }
+    // 若已連錢包且是擁有者，顯示擁有者功能
+    document.getElementById('ownerArea').style.display=
+      (connectedAddr && connectedAddr===ownerAddr) ? "block" : "none";
   }catch(e){}
 }
 
+async function getSigner(){
+  const bp=new ethers.BrowserProvider(window.ethereum);
+  const net=await bp.getNetwork();
+  if(net.chainId!==11155111n){
+    try{ await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:SEPOLIA_HEX}]}); }catch(e){}
+  }
+  return await new ethers.BrowserProvider(window.ethereum).getSigner();
+}
+
 async function connect(){
-  if(!window.ethereum){ setStatus("找不到 MetaMask。請先安裝 MetaMask 瀏覽器擴充功能。","err"); return; }
+  if(!window.ethereum){ setStatus("找不到 MetaMask，請先安裝。","err"); return; }
   try{
     setStatus("連接中…");
-    const bp=new ethers.BrowserProvider(window.ethereum);
-    await bp.send("eth_requestAccounts",[]);
-    // 確認在 Sepolia，不是就請它切換
-    const net=await bp.getNetwork();
-    if(net.chainId!==11155111n){
-      try{ await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:SEPOLIA_HEX}]}); }
-      catch(e){ setStatus("請在 MetaMask 切換到 Sepolia 測試網再試一次。","err"); return; }
-    }
-    signer=await bp.getSigner();
-    const addr=await signer.getAddress();
-    document.getElementById('connectBtn').textContent="✅ 已連接 "+addr.slice(0,6)+"…"+addr.slice(-4);
+    await window.ethereum.request({method:"eth_requestAccounts"});
+    const s=await getSigner();
+    connectedAddr=(await s.getAddress()).toLowerCase();
+    document.getElementById('connectBtn').textContent="✅ "+connectedAddr.slice(0,6)+"…"+connectedAddr.slice(-4);
     document.getElementById('payArea').style.display="flex";
-    setStatus("錢包已連接,可以付款了。","ok");
-  }catch(e){ setStatus("連接失敗:"+(e.message||e),"err"); }
-}
-
-async function pay(){
-  if(!window.ethereum){ setStatus("找不到 MetaMask。","err"); return; }
-  const amt=document.getElementById('amount').value;
-  try{
-    document.getElementById('payBtn').disabled=true;
-    setStatus("請在 MetaMask 確認交易…");
-    // 每次付款都用「當下網路」重新建立 provider，避免中途切網路報錯
-    const bp=new ethers.BrowserProvider(window.ethereum);
-    const net=await bp.getNetwork();
-    if(net.chainId!==11155111n){
-      try{ await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:SEPOLIA_HEX}]}); }catch(e){}
-    }
-    const s=await new ethers.BrowserProvider(window.ethereum).getSigner();
-    const c=new ethers.Contract(CONTRACT,ABI,s);
-    const tx=await c.pay({value:ethers.parseEther(amt)});
-    setStatus("交易送出,等待上鏈… "+tx.hash.slice(0,12)+"…");
-    await tx.wait();
-    setStatus("✅ 付款成功!版稅已自動分潤。","ok");
+    setStatus("錢包已連接。","ok");
     load();
-  }catch(e){ setStatus("付款失敗:"+(e.shortMessage||e.message||e),"err"); }
-  finally{ document.getElementById('payBtn').disabled=false; }
+  }catch(e){ setStatus("連接失敗："+(e.message||e),"err"); }
 }
 
-load(); setInterval(load,12000);
+async function sendTx(fn){
+  if(!window.ethereum){ setStatus("請先安裝 MetaMask。","err"); return; }
+  try{
+    setStatus("請在 MetaMask 確認交易…");
+    const s=await getSigner();
+    const c=new ethers.Contract(CONTRACT,ABI,s);
+    const tx=await fn(c);
+    setStatus("交易送出，等待上鏈… "+tx.hash.slice(0,12)+"…");
+    await tx.wait();
+    setStatus("✅ 成功！","ok");
+    load();
+  }catch(e){ setStatus("失敗："+(e.shortMessage||e.message||e),"err"); }
+}
+
+function pay(){
+  const amt=document.getElementById('amount').value;
+  sendTx(c=>c.pay({value:ethers.parseEther(amt)}));
+}
+function addPayee(){
+  const a=document.getElementById('addAddr').value.trim();
+  const s=document.getElementById('addShare').value;
+  if(!a){ setStatus("請填新收款人地址。","err"); return; }
+  sendTx(c=>c.addPayee(a,s));
+}
+function changeShare(){
+  const a=document.getElementById('setAddr').value.trim();
+  const s=document.getElementById('setShare').value;
+  if(!a){ setStatus("請填要修改的地址。","err"); return; }
+  sendTx(c=>c.setShare(a,s));
+}
+
+load(); setInterval(load,15000);
 </script>
 </body>
 </html>
