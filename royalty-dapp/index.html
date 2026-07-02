@@ -246,29 +246,36 @@ async function load(){
     }
     document.getElementById('ownerArea').style.display=(connectedAddr&&connectedAddr===ownerAddr)?"block":"none";
     document.getElementById('sync').textContent="● 已同步鏈上資料 · 每 20 秒自動更新";
-    loadHistory(p,c);
+    loadHistory();
   }catch(e){ document.getElementById('sync').textContent="⚠️ 讀取失敗："+(e.message||e); }
 }
 
 let lastHistSig="";
-async function loadHistory(p,c){
-  try{
-    const evs=await c.queryFilter(c.filters.RoyaltyPaid(), DEPLOY_BLOCK, "latest");
-    evs.reverse(); // 最新在最上面
-    const sig=evs.map(e=>e.transactionHash).join(",");
-    if(sig===lastHistSig) return; lastHistSig=sig;
-    const box=document.getElementById('history'); box.innerHTML="";
-    if(evs.length===0){ box.innerHTML='<div class="hint">目前還沒有付款紀錄。付一筆款，這裡就會出現。</div>'; return; }
-    for(const e of evs.slice(0,15)){
-      let when=""; try{ const b=await p.getBlock(e.blockNumber); when=new Date(Number(b.timestamp)*1000).toLocaleString(); }catch(x){}
-      const payer=e.args[0], amt=fmt(e.args[1]);
-      const row=document.createElement('div'); row.className="payee";
-      row.innerHTML=`<div class="av" style="background:${avatar(payer)}"></div>
-        <div class="info"><b>付款 ${amt} ETH</b><small>${payer}</small></div>
-        <div class="right"><a href="https://sepolia.etherscan.io/tx/${e.transactionHash}" target="_blank" style="color:var(--accent2);font-size:12px;text-decoration:none">查看 ↗</a><small>${when}</small></div>`;
-      box.appendChild(row);
-    }
-  }catch(err){ document.getElementById('history').innerHTML='<div class="hint">交易紀錄讀取失敗（節點可能限制查詢範圍）：'+(err.message||err)+'</div>'; }
+async function loadHistory(){
+  // 輪流試每個節點，用第一個真的回傳事件的（有些免費節點不供 logs）
+  for(const url of RPCS){
+    try{
+      const p=new ethers.JsonRpcProvider(url,SEPOLIA_NET,{staticNetwork:SEPOLIA_NET,batchMaxCount:1});
+      const c=new ethers.Contract(CONTRACT,ABI,p);
+      const evs=await c.queryFilter(c.filters.RoyaltyPaid(), DEPLOY_BLOCK, "latest");
+      if(evs.length===0) continue; // 這個節點沒回，換下一個
+      evs.reverse();
+      const sig=evs.map(e=>e.transactionHash).join(",");
+      if(sig===lastHistSig) return; lastHistSig=sig;
+      const box=document.getElementById('history'); box.innerHTML="";
+      for(const e of evs.slice(0,15)){
+        let when=""; try{ const b=await p.getBlock(e.blockNumber); when=new Date(Number(b.timestamp)*1000).toLocaleString(); }catch(x){}
+        const payer=e.args[0], amt=fmt(e.args[1]);
+        const row=document.createElement('div'); row.className="payee";
+        row.innerHTML=`<div class="av" style="background:${avatar(payer)}"></div>
+          <div class="info"><b>付款 ${amt} ETH</b><small>${payer}</small></div>
+          <div class="right"><a href="https://sepolia.etherscan.io/tx/${e.transactionHash}" target="_blank" style="color:var(--accent2);font-size:12px;text-decoration:none">查看 ↗</a><small>${when}</small></div>`;
+        box.appendChild(row);
+      }
+      return; // 成功，結束
+    }catch(err){}
+  }
+  if(lastHistSig===""){ document.getElementById('history').innerHTML='<div class="hint">目前還沒有付款紀錄。付一筆款，這裡就會出現。</div>'; }
 }
 
 async function getSigner(){
