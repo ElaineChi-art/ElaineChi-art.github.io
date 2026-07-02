@@ -134,6 +134,11 @@ def build_html(d):
 <meta property="og:title" content="{e(p.get("name",""))} — {e(L(p.get("title"),"en"))}">
 <meta property="og:description" content="{desc_meta}">
 <meta property="og:url" content="{e(p.get("website",""))}resume/">
+<meta property="og:image" content="{e(p.get("website",""))}resume/img/cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{e(p.get("website",""))}resume/img/cover.png">
 <link rel="canonical" href="{e(p.get("website",""))}resume/">
 <script type="application/ld+json">{json.dumps(jsonld, ensure_ascii=False)}</script>
 <style>
