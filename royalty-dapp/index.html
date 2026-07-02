@@ -117,9 +117,12 @@ document.getElementById('ethlink').href=ES;
 document.getElementById('etherfoot').href=ES;
 let connectedAddr=null, ownerAddr=null;
 
+const SEPOLIA_NET=new ethers.Network("sepolia",11155111);
 async function readProvider(){
-  for(const u of RPCS){ try{const p=new ethers.JsonRpcProvider(u); await p.getBlockNumber(); return p;}catch(e){} }
-  throw new Error("RPC 連不上");
+  for(const u of RPCS){
+    try{ const p=new ethers.JsonRpcProvider(u,SEPOLIA_NET,{staticNetwork:SEPOLIA_NET}); await p.getBlockNumber(); return p; }catch(e){}
+  }
+  throw new Error("所有 RPC 都連不上");
 }
 const fmt=(w)=>Number(ethers.formatEther(w)).toFixed(4);
 function setStatus(m,c){const s=document.getElementById('status');s.textContent=m;s.className="status "+(c||"");}
@@ -153,7 +156,10 @@ async function load(){
     // 若已連錢包且是擁有者，顯示擁有者功能
     document.getElementById('ownerArea').style.display=
       (connectedAddr && connectedAddr===ownerAddr) ? "block" : "none";
-  }catch(e){}
+    setStatus("✅ 已讀取鏈上資料 · "+new Date().toLocaleTimeString(),"ok");
+  }catch(e){
+    setStatus("⚠️ 讀取鏈上資料失敗："+(e.message||e)+"（可能是節點忙碌，稍等會自動再試）","err");
+  }
 }
 
 async function getSigner(){
