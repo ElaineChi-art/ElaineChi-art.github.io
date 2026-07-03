@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>英文閱讀神器</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#100c0d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="閱讀神器">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+  /* 預設隱藏導覽列：朋友打開只看到閱讀工具。只有「我的裝置」(readingOwner=1) 顯示導覽列。
+     ?owner=1 設定；?owner=0 取消；?share 一律隱藏。 */
+  (function(){
+    var q=location.search, owner=false;
+    try{
+      if(/[?&]owner=1/.test(q)) localStorage.setItem('readingOwner','1');
+      if(/[?&]owner=0/.test(q)) localStorage.removeItem('readingOwner');
+      owner = localStorage.getItem('readingOwner')==='1';
+    }catch(e){}
+    var forceShare = /[?&]share\b/.test(q) || /\bshare\b/.test(location.hash);
+    if(forceShare || !owner) document.documentElement.classList.add('share');
+    try{ var th=localStorage.getItem('readingTheme')||'wine'; if(th!=='wine') document.documentElement.setAttribute('data-theme',th); }catch(e){}
+    try{ if(localStorage.getItem('readingHideTrans')==='1') document.documentElement.classList.add('hidetrans'); }catch(e){}
+    try{ var fs=localStorage.getItem('readingFont'); if(fs&&fs!=='m') document.documentElement.setAttribute('data-fs',fs); }catch(e){}
+  })();
+</script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  /* ===== 酒紅×暖金 高級主題（沿用單字神器）===== */
+  :root{
+    --bg:#100c0d; --panel:#1a1516; --panel2:#221b1c; --line:#332a2b;
+    --tx:#ece3da; --mut:#9b8d84; --acc:#c8a86a; --acc2:#7d3a44;
+    --green:#86a07c; --yellow:#c6a45f; --red:#b97070; --grey:#6c615c;
+    --nav:#0c0809; --glow:#1a1314; --fs:1;
+    --serif:"Cormorant Garamond","Noto Serif TC",Georgia,"Songti TC",serif;
+    --sans:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  }
+  html[data-theme="emerald"]{ --bg:#0a0f0d; --panel:#121916; --panel2:#19211d; --line:#26312b; --nav:#070b09; --glow:#0f201a;
+    --tx:#e7efe9; --mut:#8ba093; --acc:#7fc9a6; --acc2:#2e6b57; --green:#86a07c; --yellow:#c6a45f; --red:#bd7a7a; --grey:#67746b; }
+  html[data-theme="sapphire"]{ --bg:#0a0d12; --panel:#141921; --panel2:#1b2230; --line:#28323f; --nav:#070a0e; --glow:#142033;
+    --tx:#e7edf4; --mut:#8b97a8; --acc:#a7c4e6; --acc2:#33598a; --green:#82a37f; --yellow:#c6a45f; --red:#bd7a7a; --grey:#69727f; }
+  html[data-theme="amethyst"]{ --bg:#0f0a12; --panel:#181320; --panel2:#1f1929; --line:#2e2738; --nav:#0a070d; --glow:#1c1430;
+    --tx:#ece4f2; --mut:#9b8fa6; --acc:#c9a7e0; --acc2:#5e3a78; --green:#86a07c; --yellow:#c6a45f; --red:#bd7a7a; --grey:#6e6678; }
+  html[data-theme="graphite"]{ --bg:#0e0f10; --panel:#17181a; --panel2:#1e2023; --line:#2c2f33; --nav:#090a0b; --glow:#191b1e;
+    --tx:#e9ebee; --mut:#969aa0; --acc:#c2c7ce; --acc2:#474c54; --green:#86a07c; --yellow:#c6a45f; --red:#bd7a7a; --grey:#6b7077; }
+  html[data-theme="parchment"]{ --bg:#ece3d2; --panel:#f6f0e5; --panel2:#fbf6ee; --line:#dccfb9; --nav:#e2d6c1; --glow:#f1ead9;
+    --tx:#3a322a; --mut:#7c715f; --acc:#9c6f3a; --acc2:#7d3a44; --green:#5f7d57; --yellow:#a9802f; --red:#a85a5a; --grey:#897f70; }
+
+  html,body{max-width:100%;overflow-x:hidden;touch-action:manipulation;-webkit-text-size-adjust:100%}
+  body{font-family:var(--sans);color:var(--tx);min-height:100vh;letter-spacing:.2px;-webkit-font-smoothing:antialiased;
+       background:radial-gradient(1200px 700px at 50% -10%, var(--glow) 0%, var(--bg) 60%);font-size:calc(15px*var(--fs))}
+  *{transition:background-color .22s ease, border-color .22s ease, color .22s ease}
+  html[data-fs="s"]{--fs:.9} html[data-fs="l"]{--fs:1.18} html[data-fs="xl"]{--fs:1.4}
+
+  .topnav{display:flex;gap:6px;background:var(--nav);padding:8px 16px;border-bottom:1px solid var(--line);
+          padding-top:calc(8px + env(safe-area-inset-top,0px));position:sticky;top:0;z-index:50;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .topnav a{color:var(--mut);text-decoration:none;font-size:14px;font-weight:600;padding:9px 16px;border-radius:8px;white-space:nowrap}
+  .topnav a:hover{background:var(--panel2);color:var(--tx)}
+  .topnav a.active{background:color-mix(in srgb,var(--acc) 18%,transparent);color:var(--acc)}
+  html.share .topnav{display:none}
+  .wrap{max-width:1040px;margin:0 auto;padding:22px 18px 100px}
+  html.share .wrap{padding-top:calc(24px + env(safe-area-inset-top,0px))}
+
+  header.hd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  h1{font-family:var(--serif);font-weight:600;font-size:32px;letter-spacing:.6px}
+  .sub{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--mut);opacity:.85;margin-top:4px}
+  .toolbtns{display:flex;gap:8px;flex-wrap:wrap}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:18px;
+        box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 12px 30px -22px #000}
+  .sec-h{font-family:var(--serif);font-weight:600;font-size:21px;letter-spacing:.4px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+  .sec-n{background:transparent;color:var(--acc);border:1px solid var(--acc);min-width:26px;height:26px;border-radius:50%;
+         display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-family:var(--serif);flex-shrink:0}
+  .sec-sub{font-size:12.5px;color:var(--mut);font-weight:400;font-family:var(--sans);letter-spacing:0}
+
+  label.fld{display:block;font-size:12.5px;color:var(--mut);margin-bottom:6px;letter-spacing:.3px}
+  textarea,input[type=text],input[type=password],select{width:100%;background:var(--panel2);border:1px solid var(--line);
+       color:var(--tx);border-radius:10px;padding:12px 13px;font-size:15px;font-family:inherit}
+  textarea{resize:vertical;line-height:1.6}
+  textarea:focus,input:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 1px color-mix(in srgb,var(--acc) 30%,transparent)}
+  .btn{background:var(--acc2);color:#f3e7e3;border:none;border-radius:10px;padding:11px 20px;font-size:15px;font-weight:600;
+       letter-spacing:.4px;cursor:pointer;box-shadow:0 8px 20px -14px var(--acc2)}
+  .btn:hover{filter:brightness(1.08)}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--tx);box-shadow:none}
+  .btn.ghost:hover{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent)}
+  .btn.sm{padding:7px 13px;font-size:13px;border-radius:8px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .grow{flex:1;min-width:180px}
+  .msg{font-size:13px;color:var(--mut);margin-top:10px;min-height:18px}
+  .msg.err{color:var(--red)}
+  .empty{color:var(--mut);font-size:14px;text-align:center;padding:30px 12px;line-height:1.7}
+  .speak{cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--acc);border-radius:7px;padding:4px 9px;font-size:14px}
+  .speak:hover{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent)}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 11px;border-radius:20px;background:transparent;
+        border:1px solid var(--line);color:var(--mut);cursor:pointer;white-space:nowrap}
+  .pill.on{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,transparent)}
+
+  /* ============ 沉浸閱讀（課本式標注）============ */
+  .reader{font-family:var(--serif);line-height:2.9;font-size:calc(20px*var(--fs));letter-spacing:.2px}
+  .reader p{margin:0 0 22px}
+  .reader .anno{display:inline-block;vertical-align:baseline;text-align:center;margin:0 1px}
+  .reader .anno > .w{cursor:pointer;padding-bottom:2px;
+       background-image:linear-gradient(var(--acc),var(--acc));background-size:100% 2px;background-repeat:no-repeat;background-position:0 100%;
+       -webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .reader .anno > .w:hover{background-color:color-mix(in srgb,var(--acc) 14%,transparent)}
+  .reader .anno > .n{display:block;font-family:var(--sans);font-size:calc(12px*var(--fs));line-height:1.25;color:var(--acc);
+       margin-top:2px;max-width:min(260px,60vw);white-space:normal;letter-spacing:0;font-weight:500}
+  .reader .anno > .n .pos{color:var(--mut);font-style:italic;margin-right:3px}
+  html.hidetrans .reader .anno > .n{display:none}
+  .reader .anno.done > .w{background-image:linear-gradient(var(--green),var(--green))}
+  .rd-meta{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-family:var(--sans);font-size:12.5px;color:var(--mut);
+       margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line);letter-spacing:.3px}
+  .rd-title{font-family:var(--serif);font-size:calc(26px*var(--fs));font-weight:600;margin-bottom:2px}
+
+  /* ============ 書櫃 ============ */
+  .shelfbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .txtgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:12px}
+  .txtcard{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:15px;cursor:pointer;position:relative;
+       display:flex;flex-direction:column;gap:6px;min-height:118px}
+  .txtcard:hover{border-color:var(--acc);transform:translateY(-1px)}
+  .txtcard .tt{font-family:var(--serif);font-size:19px;font-weight:600;line-height:1.3;padding-right:22px}
+  .txtcard .pv{font-size:12.5px;color:var(--mut);line-height:1.55;flex:1;
+       display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .txtcard .mt{font-size:11.5px;color:var(--mut);display:flex;gap:10px;letter-spacing:.3px;flex-wrap:wrap}
+  .txtcard .mt b{color:var(--acc);font-weight:600}
+  .txtcard .del{position:absolute;top:10px;right:10px;border:none;background:transparent;color:var(--mut);font-size:16px;cursor:pointer;line-height:1;opacity:.5}
+  .txtcard .del:hover{opacity:1;color:var(--red)}
+  .txtcard.active{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+
+  /* ============ 單字表 ============ */
+  .wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:10px}
+  .wcard{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--grey);border-radius:12px;
+       padding:13px;position:relative;display:flex;flex-direction:column;gap:3px}
+  .wcard .en{font-family:var(--serif);font-weight:600;font-size:20px;padding-right:44px;line-height:1.25}
+  .wcard .pos{font-style:italic;color:var(--acc);font-size:12.5px;font-family:var(--serif)}
+  .wcard .zh{font-size:13.5px;color:var(--tx);opacity:.92;word-break:break-word}
+  .wcard .chk{position:absolute;top:11px;right:12px;width:18px;height:18px;cursor:pointer;accent-color:var(--acc2)}
+  .wcard .sp{position:absolute;top:36px;right:10px}
+  .lv-new{border-left-color:var(--grey)} .lv-weak{border-left-color:var(--red)}
+  .lv-mid{border-left-color:var(--yellow)} .lv-strong{border-left-color:var(--green)}
+  .lvset{display:flex;gap:4px;margin-top:8px}
+  .lvb{flex:1;font-size:11px;padding:5px 0;border-radius:7px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer;letter-spacing:.5px}
+  .lvb:hover{border-color:var(--acc)}
+  .lvb.on.weak{background:var(--red);color:#1a1011;border-color:var(--red)}
+  .lvb.on.mid{background:var(--yellow);color:#211a0c;border-color:var(--yellow)}
+  .lvb.on.strong{background:var(--green);color:#06210f;border-color:var(--green)}
+
+  /* ============ 測驗 ============ */
+  .lvfilter{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
+  .quizbox{text-align:center}
+  .qtypes{display:flex;gap:8px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
+  .flash{background:var(--panel2);border:1px solid var(--line);border-radius:16px;min-height:190px;display:flex;flex-direction:column;
+       align-items:center;justify-content:center;gap:10px;padding:30px;cursor:pointer}
+  .flash .big{font-family:var(--serif);font-size:34px;font-weight:600}
+  .flash .hint{font-size:13px;color:var(--mut)}
+  .opt{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--tx);
+       border-radius:11px;padding:13px 16px;margin-bottom:9px;cursor:pointer;font-size:16px}
+  .opt:hover{border-color:var(--acc)}
+  .opt.correct{background:color-mix(in srgb,var(--green) 22%,var(--panel2));border-color:var(--green);font-weight:600}
+  .opt.wrong{background:color-mix(in srgb,var(--red) 18%,var(--panel2));border-color:var(--red)}
+  .opt.dim{opacity:.5}
+  .optzh{float:right;color:var(--mut);font-weight:400;font-size:14px}
+  .progress{font-size:13px;color:var(--mut);margin-bottom:12px}
+  .scorebox{font-size:18px;line-height:1.9} .scorebox .big{font-family:var(--serif);font-size:48px;font-weight:700}
+  input[type=range]{accent-color:var(--acc2)}
+
+  /* ============ Modal ============ */
+  .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100;padding:24px 14px}
+  .ov.show{display:flex}
+  html:has(.ov.show){overflow:hidden}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:18px;max-width:520px;width:100%;padding:24px;
+       max-height:calc(100vh - 48px);overflow-y:auto;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+  .modal h2{font-family:var(--serif);font-size:26px;font-weight:600;margin-bottom:2px}
+  .x{float:right;cursor:pointer;color:var(--mut);font-size:24px;line-height:1;border:none;background:none}
+  .kv{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+  .foot{margin-top:34px;text-align:center;color:var(--mut);font-size:12px;line-height:1.9;letter-spacing:.3px}
+  .foot a{color:var(--acc)}
+  @media (max-width:560px){ .wrap{padding:16px 12px 100px} .card{padding:16px 14px} .reader{font-size:calc(18px*var(--fs));line-height:2.7} h1{font-size:27px} }
+</style>
+</head>
+<body>
+  <nav class="topnav">
+    <a href="https://elainechi-art.github.io/">🏠 首頁</a>
+    <a href="https://elainechi-art.github.io/vocab/">🔤 每日單字</a>
+    <a class="active" href="https://elainechi-art.github.io/reading/">📖 英文閱讀神器</a>
+    <a href="https://elainechi-art.github.io/resume/">👤 我的履歷</a>
+    <a href="https://elainechi-art.github.io/judicial/">📚 司法官複習</a>
+  </nav>
+
+  <div class="wrap">
+    <header class="hd">
+      <div>
+        <h1>英文閱讀神器</h1>
+        <div class="sub">Read · Annotate · Remember</div>
+      </div>
+      <div class="toolbtns">
+        <button class="btn ghost sm" onclick="openPrefs()">⚙︎ 外觀</button>
+        <button class="btn ghost sm" onclick="openApiKey()">🔑 挑字金鑰</button>
+      </div>
+    </header>
+
+    <!-- ① 新增文章 -->
+    <div class="card">
+      <div class="sec-h"><span class="sec-n">1</span>加入一篇文章 <span class="sec-sub">貼英文原文，AI／字典幫你挑重點單字並排在字下方</span></div>
+      <label class="fld">標題（可留空，會自動用第一句）</label>
+      <input type="text" id="inTitle" placeholder="例：GlobalTech Announces Major Expansion">
+      <div style="height:12px"></div>
+      <label class="fld">英文原文</label>
+      <textarea id="inArticle" rows="8" placeholder="把整篇英文閱讀貼在這裡…"></textarea>
+      <div style="height:14px"></div>
+      <label class="fld">重要單字表（一行一個：<b>單字或片語 (詞性)：中文</b>）　— 沒有的話按下方「AI 自動挑」或先留空</label>
+      <textarea id="inWords" rows="5" placeholder="Expansion (n.)：擴張、擴展&#10;Merger and acquisition (n. phr.)：合併與收購（併購）&#10;Joint venture (n. phr.)：合資企業"></textarea>
+      <div class="row" style="margin-top:14px">
+        <select id="pickMode" style="max-width:270px">
+          <option value="free">免費・免金鑰（難字偵測＋字典＋翻譯）</option>
+          <option value="gemini">Google Gemini（免費金鑰・更聰明）</option>
+          <option value="openrouter">OpenRouter 免費模型（免費金鑰）</option>
+          <option value="anthropic">Claude（付費金鑰）</option>
+        </select>
+        <button class="btn" onclick="autoPick()" id="aiBtn">✨ 自動挑單字</button>
+        <button class="btn ghost" onclick="saveText()">＋ 加入書櫃並閱讀</button>
+      </div>
+      <div class="msg" id="inMsg"></div>
+    </div>
+
+    <!-- ② 書櫃 -->
+    <div class="card">
+      <div class="sec-h"><span class="sec-n">2</span>我的書櫃 <span class="sec-sub" id="shelfCount"></span></div>
+      <div class="shelfbar" id="shelfBar"></div>
+      <div id="txtList"></div>
+    </div>
+
+    <!-- ③ 閱讀 -->
+    <div class="card" id="readCard" style="display:none">
+      <div class="sec-h"><span class="sec-n">3</span>沉浸閱讀 <span class="sec-sub">點底線單字＝發音；標注就在該字下方</span></div>
+      <div class="rd-meta" id="rdMeta"></div>
+      <div class="reader" id="reader"></div>
+    </div>
+
+    <!-- ④ 單字表 -->
+    <div class="card" id="wordCard" style="display:none">
+      <div class="sec-h"><span class="sec-n">4</span>重要單字・片語與詞性 <span class="sec-sub" id="wordCount"></span></div>
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn ghost sm" onclick="selAllWords(true)">全選</button>
+        <button class="btn ghost sm" onclick="selAllWords(false)">清除勾選</button>
+        <span class="msg" id="wordMsg" style="margin:0"></span>
+      </div>
+      <div class="wgrid" id="wordGrid"></div>
+    </div>
+
+    <!-- ⑤ 測驗 -->
+    <div class="card" id="quizCard" style="display:none">
+      <div class="sec-h"><span class="sec-n">5</span>單字測驗 <span class="sec-sub">針對勾選的單字</span></div>
+      <div class="lvfilter" id="lvFilter"></div>
+      <div class="qtypes">
+        <button class="pill" data-qt="flash" onclick="setQType('flash')">🔁 翻卡</button>
+        <button class="pill" data-qt="fill" onclick="setQType('fill')">📝 選擇</button>
+        <button class="pill" data-qt="spell" onclick="setQType('spell')">⌨︎ 拼字</button>
+      </div>
+      <div class="quizbox" id="quizBox"></div>
+    </div>
+
+    <div class="foot">
+      英文閱讀神器 · <span id="ver">v1</span>　·　資料存在你自己的瀏覽器<br>
+      標注可由 AI（你的 Anthropic 金鑰）／免費字典／手動貼上　·　<a href="https://elainechi-art.github.io/vocab/">🔤 每日單字</a>
+    </div>
+  </div>
+
+  <!-- 外觀偏好 -->
+  <div class="ov" id="prefsOv" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal">
+      <button class="x" onclick="prefsOv.classList.remove('show')">×</button>
+      <h2>外觀與偏好</h2>
+      <div class="kv">
+        <div><label class="fld">主題</label><div class="row" id="themeRow"></div></div>
+        <div><label class="fld">字體大小</label><div class="row" id="fsRow"></div></div>
+        <div><label class="fld">中文標注</label><div class="row">
+          <button class="pill" id="htOn" onclick="setHideTrans(false)">顯示中文</button>
+          <button class="pill" id="htOff" onclick="setHideTrans(true)">隱藏中文（純英文閱讀）</button>
+        </div></div>
+        <div><label class="fld">資料</label><div class="row">
+          <button class="btn ghost sm" onclick="exportData()">匯出備份</button>
+          <button class="btn ghost sm" onclick="document.getElementById('impFile').click()">匯入合併</button>
+          <input type="file" id="impFile" accept="application/json" style="display:none" onchange="importData(this)">
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 自動挑字設定 -->
+  <div class="ov" id="keyOv" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal">
+      <button class="x" onclick="keyOv.classList.remove('show')">×</button>
+      <h2>自動挑單字設定</h2>
+      <p style="color:var(--mut);font-size:13.5px;line-height:1.7;margin-top:8px">
+        <b>「免費・免金鑰」不用填任何東西就能用</b>（內建難字偵測＋免費字典判詞性＋免費翻譯）。<br>
+        想挑得更聰明、更會抓片語，可填以下任一「免費」金鑰 —— <b>Gemini 和 OpenRouter 都有免費額度、不必付錢</b>。金鑰只存在你這台瀏覽器。
+      </p>
+      <div class="kv">
+        <div><label class="fld">🟢 Google Gemini 金鑰（免費）　<a class="pill" href="https://aistudio.google.com/apikey" target="_blank">免費取得 ↗</a></label>
+          <input type="password" id="kGemini" placeholder="AIza..."></div>
+        <div><label class="fld">🟢 OpenRouter 金鑰（免費模型）　<a class="pill" href="https://openrouter.ai/keys" target="_blank">免費取得 ↗</a></label>
+          <input type="password" id="kOpenrouter" placeholder="sk-or-..."></div>
+        <div><label class="fld">💰 Anthropic Claude 金鑰（付費，選填）　<a class="pill" href="https://console.anthropic.com/settings/keys" target="_blank">取得 ↗</a></label>
+          <input type="password" id="kAnthropic" placeholder="sk-ant-..."></div>
+        <div class="row"><button class="btn" onclick="saveApiKey()">儲存</button>
+          <button class="btn ghost" onclick="clearApiKey()">全部清除</button></div>
+        <div class="msg" id="keyMsg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 單字詳解 -->
+  <div class="ov" id="detOv" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal" id="detModal"></div>
+  </div>
+
+<script>
+/* ============================================================
+   資料模型：localStorage readingDB_v1
+   { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
+     shelves:[{id,name}], cur:id }
+   ============================================================ */
+const APP_VERSION='v2';
+const LS='readingDB_v1';
+const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
+let DB=load();
+let curType='flash', quizIdx=0, quizItems=[], quizScore=0, lvSel=new Set(['weak','mid','strong','new']);
+
+function load(){
+  try{ const d=JSON.parse(localStorage.getItem(LS)); if(d&&d.texts){ if(!d.shelves)d.shelves=[{id:'default',name:'預設書櫃'}]; return d; } }catch(e){}
+  return { texts:{}, shelves:[{id:'default',name:'預設書櫃'}], cur:null };
+}
+function save(){ try{ localStorage.setItem(LS,JSON.stringify(DB)); }catch(e){ alert('儲存失敗：可能空間已滿'); } }
+const uid=()=> Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc=s=> (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const keyOf=w=> (w||'').toLowerCase().trim().replace(/\s+/g,' ');
+
+/* ---------- 解析單字表：一行 "word (pos)：中文" ---------- */
+function parseWordLines(txt){
+  const out=[]; const seen=new Set();
+  (txt||'').split(/\n+/).forEach(line=>{
+    line=line.trim(); if(!line) return;
+    // 允許： word (n.)：中文  /  word (n.): 中文  /  word — 中文  /  word 中文
+    let m=line.match(/^(.+?)\s*[（(]\s*([^)）]*?)\s*[)）]\s*[:：]\s*(.+)$/);
+    let w,pos,zh;
+    if(m){ w=m[1]; pos=m[2]; zh=m[3]; }
+    else{ // 無括號詞性： word：中文  或  word - 中文
+      let m2=line.match(/^(.+?)\s*[:：\-—]\s*(.+)$/);
+      if(m2){ w=m2[1]; pos=''; zh=m2[2]; } else return;
+    }
+    w=w.replace(/^[0-9]+[.)、]\s*/,'').trim();
+    pos=(pos||'').replace(/\s+/g,' ').trim();
+    zh=zh.trim();
+    if(!w) return;
+    const k=keyOf(w); if(seen.has(k)) return; seen.add(k);
+    out.push({w,pos,zh,note:'',level:'',stats:{r:0,w:0}});
+  });
+  return out;
+}
+/* 若使用者把整段含 "word (pos)：中文" 的標注混在原文裡，抽出來、還原乾淨原文 */
+function extractInline(article){
+  const words=[]; const seen=new Set();
+  const re=/([A-Za-z][A-Za-z'’\-]*(?:\s+[A-Za-z][A-Za-z'’\-]*){0,3})\s*[（(]\s*([^)）]{0,14}?)\s*[)）]\s*[:：]\s*([^A-Z\n]{1,40}?)(?=\s+[A-Z]|\s*$|\s*[.,;"”])/g;
+  let clean=article, m;
+  const hits=[];
+  while((m=re.exec(article))){ hits.push(m); }
+  hits.reverse().forEach(m=>{
+    const w=m[1].trim(), pos=m[2].trim(), zh=m[3].trim();
+    const k=keyOf(w); if(!seen.has(k)){ seen.add(k); words.unshift({w,pos,zh,note:'',level:'',stats:{r:0,w:0}}); }
+    clean=clean.slice(0,m.index)+m[1]+clean.slice(m.index+m[0].length);
+  });
+  return {clean:clean.replace(/[ \t]{2,}/g,' '), words};
+}
+
+/* ---------- 渲染閱讀（課本式：底線＋字下方標注）---------- */
+function annotateHTML(article, words){
+  const list=words.slice().sort((a,b)=> b.w.length-a.w.length); // 長片語優先
+  const paras=article.split(/\n+/).filter(p=>p.trim().length);
+  const usedGlobal=new Set();
+  return paras.map(para=>{
+    const consumed=[]; const recs=[];
+    list.forEach(wd=>{
+      if(usedGlobal.has(keyOf(wd.w))) return;
+      const pat=wd.w.trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s+');
+      const re=new RegExp('(^|[^A-Za-z])('+pat+')(?![A-Za-z])','i');
+      const m=re.exec(para);
+      if(!m) return;
+      const start=m.index+m[1].length, end=start+m[2].length;
+      if(consumed.some(c=> start<c.end && end>c.start)) return;
+      consumed.push({start,end}); recs.push({start,end,wd,surface:m[2]});
+      usedGlobal.add(keyOf(wd.w));
+    });
+    recs.sort((a,b)=>a.start-b.start);
+    let html='', pos=0;
+    recs.forEach(r=>{
+      html+=esc(para.slice(pos,r.start));
+      const posLabel=r.wd.pos?`<span class="pos">${esc(r.wd.pos)}</span>`:'';
+      html+=`<span class="anno" data-k="${esc(keyOf(r.wd.w))}"><span class="w" onclick="speak('${esc(r.wd.w).replace(/'/g,"\\'")}');event.stopPropagation();openDetail('${esc(keyOf(r.wd.w))}')">${esc(r.surface)}</span><span class="n">${posLabel}${esc(r.wd.zh)}</span></span>`;
+      pos=r.end;
+    });
+    html+=esc(para.slice(pos));
+    return '<p>'+html+'</p>';
+  }).join('');
+}
+
+/* ---------- 存文章 ---------- */
+function saveText(){
+  const msg=document.getElementById('inMsg'); msg.className='msg';
+  let article=document.getElementById('inArticle').value.trim();
+  if(!article){ msg.textContent='請先貼上英文原文'; msg.className='msg err'; return; }
+  let words=parseWordLines(document.getElementById('inWords').value);
+  // 若單字表空、或原文含內嵌標注，嘗試抽取
+  if(words.length===0 || /[（(][^)）]{0,14}[)）]\s*[:：]/.test(article)){
+    const ex=extractInline(article);
+    if(ex.words.length){ article=ex.clean.trim(); if(words.length===0) words=ex.words; }
+  }
+  let title=document.getElementById('inTitle').value.trim();
+  if(!title){ title=article.split(/[.\n!?]/)[0].trim().slice(0,60)||'未命名文章'; }
+  const id=uid();
+  DB.texts[id]={id,title,article,words,shelf:curShelf,created:Date.now(),updated:Date.now()};
+  DB.cur=id; save();
+  document.getElementById('inTitle').value=''; document.getElementById('inArticle').value=''; document.getElementById('inWords').value='';
+  msg.textContent='已加入書櫃 · 共 '+words.length+' 個重點單字';
+  renderShelf(); openText(id);
+  document.getElementById('readCard').scrollIntoView({behavior:'smooth'});
+}
+
+/* ---------- 自動挑單字（免費優先，可接多個免費 API）---------- */
+// 常見／太簡單的字：出現在這裡就不會被免費模式當成「重點單字」
+const COMMON=new Set(('a an and the to of in on at by for with from into onto up down out off over under about above below between among through during before after since until while as is am are was were be been being have has had do does did done doing will would shall should can could may might must not no nor only own same so than too very just now then here there when where why how what which who whom whose this that these those it its it\'s he she they we you i me him her us them my your his their our mine yours ours all any both each few more most other some such other another every either neither one two three four five six seven eight nine ten first second third next last many much several enough less least also even still yet ever never always often sometimes usually really quite rather almost perhaps maybe however therefore thus indeed likely nearly within without across along around against because though although unless whether else if but or and yes but say says said tell told ask asked call called come came go goes going went get gets got give gives gave given find finds found know knew known think thought thinks see saw seen want wanted wants need needs needed use used using uses try tried keep kept let lets put puts set sets show showed shown begin began begun start started starts expect expected expects help helped move moved moves become became turn turned make makes made making take takes taking took bring brought hold held run ran feel feels felt work works working made people person man men woman women child children group place area part way thing things point points number numbers name names home house family life hand head end side kind case fact lot bit today yesterday tomorrow time times year years month months day days week weeks hour company companies market markets plan plans planning product products business businesses world work new news old good better best great big small large largest long longer high higher low different important major main real full early late strong stronger public detail details plans move report reports state stated states industry price prices money value future growth develop developed development team teams within second third represents commitment feel operations countries country international traditional carefully particularly analyzed within combining resources agreement create nearly double predict analysts announced announce yesterday'.split(/\s+/)));
+
+function pickPrompt(article){
+  return '你是英文閱讀老師。以下是一篇英文文章。請挑出「對台灣中階英文學習者而言重要或較難」的單字與片語（涵蓋名詞片語、動詞、形容詞、專有搭配詞，約 12–28 個，避免 the/is 這類太簡單的字，也不要挑人名地名公司名）。\n每個項目給：\n- word：完全照文章中出現的原形拼寫（片語就給整個片語）\n- pos：詞性縮寫，用 n. / v. / adj. / adv. / prep. / n. phr.（名詞片語）/ v. phr. 等\n- zh：繁體中文意思（貼合文中語意，簡潔）\n只輸出 JSON 陣列，不要任何說明，格式：[{"word":"...","pos":"n.","zh":"..."}]\n\n文章：\n"""\n'+article+'\n"""';
+}
+
+async function autoPick(){
+  const mode=document.getElementById('pickMode').value;
+  const article=document.getElementById('inArticle').value.trim();
+  const msg=document.getElementById('inMsg'); msg.className='msg';
+  if(!article){ msg.textContent='請先貼上英文原文'; msg.className='msg err'; return; }
+  if(mode==='free') return freePick(article);
+  const keyName={gemini:'readingGeminiKey',openrouter:'readingOpenrouterKey',anthropic:'readingApiKey'}[mode];
+  if(!localStorage.getItem(keyName)){ msg.textContent='請先填入該服務的免費金鑰'; msg.className='msg err'; openApiKey(); return; }
+  return llmPick(mode,article);
+}
+
+// 簡易並發控制
+function pool(arr,n,fn){
+  return new Promise(res=>{ let i=0,active=0,done=0; if(!arr.length) return res();
+    const next=()=>{ while(active<n && i<arr.length){ const it=arr[i++]; active++;
+      Promise.resolve(fn(it)).catch(()=>{}).then(()=>{ active--; done++; if(done>=arr.length) res(); else next(); }); } };
+    next();
+  });
+}
+
+// 免費・免金鑰：難字偵測 → 免費字典判詞性（順便排除人名）→ 免費翻譯
+async function freePick(article){
+  const btn=document.getElementById('aiBtn'), msg=document.getElementById('inMsg');
+  btn.disabled=true; const orig=btn.textContent; btn.textContent='挑選中…'; msg.className='msg';
+  try{
+    msg.textContent='① 偵測難字…';
+    // 單字候選：字首任意、其後≥4 個小寫字母（CamelCase 公司名如 GlobalTech 會被自動略過）
+    const singles=[...new Set((article.match(/\b[A-Za-z][a-z]{4,}\b/g)||[]).map(w=>w.toLowerCase()))]
+      .filter(w=>!COMMON.has(w));
+    singles.sort((a,b)=> b.length-a.length);
+    const cand=singles.slice(0,32);
+    // 片語候選：連續兩個小寫實詞（大寫開頭的人名地名不會進來）
+    const phrases=[]; const pset=new Set(); let pm; const pre=/\b([a-z]{4,})\s+([a-z]{4,})\b/g;
+    while((pm=pre.exec(article))){ const a=pm[1],b=pm[2];
+      if(COMMON.has(a)||COMMON.has(b)) continue; const k=a+' '+b; if(pset.has(k)) continue; pset.add(k); phrases.push(k); }
+    phrases.sort((a,b)=> b.length-a.length);
+    let chosenP=phrases.slice(0,6);
+    // 免費字典：驗證是不是真的英文字＋抓詞性（人名/地名會 404 被排除）
+    msg.textContent='② 查字典・判詞性…';
+    const kept=[];
+    await pool(cand,6, async w=>{
+      try{ const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w));
+        if(r.ok){ const d=await r.json(); const mean=d[0]&&d[0].meanings&&d[0].meanings[0];
+          kept.push({w, pos: mean?(POSZH[mean.partOfSpeech]||mean.partOfSpeech||''):''}); } }catch(e){}
+    });
+    kept.sort((a,b)=> b.w.length-a.w.length);
+    let words=kept.slice(0,15);
+    // 若某單字已包含在片語裡，就不重複列
+    const inP=new Set(); chosenP.forEach(p=>p.split(' ').forEach(x=>inP.add(x)));
+    words=words.filter(x=>!inP.has(x.w));
+    let items=chosenP.map(p=>({w:p,pos:'n. phr.'})).concat(words).slice(0,24);
+    if(!items.length){ msg.className='msg err'; msg.textContent='沒偵測到明顯的難字，請改用 Gemini 或自己貼單字表'; return; }
+    // 免費翻譯
+    msg.textContent='③ 翻譯中…（'+items.length+' 個）';
+    await pool(items,5, async it=>{ it.zh=await translate(it.w)||''; });
+    const lines=items.filter(it=>it.zh).map(it=>`${it.w} (${it.pos})：${it.zh}`).join('\n');
+    document.getElementById('inWords').value=lines;
+    msg.textContent='✓ 免費挑出 '+items.filter(it=>it.zh).length+' 個單字/片語，可自行增刪後按「加入書櫃」';
+  }catch(e){ msg.className='msg err'; msg.textContent='免費挑字失敗：'+e.message; }
+  finally{ btn.disabled=false; btn.textContent=orig; }
+}
+
+// 免費／付費 LLM 挑字（Gemini / OpenRouter / Claude）
+async function llmPick(mode,article){
+  const btn=document.getElementById('aiBtn'), msg=document.getElementById('inMsg');
+  btn.disabled=true; const orig=btn.textContent; btn.textContent='AI 挑選中…'; msg.className='msg';
+  msg.textContent='AI 正在挑選重要單字並翻譯…';
+  const prompt=pickPrompt(article);
+  try{
+    let txt='';
+    if(mode==='gemini'){
+      const key=localStorage.getItem('readingGeminiKey');
+      const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+encodeURIComponent(key),
+        {method:'POST',headers:{'content-type':'application/json'},
+         body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:2048}})});
+      if(!r.ok) throw new Error('Gemini '+r.status+'：'+(await r.text()).slice(0,140));
+      const d=await r.json(); txt=(((d.candidates||[])[0]||{}).content||{}).parts?.[0]?.text||'';
+    } else if(mode==='openrouter'){
+      const key=localStorage.getItem('readingOpenrouterKey');
+      const r=await fetch('https://openrouter.ai/api/v1/chat/completions',
+        {method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+key},
+         body:JSON.stringify({model:'meta-llama/llama-3.3-70b-instruct:free',temperature:0.2,messages:[{role:'user',content:prompt}]})});
+      if(!r.ok) throw new Error('OpenRouter '+r.status+'：'+(await r.text()).slice(0,140));
+      const d=await r.json(); txt=d.choices?.[0]?.message?.content||'';
+    } else {
+      const key=localStorage.getItem('readingApiKey');
+      const r=await fetch('https://api.anthropic.com/v1/messages',
+        {method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+         body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+      if(!r.ok) throw new Error('Claude '+r.status+'：'+(await r.text()).slice(0,140));
+      const d=await r.json(); txt=d.content?.[0]?.text||'';
+    }
+    const jm=txt.match(/\[[\s\S]*\]/); if(!jm) throw new Error('回傳格式無法解析');
+    const arr=JSON.parse(jm[0]);
+    document.getElementById('inWords').value=arr.filter(x=>x&&x.word).map(x=>`${x.word} (${x.pos||''})：${x.zh||''}`).join('\n');
+    msg.textContent='✓ 挑出 '+arr.length+' 個單字，確認後按「加入書櫃」（可自行增刪）';
+  }catch(e){ msg.className='msg err'; msg.textContent='AI 失敗：'+e.message; }
+  finally{ btn.disabled=false; btn.textContent=orig; }
+}
+
+/* ---------- 書櫃渲染 ---------- */
+let curShelf='default';
+function renderShelf(){
+  const bar=document.getElementById('shelfBar');
+  const counts={}; Object.values(DB.texts).forEach(t=>{ counts[t.shelf]=(counts[t.shelf]||0)+1; });
+  let h=DB.shelves.map(s=> `<button class="pill ${s.id===curShelf?'on':''}" onclick="curShelf='${s.id}';renderShelf()">${esc(s.name)} <span style="opacity:.6">${counts[s.id]||0}</span></button>`).join('');
+  h+=`<button class="pill" onclick="addShelf()">＋ 新書櫃</button>`;
+  bar.innerHTML=h;
+  const all=Object.values(DB.texts).filter(t=>t.shelf===curShelf).sort((a,b)=>b.created-a.created);
+  document.getElementById('shelfCount').textContent=Object.keys(DB.texts).length+' 篇文章';
+  const list=document.getElementById('txtList');
+  if(!all.length){ list.innerHTML='<div class="empty">這個書櫃還沒有文章。<br>在上面貼一篇英文原文，按「AI 自動挑單字」或自己貼單字表，再「加入書櫃」。</div>'; return; }
+  list.innerHTML='<div class="txtgrid">'+all.map(t=>{
+    const done=t.words.filter(w=>w.level==='strong').length;
+    return `<div class="txtcard ${t.id===DB.cur?'active':''}" onclick="openText('${t.id}')">
+      <button class="del" title="刪除" onclick="event.stopPropagation();delText('${t.id}')">×</button>
+      <div class="tt">${esc(t.title)}</div>
+      <div class="pv">${esc(t.article.slice(0,110))}</div>
+      <div class="mt"><span><b>${t.words.length}</b> 單字</span><span>已熟 <b>${done}</b></span><span>${new Date(t.created).toLocaleDateString('zh-TW')}</span></div>
+    </div>`;
+  }).join('')+'</div>';
+}
+function addShelf(){ const n=prompt('新書櫃名稱：'); if(!n)return; const id=uid(); DB.shelves.push({id,name:n.trim()}); curShelf=id; save(); renderShelf(); }
+function delText(id){ if(!confirm('刪除這篇文章？')) return; delete DB.texts[id]; if(DB.cur===id)DB.cur=null; save(); renderShelf(); if(!DB.cur){ document.getElementById('readCard').style.display='none'; document.getElementById('wordCard').style.display='none'; document.getElementById('quizCard').style.display='none'; } }
+
+/* ---------- 開啟一篇文章 ---------- */
+function openText(id){
+  const t=DB.texts[id]; if(!t) return; DB.cur=id; save();
+  document.getElementById('readCard').style.display='';
+  document.getElementById('wordCard').style.display='';
+  document.getElementById('quizCard').style.display= t.words.length?'':'none';
+  document.getElementById('rdMeta').innerHTML=`<span class="rd-title">${esc(t.title)}</span>`;
+  const rt=document.getElementById('rdMeta');
+  rt.innerHTML=`<div style="flex:1"><div class="rd-title">${esc(t.title)}</div></div>
+     <span>${t.words.length} 重點單字</span><button class="speak" onclick="readAloud()">🔊 朗讀全文</button>`;
+  document.getElementById('reader').innerHTML=annotateHTML(t.article,t.words);
+  renderWords(); renderShelf(); buildLvFilter(); setQType(curType);
+}
+
+/* ---------- 單字表 ---------- */
+let wordSel=new Set();
+function renderWords(){
+  const t=DB.texts[DB.cur]; if(!t) return;
+  document.getElementById('wordCount').textContent=t.words.length+' 個';
+  const g=document.getElementById('wordGrid');
+  if(!t.words.length){ g.innerHTML='<div class="empty">這篇還沒有單字。可回上方用 AI 或字典補上。</div>'; return; }
+  g.innerHTML=t.words.map((w,i)=>{
+    const lv=w.level||'new';
+    return `<div class="wcard lv-${lv}">
+      <input type="checkbox" class="chk" ${wordSel.has(i)?'checked':''} onchange="toggleWord(${i},this.checked)">
+      <button class="speak sp" onclick="speak('${esc(w.w).replace(/'/g,"\\'")}')">🔊</button>
+      <div class="en">${esc(w.w)}</div>
+      <div class="pos">${esc(w.pos||'')}</div>
+      <div class="zh">${esc(w.zh||'')}</div>
+      <div class="lvset">
+        <button class="lvb weak ${w.level==='weak'?'on':''}" onclick="setLevel(${i},'weak')">不熟</button>
+        <button class="lvb mid ${w.level==='mid'?'on':''}" onclick="setLevel(${i},'mid')">普通</button>
+        <button class="lvb strong ${w.level==='strong'?'on':''}" onclick="setLevel(${i},'strong')">熟</button>
+      </div></div>`;
+  }).join('');
+}
+function toggleWord(i,on){ on?wordSel.add(i):wordSel.delete(i); }
+function selAllWords(on){ const t=DB.texts[DB.cur]; wordSel=new Set(); if(on)t.words.forEach((_,i)=>wordSel.add(i)); renderWords(); }
+function setLevel(i,lv){ const t=DB.texts[DB.cur]; t.words[i].level= t.words[i].level===lv?'':lv; save(); renderWords(); }
+
+/* ---------- 單字詳解（點閱讀底線字）---------- */
+function openDetail(k){
+  const t=DB.texts[DB.cur]; if(!t) return; const w=t.words.find(x=>keyOf(x.w)===k); if(!w) return;
+  const m=document.getElementById('detModal');
+  m.innerHTML=`<button class="x" onclick="detOv.classList.remove('show')">×</button>
+    <h2>${esc(w.w)} <button class="speak" onclick="speak('${esc(w.w).replace(/'/g,"\\'")}')">🔊</button></h2>
+    <div style="color:var(--acc);font-style:italic;font-family:var(--serif);margin-top:4px">${esc(w.pos||'')}</div>
+    <div class="kv">
+      <div><label class="fld">中文意思</label><input type="text" id="dZh" value="${esc(w.zh||'')}"></div>
+      <div><label class="fld">詞性</label><input type="text" id="dPos" value="${esc(w.pos||'')}"></div>
+      <div><label class="fld">筆記</label><textarea id="dNote" rows="2" placeholder="例句、用法…">${esc(w.note||'')}</textarea></div>
+      <div class="row"><button class="btn sm" onclick="saveDetail('${k}')">儲存</button>
+        <button class="btn ghost sm" onclick="lookupDict('${k}')">🔎 免費字典補充</button></div>
+      <div class="msg" id="dMsg"></div>
+    </div>`;
+  detOv.classList.add('show');
+}
+function saveDetail(k){ const t=DB.texts[DB.cur]; const w=t.words.find(x=>keyOf(x.w)===k); if(!w)return;
+  w.zh=document.getElementById('dZh').value.trim(); w.pos=document.getElementById('dPos').value.trim(); w.note=document.getElementById('dNote').value.trim();
+  save(); openText(DB.cur); detOv.classList.remove('show'); }
+
+/* ---------- 免費字典＋翻譯（無金鑰路線）---------- */
+async function lookupDict(k){
+  const t=DB.texts[DB.cur]; const w=t.words.find(x=>keyOf(x.w)===k); if(!w)return;
+  const msg=document.getElementById('dMsg'); msg.textContent='查詢中…';
+  const word=w.w.trim();
+  try{
+    if(!word.includes(' ')){
+      const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(word));
+      if(r.ok){ const d=await r.json(); const mean=d[0]&&d[0].meanings&&d[0].meanings[0];
+        if(mean){ const p=POSZH[mean.partOfSpeech]||mean.partOfSpeech; if(p&&!document.getElementById('dPos').value) document.getElementById('dPos').value=p;
+          const def=mean.definitions&&mean.definitions[0]&&mean.definitions[0].definition;
+          if(def){ document.getElementById('dNote').value=(document.getElementById('dNote').value?document.getElementById('dNote').value+'\n':'')+'EN: '+def; } } } }
+    if(!document.getElementById('dZh').value){ const zh=await translate(word); if(zh) document.getElementById('dZh').value=zh; }
+    msg.textContent='✓ 已補充，記得按儲存';
+  }catch(e){ msg.textContent='查詢失敗（可能是片語，字典僅支援單字）'; }
+}
+async function translate(text){
+  try{ const r=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-TW&dt=t&q='+encodeURIComponent(text));
+    if(r.ok){ const d=await r.json(); return d[0].map(x=>x[0]).join(''); } }catch(e){}
+  try{ const r=await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair=en|zh-TW');
+    if(r.ok){ const d=await r.json(); return d.responseData&&d.responseData.translatedText; } }catch(e){}
+  return '';
+}
+
+/* ---------- 朗讀 ---------- */
+function speak(txt){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(txt); u.lang='en-US'; u.rate=.92; speechSynthesis.speak(u); }catch(e){} }
+function readAloud(){ const t=DB.texts[DB.cur]; if(!t)return; speak(t.article.replace(/\s+/g,' ').slice(0,600)); }
+
+/* ---------- 測驗 ---------- */
+function buildLvFilter(){
+  const box=document.getElementById('lvFilter');
+  const labels={weak:'不熟',mid:'普通',strong:'熟',new:'未評'};
+  box.innerHTML=Object.keys(labels).map(k=>`<button class="pill ${lvSel.has(k)?'on':''}" onclick="toggleLv('${k}')">${labels[k]}</button>`).join('')
+    +`<span style="color:var(--mut);font-size:12.5px;align-self:center">（未勾選單字＝全部）</span>`;
+}
+function toggleLv(k){ lvSel.has(k)?lvSel.delete(k):lvSel.add(k); if(!lvSel.size)lvSel=new Set(['weak','mid','strong','new']); buildLvFilter(); setQType(curType); }
+function poolWords(){
+  const t=DB.texts[DB.cur]; if(!t) return [];
+  let pool=t.words.map((w,i)=>({w,i})).filter(x=> wordSel.size? wordSel.has(x.i): true);
+  pool=pool.filter(x=> lvSel.has(x.w.level||'new'));
+  return pool.map(x=>x.w);
+}
+function setQType(type){
+  curType=type;
+  document.querySelectorAll('.qtypes .pill').forEach(b=>b.classList.toggle('on',b.dataset.qt===type));
+  const pool=poolWords();
+  if(pool.length<1){ document.getElementById('quizBox').innerHTML='<div class="empty">沒有可測驗的單字。<br>到單字表勾選幾個，或調整上方篩選。</div>'; return; }
+  quizItems=shuffle(pool.slice()); quizIdx=0; quizScore=0; renderQuiz();
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function renderQuiz(){
+  const box=document.getElementById('quizBox'); const t=DB.texts[DB.cur];
+  if(quizIdx>=quizItems.length){
+    const pct=Math.round(quizScore/quizItems.length*100);
+    box.innerHTML=`<div class="scorebox"><div class="big">${pct}分</div>答對 ${quizScore} / ${quizItems.length}<br><br>
+      <button class="btn" onclick="setQType('${curType}')">再測一次</button></div>`; return;
+  }
+  const cur=quizItems[quizIdx]; const prog=`<div class="progress">${quizIdx+1} / ${quizItems.length}　答對 ${quizScore}</div>`;
+  if(curType==='flash'){
+    box.innerHTML=prog+`<div class="flash" onclick="this.querySelector('.bk').style.display='block';this.querySelector('.ft').style.display='none'">
+      <div class="ft"><div class="big">${esc(cur.w)}</div><div class="hint">點一下看中文</div></div>
+      <div class="bk" style="display:none"><div style="color:var(--acc);font-style:italic;font-family:var(--serif)">${esc(cur.pos||'')}</div><div class="big" style="font-size:26px">${esc(cur.zh||'')}</div></div></div>
+      <div class="row" style="justify-content:center;margin-top:14px">
+        <button class="btn ghost" onclick="ansFlash(false)">✕ 不熟</button>
+        <button class="btn" onclick="ansFlash(true)">✓ 記得</button></div>`;
+  } else if(curType==='fill'){
+    const opts=makeOptions(cur,t.words);
+    box.innerHTML=prog+`<div class="flash" style="min-height:120px"><div class="big">${esc(cur.w)}</div><div class="hint">${esc(cur.pos||'')} · 選出正確中文</div></div>
+      <div style="margin-top:14px">${opts.map(o=>`<button class="opt" onclick="ansFill(this,${o.correct})">${esc(o.zh)}</button>`).join('')}</div>`;
+  } else {
+    box.innerHTML=prog+`<div class="flash" style="min-height:120px"><div class="big" style="font-size:26px">${esc(cur.zh||'')}</div><div class="hint">${esc(cur.pos||'')} · 拼出英文</div></div>
+      <div class="row" style="margin-top:14px;justify-content:center"><input type="text" id="spellIn" style="max-width:300px" placeholder="輸入英文…" onkeydown="if(event.key==='Enter')ansSpell()">
+      <button class="btn" onclick="ansSpell()">送出</button></div><div class="msg" id="spellMsg" style="text-align:center"></div>`;
+    setTimeout(()=>{const s=document.getElementById('spellIn');s&&s.focus();},50);
+  }
+}
+function makeOptions(cur,all){
+  const others=shuffle(all.filter(w=>keyOf(w.w)!==keyOf(cur.w)&&w.zh)).slice(0,3);
+  const opts=[{zh:cur.zh,correct:true},...others.map(w=>({zh:w.zh,correct:false}))];
+  return shuffle(opts);
+}
+function ansFlash(ok){ mark(quizItems[quizIdx],ok); if(ok)quizScore++; quizIdx++; renderQuiz(); }
+function ansFill(btn,ok){ document.querySelectorAll('.opt').forEach(b=>b.style.pointerEvents='none');
+  btn.classList.add(ok?'correct':'wrong'); if(!ok)document.querySelectorAll('.opt').forEach(b=>{ if(b.textContent===quizItems[quizIdx].zh)b.classList.add('correct'); });
+  mark(quizItems[quizIdx],ok); if(ok)quizScore++; setTimeout(()=>{quizIdx++;renderQuiz();},850); }
+function ansSpell(){ const v=(document.getElementById('spellIn').value||'').trim().toLowerCase(); const cur=quizItems[quizIdx];
+  const ok=v===keyOf(cur.w); const msg=document.getElementById('spellMsg');
+  msg.textContent= ok?'✓ 正確':'✗ 正解：'+cur.w; msg.style.color= ok?'var(--green)':'var(--red)';
+  mark(cur,ok); if(ok)quizScore++; setTimeout(()=>{quizIdx++;renderQuiz();},ok?600:1400); }
+function mark(w,ok){ w.stats=w.stats||{r:0,w:0}; if(ok){w.stats.r++; if(!w.level||w.level==='weak')w.level='mid'; else if(w.level==='mid')w.level='strong';}
+  else{ w.stats.w++; w.level='weak'; } save(); }
+
+/* ---------- 偏好 ---------- */
+const THEMES=[['wine','酒紅'],['sapphire','靛藍'],['emerald','翡翠'],['amethyst','紫晶'],['graphite','石墨'],['parchment','羊皮紙']];
+function openPrefs(){
+  document.getElementById('themeRow').innerHTML=THEMES.map(([v,n])=>{ const cur=(localStorage.getItem('readingTheme')||'wine')===v; return `<button class="pill ${cur?'on':''}" onclick="setTheme('${v}')">${n}</button>`; }).join('');
+  const fs=localStorage.getItem('readingFont')||'m';
+  document.getElementById('fsRow').innerHTML=[['s','小'],['m','中'],['l','大'],['xl','特大']].map(([v,n])=>`<button class="pill ${fs===v?'on':''}" onclick="setFs('${v}')">${n}</button>`).join('');
+  const ht=localStorage.getItem('readingHideTrans')==='1';
+  document.getElementById('htOn').classList.toggle('on',!ht); document.getElementById('htOff').classList.toggle('on',ht);
+  prefsOv.classList.add('show');
+}
+function setTheme(v){ localStorage.setItem('readingTheme',v); if(v==='wine')document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',v); openPrefs(); }
+function setFs(v){ localStorage.setItem('readingFont',v); if(v==='m')document.documentElement.removeAttribute('data-fs'); else document.documentElement.setAttribute('data-fs',v); openPrefs(); }
+function setHideTrans(on){ localStorage.setItem('readingHideTrans',on?'1':'0'); document.documentElement.classList.toggle('hidetrans',on); openPrefs(); }
+
+/* ---------- 自動挑字金鑰（三家：Gemini/OpenRouter 免費、Claude 付費）---------- */
+function openApiKey(){
+  document.getElementById('kGemini').value=localStorage.getItem('readingGeminiKey')||'';
+  document.getElementById('kOpenrouter').value=localStorage.getItem('readingOpenrouterKey')||'';
+  document.getElementById('kAnthropic').value=localStorage.getItem('readingApiKey')||'';
+  document.getElementById('keyMsg').textContent=''; keyOv.classList.add('show');
+}
+function saveApiKey(){
+  const g=document.getElementById('kGemini').value.trim(), o=document.getElementById('kOpenrouter').value.trim(), a=document.getElementById('kAnthropic').value.trim();
+  g?localStorage.setItem('readingGeminiKey',g):localStorage.removeItem('readingGeminiKey');
+  o?localStorage.setItem('readingOpenrouterKey',o):localStorage.removeItem('readingOpenrouterKey');
+  a?localStorage.setItem('readingApiKey',a):localStorage.removeItem('readingApiKey');
+  document.getElementById('keyMsg').textContent='✓ 已儲存'; setTimeout(()=>keyOv.classList.remove('show'),700);
+}
+function clearApiKey(){
+  ['readingGeminiKey','readingOpenrouterKey','readingApiKey'].forEach(k=>localStorage.removeItem(k));
+  ['kGemini','kOpenrouter','kAnthropic'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('keyMsg').textContent='已全部清除';
+}
+
+/* ---------- 備份 ---------- */
+function exportData(){ const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='reading-backup-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); }
+function importData(input){ const f=input.files[0]; if(!f)return; const r=new FileReader();
+  r.onload=()=>{ try{ const d=JSON.parse(r.result); if(d.texts)Object.assign(DB.texts,d.texts); if(d.shelves)d.shelves.forEach(s=>{ if(!DB.shelves.find(x=>x.id===s.id))DB.shelves.push(s); }); save(); renderShelf(); alert('匯入完成'); }catch(e){ alert('檔案格式錯誤'); } };
+  r.readAsText(f); input.value=''; }
+
+/* ---------- 啟動 ---------- */
+document.getElementById('ver').textContent=APP_VERSION;
+renderShelf();
+if(DB.cur&&DB.texts[DB.cur]) openText(DB.cur);
+// 首次示範資料
+if(!Object.keys(DB.texts).length){
+  const demo={id:uid(),title:'GlobalTech Announces Major Expansion',
+    article:`GlobalTech Announces Major Expansion Plans\nCHICAGO (March 15)—GlobalTech Industries announced yesterday its plans for a significant merger and acquisition that will reshape the technology sector. The company has entered into a joint venture agreement with Pacific Solutions, combining their expertise and resources to create one of the largest tech conglomerates in North America.\nCEO Marcus Chen stated, "This strategic planning initiative represents our commitment to corporate growth. We've analyzed the market carefully, and management feels it is time to expand our operations internationally. Our market entry plan for Southeast Asia is particularly ambitious, targeting five countries within the next two years."\nThe company's diversification strategy hopes to diversify its products beyond traditional software development into artificial intelligence and robotics.\nIndustry analysts predict that this move will nearly double GlobalTech's market value within three years, showing strong prospects for future growth. The merger is expected to be finalized pending regulatory approval.`,
+    words:parseWordLines(`Expansion (n.)：擴張、擴展
+Merger and acquisition (n. phr.)：合併與收購（併購）
+Reshape (v.)：重塑、改變…的形態
+Joint venture (n. phr.)：合資企業
+Expertise (n.)：專業知識、專長
+Conglomerates (n.)：集團、企業集團
+Strategic planning (n. phr.)：戰略規劃
+Initiative (n.)：倡議、具體方案
+Corporate growth (n. phr.)：企業成長
+Market entry (n. phr.)：市場進入（進軍市場）
+Ambitious (adj.)：雄心勃勃的、有抱負的
+Diversification strategy (n. phr.)：多元化策略
+Artificial intelligence (n. phr.)：人工智慧
+Robotics (n.)：機器人技術
+Market value (n. phr.)：市值、市場價值
+Prospects (n.)：前景、展望
+Pending (prep.)：在等待…期間、直到…發生
+Regulatory approval (n. phr.)：監管批准`),
+    shelf:'default',created:Date.now(),updated:Date.now()};
+  DB.texts[demo.id]=demo; DB.cur=demo.id; save(); renderShelf(); openText(demo.id);
+}
+</script>
+<!-- GoatCounter 流量分析 -->
+<script data-goatcounter="https://elainechi.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
