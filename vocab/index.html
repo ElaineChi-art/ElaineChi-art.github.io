@@ -255,6 +255,7 @@
   .optzh{float:right;color:var(--mut);font-weight:400;font-size:14px}
   .progress{font-size:13px;color:var(--mut);margin-bottom:12px}
   .analysis{background:var(--panel2);border-radius:10px;padding:14px;margin-top:14px;text-align:left;font-size:14px;line-height:1.7}
+  #quizCard,#ana{scroll-margin-top:60px}
   .anaopt{padding:4px 0;font-size:14px}
   .anaopt.c{color:var(--green)}
   .anatag{font-size:11px;padding:1px 8px;border-radius:10px;margin-left:6px}
@@ -551,7 +552,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v80 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v81 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -563,7 +564,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='80';
+const APP_VERSION='81';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1961,6 +1962,7 @@ function nextQ(){
   if(Q.type==='flash') renderFlash(body,it);
   if(Q.type==='fill') renderFill(body,it);
   if(Q.type==='spell') renderSpell(body,it);
+  scrollQuizTop();
 }
 function advance(ok,it){
   if(Q.answered)return; Q.answered=true;
@@ -1968,6 +1970,9 @@ function advance(ok,it){
   record(it.date,it.key,ok);
   Q.results.push({word:it.rec.word,ok});
 }
+// 測驗自動捲動：解析出現→捲到解析上方看完整；下一題→捲到題目
+function scrollQuizTop(){ try{ var q=document.getElementById('quizCard'); if(q)q.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} }
+function scrollAna(){ setTimeout(function(){ try{ var a=document.getElementById('ana'); if(a&&a.innerHTML) a.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} },60); }
 
 /* --- flashcard --- */
 function renderFlash(body,it){
@@ -2213,6 +2218,7 @@ function renderFill(body,it){
         ${usage?`<div class="anahr"></div><div style="white-space:pre-wrap;font-size:13px;line-height:1.7">${escapeHtml(usage)}</div>`:''}
         <div style="font-size:12px;color:var(--mut);margin-top:10px">調整熟悉度（同步到上面清單）：</div>${quizLvHtml(it.date,it.key)}
         <button class="btn sm" style="margin-top:12px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
+      scrollAna();
     };
     ob.appendChild(b);
   });
@@ -2244,6 +2250,7 @@ function renderSpell(body,it){
       中文：${it.rec.wordZh||''}<br>
       <div style="font-size:12px;color:var(--mut);margin-top:8px">調整熟悉度（同步到上面清單）：</div>${quizLvHtml(it.date,it.key)}
       <button class="btn sm" style="margin-top:12px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
+    scrollAna();
   };
   document.getElementById('spCheck').onclick=check;
   inp.onkeydown=e=>{if(e.key==='Enter')check();};
