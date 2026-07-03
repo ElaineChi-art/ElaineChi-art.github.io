@@ -124,10 +124,14 @@
   html.hidetrans .reader .anno > .n{display:none}
   .reader .anno.done > .w{text-decoration-color:var(--green)}
   .reader .sent{border-radius:4px}
-  .reader .sent:hover{background:color-mix(in srgb,var(--acc) 7%,transparent)}
-  .reader .playsent{border:none;background:transparent;color:var(--acc);cursor:pointer;font-size:.62em;
-       padding:0 5px 0 0;vertical-align:0.12em;opacity:.5;line-height:1}
-  .reader .playsent:hover{opacity:1}
+  /* 段落分析：左筆記＋右文章 兩欄 */
+  .para-row{display:flex;gap:20px;align-items:flex-start;margin-bottom:8px}
+  .para-body{flex:1;min-width:0}
+  .para-note{width:220px;flex-shrink:0;font-family:var(--sans);font-size:12.5px;line-height:1.65;color:var(--mut);
+       background:color-mix(in srgb,var(--acc) 8%,transparent);border-left:2px solid var(--acc);border-radius:8px;
+       padding:11px 13px;letter-spacing:.2px;position:sticky;top:64px}
+  @media (max-width:760px){ .para-row{flex-direction:column;gap:6px;margin-bottom:14px}
+       .para-note{width:auto;position:static;font-size:12px;padding:9px 11px} }
   #selBtn{position:fixed;z-index:80;display:none;background:var(--acc2);color:#f3e7e3;border:none;border-radius:20px;
        padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 6px 18px -6px #000;-webkit-backdrop-filter:blur(8px)}
   #selBtn.show{display:block}
@@ -264,7 +268,7 @@
 
     <!-- ③ 閱讀 -->
     <div class="card" id="readCard" style="display:none">
-      <div class="sec-h"><span class="sec-n">3</span>沉浸閱讀 <span class="sec-sub">句首 ▶＝只念這句；點字＝就地翻譯（朗讀中點字不打斷）；選片語可整串標注</span></div>
+      <div class="sec-h"><span class="sec-n">3</span>沉浸閱讀 <span class="sec-sub">點字＝就地翻譯（朗讀中點字不打斷）；連點兩下句子＝只念這句；🧠 段落分析在左側</span></div>
       <div class="rd-meta" id="rdMeta"></div>
       <div class="reader" id="reader"></div>
     </div>
@@ -353,7 +357,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v11';
+const APP_VERSION='v12';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -441,6 +445,7 @@ function annotateSentence(st, list, usedGlobal){
   html+=plainHTML(st.slice(pos));
   return html;
 }
+// 回傳「每一段的 inner HTML」陣列（供左側段落筆記兩欄排版）。句子用 .sent 包住，連點兩下＝只念這句（無可見標記）
 function annotateHTML(article, words){
   SENTENCES=[];
   const list=words.slice().sort((a,b)=> b.w.length-a.w.length); // 長片語優先
@@ -448,14 +453,20 @@ function annotateHTML(article, words){
   const usedGlobal=new Set();
   return paras.map(para=>{
     const sents=para.match(/\s*[^.!?]+[.!?]*/g)||[para];   // 切句（保留標點）
-    const inner=sents.map(st=>{
+    return sents.map(st=>{
       if(!st.trim()) return esc(st);
       const idx=SENTENCES.length; SENTENCES.push(st.trim());
       const lead=st.match(/^\s*/)[0];
-      return esc(lead)+`<span class="sent" data-i="${idx}"><button class="playsent" onclick="readSentence(${idx})" title="只念這一句">▶</button>`+annotateSentence(st.trimStart(), list, usedGlobal)+`</span>`;
+      return esc(lead)+`<span class="sent" data-i="${idx}" ondblclick="event.preventDefault();readSentence(${idx})">`+annotateSentence(st.trimStart(), list, usedGlobal)+`</span>`;
     }).join('');
-    return '<p>'+inner+'</p>';
-  }).join('');
+  });
+}
+// 組出閱讀區 HTML：有段落筆記(t.analysis)就用「左筆記＋右文章」兩欄；沒有就純段落
+function renderReaderHTML(t){
+  const parts=annotateHTML(t.article, t.words);
+  const notes=(t.analysis&&t.analysis.length)?t.analysis:null;
+  if(!notes) return parts.map(h=>'<p>'+h+'</p>').join('');
+  return parts.map((h,i)=>`<div class="para-row"><div class="para-note">${notes[i]?esc(notes[i]):'<span style="opacity:.35">—</span>'}</div><div class="para-body"><p>${h}</p></div></div>`).join('');
 }
 
 /* ---------- 存文章 ---------- */
@@ -677,8 +688,9 @@ function openText(id){
   document.getElementById('rdMeta').innerHTML=`<span class="rd-title">${esc(t.title)}</span>`;
   const rt=document.getElementById('rdMeta');
   rt.innerHTML=`<div style="flex:1"><div class="rd-title">${esc(t.title)}</div></div>
-     <span>${t.words.length} 重點單字</span><button class="speak" onclick="readAloud()">🔊 朗讀全文</button><button class="speak" onclick="stopRead()">⏹ 停</button>`;
-  document.getElementById('reader').innerHTML=annotateHTML(t.article,t.words);
+     <span>${t.words.length} 重點單字</span><button class="speak" onclick="readAloud()">🔊 朗讀全文</button><button class="speak" onclick="stopRead()">⏹ 停</button>
+     <button class="speak" id="analyzeBtn" onclick="analyzeParagraphs()">🧠 段落分析</button>${(t.analysis&&t.analysis.length)?'<button class="speak" onclick="clearAnalysis()">清除筆記</button>':''}`;
+  document.getElementById('reader').innerHTML=renderReaderHTML(t);
   renderWords(); renderShelf(); buildLvFilter(); setQType(curType);
 }
 
@@ -873,7 +885,29 @@ function speakQueue(list){
   }catch(e){ articleReading=false; }
 }
 function readAloud(){ if(SENTENCES.length) speakQueue(SENTENCES); }        // 朗讀全文
-function readSentence(i){ if(SENTENCES[i]!=null) speakQueue([SENTENCES[i]]); }  // 只念這一句
+function readSentence(i){ try{ window.getSelection().removeAllRanges(); }catch(e){} if(SENTENCES[i]!=null) speakQueue([SENTENCES[i]]); }  // 只念這一句
+
+/* ---------- 段落閱讀技巧分析（AI，排在文章左側像筆記）---------- */
+async function analyzeParagraphs(){
+  const t=DB.texts[DB.cur]; if(!t) return;
+  const provider = localStorage.getItem('readingGeminiKey')?'gemini'
+                 : localStorage.getItem('readingOpenrouterKey')?'openrouter'
+                 : localStorage.getItem('readingApiKey')?'anthropic':null;
+  if(!provider){ alert('段落分析需要 AI 金鑰。請先在右上「🔑 挑字金鑰」填免費的 Gemini 或 OpenRouter 金鑰。'); openApiKey(); return; }
+  const paras=t.article.split(/\n+/).filter(p=>p.trim().length);
+  const btn=document.getElementById('analyzeBtn'); const o=btn?btn.textContent:''; if(btn){ btn.disabled=true; btn.textContent='分析中…'; }
+  const prompt='你是英文閱讀老師，教多益 600 分以下的台灣學生「怎麼快速讀懂一篇文章」。\n下面文章用「¶」分成 '+paras.length+' 段。請針對「每一段」寫一則繁體中文小筆記（每則 25–55 字），內容要點出：這段在整篇的角色/結構（例如：導言破題、背景、舉例、數據佐證、引述、轉折、結論…），以及「怎麼快讀這段」的技巧（先看哪一句、要抓什麼關鍵字/數字）。\n只輸出 JSON 字串陣列，長度剛好 '+paras.length+' 個，對應每一段，不要多餘說明。範例格式：["第1段筆記","第2段筆記"]\n\n文章：\n'+paras.map(p=>'¶ '+p.replace(/\s+/g,' ').trim()).join('\n');
+  try{
+    let txt = provider==='gemini' ? await callGemini(prompt) : provider==='openrouter' ? await callOpenRouter(prompt) : await callClaude(prompt);
+    const jm=txt.match(/\[[\s\S]*\]/); if(!jm) throw new Error('回傳格式無法解析');
+    const arr=JSON.parse(jm[0]);
+    t.analysis=paras.map((_,i)=> (arr[i]!=null?String(arr[i]):''));
+    t.updated=Date.now(); save(); openText(DB.cur);
+    document.getElementById('readCard').scrollIntoView({behavior:'smooth'});
+  }catch(e){ alert('段落分析失敗：'+e.message+'\n（AI 可能忙線，稍後再試或改用 OpenRouter 金鑰）'); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent=o; } }
+}
+function clearAnalysis(){ const t=DB.texts[DB.cur]; if(!t) return; t.analysis=null; save(); openText(DB.cur); }
 
 /* ---------- 測驗 ---------- */
 function buildLvFilter(){
