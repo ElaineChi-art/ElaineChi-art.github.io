@@ -551,7 +551,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v79 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v80 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -563,7 +563,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='79';
+const APP_VERSION='80';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -2464,8 +2464,14 @@ document.getElementById('btnVoice').onclick=()=>{
 
 /* ============ back to top ============ */
 const toTop=document.getElementById('toTop');
-window.addEventListener('scroll',()=>{ toTop.classList.toggle('show',window.scrollY>500); });
-toTop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+// 隨位置變化：可往下捲(在上/卡片區時) → 到底顯示回頂
+function updToTop(){ const doc=document.documentElement, y=window.scrollY||doc.scrollTop, h=doc.scrollHeight, vh=window.innerHeight;
+  if(h<=vh+80){ toTop.classList.remove('show'); return; } toTop.classList.add('show');
+  if(y+vh>=h-140){ toTop.textContent='↑'; toTop.dataset.dir='up'; toTop.title='回到頂端'; }
+  else { toTop.textContent='↓'; toTop.dataset.dir='down'; toTop.title='到最底'; } }
+window.addEventListener('scroll',updToTop,{passive:true}); window.addEventListener('resize',updToTop);
+toTop.onclick=()=>window.scrollTo({top: toTop.dataset.dir==='up'?0:document.documentElement.scrollHeight, behavior:'smooth'});
+updToTop();
 
 // 一次性自動整理：比對字典原始例句，把「不是字典帶的」例句標成「我的」並排前面
 function migrateSentenceSrc(){

@@ -152,6 +152,9 @@
   #selBtn{position:fixed;z-index:80;display:none;background:var(--acc2);color:#f3e7e3;border:none;border-radius:20px;
        padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 6px 18px -6px #000;-webkit-backdrop-filter:blur(8px)}
   #selBtn.show{display:block}
+  #toTop{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:80;width:48px;height:48px;border-radius:50%;
+       border:1px solid var(--acc2);background:var(--acc2);color:#fff;font-size:23px;cursor:pointer;display:none;box-shadow:0 5px 16px rgba(0,0,0,.45)}
+  #toTop.show{display:flex;align-items:center;justify-content:center}
   .rd-meta{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-family:var(--sans);font-size:12.5px;color:var(--mut);
        margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line);letter-spacing:.3px}
   .rd-title{font-family:var(--serif);font-size:calc(26px*var(--fs));font-weight:600;margin-bottom:2px}
@@ -210,7 +213,7 @@
   .dph{font-family:var(--serif);font-style:italic;color:var(--mut);font-size:calc(16px*var(--fs));margin-top:4px;min-height:12px}
   .dpos{font-style:italic;color:var(--acc);font-family:var(--serif)}
   .dmean{font-size:calc(20px*var(--fs));line-height:1.55;margin-top:12px}
-  .dmeanings{margin-top:14px;font-size:14px;line-height:1.75;color:var(--tx)}
+  .dmeanings{margin-top:14px;font-size:calc(14px*var(--fs));line-height:1.75;color:var(--tx)}
   .dmeanings .mpos{color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 38%,transparent);border-radius:5px;padding:0 6px;margin-right:6px;font-size:.85em}
   .dex-wrap{margin-top:8px;padding:11px 13px;background:var(--panel2);border:1px solid var(--line);border-radius:11px}
   .dex-en{font-size:calc(15.5px*var(--fs));line-height:1.6}
@@ -394,7 +397,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v22';
+const APP_VERSION='v23';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -1068,14 +1071,16 @@ function makeOptions(cur,all){
   const opts=[{zh:cur.zh,correct:true},...others.map(w=>({zh:w.zh,correct:false}))];
   return shuffle(opts);
 }
-function ansFlash(ok){ mark(quizItems[quizIdx],ok); if(ok)quizScore++; quizIdx++; renderQuiz(); }
+// 測驗自動捲動：作答/下一題時把題目與解析捲到畫面上方，不用手動滑上滑下
+function scrollQuizTop(){ try{ document.getElementById('quizCard').scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} }
+function ansFlash(ok){ mark(quizItems[quizIdx],ok); if(ok)quizScore++; quizIdx++; renderQuiz(); scrollQuizTop(); }
 function ansFill(btn,ok){ document.querySelectorAll('.opt').forEach(b=>b.style.pointerEvents='none');
   btn.classList.add(ok?'correct':'wrong'); if(!ok)document.querySelectorAll('.opt').forEach(b=>{ if(b.textContent===quizItems[quizIdx].zh)b.classList.add('correct'); });
-  mark(quizItems[quizIdx],ok); if(ok)quizScore++; setTimeout(()=>{quizIdx++;renderQuiz();},850); }
+  scrollQuizTop(); mark(quizItems[quizIdx],ok); if(ok)quizScore++; setTimeout(()=>{quizIdx++;renderQuiz();scrollQuizTop();},850); }
 function ansSpell(){ const v=(document.getElementById('spellIn').value||'').trim().toLowerCase(); const cur=quizItems[quizIdx];
   const ok=v===keyOf(cur.w); const msg=document.getElementById('spellMsg');
   msg.textContent= ok?'✓ 正確':'✗ 正解：'+cur.w; msg.style.color= ok?'var(--green)':'var(--red)';
-  mark(cur,ok); if(ok)quizScore++; setTimeout(()=>{quizIdx++;renderQuiz();},ok?600:1400); }
+  scrollQuizTop(); mark(cur,ok); if(ok)quizScore++; setTimeout(()=>{quizIdx++;renderQuiz();scrollQuizTop();},ok?600:1400); }
 function mark(w,ok){ w.stats=w.stats||{r:0,w:0}; if(ok){w.stats.r++; if(!w.level||w.level==='weak')w.level='mid'; else if(w.level==='mid')w.level='strong';}
   else{ w.stats.w++; w.level='weak'; } save(); }
 
@@ -1123,6 +1128,17 @@ function importData(input){ const f=input.files[0]; if(!f)return; const r=new Fi
   r.onload=()=>{ try{ const d=JSON.parse(r.result); if(d.texts)Object.assign(DB.texts,d.texts); if(d.shelves)d.shelves.forEach(s=>{ if(!DB.shelves.find(x=>x.id===s.id))DB.shelves.push(s); }); save(); renderShelf(); alert('匯入完成'); }catch(e){ alert('檔案格式錯誤'); } };
   r.readAsText(f); input.value=''; }
 
+/* ---------- 隨位置變化的上下鍵：在上/卡片區→↓到最底；到底→↑回頂 ---------- */
+(function(){ const toTop=document.getElementById('toTop'); if(!toTop) return;
+  function upd(){ const doc=document.documentElement, y=window.scrollY||doc.scrollTop, h=doc.scrollHeight, vh=window.innerHeight;
+    if(h<=vh+80){ toTop.classList.remove('show'); return; } toTop.classList.add('show');
+    if(y+vh>=h-140){ toTop.textContent='↑'; toTop.dataset.dir='up'; toTop.title='回到頂端'; }
+    else { toTop.textContent='↓'; toTop.dataset.dir='down'; toTop.title='到最底'; } }
+  window.addEventListener('scroll',upd,{passive:true}); window.addEventListener('resize',upd);
+  toTop.onclick=()=>window.scrollTo({top: toTop.dataset.dir==='up'?0:document.documentElement.scrollHeight, behavior:'smooth'});
+  setInterval(upd,800); upd();
+})();
+
 /* ---------- 啟動 ---------- */
 document.getElementById('ver').textContent=APP_VERSION;
 renderShelf();
@@ -1154,6 +1170,7 @@ Regulatory approval (n. phr.)：監管批准`),
 }
 </script>
 <button id="selBtn" onmousedown="event.preventDefault()" onclick="annotateSelection()">翻譯並標注</button>
+<button id="toTop" title="到最底">↓</button>
 <!-- GoatCounter 流量分析 -->
 <script data-goatcounter="https://elainechi.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>

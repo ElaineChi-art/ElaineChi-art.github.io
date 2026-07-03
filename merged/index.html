@@ -580,7 +580,7 @@
 <div id="bgStatus"><span class="dot"></span>翻譯中…</div>
 
 <!-- word detail modal -->
-<div id="readingPane" class="hide"><iframe id="fRead" data-src="/reading/?rv=22" title="閱讀神器"></iframe></div>
+<div id="readingPane" class="hide"><iframe id="fRead" data-src="/reading/?rv=23" title="閱讀神器"></iframe></div>
 <script>
   function appTab(t){
     var rp=document.getElementById('readingPane'), fr=document.getElementById('fRead');
@@ -616,7 +616,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='78b';
+const APP_VERSION='78c';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -2522,8 +2522,13 @@ document.getElementById('btnVoice').onclick=()=>{
 
 /* ============ back to top ============ */
 const toTop=document.getElementById('toTop');
-window.addEventListener('scroll',()=>{ toTop.classList.toggle('show',window.scrollY>500); });
-toTop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+function updToTop(){ const doc=document.documentElement, y=window.scrollY||doc.scrollTop, h=doc.scrollHeight, vh=window.innerHeight;
+  if(h<=vh+80){ toTop.classList.remove('show'); return; } toTop.classList.add('show');
+  if(y+vh>=h-140){ toTop.textContent='↑'; toTop.dataset.dir='up'; toTop.title='回到頂端'; }
+  else { toTop.textContent='↓'; toTop.dataset.dir='down'; toTop.title='到最底'; } }
+window.addEventListener('scroll',updToTop,{passive:true}); window.addEventListener('resize',updToTop);
+toTop.onclick=()=>window.scrollTo({top: toTop.dataset.dir==='up'?0:document.documentElement.scrollHeight, behavior:'smooth'});
+updToTop();
 
 // 一次性自動整理：比對字典原始例句，把「不是字典帶的」例句標成「我的」並排前面
 function migrateSentenceSrc(){
