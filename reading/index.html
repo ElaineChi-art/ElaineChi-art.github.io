@@ -123,6 +123,11 @@
   html.hidetrans .reader{line-height:1.9}
   html.hidetrans .reader .anno > .n{display:none}
   .reader .anno.done > .w{text-decoration-color:var(--green)}
+  .reader .sent{border-radius:4px}
+  .reader .sent:hover{background:color-mix(in srgb,var(--acc) 7%,transparent)}
+  .reader .playsent{border:none;background:transparent;color:var(--acc);cursor:pointer;font-size:.62em;
+       padding:0 5px 0 0;vertical-align:0.12em;opacity:.5;line-height:1}
+  .reader .playsent:hover{opacity:1}
   #selBtn{position:fixed;z-index:80;display:none;background:var(--acc2);color:#f3e7e3;border:none;border-radius:20px;
        padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 6px 18px -6px #000;-webkit-backdrop-filter:blur(8px)}
   #selBtn.show{display:block}
@@ -259,7 +264,7 @@
 
     <!-- ③ 閱讀 -->
     <div class="card" id="readCard" style="display:none">
-      <div class="sec-h"><span class="sec-n">3</span>沉浸閱讀 <span class="sec-sub">點沒標注的字＝免費翻譯後標在下方；選取片語可整串標注；點底線字＝發音</span></div>
+      <div class="sec-h"><span class="sec-n">3</span>沉浸閱讀 <span class="sec-sub">句首 ▶＝只念這句；點字＝就地翻譯（朗讀中點字不打斷）；選片語可整串標注</span></div>
       <div class="rd-meta" id="rdMeta"></div>
       <div class="reader" id="reader"></div>
     </div>
@@ -348,7 +353,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v10';
+const APP_VERSION='v11';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -411,33 +416,45 @@ function plainHTML(text){
   });
   return out;
 }
+let SENTENCES=[];  // 全文逐句（純文字），供逐句朗讀
+// 標注單一句子（沿用第一次出現邏輯，usedGlobal 跨句共用）
+function annotateSentence(st, list, usedGlobal){
+  const consumed=[]; const recs=[];
+  list.forEach(wd=>{
+    if(usedGlobal.has(keyOf(wd.w))) return;
+    const pat=wd.w.trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s+');
+    const re=new RegExp('(^|[^A-Za-z])('+pat+')(?![A-Za-z])','i');
+    const m=re.exec(st); if(!m) return;
+    const start=m.index+m[1].length, end=start+m[2].length;
+    if(consumed.some(c=> start<c.end && end>c.start)) return;
+    consumed.push({start,end}); recs.push({start,end,wd,surface:m[2]});
+    usedGlobal.add(keyOf(wd.w));
+  });
+  recs.sort((a,b)=>a.start-b.start);
+  let html='', pos=0;
+  recs.forEach(r=>{
+    html+=plainHTML(st.slice(pos,r.start));
+    const posLabel=r.wd.pos?`<span class="pos">${esc(r.wd.pos)}</span>`:'';
+    html+=`<span class="anno" data-k="${esc(keyOf(r.wd.w))}"><span class="w" onclick="sayWord('${esc(r.wd.w).replace(/'/g,"\\'")}')">${esc(r.surface)}</span><span class="n">${posLabel}${esc(r.wd.zh)}</span></span>`;
+    pos=r.end;
+  });
+  html+=plainHTML(st.slice(pos));
+  return html;
+}
 function annotateHTML(article, words){
+  SENTENCES=[];
   const list=words.slice().sort((a,b)=> b.w.length-a.w.length); // 長片語優先
   const paras=article.split(/\n+/).filter(p=>p.trim().length);
   const usedGlobal=new Set();
   return paras.map(para=>{
-    const consumed=[]; const recs=[];
-    list.forEach(wd=>{
-      if(usedGlobal.has(keyOf(wd.w))) return;
-      const pat=wd.w.trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s+');
-      const re=new RegExp('(^|[^A-Za-z])('+pat+')(?![A-Za-z])','i');
-      const m=re.exec(para);
-      if(!m) return;
-      const start=m.index+m[1].length, end=start+m[2].length;
-      if(consumed.some(c=> start<c.end && end>c.start)) return;
-      consumed.push({start,end}); recs.push({start,end,wd,surface:m[2]});
-      usedGlobal.add(keyOf(wd.w));
-    });
-    recs.sort((a,b)=>a.start-b.start);
-    let html='', pos=0;
-    recs.forEach(r=>{
-      html+=plainHTML(para.slice(pos,r.start));
-      const posLabel=r.wd.pos?`<span class="pos">${esc(r.wd.pos)}</span>`:'';
-      html+=`<span class="anno" data-k="${esc(keyOf(r.wd.w))}"><span class="w" onclick="speak('${esc(r.wd.w).replace(/'/g,"\\'")}')">${esc(r.surface)}</span><span class="n">${posLabel}${esc(r.wd.zh)}</span></span>`;
-      pos=r.end;
-    });
-    html+=plainHTML(para.slice(pos));
-    return '<p>'+html+'</p>';
+    const sents=para.match(/\s*[^.!?]+[.!?]*/g)||[para];   // 切句（保留標點）
+    const inner=sents.map(st=>{
+      if(!st.trim()) return esc(st);
+      const idx=SENTENCES.length; SENTENCES.push(st.trim());
+      const lead=st.match(/^\s*/)[0];
+      return esc(lead)+`<span class="sent" data-i="${idx}"><button class="playsent" onclick="readSentence(${idx})" title="只念這一句">▶</button>`+annotateSentence(st.trimStart(), list, usedGlobal)+`</span>`;
+    }).join('');
+    return '<p>'+inner+'</p>';
   }).join('');
 }
 
@@ -660,7 +677,7 @@ function openText(id){
   document.getElementById('rdMeta').innerHTML=`<span class="rd-title">${esc(t.title)}</span>`;
   const rt=document.getElementById('rdMeta');
   rt.innerHTML=`<div style="flex:1"><div class="rd-title">${esc(t.title)}</div></div>
-     <span>${t.words.length} 重點單字</span><button class="speak" onclick="readAloud()">🔊 朗讀全文</button>`;
+     <span>${t.words.length} 重點單字</span><button class="speak" onclick="readAloud()">🔊 朗讀全文</button><button class="speak" onclick="stopRead()">⏹ 停</button>`;
   document.getElementById('reader').innerHTML=annotateHTML(t.article,t.words);
   renderWords(); renderShelf(); buildLvFilter(); setQType(curType);
 }
@@ -677,7 +694,7 @@ function renderWords(){
     return `<div class="wcard lv-${lv}">
       <input type="checkbox" class="chk" ${wordSel.has(i)?'checked':''} onchange="toggleWord(${i},this.checked)">
       <button class="speak sp" onclick="speak('${esc(w.w).replace(/'/g,"\\'")}')">🔊</button>
-      <div class="en">${esc(w.w)}</div>
+      <div class="en" style="cursor:pointer" onclick="openDetail('${esc(keyOf(w.w))}')">${esc(w.w)} <span style="font-size:11px;color:var(--mut)">詳解 ›</span></div>
       <div class="pos">${esc(w.pos||'')}</div>
       <div class="zh">${esc(w.zh||'')}</div>
       <div class="lvset">
@@ -691,22 +708,56 @@ function toggleWord(i,on){ on?wordSel.add(i):wordSel.delete(i); }
 function selAllWords(on){ const t=DB.texts[DB.cur]; wordSel=new Set(); if(on)t.words.forEach((_,i)=>wordSel.add(i)); renderWords(); }
 function setLevel(i,lv){ const t=DB.texts[DB.cur]; t.words[i].level= t.words[i].level===lv?'':lv; save(); renderWords(); }
 
-/* ---------- 單字詳解（點閱讀底線字）---------- */
-function openDetail(k){
+/* ---------- 單字完整詳解：多重釋義＋詞性＋文章例句(中英)＋筆記 ---------- */
+// 找出文章中含這個字的句子（當例句）
+function findSentences(article, word){
+  const sents=(article.replace(/\s+/g,' ').match(/[^.!?]+[.!?]*/g))||[];
+  const pat=word.trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s+');
+  const re=new RegExp('(^|[^A-Za-z])('+pat+')(?![A-Za-z])','i');
+  return sents.map(s=>s.trim()).filter(s=>re.test(s)).slice(0,2);
+}
+async function openDetail(k){
   const t=DB.texts[DB.cur]; if(!t) return; const w=t.words.find(x=>keyOf(x.w)===k); if(!w) return;
   const m=document.getElementById('detModal');
   m.innerHTML=`<button class="x" onclick="detOv.classList.remove('show')">×</button>
     <h2>${esc(w.w)} <button class="speak" onclick="speak('${esc(w.w).replace(/'/g,"\\'")}')">🔊</button></h2>
-    <div style="color:var(--acc);font-style:italic;font-family:var(--serif);margin-top:4px">${esc(w.pos||'')}</div>
+    <div style="color:var(--acc);font-style:italic;font-family:var(--serif);margin-top:2px">${esc(w.pos||'')}　${esc(w.zh||'')}</div>
     <div class="kv">
-      <div><label class="fld">中文意思</label><input type="text" id="dZh" value="${esc(w.zh||'')}"></div>
-      <div><label class="fld">詞性</label><input type="text" id="dPos" value="${esc(w.pos||'')}"></div>
-      <div><label class="fld">筆記</label><textarea id="dNote" rows="2" placeholder="例句、用法…">${esc(w.note||'')}</textarea></div>
-      <div class="row"><button class="btn sm" onclick="saveDetail('${k}')">儲存</button>
-        <button class="btn ghost sm" onclick="lookupDict('${k}')">🔎 免費字典補充</button></div>
+      <div><label class="fld">中文意思（可改）</label><input type="text" id="dZh" value="${esc(w.zh||'')}"></div>
+      <div><label class="fld">詞性（可改）</label><input type="text" id="dPos" value="${esc(w.pos||'')}"></div>
+      <div><label class="fld">各種意思與詞性（字典）</label><div id="dMeanings" style="font-size:13.5px;line-height:1.7;color:var(--tx)">載入中…</div></div>
+      <div><label class="fld">文章例句</label><div id="dExamples" style="font-size:14px;line-height:1.75">找例句中…</div></div>
+      <div><label class="fld">我的筆記</label><textarea id="dNote" rows="2" placeholder="補充…">${esc(w.note||'')}</textarea></div>
+      <div class="row"><button class="btn sm" onclick="saveDetail('${k}')">儲存</button></div>
       <div class="msg" id="dMsg"></div>
     </div>`;
   detOv.classList.add('show');
+  // 文章例句（中英）
+  const exs=findSentences(t.article, w.w);
+  const exBox=document.getElementById('dExamples');
+  if(!exs.length){ exBox.textContent='（文章裡沒找到含這個字的句子）'; }
+  else{
+    exBox.innerHTML=exs.map((s,i)=>`<div style="margin-bottom:10px;padding:9px 11px;background:var(--panel2);border:1px solid var(--line);border-radius:9px">
+        <div>${esc(s).replace(new RegExp('('+w.w.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')+')','ig'),'<b style="color:var(--acc)">$1</b>')}</div>
+        <div id="dExZh${i}" style="color:var(--mut);font-size:13px;margin-top:4px">翻譯中…</div></div>`).join('');
+    exs.forEach(async (s,i)=>{ const zh=await translate(s); const el=document.getElementById('dExZh'+i); if(el) el.textContent=zh||'（翻譯失敗）'; });
+  }
+  // 字典多重釋義
+  const mBox=document.getElementById('dMeanings');
+  if(w.w.includes(' ')){ mBox.textContent='（片語，字典僅支援單字；請看上方中文意思與例句）'; return; }
+  try{
+    const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w.w));
+    if(!r.ok){ mBox.textContent='（字典查無此字）'; return; }
+    const d=await r.json(); const means=(d[0]&&d[0].meanings)||[];
+    const ph=(d[0]&&d[0].phonetic)||'';
+    let html= ph?`<div style="color:var(--mut);font-style:italic;margin-bottom:6px">${esc(ph)}</div>`:'';
+    html+=means.slice(0,5).map(mn=>{
+      const pz=POSZH[mn.partOfSpeech]||mn.partOfSpeech;
+      const def=(mn.definitions&&mn.definitions[0]&&mn.definitions[0].definition)||'';
+      return `<div style="margin-bottom:5px"><span class="cpos" style="color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 38%,transparent);border-radius:5px;padding:0 6px;margin-right:6px;font-size:.85em">${esc(pz)}</span>${esc(def)}</div>`;
+    }).join('');
+    mBox.innerHTML=html||'（無釋義）';
+  }catch(e){ mBox.textContent='（字典載入失敗）'; }
 }
 function saveDetail(k){ const t=DB.texts[DB.cur]; const w=t.words.find(x=>keyOf(x.w)===k); if(!w)return;
   w.zh=document.getElementById('dZh').value.trim(); w.pos=document.getElementById('dPos').value.trim(); w.note=document.getElementById('dNote').value.trim();
@@ -759,7 +810,7 @@ async function annotateWord(el){
   const t=DB.texts[DB.cur]; if(!t) return;
   const raw=el.textContent, word=raw.trim();
   if(!word || !/[A-Za-z]/.test(word)) return;
-  speak(word);
+  sayWord(word);   // 朗讀中不打斷、不出聲，只標翻譯
   let rec=t.words.find(x=>keyOf(x.w)===keyOf(word));
   const isNew=!rec;
   if(isNew){ rec={w:word,pos:'',zh:'…翻譯中',note:'',level:'',stats:{r:0,w:0}}; t.words.push(rec); }
@@ -804,20 +855,25 @@ document.addEventListener('mouseup',()=>setTimeout(onReaderSelect,10));
 document.addEventListener('touchend',()=>setTimeout(onReaderSelect,10));
 
 /* ---------- 朗讀 ---------- */
-let _keepAlive=null;
+let _keepAlive=null, articleReading=false;
 function stopKeepAlive(){ if(_keepAlive){ clearInterval(_keepAlive); _keepAlive=null; } }
-function speak(txt){ try{ stopKeepAlive(); speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(txt); u.lang='en-US'; u.rate=.92; speechSynthesis.speak(u); }catch(e){} }
-// 逐句排隊朗讀整篇（避免瀏覽器把單一長句中途切斷），並防 Chrome ~15 秒自動暫停
-function readAloud(){
-  const t=DB.texts[DB.cur]; if(!t) return;
+function speak(txt){ try{ stopKeepAlive(); articleReading=false; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(txt); u.lang='en-US'; u.rate=.92; speechSynthesis.speak(u); }catch(e){} }
+// 點單字發音：正在朗讀全文/句子時「不出聲、不打斷」（只讓翻譯照常標注）；沒在朗讀才唸單字
+function sayWord(txt){ if(articleReading) return; speak(txt); }
+function stopRead(){ try{ stopKeepAlive(); articleReading=false; speechSynthesis.cancel(); }catch(e){} }
+// 排隊朗讀一串句子（逐句避免長句被切斷）；防 Chrome ~15 秒自動暫停
+function speakQueue(list){
   try{
-    stopKeepAlive(); speechSynthesis.cancel();
-    const text=t.article.replace(/\s+/g,' ').trim();
-    const chunks=text.match(/[^.!?。！？\n]+[.!?。！？]*/g)||[text];
-    chunks.forEach(c=>{ c=c.trim(); if(!c) return; const u=new SpeechSynthesisUtterance(c); u.lang='en-US'; u.rate=.92; speechSynthesis.speak(u); });
-    _keepAlive=setInterval(()=>{ if(!speechSynthesis.speaking){ stopKeepAlive(); return; } speechSynthesis.pause(); speechSynthesis.resume(); },10000);
-  }catch(e){}
+    stopKeepAlive(); speechSynthesis.cancel(); articleReading=true;
+    list=list.map(s=>s.trim()).filter(Boolean);
+    list.forEach((c,i)=>{ const u=new SpeechSynthesisUtterance(c); u.lang='en-US'; u.rate=.92;
+      if(i===list.length-1) u.onend=()=>{ articleReading=false; stopKeepAlive(); };
+      speechSynthesis.speak(u); });
+    _keepAlive=setInterval(()=>{ if(!speechSynthesis.speaking){ articleReading=false; stopKeepAlive(); return; } speechSynthesis.pause(); speechSynthesis.resume(); },10000);
+  }catch(e){ articleReading=false; }
 }
+function readAloud(){ if(SENTENCES.length) speakQueue(SENTENCES); }        // 朗讀全文
+function readSentence(i){ if(SENTENCES[i]!=null) speakQueue([SENTENCES[i]]); }  // 只念這一句
 
 /* ---------- 測驗 ---------- */
 function buildLvFilter(){
