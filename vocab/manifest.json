@@ -1,8 +1,8 @@
 {
-  "name": "Lexicon",
-  "short_name": "Lexicon",
-  "start_url": "/vocab/",
-  "scope": "/",
+  "name": "每日英文單字庫",
+  "short_name": "單字庫",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0d12",

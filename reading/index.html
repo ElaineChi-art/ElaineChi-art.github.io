@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Lexicon">
+<meta name="apple-mobile-web-app-title" content="閱讀神器">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -253,12 +253,8 @@
   <div class="wrap">
     <header class="hd">
       <div>
-        <h1>Lexicon</h1>
-        <div class="sub">英文閱讀神器</div>
-        <div class="modeswitch">
-          <a class="ms" href="https://elainechi-art.github.io/vocab/">🔤 每日單字</a>
-          <span class="ms on">📖 閱讀神器</span>
-        </div>
+        <h1>英文閱讀神器</h1>
+        <div class="sub">Read · Annotate · Remember</div>
       </div>
       <div class="toolbtns">
         <button class="btn ghost sm" onclick="openPrefs()">外觀</button>
@@ -397,7 +393,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v20';
+const APP_VERSION='v21';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
