@@ -339,7 +339,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v6';
+const APP_VERSION='v7';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -525,41 +525,68 @@ async function freePick(article){
 }
 
 // 免費／付費 LLM 挑字（Gemini / OpenRouter / Claude）
+// OpenRouter 免費模型清單：一個被限流(429)就自動換下一個
+const OR_FREE_MODELS=[
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'google/gemini-2.0-flash-exp:free',
+  'deepseek/deepseek-chat-v3-0324:free',
+  'qwen/qwen-2.5-72b-instruct:free',
+  'mistralai/mistral-small-3.1-24b-instruct:free',
+  'meta-llama/llama-3.1-8b-instruct:free'
+];
+const GEMINI_MODELS=['gemini-2.0-flash','gemini-2.5-flash','gemini-1.5-flash'];
+
+async function callGemini(prompt){
+  const key=localStorage.getItem('readingGeminiKey'); let last='';
+  for(const model of GEMINI_MODELS){
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key),
+      {method:'POST',headers:{'content-type':'application/json'},
+       body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:2048}})});
+    if(r.ok){ const d=await r.json(); return (((d.candidates||[])[0]||{}).content||{}).parts?.[0]?.text||''; }
+    last='Gemini '+r.status+'：'+(await r.text()).slice(0,120);
+    if(r.status!==429 && r.status!==404 && r.status!==503) break; // 額度/不存在/忙線才換下一個
+  }
+  throw new Error(last||'Gemini 無回應');
+}
+async function callOpenRouter(prompt){
+  const key=localStorage.getItem('readingOpenrouterKey'); let last='';
+  for(const model of OR_FREE_MODELS){
+    const r=await fetch('https://openrouter.ai/api/v1/chat/completions',
+      {method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+key},
+       body:JSON.stringify({model,temperature:0.2,messages:[{role:'user',content:prompt}]})});
+    if(r.ok){ const d=await r.json(); const c=d.choices?.[0]?.message?.content; if(c) return c; last='OpenRouter 空回應'; continue; }
+    last='OpenRouter '+r.status+'：'+(await r.text()).slice(0,120);
+    if(r.status!==429 && r.status!==402 && r.status!==503) break;
+  }
+  throw new Error(last||'OpenRouter 無回應');
+}
+async function callClaude(prompt){
+  const key=localStorage.getItem('readingApiKey');
+  const r=await fetch('https://api.anthropic.com/v1/messages',
+    {method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+     body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+  if(!r.ok) throw new Error('Claude '+r.status+'：'+(await r.text()).slice(0,140));
+  const d=await r.json(); return d.content?.[0]?.text||'';
+}
+
 async function llmPick(mode,article){
   const btn=document.getElementById('aiBtn'), msg=document.getElementById('inMsg');
   btn.disabled=true; const orig=btn.textContent; btn.textContent='AI 挑選中…'; msg.className='msg';
-  msg.textContent='AI 正在挑選重要單字並翻譯…';
+  msg.textContent='AI 正在挑選重要單字並翻譯…（若被限流會自動換模型）';
   const prompt=pickPrompt(article);
   try{
-    let txt='';
-    if(mode==='gemini'){
-      const key=localStorage.getItem('readingGeminiKey');
-      const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+encodeURIComponent(key),
-        {method:'POST',headers:{'content-type':'application/json'},
-         body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:2048}})});
-      if(!r.ok) throw new Error('Gemini '+r.status+'：'+(await r.text()).slice(0,140));
-      const d=await r.json(); txt=(((d.candidates||[])[0]||{}).content||{}).parts?.[0]?.text||'';
-    } else if(mode==='openrouter'){
-      const key=localStorage.getItem('readingOpenrouterKey');
-      const r=await fetch('https://openrouter.ai/api/v1/chat/completions',
-        {method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+key},
-         body:JSON.stringify({model:'meta-llama/llama-3.3-70b-instruct:free',temperature:0.2,messages:[{role:'user',content:prompt}]})});
-      if(!r.ok) throw new Error('OpenRouter '+r.status+'：'+(await r.text()).slice(0,140));
-      const d=await r.json(); txt=d.choices?.[0]?.message?.content||'';
-    } else {
-      const key=localStorage.getItem('readingApiKey');
-      const r=await fetch('https://api.anthropic.com/v1/messages',
-        {method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-         body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
-      if(!r.ok) throw new Error('Claude '+r.status+'：'+(await r.text()).slice(0,140));
-      const d=await r.json(); txt=d.content?.[0]?.text||'';
-    }
+    let txt = mode==='gemini' ? await callGemini(prompt) : mode==='openrouter' ? await callOpenRouter(prompt) : await callClaude(prompt);
     const jm=txt.match(/\[[\s\S]*\]/); if(!jm) throw new Error('回傳格式無法解析');
     const arr=JSON.parse(jm[0]);
     document.getElementById('inWords').value=arr.filter(x=>x&&x.word).map(x=>`${x.word} (${x.pos||''})：${x.zh||''}`).join('\n');
     msg.textContent='✓ 挑出 '+arr.length+' 個單字，確認後按「加入書櫃」（可自行增刪）';
-  }catch(e){ msg.className='msg err'; msg.textContent='AI 失敗：'+e.message; }
-  finally{ btn.disabled=false; btn.textContent=orig; }
+    btn.disabled=false; btn.textContent=orig;
+  }catch(e){
+    // AI 全被限流／出錯 → 自動改用免費模式，確保一定挑得到字
+    msg.textContent='AI 忙線（'+e.message+'）→ 自動改用免費模式…';
+    btn.disabled=false; btn.textContent=orig;
+    await freePick(article);
+  }
 }
 
 /* ---------- 書櫃渲染 ---------- */
