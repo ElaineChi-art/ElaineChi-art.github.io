@@ -105,17 +105,20 @@
   .pill.on{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,transparent)}
 
   /* ============ 沉浸閱讀（課本式標注）============ */
-  .reader{font-family:var(--serif);line-height:2.9;font-size:calc(20px*var(--fs));letter-spacing:.2px}
-  .reader p{margin:0 0 22px}
-  .reader .anno{display:inline-block;vertical-align:baseline;text-align:center;margin:0 1px}
+  /* 課本式標注：英文留在句子行內（後面的字緊接著），中文用絕對定位「掛」在該字正下方，不佔行內、不推開後字、不破壞基線 */
+  .reader{font-family:var(--serif);line-height:2.05;font-size:calc(20px*var(--fs));letter-spacing:.2px}
+  .reader p{margin:0 0 12px}
+  .reader .anno{position:relative;display:inline-block;line-height:1;vertical-align:baseline}
   .reader .anno > .w{cursor:pointer;padding-bottom:2px;
        background-image:linear-gradient(var(--acc),var(--acc));background-size:100% 2px;background-repeat:no-repeat;background-position:0 100%;
        -webkit-box-decoration-break:clone;box-decoration-break:clone}
   .reader .anno > .w:hover{background-color:color-mix(in srgb,var(--acc) 14%,transparent)}
-  .reader .anno > .n{display:block;font-family:var(--sans);font-size:calc(12px*var(--fs));line-height:1.25;color:var(--acc);
-       margin-top:2px;max-width:min(260px,60vw);white-space:normal;letter-spacing:0;font-weight:500}
-  .reader .anno > .n .pos{color:var(--mut);font-style:italic;margin-right:3px}
+  .reader .anno > .n{position:absolute;left:50%;top:1.12em;transform:translateX(-50%);
+       font-family:var(--sans);font-size:calc(11px*var(--fs));line-height:1.15;color:var(--acc);
+       white-space:nowrap;letter-spacing:0;font-weight:500;text-align:center;pointer-events:none}
+  .reader .anno > .n .pos{color:var(--mut);font-style:italic;margin-right:2px}
   html.hidetrans .reader .anno > .n{display:none}
+  html.hidetrans .reader{line-height:1.85}
   .reader .anno.done > .w{background-image:linear-gradient(var(--green),var(--green))}
   .rd-meta{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-family:var(--sans);font-size:12.5px;color:var(--mut);
        margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line);letter-spacing:.3px}
@@ -184,7 +187,7 @@
   .kv{display:flex;flex-direction:column;gap:12px;margin-top:16px}
   .foot{margin-top:34px;text-align:center;color:var(--mut);font-size:12px;line-height:1.9;letter-spacing:.3px}
   .foot a{color:var(--acc)}
-  @media (max-width:560px){ .wrap{padding:16px 12px 100px} .card{padding:16px 14px} .reader{font-size:calc(18px*var(--fs));line-height:2.7} h1{font-size:27px} }
+  @media (max-width:560px){ .wrap{padding:16px 12px 100px} .card{padding:16px 14px} .reader{font-size:calc(18px*var(--fs));line-height:2.05} h1{font-size:27px} }
 </style>
 </head>
 <body>
@@ -330,7 +333,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v2';
+const APP_VERSION='v3';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
