@@ -99,6 +99,7 @@
   .msg.err{color:var(--red)}
   .empty{color:var(--mut);font-size:14px;text-align:center;padding:30px 12px;line-height:1.7}
   .speak{cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--acc);border-radius:7px;padding:4px 9px;font-size:14px}
+  .speak.on{background:color-mix(in srgb,var(--acc) 18%,transparent);border-color:var(--acc);color:var(--acc);font-weight:600}
   .speak:hover{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent)}
   .pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 11px;border-radius:20px;background:transparent;
         border:1px solid var(--line);color:var(--mut);cursor:pointer;white-space:nowrap}
@@ -123,7 +124,13 @@
   html.hidetrans .reader{line-height:1.9}
   html.hidetrans .reader .anno > .n{display:none}
   .reader .anno.done > .w{text-decoration-color:var(--green)}
-  .reader .sent{border-radius:4px}
+  .reader .sent{border-radius:5px}
+  /* 單句朗讀模式：碰句子反白＋念；此模式下停用單字反白 */
+  .reader.sentmode .rw:hover,.reader.sentmode .anno>.w:hover{background:transparent}
+  .reader.sentmode .sent{cursor:pointer}
+  .reader.sentmode .sent:hover{background:color-mix(in srgb,var(--acc) 9%,transparent)}
+  .reader .sent.playing{background:color-mix(in srgb,var(--acc) 22%,transparent);
+       box-shadow:0 0 0 1px color-mix(in srgb,var(--acc) 35%,transparent);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
   /* 段落分析：左筆記＋右文章 兩欄 */
   .para-row{display:flex;gap:20px;align-items:flex-start;margin-bottom:8px}
   .para-body{flex:1;min-width:0}
@@ -268,7 +275,7 @@
 
     <!-- ③ 閱讀 -->
     <div class="card" id="readCard" style="display:none">
-      <div class="sec-h"><span class="sec-n">3</span>沉浸閱讀 <span class="sec-sub">點字＝就地翻譯（朗讀中點字不打斷）；連點兩下句子＝只念這句；🧠 段落分析在左側</span></div>
+      <div class="sec-h"><span class="sec-n">3</span>沉浸閱讀 <span class="sec-sub">點字＝就地翻譯；開「▷ 單句朗讀」後碰句子就反白念那句；🧠 段落分析在左側</span></div>
       <div class="rd-meta" id="rdMeta"></div>
       <div class="reader" id="reader"></div>
     </div>
@@ -357,7 +364,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v12';
+const APP_VERSION='v13';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -457,14 +464,14 @@ function annotateHTML(article, words){
       if(!st.trim()) return esc(st);
       const idx=SENTENCES.length; SENTENCES.push(st.trim());
       const lead=st.match(/^\s*/)[0];
-      return esc(lead)+`<span class="sent" data-i="${idx}" ondblclick="event.preventDefault();readSentence(${idx})">`+annotateSentence(st.trimStart(), list, usedGlobal)+`</span>`;
+      return esc(lead)+`<span class="sent" data-i="${idx}" onclick="sentClick(this,${idx})">`+annotateSentence(st.trimStart(), list, usedGlobal)+`</span>`;
     }).join('');
   });
 }
-// 組出閱讀區 HTML：有段落筆記(t.analysis)就用「左筆記＋右文章」兩欄；沒有就純段落
+// 組出閱讀區 HTML：有段落筆記(t.analysis 且未收合)就用「左筆記＋右文章」兩欄；沒有就純段落
 function renderReaderHTML(t){
   const parts=annotateHTML(t.article, t.words);
-  const notes=(t.analysis&&t.analysis.length)?t.analysis:null;
+  const notes=(t.analysis&&t.analysis.length&&!t.analysisHidden)?t.analysis:null;
   if(!notes) return parts.map(h=>'<p>'+h+'</p>').join('');
   return parts.map((h,i)=>`<div class="para-row"><div class="para-note">${notes[i]?esc(notes[i]):'<span style="opacity:.35">—</span>'}</div><div class="para-body"><p>${h}</p></div></div>`).join('');
 }
@@ -606,7 +613,7 @@ async function callGemini(prompt){
   for(const model of GEMINI_MODELS){
     const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key),
       {method:'POST',headers:{'content-type':'application/json'},
-       body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:2048}})});
+       body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:4096}})});
     if(r.ok){ const d=await r.json(); return (((d.candidates||[])[0]||{}).content||{}).parts?.[0]?.text||''; }
     last='Gemini '+r.status+'：'+(await r.text()).slice(0,120);
     if(r.status!==429 && r.status!==404 && r.status!==503) break; // 額度/不存在/忙線才換下一個
@@ -687,10 +694,15 @@ function openText(id){
   document.getElementById('quizCard').style.display= t.words.length?'':'none';
   document.getElementById('rdMeta').innerHTML=`<span class="rd-title">${esc(t.title)}</span>`;
   const rt=document.getElementById('rdMeta');
+  const hasA=t.analysis&&t.analysis.length;
   rt.innerHTML=`<div style="flex:1"><div class="rd-title">${esc(t.title)}</div></div>
-     <span>${t.words.length} 重點單字</span><button class="speak" onclick="readAloud()">🔊 朗讀全文</button><button class="speak" onclick="stopRead()">⏹ 停</button>
-     <button class="speak" id="analyzeBtn" onclick="analyzeParagraphs()">🧠 段落分析</button>${(t.analysis&&t.analysis.length)?'<button class="speak" onclick="clearAnalysis()">清除筆記</button>':''}`;
-  document.getElementById('reader').innerHTML=renderReaderHTML(t);
+     <span>${t.words.length} 重點單字</span>
+     <button class="speak" onclick="readAloud()">🔊 朗讀全文</button><button class="speak" onclick="stopRead()">⏹ 停</button>
+     <button class="speak ${sentMode?'on':''}" onclick="toggleSentMode()">${sentMode?'✓ 單句朗讀中（碰句子念）':'▷ 單句朗讀'}</button>
+     <button class="speak" id="analyzeBtn" onclick="analyzeParagraphs()">🧠 段落分析</button>${hasA?`<button class="speak" onclick="toggleAnalysis()">${t.analysisHidden?'展開筆記':'收合筆記'}</button><button class="speak" onclick="clearAnalysis()">清除筆記</button>`:''}`;
+  const rd=document.getElementById('reader');
+  rd.innerHTML=renderReaderHTML(t);
+  rd.classList.toggle('sentmode', sentMode);
   renderWords(); renderShelf(); buildLvFilter(); setQType(curType);
 }
 
@@ -817,6 +829,7 @@ async function addAnnotation(word){
 }
 // 點任何字：就在「這個位置」當場標上翻譯（已在清單的用現成翻譯即時顯示；新字才去查字典+翻譯）
 async function annotateWord(el){
+  if(sentMode) return;   // 單句朗讀模式：翻譯暫停，交給句子點擊朗讀
   const sel=(window.getSelection&&window.getSelection().toString()||'').trim();
   if(sel && /\s/.test(sel)) return; // 多字選取交給片語按鈕
   const t=DB.texts[DB.cur]; if(!t) return;
@@ -830,7 +843,7 @@ async function annotateWord(el){
   const span=document.createElement('span');
   span.className='anno'; span.setAttribute('data-k',keyOf(rec.w));
   const wq=esc(word).replace(/'/g,"\\'");
-  span.innerHTML='<span class="w" onclick="speak(\''+wq+'\')">'+esc(raw)+'</span><span class="n">'+(rec.pos?'<span class="pos">'+esc(rec.pos)+'</span>':'')+esc(rec.zh)+'</span>';
+  span.innerHTML='<span class="w" onclick="sayWord(\''+wq+'\')">'+esc(raw)+'</span><span class="n">'+(rec.pos?'<span class="pos">'+esc(rec.pos)+'</span>':'')+esc(rec.zh)+'</span>';
   el.replaceWith(span);
   if(isNew){
     save();
@@ -867,47 +880,63 @@ document.addEventListener('mouseup',()=>setTimeout(onReaderSelect,10));
 document.addEventListener('touchend',()=>setTimeout(onReaderSelect,10));
 
 /* ---------- 朗讀 ---------- */
-let _keepAlive=null, articleReading=false;
+let _keepAlive=null, articleReading=false, sentMode=false;
 function stopKeepAlive(){ if(_keepAlive){ clearInterval(_keepAlive); _keepAlive=null; } }
+function clearPlaying(){ document.querySelectorAll('.reader .sent.playing').forEach(s=>s.classList.remove('playing')); }
 function speak(txt){ try{ stopKeepAlive(); articleReading=false; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(txt); u.lang='en-US'; u.rate=.92; speechSynthesis.speak(u); }catch(e){} }
-// 點單字發音：正在朗讀全文/句子時「不出聲、不打斷」（只讓翻譯照常標注）；沒在朗讀才唸單字
-function sayWord(txt){ if(articleReading) return; speak(txt); }
-function stopRead(){ try{ stopKeepAlive(); articleReading=false; speechSynthesis.cancel(); }catch(e){} }
+// 點單字發音：朗讀中 或 單句朗讀模式 時「不出聲、不打斷」；其餘才唸單字
+function sayWord(txt){ if(articleReading||sentMode) return; speak(txt); }
+function stopRead(){ try{ stopKeepAlive(); articleReading=false; speechSynthesis.cancel(); clearPlaying(); }catch(e){} }
 // 排隊朗讀一串句子（逐句避免長句被切斷）；防 Chrome ~15 秒自動暫停
 function speakQueue(list){
   try{
     stopKeepAlive(); speechSynthesis.cancel(); articleReading=true;
     list=list.map(s=>s.trim()).filter(Boolean);
     list.forEach((c,i)=>{ const u=new SpeechSynthesisUtterance(c); u.lang='en-US'; u.rate=.92;
-      if(i===list.length-1) u.onend=()=>{ articleReading=false; stopKeepAlive(); };
+      if(i===list.length-1) u.onend=()=>{ articleReading=false; stopKeepAlive(); clearPlaying(); };
       speechSynthesis.speak(u); });
     _keepAlive=setInterval(()=>{ if(!speechSynthesis.speaking){ articleReading=false; stopKeepAlive(); return; } speechSynthesis.pause(); speechSynthesis.resume(); },10000);
   }catch(e){ articleReading=false; }
 }
 function readAloud(){ if(SENTENCES.length) speakQueue(SENTENCES); }        // 朗讀全文
 function readSentence(i){ try{ window.getSelection().removeAllRanges(); }catch(e){} if(SENTENCES[i]!=null) speakQueue([SENTENCES[i]]); }  // 只念這一句
+// 單句朗讀模式：碰哪句就反白+念哪句（此模式下單字翻譯暫停）
+function sentClick(el, idx){ if(!sentMode) return; clearPlaying(); el.classList.add('playing'); readSentence(idx); }
+function toggleSentMode(){ sentMode=!sentMode; if(!sentMode){ stopRead(); } if(DB.cur) openText(DB.cur); }
+
+// 依序嘗試所有有金鑰的免費/付費 AI，一個失敗就換下一個（備案）
+async function callAnyAI(prompt, onTry){
+  const order=[];
+  if(localStorage.getItem('readingGeminiKey')) order.push(['gemini','Gemini',callGemini]);
+  if(localStorage.getItem('readingOpenrouterKey')) order.push(['openrouter','OpenRouter',callOpenRouter]);
+  if(localStorage.getItem('readingApiKey')) order.push(['anthropic','Claude',callClaude]);
+  if(!order.length){ const e=new Error('NO_KEY'); throw e; }
+  let last='';
+  for(const [id,name,fn] of order){ try{ if(onTry) onTry(name); return await fn(prompt); }catch(e){ last=name+'：'+e.message; } }
+  throw new Error('全部 AI 都失敗（'+last+'）');
+}
 
 /* ---------- 段落閱讀技巧分析（AI，排在文章左側像筆記）---------- */
 async function analyzeParagraphs(){
   const t=DB.texts[DB.cur]; if(!t) return;
-  const provider = localStorage.getItem('readingGeminiKey')?'gemini'
-                 : localStorage.getItem('readingOpenrouterKey')?'openrouter'
-                 : localStorage.getItem('readingApiKey')?'anthropic':null;
-  if(!provider){ alert('段落分析需要 AI 金鑰。請先在右上「🔑 挑字金鑰」填免費的 Gemini 或 OpenRouter 金鑰。'); openApiKey(); return; }
   const paras=t.article.split(/\n+/).filter(p=>p.trim().length);
   const btn=document.getElementById('analyzeBtn'); const o=btn?btn.textContent:''; if(btn){ btn.disabled=true; btn.textContent='分析中…'; }
   const prompt='你是英文閱讀老師，教多益 600 分以下的台灣學生「怎麼快速讀懂一篇文章」。\n下面文章用「¶」分成 '+paras.length+' 段。請針對「每一段」寫一則繁體中文小筆記（每則 25–55 字），內容要點出：這段在整篇的角色/結構（例如：導言破題、背景、舉例、數據佐證、引述、轉折、結論…），以及「怎麼快讀這段」的技巧（先看哪一句、要抓什麼關鍵字/數字）。\n只輸出 JSON 字串陣列，長度剛好 '+paras.length+' 個，對應每一段，不要多餘說明。範例格式：["第1段筆記","第2段筆記"]\n\n文章：\n'+paras.map(p=>'¶ '+p.replace(/\s+/g,' ').trim()).join('\n');
   try{
-    let txt = provider==='gemini' ? await callGemini(prompt) : provider==='openrouter' ? await callOpenRouter(prompt) : await callClaude(prompt);
+    const txt=await callAnyAI(prompt, name=>{ if(btn) btn.textContent='用 '+name+' 分析中…'; });
     const jm=txt.match(/\[[\s\S]*\]/); if(!jm) throw new Error('回傳格式無法解析');
     const arr=JSON.parse(jm[0]);
-    t.analysis=paras.map((_,i)=> (arr[i]!=null?String(arr[i]):''));
+    t.analysis=paras.map((_,i)=> (arr[i]!=null?String(arr[i]):'')); t.analysisHidden=false;
     t.updated=Date.now(); save(); openText(DB.cur);
     document.getElementById('readCard').scrollIntoView({behavior:'smooth'});
-  }catch(e){ alert('段落分析失敗：'+e.message+'\n（AI 可能忙線，稍後再試或改用 OpenRouter 金鑰）'); }
+  }catch(e){
+    if(e.message==='NO_KEY'){ alert('段落分析需要 AI 金鑰。請先在右上「🔑 挑字金鑰」填免費的 Gemini 或 OpenRouter 金鑰。'); openApiKey(); }
+    else alert('段落分析失敗：'+e.message);
+  }
   finally{ if(btn){ btn.disabled=false; btn.textContent=o; } }
 }
-function clearAnalysis(){ const t=DB.texts[DB.cur]; if(!t) return; t.analysis=null; save(); openText(DB.cur); }
+function toggleAnalysis(){ const t=DB.texts[DB.cur]; if(!t) return; t.analysisHidden=!t.analysisHidden; save(); openText(DB.cur); }
+function clearAnalysis(){ const t=DB.texts[DB.cur]; if(!t) return; t.analysis=null; t.analysisHidden=false; save(); openText(DB.cur); }
 
 /* ---------- 測驗 ---------- */
 function buildLvFilter(){
