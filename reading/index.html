@@ -348,7 +348,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v9';
+const APP_VERSION='v10';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -752,11 +752,35 @@ async function addAnnotation(word){
   rec.zh=await translate(word)||'（查無翻譯，可點此手動補）';
   save(); openText(DB.cur);
 }
-function annotateWord(el){
-  // 若正在選取多個字（要標片語），就不觸發單字
+// 點任何字：就在「這個位置」當場標上翻譯（已在清單的用現成翻譯即時顯示；新字才去查字典+翻譯）
+async function annotateWord(el){
   const sel=(window.getSelection&&window.getSelection().toString()||'').trim();
-  if(sel && /\s/.test(sel)) return;
-  addAnnotation(el.textContent);
+  if(sel && /\s/.test(sel)) return; // 多字選取交給片語按鈕
+  const t=DB.texts[DB.cur]; if(!t) return;
+  const raw=el.textContent, word=raw.trim();
+  if(!word || !/[A-Za-z]/.test(word)) return;
+  speak(word);
+  let rec=t.words.find(x=>keyOf(x.w)===keyOf(word));
+  const isNew=!rec;
+  if(isNew){ rec={w:word,pos:'',zh:'…翻譯中',note:'',level:'',stats:{r:0,w:0}}; t.words.push(rec); }
+  // 就地把此位置換成標注（保留原始大小寫）
+  const span=document.createElement('span');
+  span.className='anno'; span.setAttribute('data-k',keyOf(rec.w));
+  const wq=esc(word).replace(/'/g,"\\'");
+  span.innerHTML='<span class="w" onclick="speak(\''+wq+'\')">'+esc(raw)+'</span><span class="n">'+(rec.pos?'<span class="pos">'+esc(rec.pos)+'</span>':'')+esc(rec.zh)+'</span>';
+  el.replaceWith(span);
+  if(isNew){
+    save();
+    try{
+      if(!word.includes(' ')){ const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(word));
+        if(r.ok){ const d=await r.json(); const m=d[0]&&d[0].meanings&&d[0].meanings[0]; if(m) rec.pos=POSZH[m.partOfSpeech]||m.partOfSpeech||''; } }
+      else rec.pos='phr.';
+    }catch(e){}
+    rec.zh=await translate(word)||'（查無翻譯）';
+    save();
+    const n=span.querySelector('.n'); if(n) n.innerHTML=(rec.pos?'<span class="pos">'+esc(rec.pos)+'</span>':'')+esc(rec.zh);
+  }
+  renderWords();
 }
 // 選取一段片語 → 浮出按鈕 → 翻譯標注
 function onReaderSelect(){
