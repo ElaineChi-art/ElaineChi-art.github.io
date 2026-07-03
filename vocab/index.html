@@ -560,7 +560,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v75 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v76 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -572,7 +572,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='75';
+const APP_VERSION='76';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -620,8 +620,8 @@ let voices=[];
 function loadVoices(){voices=speechSynthesis.getVoices()}
 loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;
 // 使用者手選的語音偏好（存在 localStorage）
-let voicePref=JSON.parse(localStorage.getItem('vocabVoice')||'{}');
-function saveVoicePref(){ localStorage.setItem('vocabVoice',JSON.stringify(voicePref)); }
+let voicePref=JSON.parse(localStorage.getItem('lexVoice')||localStorage.getItem('vocabVoice')||'{}');
+function saveVoicePref(){ localStorage.setItem('lexVoice',JSON.stringify(voicePref)); }
 // 自動挑「最自然」的語音：先用你手選的，否則優先 Neural/Enhanced/Siri/Google 等高品質語音
 function bestVoice(lang){
   const want=lang.toLowerCase().replace('_','-'), base=want.split('-')[0];

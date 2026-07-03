@@ -392,7 +392,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v17';
+const APP_VERSION='v18';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -933,20 +933,41 @@ function annotateSelection(){
 document.addEventListener('mouseup',()=>setTimeout(onReaderSelect,10));
 document.addEventListener('touchend',()=>setTimeout(onReaderSelect,10));
 
-/* ---------- 朗讀 ---------- */
-let _keepAlive=null, articleReading=false, sentMode=false;
+/* ---------- 朗讀（語音與每日單字共用：優先高品質 Neural/Siri/Google 語音；聲音偏好共用 lexVoice）---------- */
+let _keepAlive=null, articleReading=false, sentMode=false, voices=[];
+function loadVoices(){ try{ voices=speechSynthesis.getVoices(); }catch(e){} }
+loadVoices(); try{ speechSynthesis.onvoiceschanged=loadVoices; }catch(e){}
+function voicePrefObj(){ try{ return JSON.parse(localStorage.getItem('lexVoice')||localStorage.getItem('vocabVoice')||'{}'); }catch(e){ return {}; } }
+function bestVoice(lang){
+  const want=(lang||'en-US').toLowerCase().replace('_','-'), base=want.split('-')[0];
+  const cands=voices.filter(v=>v.lang && v.lang.toLowerCase().replace('_','-').startsWith(base));
+  if(!cands.length) return null;
+  const pref=voicePrefObj();
+  if(pref[base]){ const pv=cands.find(v=>v.name===pref[base]); if(pv) return pv; }
+  const score=v=>{ let s=0; const n=(v.name||'').toLowerCase(); const l=v.lang.toLowerCase().replace('_','-');
+    if(l===want)s+=4; if(/natural|neural|enhanced|premium|plus/.test(n))s+=8; if(/siri/.test(n))s+=6; if(/google/.test(n))s+=5;
+    if(/samantha|aaron|allison|ava|nicky|evan|joelle/.test(n))s+=3; if(v.localService===false)s+=1; return s; };
+  return cands.slice().sort((a,b)=>score(b)-score(a))[0];
+}
+let _spkWarm=false;
+function warmSpeak(){ if(_spkWarm)return; _spkWarm=true; try{ const u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u); }catch(e){} }
+document.addEventListener('pointerdown',warmSpeak,{once:true});
+document.addEventListener('touchstart',warmSpeak,{once:true,passive:true});
+function mkUtter(text){ const u=new SpeechSynthesisUtterance(text); u.lang='en-US'; u.rate=.92; u.pitch=1; const v=bestVoice('en-US'); if(v)u.voice=v; return u; }
 function stopKeepAlive(){ if(_keepAlive){ clearInterval(_keepAlive); _keepAlive=null; } }
 function clearPlaying(){ document.querySelectorAll('.reader .sent.playing').forEach(s=>s.classList.remove('playing')); }
-function speak(txt){ try{ stopKeepAlive(); articleReading=false; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(txt); u.lang='en-US'; u.rate=.92; speechSynthesis.speak(u); }catch(e){} }
+function speak(txt){ try{ if(!txt)return; stopKeepAlive(); articleReading=false; if(!voices.length)loadVoices();
+  if(speechSynthesis.speaking||speechSynthesis.pending){ speechSynthesis.cancel(); setTimeout(()=>{try{speechSynthesis.speak(mkUtter(txt));}catch(e){}},90); }
+  else speechSynthesis.speak(mkUtter(txt)); }catch(e){} }
 // 點單字發音：朗讀中 或 單句朗讀模式 時「不出聲、不打斷」；其餘才唸單字
 function sayWord(txt){ if(articleReading||sentMode) return; speak(txt); }
 function stopRead(){ try{ stopKeepAlive(); articleReading=false; speechSynthesis.cancel(); clearPlaying(); }catch(e){} }
 // 排隊朗讀一串句子（逐句避免長句被切斷）；防 Chrome ~15 秒自動暫停
 function speakQueue(list){
   try{
-    stopKeepAlive(); speechSynthesis.cancel(); articleReading=true;
+    stopKeepAlive(); speechSynthesis.cancel(); articleReading=true; if(!voices.length)loadVoices();
     list=list.map(s=>s.trim()).filter(Boolean);
-    list.forEach((c,i)=>{ const u=new SpeechSynthesisUtterance(c); u.lang='en-US'; u.rate=.92;
+    list.forEach((c,i)=>{ const u=mkUtter(c);
       if(i===list.length-1) u.onend=()=>{ articleReading=false; stopKeepAlive(); clearPlaying(); };
       speechSynthesis.speak(u); });
     _keepAlive=setInterval(()=>{ if(!speechSynthesis.speaking){ articleReading=false; stopKeepAlive(); return; } speechSynthesis.pause(); speechSynthesis.resume(); },10000);
