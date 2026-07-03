@@ -127,6 +127,13 @@
     <div class="chiprow" id="shelfBar" style="margin-bottom:10px"></div>
     <div class="row" id="shelfManage" style="margin-bottom:10px;display:none"><button class="btn ghost sm" id="shRename">✏️ 改名</button><button class="btn ghost sm" id="shDel" style="color:var(--red)">🗑 刪此書櫃</button></div>
     <div class="row" style="margin-bottom:10px"><input type="text" id="q" placeholder="搜尋標題" style="flex:1;min-width:140px;background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:9px 11px;font-family:inherit"><button class="btn ghost sm" id="playAllBtn">▶ 連續朗讀</button></div>
+    <div class="row" style="margin-bottom:10px">
+      <button class="btn ghost sm" id="expBtn">⬇ 匯出備份</button>
+      <button class="btn ghost sm" id="impBtn">⬆ 匯入備份</button>
+      <input type="file" id="impFile" accept=".json,application/json" style="display:none">
+      <button class="btn ghost sm" id="restoreBtn">↩ 還原自動備份</button>
+      <span class="msg" id="backupMsg" style="margin:0"></span>
+    </div>
     <div class="row" id="selTools" style="margin-bottom:10px;display:none">
       <span class="pill" id="selInfo">已選 0</span>
       <button class="btn ghost sm" id="assignBtn">📚 加入書櫃</button>
@@ -186,7 +193,7 @@
 
 <script>
 "use strict";
-const APP_VERSION='v6';
+const APP_VERSION='v7';
 const LS='readDocs_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -195,7 +202,32 @@ const md=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b class="hl">$1</b>');
 /* ---- 資料 ---- */
 let DOCS=load();
 function load(){ try{return JSON.parse(localStorage.getItem(LS))||[];}catch(e){return [];} }
-function save(){ localStorage.setItem(LS,JSON.stringify(DOCS)); }
+function save(){ try{
+  const prev=localStorage.getItem(LS);
+  // 保護：若目前是空的、但原本有資料，不覆蓋（避免任何情況把你的篇章洗掉），並留一份自動備份
+  if((!DOCS||!DOCS.length) && prev && prev.length>4 && prev!=='[]'){ return; }
+  if(prev && prev.length>4 && prev!=='[]') localStorage.setItem(LS+'_bak',prev);
+  localStorage.setItem(LS,JSON.stringify(DOCS));
+}catch(e){} }
+/* 匯出 / 匯入 / 還原自動備份 */
+$('#expBtn').onclick=()=>{ const data={app:'read',v:1,ts:Date.now(),docs:DOCS,shelves:SHELVES};
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='申論朗讀器備份-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  $('#backupMsg').textContent='✓ 已匯出 '+DOCS.length+' 篇'; };
+$('#impBtn').onclick=()=>$('#impFile').click();
+function mergeDocs(docs,shelves){ const ids=new Set(DOCS.map(x=>x.id)); let add=0;
+  (docs||[]).forEach(x=>{ if(x&&x.id&&!ids.has(x.id)){ DOCS.push(x); ids.add(x.id); add++; } });
+  (shelves||[]).forEach(s=>{ if(s&&!SHELVES.includes(s)) SHELVES.push(s); }); saveShelves(); save();
+  renderShelfBar(); renderDocs(); return add; }
+$('#impFile').onchange=e=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader();
+  rd.onload=()=>{ try{ const d=JSON.parse(rd.result); const docs=Array.isArray(d)?d:d.docs; if(!Array.isArray(docs))throw 0;
+    const add=mergeDocs(docs, d.shelves||[]); $('#backupMsg').textContent='✓ 匯入合併 '+add+' 篇（不覆蓋原本）';
+  }catch(err){ $('#backupMsg').textContent='⚠ 檔案格式不對，讀取失敗'; } }; rd.readAsText(f); e.target.value=''; };
+$('#restoreBtn').onclick=()=>{ const bak=localStorage.getItem(LS+'_bak');
+  if(!bak){ $('#backupMsg').textContent='這台目前沒有自動備份可還原'; return; }
+  try{ const arr=JSON.parse(bak); if(!Array.isArray(arr))throw 0;
+    if(confirm('還原自動備份（'+arr.length+' 篇）？會與目前的合併，不刪除現有。')){ const add=mergeDocs(arr,[]); $('#backupMsg').textContent='✓ 還原並合併 '+add+' 篇'; }
+  }catch(e){ $('#backupMsg').textContent='備份損毀，無法還原'; } };
 const isMeta=l=>/^(沒問題|我將|好的[，,]|以下|接著為您|接續為您)/.test(l.trim());
 const isHeader=l=>/^題型/.test(l.trim());
 /* 把一段貼上文字依「題型」切成多篇 */
