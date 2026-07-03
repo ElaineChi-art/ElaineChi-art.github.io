@@ -58,17 +58,25 @@
   h1{font-size:24px;margin-bottom:4px}
   .sub{color:var(--mut);font-size:14px;margin-bottom:18px}
   .modeswitch{display:none}
-  /* App 分頁列：每日單字 / 閱讀神器（同一個 App 內切換，不跳頁）*/
-  .apptabs{position:fixed;top:0;left:0;right:0;z-index:70;display:flex;gap:6px;justify-content:center;align-items:flex-end;
-    height:calc(50px + env(safe-area-inset-top,0px));padding:0 10px 8px;padding-top:calc(6px + env(safe-area-inset-top,0px));
-    background:var(--nav);border-bottom:1px solid var(--line)}
-  .apptab{font-size:14px;font-weight:600;padding:7px 22px;border-radius:20px;border:1px solid var(--line);cursor:pointer;
-    background:transparent;color:var(--mut);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-  .apptab.on{background:var(--acc2);color:#fff;border-color:var(--acc2)}
-  body{padding-top:calc(52px + env(safe-area-inset-top,0px))}
-  #readingPane{position:fixed;left:0;right:0;bottom:0;top:calc(52px + env(safe-area-inset-top,0px));z-index:45;background:var(--bg)}
+  /* 單一薄頂欄：左 Lexicon・中分頁・右設定（內容區最大化）*/
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:70;display:flex;align-items:center;justify-content:center;gap:10px;
+    height:calc(46px + env(safe-area-inset-top,0px));padding:0 12px;padding-top:env(safe-area-inset-top,0px);
+    background:color-mix(in srgb,var(--nav) 86%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--line)}
+  .topbar .brand{position:absolute;left:14px;top:env(safe-area-inset-top,0px);height:46px;display:flex;align-items:center;
+    font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:.5px;color:var(--tx)}
+  .seg{display:inline-flex;background:color-mix(in srgb,var(--tx) 5%,transparent);border:1px solid var(--line);border-radius:18px;padding:2px}
+  .seg button{font-size:13px;font-weight:600;padding:5px 16px;border-radius:16px;border:none;background:transparent;
+    color:var(--mut);cursor:pointer;white-space:nowrap;transition:background .2s,color .2s}
+  .seg button.on{background:var(--acc2);color:#fff}
+  .setbtn{font-size:13px;font-weight:600;padding:6px 15px;border-radius:16px;border:1px solid var(--line);
+    background:color-mix(in srgb,var(--tx) 7%,transparent);color:var(--tx);cursor:pointer;white-space:nowrap}
+  .setbtn:hover{border-color:var(--acc)}
+  body{padding-top:calc(46px + env(safe-area-inset-top,0px))}
+  #readingPane{position:fixed;left:0;right:0;bottom:0;top:calc(46px + env(safe-area-inset-top,0px));z-index:45;background:var(--bg)}
   #readingPane.hide{display:none}
   #fRead{width:100%;height:100%;border:none;display:block}
+  @media(max-width:520px){ .topbar .brand{display:none} }
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
   .sec-h{font-size:17px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:9px}
@@ -452,27 +460,19 @@
 </style>
 </head>
 <body>
-<div class="apptabs">
-  <button class="apptab on" id="atV" onclick="appTab('vocab')">每日單字</button>
-  <button class="apptab" id="atR" onclick="appTab('reading')">閱讀神器</button>
+<div class="topbar">
+  <div class="brand">Lexicon</div>
+  <div class="seg">
+    <button class="on" id="atV" onclick="appTab('vocab')">每日單字</button>
+    <button id="atR" onclick="appTab('reading')">閱讀神器</button>
+  </div>
+  <button class="setbtn" onclick="openTheme()">設定</button>
+</div>
+<div style="display:none">
+  <button id="btnTheme"></button><button id="btnVoice"></button><button class="sharebtn" id="btnShare"></button>
 </div>
 
 <div class="wrap">
-  <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap">
-    <div>
-      <h1>Lexicon</h1>
-      <div class="sub">每日英文單字</div>
-      <div class="modeswitch">
-        <span class="ms on">🔤 每日單字</span>
-        <a class="ms" href="https://elainechi-art.github.io/reading/">📖 閱讀神器</a>
-      </div>
-    </div>
-    <div class="row" style="gap:8px;flex-shrink:0">
-      <button class="btn ghost sm" id="btnTheme">外觀</button>
-      <button class="btn ghost sm" id="btnVoice">語音</button>
-      <button class="btn ghost sm sharebtn" id="btnShare">分享</button>
-    </div>
-  </div>
 
   <!-- 1. INPUT -->
   <div class="card">
@@ -572,7 +572,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v77 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v78 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -580,7 +580,7 @@
 <div id="bgStatus"><span class="dot"></span>翻譯中…</div>
 
 <!-- word detail modal -->
-<div id="readingPane" class="hide"><iframe id="fRead" data-src="/reading/" title="閱讀神器"></iframe></div>
+<div id="readingPane" class="hide"><iframe id="fRead" data-src="/reading/?rv=20" title="閱讀神器"></iframe></div>
 <script>
   function appTab(t){
     var rp=document.getElementById('readingPane'), fr=document.getElementById('fRead');
@@ -601,7 +601,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='77';
+const APP_VERSION='78';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -2340,7 +2340,11 @@ function openTheme(){
   document.getElementById('ovInner').innerHTML=
     `<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
      <h2 style="font-size:22px">外觀與偏好</h2>
-     <div style="font-size:13px;color:var(--mut);margin:6px 0 12px">設定會記在這個裝置。</div>
+     <div style="font-size:13px;color:var(--mut);margin:6px 0 12px">設定會記在這個裝置，兩個分頁共用。</div>
+     <div class="row" style="gap:8px;margin-bottom:14px">
+       <button class="btn ghost sm" onclick="document.getElementById('btnVoice').click()">語音設定</button>
+       <button class="btn ghost sm sharebtn" onclick="document.getElementById('btnShare').click()">分享給朋友</button>
+     </div>
      <div class="themegrid">${THEMES.map(t=>
        `<button class="themesw${t.id===cur?' on':''}" data-id="${t.id}">
           <span class="swatch" style="background:${t.bg}"><i style="background:${t.a}"></i></span>
