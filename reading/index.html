@@ -105,22 +105,22 @@
   .pill.on{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,transparent)}
 
   /* ============ 沉浸閱讀（課本式標注）============ */
-  /* 課本式標注：底線＝單字本身寬度；中文用絕對定位掛在字正下方，完全不影響橫向排版（英文照正常間距、底線不忽大忽小）。
-     用 inline-block 的 padding-bottom 只在「有標注的那一行」預留固定高度，中文落在正中間、每個一樣寬、不重疊，非標注行不會變寬。 */
-  .reader{font-family:var(--serif);line-height:1.72;font-size:calc(20px*var(--fs));letter-spacing:.2px}
-  .reader p{margin:0 0 10px}
+  /* 統一行高：每一行都同樣高度、間距一致（不論有沒有中文翻譯都一樣），不再「有標注的行特別高」。
+     中文用絕對定位掛在該行下方的行距空間裡，剛好塞進去、不推開行、不重疊下一行。 */
+  .reader{font-family:var(--serif);line-height:2.15;font-size:calc(20px*var(--fs));letter-spacing:.2px}
+  .reader p{margin:0 0 4px}
   .reader .rw{cursor:pointer;border-radius:3px}
   .reader .rw:hover{background:color-mix(in srgb,var(--acc) 16%,transparent)}
-  .reader .anno{position:relative;display:inline-block;line-height:1;vertical-align:baseline;padding-bottom:calc(32px*var(--fs))}
+  .reader .anno{position:relative;display:inline-block;line-height:1;vertical-align:baseline}
   .reader .anno > .w{cursor:pointer;text-decoration:underline;text-decoration-color:var(--acc);
        text-decoration-thickness:2px;text-underline-offset:3px}
   .reader .anno > .w:hover{background:color-mix(in srgb,var(--acc) 14%,transparent);border-radius:3px}
   /* top 用 --fs 縮放的 px（不用 em，因 em 會以 .n 自己的 11px 計算而失準）*/
-  .reader .anno > .n{position:absolute;left:50%;top:calc(31px*var(--fs));transform:translateX(-50%);
-       font-family:var(--sans);font-size:calc(11px*var(--fs));line-height:1.1;color:var(--acc);
+  .reader .anno > .n{position:absolute;left:50%;top:calc(24px*var(--fs));transform:translateX(-50%);
+       font-family:var(--sans);font-size:calc(10.5px*var(--fs));line-height:1.05;color:var(--acc);
        white-space:nowrap;letter-spacing:0;font-weight:500;text-align:center;pointer-events:none}
   .reader .anno > .n .pos{color:var(--mut);font-style:italic;margin-right:2px}
-  html.hidetrans .reader .anno{padding-bottom:0}
+  html.hidetrans .reader{line-height:1.9}
   html.hidetrans .reader .anno > .n{display:none}
   .reader .anno.done > .w{text-decoration-color:var(--green)}
   #selBtn{position:fixed;z-index:80;display:none;background:var(--acc2);color:#f3e7e3;border:none;border-radius:20px;
@@ -193,7 +193,7 @@
   .kv{display:flex;flex-direction:column;gap:12px;margin-top:16px}
   .foot{margin-top:34px;text-align:center;color:var(--mut);font-size:12px;line-height:1.9;letter-spacing:.3px}
   .foot a{color:var(--acc)}
-  @media (max-width:560px){ .wrap{padding:16px 12px 100px} .card{padding:16px 14px} .reader{font-size:calc(18px*var(--fs));line-height:1.72} h1{font-size:27px} }
+  @media (max-width:560px){ .wrap{padding:16px 12px 100px} .card{padding:16px 14px} .reader{font-size:calc(18px*var(--fs));line-height:2.15} h1{font-size:27px} }
 </style>
 </head>
 <body>
@@ -249,6 +249,10 @@
     <!-- ② 書櫃 -->
     <div class="card">
       <div class="sec-h"><span class="sec-n">2</span>我的書櫃 <span class="sec-sub" id="shelfCount"></span></div>
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn ghost sm" id="enrichBtn" onclick="enrichAllShelf()">✨ 全部改用「多」挑更多單字</button>
+        <span class="sec-sub">把書櫃裡每篇文章都補上更多重點單字（保留原本的字，只新增）</span>
+      </div>
       <div class="shelfbar" id="shelfBar"></div>
       <div id="txtList"></div>
     </div>
@@ -344,7 +348,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v8';
+const APP_VERSION='v9';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -429,7 +433,7 @@ function annotateHTML(article, words){
     recs.forEach(r=>{
       html+=plainHTML(para.slice(pos,r.start));
       const posLabel=r.wd.pos?`<span class="pos">${esc(r.wd.pos)}</span>`:'';
-      html+=`<span class="anno" data-k="${esc(keyOf(r.wd.w))}"><span class="w" onclick="speak('${esc(r.wd.w).replace(/'/g,"\\'")}');event.stopPropagation();openDetail('${esc(keyOf(r.wd.w))}')">${esc(r.surface)}</span><span class="n">${posLabel}${esc(r.wd.zh)}</span></span>`;
+      html+=`<span class="anno" data-k="${esc(keyOf(r.wd.w))}"><span class="w" onclick="speak('${esc(r.wd.w).replace(/'/g,"\\'")}')">${esc(r.surface)}</span><span class="n">${posLabel}${esc(r.wd.zh)}</span></span>`;
       pos=r.end;
     });
     html+=plainHTML(para.slice(pos));
@@ -491,49 +495,70 @@ function pool(arr,n,fn){
 // 最基礎的字（多益 400 以下也會的）——「多」密度只排除這些，其餘難字盡量都挑出來
 const CORE=new Set('a an the this that these those and or but if so as of to in on at by for with from into onto up down out off over under about above below i you he she it we they me him her us them my your his its our their who whom what which whose is am are was were be been being have has had do does did will would shall should can could may might must not no yes here there then now very just too also only one two three four five six seven eight nine ten first second next last many much more most some any all each every other another go goes going went come comes came get gets got give gave make makes made made take took see saw seen know knew say said tell told want need use used like good bad new old big small day days time year years people man men woman women thing things way ways over than when where why how while because'.split(/\s+/));
 
+// 免費挑字核心（可重用）：回傳 [{w,pos,zh}]。dens: more/std/few
+async function pickWords(article, dens, prog){
+  let excl=CORE, minLen=4, wordCap=60, phraseCap=14;
+  if(dens==='std'){ excl=COMMON; minLen=4; wordCap=32; phraseCap=10; }
+  else if(dens==='few'){ excl=COMMON; minLen=5; wordCap=16; phraseCap=6; }
+  if(prog) prog('① 偵測難字…');
+  const wre=new RegExp('\\b[A-Za-z][a-z]{'+(minLen-1)+',}\\b','g');
+  const singles=[...new Set((article.match(wre)||[]).map(w=>w.toLowerCase()))].filter(w=>!excl.has(w));
+  singles.sort((a,b)=> b.length-a.length);
+  const cand=singles.slice(0, Math.max(wordCap+20,70));
+  const phrases=[]; const pset=new Set(); let pm;
+  const pre=new RegExp('\\b([a-z]{'+(minLen-1)+',})\\s+([a-z]{'+(minLen-1)+',})\\b','g');
+  while((pm=pre.exec(article))){ const a=pm[1],b=pm[2];
+    if(excl.has(a)&&excl.has(b)) continue; const k=a+' '+b; if(pset.has(k)) continue; pset.add(k); phrases.push(k); }
+  phrases.sort((a,b)=> b.length-a.length);
+  let chosenP=phrases.slice(0,phraseCap);
+  if(prog) prog('② 查字典・判詞性…（越多越久）');
+  const kept=[];
+  await pool(cand,8, async w=>{
+    try{ const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w));
+      if(r.ok){ const d=await r.json(); const mean=d[0]&&d[0].meanings&&d[0].meanings[0];
+        kept.push({w, pos: mean?(POSZH[mean.partOfSpeech]||mean.partOfSpeech||''):''}); } }catch(e){}
+  });
+  kept.sort((a,b)=> b.w.length-a.w.length);
+  let words=kept.slice(0,wordCap);
+  const inP=new Set(); chosenP.forEach(p=>p.split(' ').forEach(x=>inP.add(x)));
+  words=words.filter(x=>!inP.has(x.w));
+  let items=chosenP.map(p=>({w:p,pos:'n. phr.'})).concat(words).slice(0, wordCap+phraseCap);
+  if(prog) prog('③ 翻譯中…（'+items.length+' 個）');
+  await pool(items,8, async it=>{ it.zh=await translate(it.w)||''; });
+  return items.filter(it=>it.zh);
+}
+
 async function freePick(article){
   const btn=document.getElementById('aiBtn'), msg=document.getElementById('inMsg');
   btn.disabled=true; const orig=btn.textContent; btn.textContent='挑選中…'; msg.className='msg';
   try{
-    // 密度：多＝排除最少、挑最多（適合初學）；中＝標準；少＝只留最難
     const dens=(document.getElementById('pickDensity')||{}).value||'more';
-    let excl=CORE, minLen=4, wordCap=60, phraseCap=14;
-    if(dens==='std'){ excl=COMMON; minLen=4; wordCap=32; phraseCap=10; }
-    else if(dens==='few'){ excl=COMMON; minLen=5; wordCap=16; phraseCap=6; }
-    msg.textContent='① 偵測難字…';
-    const wre=new RegExp('\\b[A-Za-z][a-z]{'+(minLen-1)+',}\\b','g');
-    const singles=[...new Set((article.match(wre)||[]).map(w=>w.toLowerCase()))].filter(w=>!excl.has(w));
-    singles.sort((a,b)=> b.length-a.length);
-    const cand=singles.slice(0, Math.max(wordCap+20,70));
-    // 片語候選：連續兩個小寫實詞（大寫開頭的人名地名不會進來）
-    const phrases=[]; const pset=new Set(); let pm;
-    const pre=new RegExp('\\b([a-z]{'+(minLen-1)+',})\\s+([a-z]{'+(minLen-1)+',})\\b','g');
-    while((pm=pre.exec(article))){ const a=pm[1],b=pm[2];
-      if(excl.has(a)&&excl.has(b)) continue; const k=a+' '+b; if(pset.has(k)) continue; pset.add(k); phrases.push(k); }
-    phrases.sort((a,b)=> b.length-a.length);
-    let chosenP=phrases.slice(0,phraseCap);
-    // 免費字典：驗證是不是真的英文字＋抓詞性（人名/地名會 404 被排除）
-    msg.textContent='② 查字典・判詞性…（挑越多越久，請稍等）';
-    const kept=[];
-    await pool(cand,8, async w=>{
-      try{ const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w));
-        if(r.ok){ const d=await r.json(); const mean=d[0]&&d[0].meanings&&d[0].meanings[0];
-          kept.push({w, pos: mean?(POSZH[mean.partOfSpeech]||mean.partOfSpeech||''):''}); } }catch(e){}
-    });
-    kept.sort((a,b)=> b.w.length-a.w.length);
-    let words=kept.slice(0,wordCap);
-    const inP=new Set(); chosenP.forEach(p=>p.split(' ').forEach(x=>inP.add(x)));
-    words=words.filter(x=>!inP.has(x.w));
-    let items=chosenP.map(p=>({w:p,pos:'n. phr.'})).concat(words).slice(0, wordCap+phraseCap);
-    if(!items.length){ msg.className='msg err'; msg.textContent='沒偵測到難字，換「密度：多」或自己貼單字表'; return; }
-    // 免費翻譯（並發翻，較快）
-    msg.textContent='③ 翻譯中…（'+items.length+' 個，請稍等）';
-    await pool(items,8, async it=>{ it.zh=await translate(it.w)||''; });
-    const ok=items.filter(it=>it.zh);
+    const ok=await pickWords(article, dens, s=>{ msg.textContent=s; });
+    if(!ok.length){ msg.className='msg err'; msg.textContent='沒偵測到難字，換「密度：多」或自己貼單字表'; return; }
     document.getElementById('inWords').value=ok.map(it=>`${it.w} (${it.pos})：${it.zh}`).join('\n');
     msg.textContent='✓ 免費挑出 '+ok.length+' 個單字/片語，可自行增刪後按「加入書櫃」';
   }catch(e){ msg.className='msg err'; msg.textContent='免費挑字失敗：'+e.message; }
   finally{ btn.disabled=false; btn.textContent=orig; }
+}
+
+// 把書櫃裡所有文章用「多」重新挑更多單字（保留原本的字，只新增）
+async function enrichAllShelf(){
+  const texts=Object.values(DB.texts);
+  if(!texts.length){ alert('書櫃還沒有文章'); return; }
+  if(!confirm('把書櫃裡 '+texts.length+' 篇文章全部用「多」重新挑更多單字？\n（保留你原本的字，只會新增，不會刪除）')) return;
+  const btn=document.getElementById('enrichBtn'); const o=btn?btn.textContent:''; if(btn) btn.disabled=true;
+  let added=0;
+  for(let i=0;i<texts.length;i++){
+    const t=texts[i]; if(btn) btn.textContent='處理中 '+(i+1)+'/'+texts.length+'…';
+    try{
+      const items=await pickWords(t.article,'more');
+      items.forEach(it=>{ if(!t.words.some(x=>keyOf(x.w)===keyOf(it.w))){ t.words.push({w:it.w,pos:it.pos,zh:it.zh,note:'',level:'',stats:{r:0,w:0}}); added++; } });
+      t.updated=Date.now(); save();
+    }catch(e){}
+  }
+  if(btn){ btn.disabled=false; btn.textContent=o; }
+  renderShelf(); if(DB.cur&&DB.texts[DB.cur]) openText(DB.cur);
+  alert('完成！總共新增了 '+added+' 個單字。');
 }
 
 // 免費／付費 LLM 挑字（Gemini / OpenRouter / Claude）
@@ -715,7 +740,7 @@ async function translate(text){
 async function addAnnotation(word){
   const t=DB.texts[DB.cur]; if(!t) return;
   word=(word||'').trim(); if(!word) return;
-  if(t.words.some(x=>keyOf(x.w)===keyOf(word))){ openDetail(keyOf(word)); return; }
+  if(t.words.some(x=>keyOf(x.w)===keyOf(word))){ speak(word); return; }  // 已標注就只發音，不開字卡
   const rec={w:word,pos:'',zh:'…翻譯中',note:'',level:'',stats:{r:0,w:0}};
   t.words.push(rec); save(); openText(DB.cur);      // 先插入佔位，畫面立刻標注
   try{
