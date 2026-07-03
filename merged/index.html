@@ -580,15 +580,30 @@
 <div id="bgStatus"><span class="dot"></span>翻譯中…</div>
 
 <!-- word detail modal -->
-<div id="readingPane" class="hide"><iframe id="fRead" data-src="/reading/?rv=20" title="閱讀神器"></iframe></div>
+<div id="readingPane" class="hide"><iframe id="fRead" data-src="/reading/?rv=22" title="閱讀神器"></iframe></div>
 <script>
   function appTab(t){
     var rp=document.getElementById('readingPane'), fr=document.getElementById('fRead');
-    if(t==='reading' && !fr.src) fr.src=fr.dataset.src;   // 首次點才載入
+    if(t==='reading' && !fr.src){ fr.src=fr.dataset.src; fr.addEventListener('load',syncFrame,{once:true}); }
     rp.classList.toggle('hide', t!=='reading');
     document.getElementById('atV').classList.toggle('on', t==='vocab');
     document.getElementById('atR').classList.toggle('on', t==='reading');
     try{ localStorage.setItem('lexTab', t); }catch(e){}
+  }
+  // 上方「設定」改主題/字級/隱藏中文時，即時同步到閱讀神器 iframe
+  function syncFrame(){
+    var fr=document.getElementById('fRead'); if(!fr||!fr.contentDocument) return;
+    var de=document.documentElement, fde=fr.contentDocument.documentElement;
+    var th=de.getAttribute('data-theme'); th?fde.setAttribute('data-theme',th):fde.removeAttribute('data-theme');
+    var fs=de.getAttribute('data-fs'); fs?fde.setAttribute('data-fs',fs):fde.removeAttribute('data-fs');
+    fde.classList.toggle('hidetrans', de.classList.contains('hidetrans'));
+  }
+  try{ new MutationObserver(syncFrame).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-fs','class']}); }catch(e){}
+  // 從「設定」開啟閱讀神器的 AI 金鑰視窗（切到閱讀分頁再開）
+  function openReadingApiKey(){
+    var fr=document.getElementById('fRead'); appTab('reading');
+    var go=function(){ try{ fr.contentWindow.openApiKey(); }catch(e){ setTimeout(go,300); } };
+    if(fr.contentWindow && fr.contentWindow.openApiKey) go(); else fr.addEventListener('load',go,{once:true});
   }
   (function(){
     var t='vocab'; try{ t=localStorage.getItem('lexTab')||'vocab'; }catch(e){}
@@ -601,7 +616,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='78';
+const APP_VERSION='78b';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -2343,6 +2358,7 @@ function openTheme(){
      <div style="font-size:13px;color:var(--mut);margin:6px 0 12px">設定會記在這個裝置，兩個分頁共用。</div>
      <div class="row" style="gap:8px;margin-bottom:14px">
        <button class="btn ghost sm" onclick="document.getElementById('btnVoice').click()">語音設定</button>
+       <button class="btn ghost sm" onclick="document.getElementById('ov').classList.remove('show');openReadingApiKey()">AI 金鑰</button>
        <button class="btn ghost sm sharebtn" onclick="document.getElementById('btnShare').click()">分享給朋友</button>
      </div>
      <div class="themegrid">${THEMES.map(t=>
