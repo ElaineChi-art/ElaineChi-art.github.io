@@ -105,20 +105,27 @@
   .pill.on{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,transparent)}
 
   /* ============ 沉浸閱讀（課本式標注）============ */
-  /* 課本式標注：用 <ruby> + ruby-position:under，中文真正佔一行排在單字正下方，會把下一行往下推、不重疊，英文仍在句子基線 */
-  .reader{font-family:var(--serif);line-height:2.05;font-size:calc(20px*var(--fs));letter-spacing:.2px}
-  .reader p{margin:0 0 14px}
-  .reader ruby.anno{ruby-position:under;-webkit-ruby-position:under;ruby-align:center}
-  .reader ruby.anno > .w{cursor:pointer;padding-bottom:1px;
-       background-image:linear-gradient(var(--acc),var(--acc));background-size:100% 2px;background-repeat:no-repeat;background-position:0 100%;
-       -webkit-box-decoration-break:clone;box-decoration-break:clone}
-  .reader ruby.anno > .w:hover{background-color:color-mix(in srgb,var(--acc) 14%,transparent)}
-  .reader ruby.anno > rt{font-family:var(--sans);font-size:calc(11px*var(--fs));line-height:1.35;color:var(--acc);
-       font-weight:500;letter-spacing:0;padding-top:8px;text-align:center}
-  .reader ruby.anno > rt .pos{color:var(--mut);font-style:italic;margin-right:2px}
-  html.hidetrans .reader ruby.anno > rt{display:none}
-  html.hidetrans .reader{line-height:1.75}
-  .reader ruby.anno.done > .w{background-image:linear-gradient(var(--green),var(--green))}
+  /* 課本式標注：底線＝單字本身寬度；中文用絕對定位掛在字正下方，完全不影響橫向排版（英文照正常間距、底線不忽大忽小）。
+     用 inline-block 的 padding-bottom 只在「有標注的那一行」預留固定高度，中文落在正中間、每個一樣寬、不重疊，非標注行不會變寬。 */
+  .reader{font-family:var(--serif);line-height:1.72;font-size:calc(20px*var(--fs));letter-spacing:.2px}
+  .reader p{margin:0 0 10px}
+  .reader .rw{cursor:pointer;border-radius:3px}
+  .reader .rw:hover{background:color-mix(in srgb,var(--acc) 16%,transparent)}
+  .reader .anno{position:relative;display:inline-block;line-height:1;vertical-align:baseline;padding-bottom:calc(32px*var(--fs))}
+  .reader .anno > .w{cursor:pointer;text-decoration:underline;text-decoration-color:var(--acc);
+       text-decoration-thickness:2px;text-underline-offset:3px}
+  .reader .anno > .w:hover{background:color-mix(in srgb,var(--acc) 14%,transparent);border-radius:3px}
+  /* top 用 --fs 縮放的 px（不用 em，因 em 會以 .n 自己的 11px 計算而失準）*/
+  .reader .anno > .n{position:absolute;left:50%;top:calc(31px*var(--fs));transform:translateX(-50%);
+       font-family:var(--sans);font-size:calc(11px*var(--fs));line-height:1.1;color:var(--acc);
+       white-space:nowrap;letter-spacing:0;font-weight:500;text-align:center;pointer-events:none}
+  .reader .anno > .n .pos{color:var(--mut);font-style:italic;margin-right:2px}
+  html.hidetrans .reader .anno{padding-bottom:0}
+  html.hidetrans .reader .anno > .n{display:none}
+  .reader .anno.done > .w{text-decoration-color:var(--green)}
+  #selBtn{position:fixed;z-index:80;display:none;background:var(--acc2);color:#f3e7e3;border:none;border-radius:20px;
+       padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 6px 18px -6px #000;-webkit-backdrop-filter:blur(8px)}
+  #selBtn.show{display:block}
   .rd-meta{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-family:var(--sans);font-size:12.5px;color:var(--mut);
        margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line);letter-spacing:.3px}
   .rd-title{font-family:var(--serif);font-size:calc(26px*var(--fs));font-weight:600;margin-bottom:2px}
@@ -186,7 +193,7 @@
   .kv{display:flex;flex-direction:column;gap:12px;margin-top:16px}
   .foot{margin-top:34px;text-align:center;color:var(--mut);font-size:12px;line-height:1.9;letter-spacing:.3px}
   .foot a{color:var(--acc)}
-  @media (max-width:560px){ .wrap{padding:16px 12px 100px} .card{padding:16px 14px} .reader{font-size:calc(18px*var(--fs));line-height:2.05} h1{font-size:27px} }
+  @media (max-width:560px){ .wrap{padding:16px 12px 100px} .card{padding:16px 14px} .reader{font-size:calc(18px*var(--fs));line-height:1.72} h1{font-size:27px} }
 </style>
 </head>
 <body>
@@ -243,7 +250,7 @@
 
     <!-- ③ 閱讀 -->
     <div class="card" id="readCard" style="display:none">
-      <div class="sec-h"><span class="sec-n">3</span>沉浸閱讀 <span class="sec-sub">點底線單字＝發音；標注就在該字下方</span></div>
+      <div class="sec-h"><span class="sec-n">3</span>沉浸閱讀 <span class="sec-sub">點沒標注的字＝免費翻譯後標在下方；選取片語可整串標注；點底線字＝發音</span></div>
       <div class="rd-meta" id="rdMeta"></div>
       <div class="reader" id="reader"></div>
     </div>
@@ -332,7 +339,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v5';
+const APP_VERSION='v6';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -384,7 +391,17 @@ function extractInline(article){
   return {clean:clean.replace(/[ \t]{2,}/g,' '), words};
 }
 
-/* ---------- 渲染閱讀（課本式：底線＋字下方標注）---------- */
+/* ---------- 渲染閱讀（課本式：底線＝單字寬，中文絕對定位掛在字正下方，不影響橫向排版）---------- */
+// 未標注的字也包成可點的 span，點一下＝免費翻譯後就地標注
+function plainHTML(text){
+  // 先切成「單字 / 非單字」再各自 esc，避免把 &quot; 之類 HTML 實體切壞
+  let out='';
+  text.replace(/([A-Za-z][A-Za-z'’\-]*)|([^A-Za-z]+)/g,(m,word,other)=>{
+    out+= word ? '<span class="rw" onclick="annotateWord(this)">'+esc(word)+'</span>' : esc(other);
+    return '';
+  });
+  return out;
+}
 function annotateHTML(article, words){
   const list=words.slice().sort((a,b)=> b.w.length-a.w.length); // 長片語優先
   const paras=article.split(/\n+/).filter(p=>p.trim().length);
@@ -405,12 +422,12 @@ function annotateHTML(article, words){
     recs.sort((a,b)=>a.start-b.start);
     let html='', pos=0;
     recs.forEach(r=>{
-      html+=esc(para.slice(pos,r.start));
+      html+=plainHTML(para.slice(pos,r.start));
       const posLabel=r.wd.pos?`<span class="pos">${esc(r.wd.pos)}</span>`:'';
-      html+=`<ruby class="anno" data-k="${esc(keyOf(r.wd.w))}"><span class="w" onclick="speak('${esc(r.wd.w).replace(/'/g,"\\'")}');event.stopPropagation();openDetail('${esc(keyOf(r.wd.w))}')">${esc(r.surface)}</span><rt class="n">${posLabel}${esc(r.wd.zh)}</rt></ruby>`;
+      html+=`<span class="anno" data-k="${esc(keyOf(r.wd.w))}"><span class="w" onclick="speak('${esc(r.wd.w).replace(/'/g,"\\'")}');event.stopPropagation();openDetail('${esc(keyOf(r.wd.w))}')">${esc(r.surface)}</span><span class="n">${posLabel}${esc(r.wd.zh)}</span></span>`;
       pos=r.end;
     });
-    html+=esc(para.slice(pos));
+    html+=plainHTML(para.slice(pos));
     return '<p>'+html+'</p>';
   }).join('');
 }
@@ -655,6 +672,49 @@ async function translate(text){
   return '';
 }
 
+/* ---------- 閱讀中就地翻譯標注（點單字／選片語，免費翻譯後同樣標在下方）---------- */
+async function addAnnotation(word){
+  const t=DB.texts[DB.cur]; if(!t) return;
+  word=(word||'').trim(); if(!word) return;
+  if(t.words.some(x=>keyOf(x.w)===keyOf(word))){ openDetail(keyOf(word)); return; }
+  const rec={w:word,pos:'',zh:'…翻譯中',note:'',level:'',stats:{r:0,w:0}};
+  t.words.push(rec); save(); openText(DB.cur);      // 先插入佔位，畫面立刻標注
+  try{
+    if(!word.includes(' ')){
+      const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(word));
+      if(r.ok){ const d=await r.json(); const m=d[0]&&d[0].meanings&&d[0].meanings[0]; if(m) rec.pos=POSZH[m.partOfSpeech]||m.partOfSpeech||''; }
+    } else rec.pos='phr.';
+  }catch(e){}
+  rec.zh=await translate(word)||'（查無翻譯，可點此手動補）';
+  save(); openText(DB.cur);
+}
+function annotateWord(el){
+  // 若正在選取多個字（要標片語），就不觸發單字
+  const sel=(window.getSelection&&window.getSelection().toString()||'').trim();
+  if(sel && /\s/.test(sel)) return;
+  addAnnotation(el.textContent);
+}
+// 選取一段片語 → 浮出按鈕 → 翻譯標注
+function onReaderSelect(){
+  const btn=document.getElementById('selBtn'); const rd=document.getElementById('reader');
+  const sel=window.getSelection && window.getSelection();
+  const txt=(sel&&sel.toString()||'').trim().replace(/\s+/g,' ');
+  const words=txt.split(' ').filter(Boolean);
+  if(sel&&sel.rangeCount&&txt&&words.length>=2&&words.length<=6&&txt.length<70&&rd.contains(sel.anchorNode)&&/[A-Za-z]/.test(txt)){
+    const rect=sel.getRangeAt(0).getBoundingClientRect();
+    btn.style.left=Math.max(8,Math.min(window.innerWidth-90,rect.left+rect.width/2-40))+'px';
+    btn.style.top=Math.max(8,rect.top-42)+'px';
+    btn.dataset.txt=txt.replace(/^[^A-Za-z]+|[^A-Za-z'’]+$/g,''); btn.classList.add('show');
+  } else { btn.classList.remove('show'); }
+}
+function annotateSelection(){
+  const btn=document.getElementById('selBtn'); const txt=btn.dataset.txt;
+  btn.classList.remove('show'); try{ window.getSelection().removeAllRanges(); }catch(e){}
+  if(txt) addAnnotation(txt);
+}
+document.addEventListener('mouseup',()=>setTimeout(onReaderSelect,10));
+document.addEventListener('touchend',()=>setTimeout(onReaderSelect,10));
+
 /* ---------- 朗讀 ---------- */
 let _keepAlive=null;
 function stopKeepAlive(){ if(_keepAlive){ clearInterval(_keepAlive); _keepAlive=null; } }
@@ -806,6 +866,7 @@ Regulatory approval (n. phr.)：監管批准`),
   DB.texts[demo.id]=demo; DB.cur=demo.id; save(); renderShelf(); openText(demo.id);
 }
 </script>
+<button id="selBtn" onmousedown="event.preventDefault()" onclick="annotateSelection()">＋ 翻譯並標注</button>
 <!-- GoatCounter 流量分析 -->
 <script data-goatcounter="https://elainechi.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
