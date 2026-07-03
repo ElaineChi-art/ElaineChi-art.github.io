@@ -80,6 +80,7 @@
   /* 嵌在每日單字分頁裡時：隱藏自己的大標題與切換器（上方已有 App 分頁列），只留工具按鈕 */
   html.embedded header.hd h1, html.embedded header.hd .sub, html.embedded .modeswitch{display:none}
   html.embedded .wrap{padding-top:12px}
+  html.embedded .foot a{display:none}   /* 嵌入分頁時隱藏頁尾『每日單字』連結，改用上方分頁 */
   .toolbtns{display:flex;gap:8px;flex-wrap:wrap}
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:18px;
@@ -396,7 +397,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v19';
+const APP_VERSION='v20';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
