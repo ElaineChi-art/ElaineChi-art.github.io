@@ -40,7 +40,7 @@
   .topnav a{color:#9aa4b2;text-decoration:none;font-size:14px;font-weight:600;padding:9px 16px;border-radius:8px;white-space:nowrap}
   .topnav a:hover{background:#161922} .topnav a.active{background:color-mix(in srgb,var(--acc) 12%,transparent);color:var(--acc)}
   html.standalone .topnav{display:none}
-  .wrap{max-width:900px;margin:0 auto;padding:20px 18px 90px}
+  .wrap{max-width:1040px;margin:0 auto;padding:20px 18px 90px}
   h1{font-family:var(--serif);font-weight:600;font-size:30px} .sub{color:var(--mut);font-size:13px;letter-spacing:1.2px;margin-bottom:16px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 12px 30px -22px #000}
   .sec-h{font-family:var(--serif);font-weight:600;font-size:19px;margin-bottom:12px;display:flex;align-items:center;gap:9px}
@@ -69,13 +69,11 @@
   .ov{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;z-index:100}
   .ov.show{display:flex;align-items:center;justify-content:center;padding:14px}
   .reader{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:100%;max-width:760px;height:min(90vh,860px);display:flex;flex-direction:column;position:relative;overflow:hidden}
-  /* 主閱讀器＝滿版大頁面（仿英文閱讀器），設定用的小 modal 不受影響 */
-  #ov.show{align-items:stretch;justify-content:center;padding:0}
-  #ov .reader{max-width:1000px;width:100%;height:100vh;height:100dvh;border-radius:0;border:none}
-  #ov .rbody{padding:26px clamp(18px,5vw,60px) 70px}
-  .rnav{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);flex-shrink:0}
-  .rtitle{font-family:var(--serif);font-weight:600;font-size:15px;color:var(--acc);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .rbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:22px 26px 40px}
+  /* ③ 沉浸閱讀＝整頁內嵌區塊（仿英文閱讀器，非彈窗） */
+  .rdbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);position:sticky;top:calc(46px + env(safe-area-inset-top,0px));background:var(--panel);z-index:20;border-radius:14px 14px 0 0}
+  html.standalone .rdbar{top:0}
+  .rtitle{font-family:var(--serif);font-weight:600;font-size:15px;color:var(--acc);flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rbody{padding:26px clamp(16px,4vw,52px) 44px}
   .para{font-size:calc(18px*var(--fs));line-height:2.05;color:var(--tx);text-align:left;margin-bottom:15px}
   .para.head{font-family:var(--serif);font-weight:600;font-size:calc(27px*var(--fs));color:var(--acc);text-align:center;margin:6px 0 22px}
   .para.tip{color:var(--green)}
@@ -149,31 +147,25 @@
     </div>
     <div id="docList"></div>
   </div>
+
+  <!-- ③ 沉浸閱讀（整頁內嵌，非彈窗） -->
+  <div class="card" id="readCard" style="display:none;padding:0">
+    <div class="rdbar">
+      <button class="btn ghost sm" id="rClose">✕ 收起</button>
+      <span class="rtitle" id="rTitle"></span>
+      <button class="btn" id="rPlay" style="min-width:104px">▶ 朗讀全文</button>
+      <button class="btn ghost sm" id="rBack">◀ 句</button>
+      <button class="btn ghost sm" id="rFwd">句 ▶</button>
+      <button class="btn ghost sm" id="rTrans">解析</button>
+      <button class="btn ghost sm" id="rFont">字級 A±</button>
+      <span class="prog" id="rProg">0 / 0</span>
+      <span class="row" style="gap:6px;align-items:center"><span style="font-size:12px;color:var(--mut)">速度</span><input type="range" id="rRate" min="0.6" max="1.4" step="0.1" style="width:100px"><span id="rRateV" class="prog"></span></span>
+    </div>
+    <div class="rbody" id="rBody"></div>
+  </div>
+
   <div class="msg" style="text-align:center;opacity:.7" id="foot"></div>
 </div>
-
-<!-- 朗讀器 -->
-<div class="ov" id="ov"><div class="reader">
-  <div class="rnav">
-    <button class="btn ghost sm" id="rClose">✕ 關閉</button>
-    <span class="rtitle" id="rTitle"></span>
-    <span class="row" style="gap:6px"><button class="btn ghost sm" id="rTrans">解析</button><button class="btn ghost sm" id="rFont">字級 A±</button></span>
-  </div>
-  <button class="rarrow l" id="rPrev">‹</button>
-  <button class="rarrow r" id="rNext">›</button>
-  <div class="rbody" id="rBody"></div>
-  <div class="rctrl">
-    <div class="main">
-      <button class="btn ghost sm" id="rBack">◀ 上一段</button>
-      <button class="btn" id="rPlay" style="min-width:110px">▶ 播放</button>
-      <button class="btn ghost sm" id="rFwd">下一段 ▶</button>
-    </div>
-    <div class="sub">
-      <span class="prog" id="rProg">0 / 0</span>
-      <span>速度</span><input type="range" id="rRate" min="0.6" max="1.4" step="0.1" style="width:130px"><span id="rRateV" class="prog"></span>
-    </div>
-  </div>
-</div></div>
 
 <!-- 外觀 -->
 <div class="ov" id="ovTheme" style="align-items:flex-start"><div class="reader" style="height:auto;max-width:560px;padding:22px;margin-top:8vh"><h2 style="font-family:var(--serif)">外觀</h2>
@@ -200,7 +192,7 @@
 
 <script>
 "use strict";
-const APP_VERSION='v9';
+const APP_VERSION='v10';
 const LS='readDocs_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -351,8 +343,8 @@ function openReader(o){ R.title=o.title; R.idx=0; R.playing=false; R.docId=o.id|
   $('#rBody').innerHTML=html; $('#rTitle').textContent=R.title;
   $('#rRate').value=speakRate; $('#rRateV').textContent=speakRate.toFixed(1)+'x';
   wireNote();
-  $('#ov').classList.add('show'); highlight(0); updateProg();
-  play();
+  $('#readCard').style.display='block'; highlight(0); updateProg();
+  $('#readCard').scrollIntoView({behavior:'smooth',block:'start'});   // 捲到沉浸閱讀區
 }
 let noteTimer=null;
 function wireNote(){ const ta=$('#rNote'); if(!ta)return; const d=DOCS.find(x=>x.id===R.docId); if(d)ta.value=d.note||'';
@@ -361,11 +353,11 @@ function wireNote(){ const ta=$('#rNote'); if(!ta)return; const d=DOCS.find(x=>x
 function highlight(i){ const b=$('#rBody'); b.querySelectorAll('.sent.cur').forEach(e=>e.classList.remove('cur'));
   const cur=b.querySelector('.sent[data-i="'+i+'"]'); if(cur){ cur.classList.add('cur');
     const ae=document.activeElement; if(!ae||ae.id!=='rNote') cur.scrollIntoView({block:'center',behavior:'smooth'}); } }
-function updateProg(){ $('#rProg').textContent=(R.units.length?R.idx+1:0)+' / '+R.units.length; $('#rPlay').textContent=R.playing?'⏸ 暫停':'▶ 播放'; }
+function updateProg(){ $('#rProg').textContent=(R.units.length?R.idx+1:0)+' / '+R.units.length; $('#rPlay').textContent=R.playing?'⏸ 暫停':'▶ 朗讀全文'; }
 R.gen=0;
 async function play(){ if(!R.units.length)return; R.playing=true; const g=++R.gen; updateProg();
   while(R.playing && g===R.gen){
-    if(!$('#ov').classList.contains('show')){ R.playing=false; break; }
+    if($('#readCard').style.display==='none'){ R.playing=false; break; }
     if(R.idx>=R.units.length){ R.playing=false; break; }
     highlight(R.idx); updateProg();
     await sayOnce(speakClean(R.units[R.idx]));
@@ -381,9 +373,7 @@ function rnav(d){ goto(R.idx+d); }
 $('#rBody').addEventListener('click',e=>{ const s=e.target.closest('.sent'); if(!s)return; goto(+s.dataset.i); });
 $('#rPlay').onclick=()=>{ R.playing?pause():play(); };
 $('#rBack').onclick=()=>rnav(-1); $('#rFwd').onclick=()=>rnav(1);
-$('#rPrev').onclick=()=>rnav(-1); $('#rNext').onclick=()=>rnav(1);
-$('#rClose').onclick=()=>{ pause(); $('#ov').classList.remove('show'); };
-$('#ov').onclick=e=>{ if(e.target===$('#ov')){ pause(); $('#ov').classList.remove('show'); } };
+$('#rClose').onclick=()=>{ pause(); $('#readCard').style.display='none'; document.querySelector('#docList').scrollIntoView({behavior:'smooth',block:'start'}); };
 $('#rFont').onclick=()=>cycleFont();
 function updateTransBtn(){ const b=$('#rTrans'); if(!b)return; const hid=document.documentElement.classList.contains('hidetrans');
   b.textContent=hid?'解析🔒':'解析'; b.style.borderColor=hid?'':'var(--acc)'; b.style.color=hid?'':'var(--acc)'; }
