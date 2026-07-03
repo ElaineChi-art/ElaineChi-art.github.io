@@ -186,6 +186,30 @@
   .lvb.on.weak{background:var(--red);color:#1a1011;border-color:var(--red)}
   .lvb.on.mid{background:var(--yellow);color:#211a0c;border-color:var(--yellow)}
   .lvb.on.strong{background:var(--green);color:#06210f;border-color:var(--green)}
+  /* 單字清單可滾動（比照每日單字） */
+  .gridscroll{max-height:62vh;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:14px;
+       padding:10px;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-overflow-scrolling:touch}
+  .gridscroll::-webkit-scrollbar{width:8px}
+  .gridscroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
+  /* 統一毛玻璃按鈕 */
+  .speak,.btn.ghost,.pill,.gbtn{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .gbtn{font-size:13px;padding:6px 14px;border-radius:20px;border:1px solid var(--line);color:var(--mut);cursor:pointer;white-space:nowrap;
+       background:color-mix(in srgb,var(--tx) 4%,transparent);font-family:var(--sans);letter-spacing:.3px}
+  .gbtn:hover{border-color:var(--acc);color:var(--tx)}
+  .gbtn.on{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,transparent);font-weight:600}
+  /* 大卡詳解：毛玻璃 */
+  .modal.dcard{-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);background:color-mix(in srgb,var(--panel) 80%,transparent);max-width:560px}
+  .dc-top{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:4px}
+  .dword{font-family:var(--serif);font-size:calc(40px*var(--fs));font-weight:600;color:var(--acc);letter-spacing:.5px;line-height:1.1;margin-top:14px}
+  .dph{font-family:var(--serif);font-style:italic;color:var(--mut);font-size:calc(16px*var(--fs));margin-top:4px;min-height:12px}
+  .dpos{font-style:italic;color:var(--acc);font-family:var(--serif)}
+  .dmean{font-size:calc(20px*var(--fs));line-height:1.55;margin-top:12px}
+  .dmeanings{margin-top:14px;font-size:14px;line-height:1.75;color:var(--tx)}
+  .dmeanings .mpos{color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 38%,transparent);border-radius:5px;padding:0 6px;margin-right:6px;font-size:.85em}
+  .dex-wrap{margin-top:8px;padding:11px 13px;background:var(--panel2);border:1px solid var(--line);border-radius:11px}
+  .dex-en{font-size:calc(15.5px*var(--fs));line-height:1.6}
+  .dex-zh{font-size:calc(13.5px*var(--fs));color:var(--mut);line-height:1.5;margin-top:4px}
+  html.hidetrans .dex-zh{display:none}
 
   /* ============ 測驗 ============ */
   .lvfilter{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
@@ -268,8 +292,8 @@
           <option value="std">密度：中（標準）</option>
           <option value="few">密度：少（精選難字）</option>
         </select>
-        <button class="btn" onclick="autoPick()" id="aiBtn">✨ 自動挑單字</button>
-        <button class="btn ghost" onclick="saveText()">＋ 加入書櫃並閱讀</button>
+        <button class="btn" onclick="autoPick()" id="aiBtn">自動挑單字</button>
+        <button class="btn ghost" onclick="saveText()">加入書櫃</button>
       </div>
       <div class="msg" id="inMsg"></div>
     </div>
@@ -278,8 +302,8 @@
     <div class="card">
       <div class="sec-h"><span class="sec-n">2</span>我的書櫃 <span class="sec-sub" id="shelfCount"></span></div>
       <div class="row" style="margin-bottom:12px">
-        <button class="btn ghost sm" id="enrichBtn" onclick="enrichAllShelf()">✨ 全部改用「多」挑更多單字</button>
-        <span class="sec-sub">把書櫃裡每篇文章都補上更多重點單字（保留原本的字，只新增）</span>
+        <button class="btn ghost sm" id="enrichBtn" onclick="enrichAllShelf()">全部補更多單字</button>
+        <span class="sec-sub">把書櫃每篇都補上更多單字（只新增不刪）</span>
       </div>
       <div class="shelfbar" id="shelfBar"></div>
       <div id="txtList"></div>
@@ -287,7 +311,7 @@
 
     <!-- ③ 閱讀 -->
     <div class="card" id="readCard" style="display:none">
-      <div class="sec-h"><span class="sec-n">3</span>沉浸閱讀 <span class="sec-sub">點字＝就地翻譯；開「▷ 單句朗讀」後碰句子就反白念那句；🧠 段落分析在左側</span></div>
+      <div class="sec-h"><span class="sec-n">3</span>沉浸閱讀 <span class="sec-sub">點字翻譯；開單句朗讀後碰句子念那句；段落分析在左側</span></div>
       <div class="rd-meta" id="rdMeta"></div>
       <div class="reader" id="reader"></div>
     </div>
@@ -300,7 +324,7 @@
         <button class="btn ghost sm" onclick="selAllWords(false)">清除勾選</button>
         <span class="msg" id="wordMsg" style="margin:0"></span>
       </div>
-      <div class="wgrid" id="wordGrid"></div>
+      <div class="gridscroll"><div class="wgrid" id="wordGrid"></div></div>
     </div>
 
     <!-- ⑤ 測驗 -->
@@ -308,16 +332,16 @@
       <div class="sec-h"><span class="sec-n">5</span>單字測驗 <span class="sec-sub">針對勾選的單字</span></div>
       <div class="lvfilter" id="lvFilter"></div>
       <div class="qtypes">
-        <button class="pill" data-qt="flash" onclick="setQType('flash')">🔁 翻卡</button>
-        <button class="pill" data-qt="fill" onclick="setQType('fill')">📝 選擇</button>
-        <button class="pill" data-qt="spell" onclick="setQType('spell')">⌨︎ 拼字</button>
+        <button class="pill" data-qt="flash" onclick="setQType('flash')">翻卡</button>
+        <button class="pill" data-qt="fill" onclick="setQType('fill')">選擇</button>
+        <button class="pill" data-qt="spell" onclick="setQType('spell')">拼字</button>
       </div>
       <div class="quizbox" id="quizBox"></div>
     </div>
 
     <div class="foot">
       英文閱讀神器 · <span id="ver">v1</span>　·　資料存在你自己的瀏覽器<br>
-      標注可由 AI（你的 Anthropic 金鑰）／免費字典／手動貼上　·　<a href="https://elainechi-art.github.io/vocab/">🔤 每日單字</a>
+      標注可由 AI／免費字典／手動貼上　·　<a href="https://elainechi-art.github.io/vocab/">每日單字</a>
     </div>
   </div>
 
@@ -352,11 +376,11 @@
         想挑得更聰明、更會抓片語，可填以下任一「免費」金鑰 —— <b>Gemini 和 OpenRouter 都有免費額度、不必付錢</b>。金鑰只存在你這台瀏覽器。
       </p>
       <div class="kv">
-        <div><label class="fld">🟢 Google Gemini 金鑰（免費）　<a class="pill" href="https://aistudio.google.com/apikey" target="_blank">免費取得 ↗</a></label>
+        <div><label class="fld">Google Gemini 金鑰（免費）　<a class="pill" href="https://aistudio.google.com/apikey" target="_blank">免費取得</a></label>
           <input type="password" id="kGemini" placeholder="AIza..."></div>
-        <div><label class="fld">🟢 OpenRouter 金鑰（免費模型）　<a class="pill" href="https://openrouter.ai/keys" target="_blank">免費取得 ↗</a></label>
+        <div><label class="fld">OpenRouter 金鑰（免費）　<a class="pill" href="https://openrouter.ai/keys" target="_blank">免費取得</a></label>
           <input type="password" id="kOpenrouter" placeholder="sk-or-..."></div>
-        <div><label class="fld">💰 Anthropic Claude 金鑰（付費，選填）　<a class="pill" href="https://console.anthropic.com/settings/keys" target="_blank">取得 ↗</a></label>
+        <div><label class="fld">Anthropic Claude 金鑰（付費，選填）　<a class="pill" href="https://console.anthropic.com/settings/keys" target="_blank">取得</a></label>
           <input type="password" id="kAnthropic" placeholder="sk-ant-..."></div>
         <div class="row"><button class="btn" onclick="saveApiKey()">儲存</button>
           <button class="btn ghost" onclick="clearApiKey()">全部清除</button></div>
@@ -376,7 +400,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v15';
+const APP_VERSION='v16';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -679,7 +703,7 @@ function renderShelf(){
   const bar=document.getElementById('shelfBar');
   const counts={}; Object.values(DB.texts).forEach(t=>{ counts[t.shelf]=(counts[t.shelf]||0)+1; });
   let h=DB.shelves.map(s=> `<button class="pill ${s.id===curShelf?'on':''}" onclick="curShelf='${s.id}';renderShelf()">${esc(s.name)} <span style="opacity:.6">${counts[s.id]||0}</span></button>`).join('');
-  h+=`<button class="pill" onclick="addShelf()">＋ 新書櫃</button>`;
+  h+=`<button class="pill" onclick="addShelf()">新書櫃</button>`;
   bar.innerHTML=h;
   const all=Object.values(DB.texts).filter(t=>t.shelf===curShelf).sort((a,b)=>b.created-a.created);
   document.getElementById('shelfCount').textContent=Object.keys(DB.texts).length+' 篇文章';
@@ -709,9 +733,9 @@ function openText(id){
   const hasA=t.analysis&&t.analysis.length;
   rt.innerHTML=`<div style="flex:1"><div class="rd-title">${esc(t.title)}</div></div>
      <span>${t.words.length} 重點單字</span>
-     <button class="speak" onclick="readAloud()">🔊 朗讀全文</button><button class="speak" onclick="stopRead()">⏹ 停</button>
-     <button class="speak ${sentMode?'on':''}" onclick="toggleSentMode()">${sentMode?'✓ 單句朗讀中（碰句子念）':'▷ 單句朗讀'}</button>
-     <button class="speak" id="analyzeBtn" onclick="analyzeParagraphs()">🧠 段落分析</button>${hasA?`<button class="speak" onclick="toggleAnalysis()">${t.analysisHidden?'展開筆記':'收合筆記'}</button><button class="speak" onclick="clearAnalysis()">清除筆記</button>`:''}`;
+     <button class="gbtn" onclick="readAloud()">朗讀</button><button class="gbtn" onclick="stopRead()">停</button>
+     <button class="gbtn ${sentMode?'on':''}" onclick="toggleSentMode()">單句朗讀</button>
+     <button class="gbtn" id="analyzeBtn" onclick="analyzeParagraphs()">段落分析</button>${hasA?`<button class="gbtn" onclick="toggleAnalysis()">${t.analysisHidden?'展開筆記':'收合筆記'}</button><button class="gbtn" onclick="clearAnalysis()">清除筆記</button>`:''}`;
   const rd=document.getElementById('reader');
   rd.innerHTML=renderReaderHTML(t);
   rd.classList.toggle('sentmode', sentMode);
@@ -741,8 +765,8 @@ function renderWords(){
     const lv=w.level||'new';
     return `<div class="wcard lv-${lv}">
       <input type="checkbox" class="chk" ${wordSel.has(i)?'checked':''} onchange="toggleWord(${i},this.checked)">
-      <button class="speak sp" onclick="speak('${esc(w.w).replace(/'/g,"\\'")}')">🔊</button>
-      <div class="en" style="cursor:pointer" onclick="openDetail('${esc(keyOf(w.w))}')">${esc(w.w)} <span style="font-size:11px;color:var(--mut)">詳解 ›</span></div>
+      <button class="speak sp" onclick="speak('${esc(w.w).replace(/'/g,"\\'")}')">唸</button>
+      <div class="en" style="cursor:pointer" onclick="openDetail('${esc(keyOf(w.w))}')">${esc(w.w)} <span style="font-size:11px;color:var(--mut)">詳解</span></div>
       <div class="pos">${esc(w.pos||'')}</div>
       <div class="zh">${esc(w.zh||'')}</div>
       ${w.ex?`<div class="cardex">${esc(w.ex).replace(new RegExp('('+w.w.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')+')','ig'),'<b style="color:var(--acc)">$1</b>')}${w.exZh?`<span class="extrans">${esc(w.exZh)}</span>`:''}</div>`:''}
@@ -767,50 +791,63 @@ function findSentences(article, word){
 }
 async function openDetail(k){
   const t=DB.texts[DB.cur]; if(!t) return; const w=t.words.find(x=>keyOf(x.w)===k); if(!w) return;
-  const m=document.getElementById('detModal');
-  m.innerHTML=`<button class="x" onclick="detOv.classList.remove('show')">×</button>
-    <h2>${esc(w.w)} <button class="speak" onclick="speak('${esc(w.w).replace(/'/g,"\\'")}')">🔊</button></h2>
-    <div style="color:var(--acc);font-style:italic;font-family:var(--serif);margin-top:2px">${esc(w.pos||'')}　${esc(w.zh||'')}</div>
-    <div class="kv">
-      <div><label class="fld">中文意思（可改）</label><input type="text" id="dZh" value="${esc(w.zh||'')}"></div>
-      <div><label class="fld">詞性（可改）</label><input type="text" id="dPos" value="${esc(w.pos||'')}"></div>
-      <div><label class="fld">各種意思與詞性（字典）</label><div id="dMeanings" style="font-size:13.5px;line-height:1.7;color:var(--tx)">載入中…</div></div>
-      <div><label class="fld">文章例句</label><div id="dExamples" style="font-size:14px;line-height:1.75">找例句中…</div></div>
-      <div><label class="fld">我的筆記</label><textarea id="dNote" rows="2" placeholder="補充…">${esc(w.note||'')}</textarea></div>
-      <div class="row"><button class="btn sm" onclick="saveDetail('${k}')">儲存</button></div>
-      <div class="msg" id="dMsg"></div>
+  const m=document.getElementById('detModal'); m.className='modal dcard';
+  const lv=w.level||'';
+  m.innerHTML=`
+    <div class="dc-top">
+      <button class="gbtn" onclick="speak('${esc(w.w).replace(/'/g,"\\'")}')">唸</button>
+      <button class="gbtn ${lv==='weak'?'on':''}" data-lv="weak" onclick="detLevel('${k}','weak')">不熟</button>
+      <button class="gbtn ${lv==='mid'?'on':''}" data-lv="mid" onclick="detLevel('${k}','mid')">普通</button>
+      <button class="gbtn ${lv==='strong'?'on':''}" data-lv="strong" onclick="detLevel('${k}','strong')">熟</button>
+      <button class="gbtn" onclick="toggleEditor()">編輯</button>
+      <button class="x" style="margin-left:auto" onclick="detOv.classList.remove('show')">×</button>
+    </div>
+    <div class="dword">${esc(w.w)}</div>
+    <div class="dph" id="dPh"></div>
+    <div class="dmean"><span class="dpos">${esc(w.pos||'')}</span> ${esc(w.zh||'')}</div>
+    <div class="dmeanings" id="dMeanings">釋義載入中…</div>
+    <div id="dExamples" style="margin-top:14px"></div>
+    <div id="dEditor" style="display:none;margin-top:18px">
+      <label class="fld">中文意思</label><input type="text" id="dZh" value="${esc(w.zh||'')}">
+      <div style="height:8px"></div>
+      <label class="fld">詞性</label><input type="text" id="dPos" value="${esc(w.pos||'')}">
+      <div style="height:8px"></div>
+      <label class="fld">筆記</label><textarea id="dNote" rows="2">${esc(w.note||'')}</textarea>
+      <div style="height:10px"></div>
+      <button class="gbtn on" onclick="saveDetail('${k}')">儲存</button>
     </div>`;
   detOv.classList.add('show');
   // 文章例句（中英）
   const exs=findSentences(t.article, w.w);
   const exBox=document.getElementById('dExamples');
-  if(!exs.length){ exBox.textContent='（文章裡沒找到含這個字的句子）'; }
-  else{
-    exBox.innerHTML=exs.map((s,i)=>`<div style="margin-bottom:10px;padding:9px 11px;background:var(--panel2);border:1px solid var(--line);border-radius:9px">
-        <div>${esc(s).replace(new RegExp('('+w.w.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')+')','ig'),'<b style="color:var(--acc)">$1</b>')}</div>
-        <div id="dExZh${i}" style="color:var(--mut);font-size:13px;margin-top:4px">翻譯中…</div></div>`).join('');
-    exs.forEach(async (s,i)=>{ const zh=await translate(s); const el=document.getElementById('dExZh'+i); if(el) el.textContent=zh||'（翻譯失敗）'; });
+  if(exs.length){
+    exBox.innerHTML=exs.map((s,i)=>`<div class="dex-wrap"><div class="dex-en">${esc(s).replace(new RegExp('('+w.w.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')+')','ig'),'<b style="color:var(--acc)">$1</b>')}</div><div class="dex-zh" id="dExZh${i}">翻譯中…</div></div>`).join('');
+    exs.forEach(async (s,i)=>{ const zh=await translate(s); const el=document.getElementById('dExZh'+i); if(el) el.textContent=zh||''; });
   }
-  // 字典多重釋義
+  // 字典釋義＋音標
   const mBox=document.getElementById('dMeanings');
-  if(w.w.includes(' ')){ mBox.textContent='（片語，字典僅支援單字；請看上方中文意思與例句）'; return; }
+  if(w.w.includes(' ')){ mBox.textContent='片語（字典僅支援單字，見上方意思與例句）'; return; }
   try{
     const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w.w));
-    if(!r.ok){ mBox.textContent='（字典查無此字）'; return; }
+    if(!r.ok){ mBox.textContent='字典查無此字'; return; }
     const d=await r.json(); const means=(d[0]&&d[0].meanings)||[];
-    const ph=(d[0]&&d[0].phonetic)||'';
-    let html= ph?`<div style="color:var(--mut);font-style:italic;margin-bottom:6px">${esc(ph)}</div>`:'';
-    html+=means.slice(0,5).map(mn=>{
+    const ph=(d[0]&&d[0].phonetic)||(((d[0]&&d[0].phonetics)||[]).map(x=>x.text).find(Boolean))||'';
+    const pe=document.getElementById('dPh'); if(pe&&ph) pe.textContent=ph;
+    mBox.innerHTML=means.slice(0,5).map(mn=>{
       const pz=POSZH[mn.partOfSpeech]||mn.partOfSpeech;
       const def=(mn.definitions&&mn.definitions[0]&&mn.definitions[0].definition)||'';
-      return `<div style="margin-bottom:5px"><span class="cpos" style="color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 38%,transparent);border-radius:5px;padding:0 6px;margin-right:6px;font-size:.85em">${esc(pz)}</span>${esc(def)}</div>`;
-    }).join('');
-    mBox.innerHTML=html||'（無釋義）';
-  }catch(e){ mBox.textContent='（字典載入失敗）'; }
+      return `<div style="margin-bottom:6px"><span class="mpos">${esc(pz)}</span>${esc(def)}</div>`;
+    }).join('')||'無釋義';
+  }catch(e){ mBox.textContent='字典載入失敗'; }
 }
+function detLevel(k,lv){ const t=DB.texts[DB.cur]; const w=t.words.find(x=>keyOf(x.w)===k); if(!w)return;
+  w.level=(w.level===lv?'':lv); save(); renderWords();
+  document.querySelectorAll('#detModal .dc-top .gbtn[data-lv]').forEach(b=>b.classList.toggle('on', b.dataset.lv===w.level)); }
+function toggleEditor(){ const e=document.getElementById('dEditor'); if(e) e.style.display=(e.style.display==='none'?'block':'none'); }
 function saveDetail(k){ const t=DB.texts[DB.cur]; const w=t.words.find(x=>keyOf(x.w)===k); if(!w)return;
-  w.zh=document.getElementById('dZh').value.trim(); w.pos=document.getElementById('dPos').value.trim(); w.note=document.getElementById('dNote').value.trim();
-  save(); openText(DB.cur); detOv.classList.remove('show'); }
+  const z=document.getElementById('dZh'),p=document.getElementById('dPos'),n=document.getElementById('dNote');
+  if(z)w.zh=z.value.trim(); if(p)w.pos=p.value.trim(); if(n)w.note=n.value.trim();
+  save(); renderWords(); openDetail(k); }
 
 /* ---------- 免費字典＋翻譯（無金鑰路線）---------- */
 async function lookupDict(k){
@@ -955,7 +992,7 @@ async function analyzeParagraphs(){
     t.updated=Date.now(); save(); openText(DB.cur);
     document.getElementById('readCard').scrollIntoView({behavior:'smooth'});
   }catch(e){
-    if(e.message==='NO_KEY'){ alert('段落分析需要 AI 金鑰。請先在右上「🔑 挑字金鑰」填免費的 Gemini 或 OpenRouter 金鑰。'); openApiKey(); }
+    if(e.message==='NO_KEY'){ alert('段落分析需要 AI 金鑰。請先在右上「AI 金鑰」填免費的 Gemini 或 OpenRouter 金鑰。'); openApiKey(); }
     else alert('段落分析失敗：'+e.message);
   }
   finally{ if(btn){ btn.disabled=false; btn.textContent=o; } }
@@ -1101,7 +1138,7 @@ Regulatory approval (n. phr.)：監管批准`),
   DB.texts[demo.id]=demo; DB.cur=demo.id; save(); renderShelf(); openText(demo.id);
 }
 </script>
-<button id="selBtn" onmousedown="event.preventDefault()" onclick="annotateSelection()">＋ 翻譯並標注</button>
+<button id="selBtn" onmousedown="event.preventDefault()" onclick="annotateSelection()">翻譯並標注</button>
 <!-- GoatCounter 流量分析 -->
 <script data-goatcounter="https://elainechi.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
