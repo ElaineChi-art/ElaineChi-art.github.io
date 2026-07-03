@@ -77,15 +77,18 @@
   .para.tip{color:var(--green)}
   .para.point{color:var(--tx)}
   .para .hl{color:var(--acc);font-weight:700}
-  /* 課本式：案例事實＝正文，解析＝下方翻譯 */
-  .factline{font-size:calc(18px*var(--fs));line-height:1.85;color:var(--tx);margin-top:16px;font-weight:600}
-  .explline{font-size:calc(14.5px*var(--fs));line-height:1.8;color:var(--mut);border-left:2px solid color-mix(in srgb,var(--acc) 45%,transparent);padding-left:12px;margin:5px 0 4px 3px}
-  .explline .hl{color:var(--acc)}
+  /* 課本式（仿英文閱讀神器）：案例題目＝連續原文、解析＝下方小字註解、不打斷閱讀 */
+  .factline{font-family:var(--serif);font-size:calc(19px*var(--fs));line-height:1.95;color:var(--tx);margin-top:9px;font-weight:500}
+  .factline .sent{text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--acc) 55%,transparent);text-decoration-thickness:1.5px;text-underline-offset:4px}
+  .explline{font-size:calc(13px*var(--fs));line-height:1.65;color:var(--mut);padding-left:15px;margin:1px 0 6px;position:relative}
+  .explline::before{content:'';position:absolute;left:4px;top:3px;bottom:3px;width:2px;border-radius:2px;background:color-mix(in srgb,var(--acc) 35%,transparent)}
+  .explline .hl{color:var(--acc);font-weight:600}
+  .factline .hl{color:var(--acc);font-weight:700}
+  /* 隱藏解析＝只讀連續原文題目 */
   html.hidetrans .explline{display:none}
-  html.hidetrans .factline{margin-top:10px}
-  .para .hl,.factline .hl,.explline .hl{font-weight:700}
-  .sent{border-radius:5px;padding:1px 3px;cursor:pointer;transition:background-color .15s}
-  .sent.cur{background:color-mix(in srgb,var(--acc) 30%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--acc) 45%,transparent)}
+  html.hidetrans .factline{margin-top:2px;line-height:2.05}
+  .sent{border-radius:4px;padding:0 2px;cursor:pointer;transition:background-color .15s}
+  .sent.cur{background:color-mix(in srgb,var(--acc) 28%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--acc) 42%,transparent)}
   .notesblk{margin-top:22px;border-top:1px dashed var(--line);padding-top:14px}
   .noteslbl{font-size:13px;color:var(--acc);font-weight:600;margin-bottom:8px}
   #rNote{width:100%;min-height:120px;background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:12px;font-size:calc(15px*var(--fs));line-height:1.7;font-family:inherit;resize:vertical;outline:none}
@@ -193,7 +196,7 @@
 
 <script>
 "use strict";
-const APP_VERSION='v7';
+const APP_VERSION='v8';
 const LS='readDocs_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
