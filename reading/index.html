@@ -105,21 +105,20 @@
   .pill.on{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,transparent)}
 
   /* ============ 沉浸閱讀（課本式標注）============ */
-  /* 課本式標注：英文留在句子行內（後面的字緊接著），中文用絕對定位「掛」在該字正下方，不佔行內、不推開後字、不破壞基線 */
-  .reader{font-family:var(--serif);line-height:2.05;font-size:calc(20px*var(--fs));letter-spacing:.2px}
-  .reader p{margin:0 0 12px}
-  .reader .anno{position:relative;display:inline-block;line-height:1;vertical-align:baseline}
-  .reader .anno > .w{cursor:pointer;padding-bottom:2px;
+  /* 課本式標注：用 <ruby> + ruby-position:under，中文真正佔一行排在單字正下方，會把下一行往下推、不重疊，英文仍在句子基線 */
+  .reader{font-family:var(--serif);line-height:1.95;font-size:calc(20px*var(--fs));letter-spacing:.2px}
+  .reader p{margin:0 0 14px}
+  .reader ruby.anno{ruby-position:under;-webkit-ruby-position:under;ruby-align:center}
+  .reader ruby.anno > .w{cursor:pointer;padding-bottom:2px;
        background-image:linear-gradient(var(--acc),var(--acc));background-size:100% 2px;background-repeat:no-repeat;background-position:0 100%;
        -webkit-box-decoration-break:clone;box-decoration-break:clone}
-  .reader .anno > .w:hover{background-color:color-mix(in srgb,var(--acc) 14%,transparent)}
-  .reader .anno > .n{position:absolute;left:50%;top:1.12em;transform:translateX(-50%);
-       font-family:var(--sans);font-size:calc(11px*var(--fs));line-height:1.15;color:var(--acc);
-       white-space:nowrap;letter-spacing:0;font-weight:500;text-align:center;pointer-events:none}
-  .reader .anno > .n .pos{color:var(--mut);font-style:italic;margin-right:2px}
-  html.hidetrans .reader .anno > .n{display:none}
-  html.hidetrans .reader{line-height:1.85}
-  .reader .anno.done > .w{background-image:linear-gradient(var(--green),var(--green))}
+  .reader ruby.anno > .w:hover{background-color:color-mix(in srgb,var(--acc) 14%,transparent)}
+  .reader ruby.anno > rt{font-family:var(--sans);font-size:calc(11px*var(--fs));line-height:1.35;color:var(--acc);
+       font-weight:500;letter-spacing:0;padding-top:3px;text-align:center}
+  .reader ruby.anno > rt .pos{color:var(--mut);font-style:italic;margin-right:2px}
+  html.hidetrans .reader ruby.anno > rt{display:none}
+  html.hidetrans .reader{line-height:1.75}
+  .reader ruby.anno.done > .w{background-image:linear-gradient(var(--green),var(--green))}
   .rd-meta{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-family:var(--sans);font-size:12.5px;color:var(--mut);
        margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line);letter-spacing:.3px}
   .rd-title{font-family:var(--serif);font-size:calc(26px*var(--fs));font-weight:600;margin-bottom:2px}
@@ -187,7 +186,7 @@
   .kv{display:flex;flex-direction:column;gap:12px;margin-top:16px}
   .foot{margin-top:34px;text-align:center;color:var(--mut);font-size:12px;line-height:1.9;letter-spacing:.3px}
   .foot a{color:var(--acc)}
-  @media (max-width:560px){ .wrap{padding:16px 12px 100px} .card{padding:16px 14px} .reader{font-size:calc(18px*var(--fs));line-height:2.05} h1{font-size:27px} }
+  @media (max-width:560px){ .wrap{padding:16px 12px 100px} .card{padding:16px 14px} .reader{font-size:calc(18px*var(--fs));line-height:1.95} h1{font-size:27px} }
 </style>
 </head>
 <body>
@@ -333,7 +332,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v3';
+const APP_VERSION='v4';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -408,7 +407,7 @@ function annotateHTML(article, words){
     recs.forEach(r=>{
       html+=esc(para.slice(pos,r.start));
       const posLabel=r.wd.pos?`<span class="pos">${esc(r.wd.pos)}</span>`:'';
-      html+=`<span class="anno" data-k="${esc(keyOf(r.wd.w))}"><span class="w" onclick="speak('${esc(r.wd.w).replace(/'/g,"\\'")}');event.stopPropagation();openDetail('${esc(keyOf(r.wd.w))}')">${esc(r.surface)}</span><span class="n">${posLabel}${esc(r.wd.zh)}</span></span>`;
+      html+=`<ruby class="anno" data-k="${esc(keyOf(r.wd.w))}"><span class="w" onclick="speak('${esc(r.wd.w).replace(/'/g,"\\'")}');event.stopPropagation();openDetail('${esc(keyOf(r.wd.w))}')">${esc(r.surface)}</span><rt class="n">${posLabel}${esc(r.wd.zh)}</rt></ruby>`;
       pos=r.end;
     });
     html+=esc(para.slice(pos));
@@ -657,8 +656,20 @@ async function translate(text){
 }
 
 /* ---------- 朗讀 ---------- */
-function speak(txt){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(txt); u.lang='en-US'; u.rate=.92; speechSynthesis.speak(u); }catch(e){} }
-function readAloud(){ const t=DB.texts[DB.cur]; if(!t)return; speak(t.article.replace(/\s+/g,' ').slice(0,600)); }
+let _keepAlive=null;
+function stopKeepAlive(){ if(_keepAlive){ clearInterval(_keepAlive); _keepAlive=null; } }
+function speak(txt){ try{ stopKeepAlive(); speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(txt); u.lang='en-US'; u.rate=.92; speechSynthesis.speak(u); }catch(e){} }
+// 逐句排隊朗讀整篇（避免瀏覽器把單一長句中途切斷），並防 Chrome ~15 秒自動暫停
+function readAloud(){
+  const t=DB.texts[DB.cur]; if(!t) return;
+  try{
+    stopKeepAlive(); speechSynthesis.cancel();
+    const text=t.article.replace(/\s+/g,' ').trim();
+    const chunks=text.match(/[^.!?。！？\n]+[.!?。！？]*/g)||[text];
+    chunks.forEach(c=>{ c=c.trim(); if(!c) return; const u=new SpeechSynthesisUtterance(c); u.lang='en-US'; u.rate=.92; speechSynthesis.speak(u); });
+    _keepAlive=setInterval(()=>{ if(!speechSynthesis.speaking){ stopKeepAlive(); return; } speechSynthesis.pause(); speechSynthesis.resume(); },10000);
+  }catch(e){}
+}
 
 /* ---------- 測驗 ---------- */
 function buildLvFilter(){
