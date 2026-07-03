@@ -27,6 +27,7 @@
     }catch(e){}
     var forceShare = /[?&]share\b/.test(q) || /\bshare\b/.test(location.hash);
     if(forceShare || !owner) document.documentElement.classList.add('share');
+    try{ if(window.top!==window.self) document.documentElement.classList.add('embedded'); }catch(e){ document.documentElement.classList.add('embedded'); }
     try{ var th=localStorage.getItem('lexTheme')||localStorage.getItem('vocabTheme')||localStorage.getItem('readingTheme')||'sapphire'; if(th!=='wine') document.documentElement.setAttribute('data-theme',th); }catch(e){}
     try{ if((localStorage.getItem('lexHideTrans')||localStorage.getItem('vocabHideTrans')||localStorage.getItem('readingHideTrans'))==='1') document.documentElement.classList.add('hidetrans'); }catch(e){}
     try{ var fs=localStorage.getItem('lexFont')||localStorage.getItem('vocabFont')||localStorage.getItem('readingFont'); if(fs&&fs!=='m') document.documentElement.setAttribute('data-fs',fs); }catch(e){}
@@ -76,6 +77,9 @@
   .modeswitch .ms{font-size:13px;font-weight:600;padding:6px 15px;border-radius:18px;text-decoration:none;color:var(--mut);white-space:nowrap;cursor:pointer}
   .modeswitch .ms.on{background:var(--acc2);color:#f3e7e3}
   .modeswitch a.ms:hover{color:var(--tx)}
+  /* 嵌在每日單字分頁裡時：隱藏自己的大標題與切換器（上方已有 App 分頁列），只留工具按鈕 */
+  html.embedded header.hd h1, html.embedded header.hd .sub, html.embedded .modeswitch{display:none}
+  html.embedded .wrap{padding-top:12px}
   .toolbtns{display:flex;gap:8px;flex-wrap:wrap}
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:18px;
@@ -392,7 +396,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v18';
+const APP_VERSION='v19';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();

@@ -57,10 +57,18 @@
   .wrap{max-width:1000px;margin:0 auto;padding:20px 18px 90px}
   h1{font-size:24px;margin-bottom:4px}
   .sub{color:var(--mut);font-size:14px;margin-bottom:18px}
-  .modeswitch{display:inline-flex;gap:4px;margin:2px 0 16px;background:var(--panel2);border:1px solid var(--line);border-radius:22px;padding:3px}
-  .modeswitch .ms{font-size:13px;font-weight:600;padding:6px 15px;border-radius:18px;text-decoration:none;color:var(--mut);white-space:nowrap;cursor:pointer}
-  .modeswitch .ms.on{background:var(--acc2);color:#fff}
-  .modeswitch a.ms:hover{color:var(--tx)}
+  .modeswitch{display:none}
+  /* App 分頁列：每日單字 / 閱讀神器（同一個 App 內切換，不跳頁）*/
+  .apptabs{position:fixed;top:0;left:0;right:0;z-index:70;display:flex;gap:6px;justify-content:center;align-items:flex-end;
+    height:calc(50px + env(safe-area-inset-top,0px));padding:0 10px 8px;padding-top:calc(6px + env(safe-area-inset-top,0px));
+    background:var(--nav);border-bottom:1px solid var(--line)}
+  .apptab{font-size:14px;font-weight:600;padding:7px 22px;border-radius:20px;border:1px solid var(--line);cursor:pointer;
+    background:transparent;color:var(--mut);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .apptab.on{background:var(--acc2);color:#fff;border-color:var(--acc2)}
+  body{padding-top:calc(52px + env(safe-area-inset-top,0px))}
+  #readingPane{position:fixed;left:0;right:0;bottom:0;top:calc(52px + env(safe-area-inset-top,0px));z-index:45;background:var(--bg)}
+  #readingPane.hide{display:none}
+  #fRead{width:100%;height:100%;border:none;display:block}
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
   .sec-h{font-size:17px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:9px}
@@ -444,6 +452,10 @@
 </style>
 </head>
 <body>
+<div class="apptabs">
+  <button class="apptab on" id="atV" onclick="appTab('vocab')">每日單字</button>
+  <button class="apptab" id="atR" onclick="appTab('reading')">閱讀神器</button>
+</div>
 
 <div class="wrap">
   <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap">
@@ -560,7 +572,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v76 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v77 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -568,11 +580,28 @@
 <div id="bgStatus"><span class="dot"></span>翻譯中…</div>
 
 <!-- word detail modal -->
+<div id="readingPane" class="hide"><iframe id="fRead" data-src="/reading/" title="閱讀神器"></iframe></div>
+<script>
+  function appTab(t){
+    var rp=document.getElementById('readingPane'), fr=document.getElementById('fRead');
+    if(t==='reading' && !fr.src) fr.src=fr.dataset.src;   // 首次點才載入
+    rp.classList.toggle('hide', t!=='reading');
+    document.getElementById('atV').classList.toggle('on', t==='vocab');
+    document.getElementById('atR').classList.toggle('on', t==='reading');
+    try{ localStorage.setItem('lexTab', t); }catch(e){}
+  }
+  (function(){
+    var t='vocab'; try{ t=localStorage.getItem('lexTab')||'vocab'; }catch(e){}
+    if(/[?&#]reading/.test(location.search+location.hash)) t='reading';
+    appTab(t);
+  })();
+</script>
+
 <div class="ov" id="ov"><div class="modal" id="ovInner"></div></div>
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='76';
+const APP_VERSION='77';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
