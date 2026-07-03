@@ -72,6 +72,7 @@
   /* ③ 沉浸閱讀＝整頁內嵌區塊（仿英文閱讀器，非彈窗） */
   .rdbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);position:sticky;top:calc(46px + env(safe-area-inset-top,0px));background:var(--panel);z-index:20;border-radius:14px 14px 0 0}
   html.standalone .rdbar{top:0}
+  .modebtn.on{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,transparent)}
   .rtitle{font-family:var(--serif);font-weight:600;font-size:15px;color:var(--acc);flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .rbody{padding:26px clamp(16px,4vw,52px) 44px}
   .para{font-size:calc(18px*var(--fs));line-height:2.05;color:var(--tx);text-align:left;margin-bottom:15px}
@@ -153,7 +154,12 @@
     <div class="rdbar">
       <button class="btn ghost sm" id="rClose">✕ 收起</button>
       <span class="rtitle" id="rTitle"></span>
-      <button class="btn" id="rPlay" style="min-width:104px">▶ 朗讀全文</button>
+      <button class="btn" id="rPlay" style="min-width:96px">▶ 朗讀</button>
+      <span class="row" style="gap:4px">
+        <button class="btn ghost sm modebtn on" data-mode="all">全部</button>
+        <button class="btn ghost sm modebtn" data-mode="q">只念題目</button>
+        <button class="btn ghost sm modebtn" data-mode="a">只念解析</button>
+      </span>
       <button class="btn ghost sm" id="rBack">◀ 句</button>
       <button class="btn ghost sm" id="rFwd">句 ▶</button>
       <button class="btn ghost sm" id="rTrans">解析</button>
@@ -192,7 +198,7 @@
 
 <script>
 "use strict";
-const APP_VERSION='v10';
+const APP_VERSION='v11';
 const LS='readDocs_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -328,15 +334,15 @@ function kindOf(s){ if(/^題型|^◆/.test(s))return 'head'; if(/^💡|考場膝
 function splitSentences(line){ if(kindOf(line)) return [line];
   const p=line.replace(/([。！？])/g,'$1\u0001').split('\u0001').map(s=>s.trim()).filter(Boolean); return p.length?p:[line]; }
 function openReader(o){ R.title=o.title; R.idx=0; R.playing=false; R.docId=o.id||null;
-  R.units=[]; let html=''; let mode='body', bodyN=0;
+  R.units=[]; R.roles=[]; let html=''; let mode='body', bodyN=0;
   (o.lines||[]).forEach(line=>{ const k=kindOf(line);
-    let cls;
-    if(k==='head'){ cls='para head'; mode='body'; bodyN=0; }
-    else if(k==='tip'){ cls='para tip'; mode='tip'; }
-    else if(mode==='tip'){ cls='para tip'; }
-    else { cls=(bodyN%2===0)?'factline':'explline'; bodyN++; }   // 交替：案例事實=正文、下一句解析=下方翻譯
+    let cls, role;
+    if(k==='head'){ cls='para head'; role='head'; mode='body'; bodyN=0; }
+    else if(k==='tip'){ cls='para tip'; role='tip'; mode='tip'; }
+    else if(mode==='tip'){ cls='para tip'; role='tip'; }
+    else { const f=(bodyN%2===0); cls=f?'factline':'explline'; role=f?'fact':'expl'; bodyN++; }   // 交替：案例事實=正文、下一句解析=下方翻譯
     const sents=splitSentences(line);
-    html+=`<div class="${cls}">`+ sents.map(s=>{ const i=R.units.length; R.units.push(s);
+    html+=`<div class="${cls}">`+ sents.map(s=>{ const i=R.units.length; R.units.push(s); R.roles.push(role);
       return `<span class="sent" data-i="${i}">${md(s.replace(/^◆\s*/,''))}</span>`; }).join(' ') +`</div>`;
   });
   if(R.docId) html+=`<div class="notesblk"><div class="noteslbl">📝 我的筆記 <span class="prog" id="noteState"></span></div><textarea id="rNote" placeholder="邊看邊寫筆記，會自動儲存…"></textarea></div>`;
@@ -354,11 +360,14 @@ function highlight(i){ const b=$('#rBody'); b.querySelectorAll('.sent.cur').forE
   const cur=b.querySelector('.sent[data-i="'+i+'"]'); if(cur){ cur.classList.add('cur');
     const ae=document.activeElement; if(!ae||ae.id!=='rNote') cur.scrollIntoView({block:'center',behavior:'smooth'}); } }
 function updateProg(){ $('#rProg').textContent=(R.units.length?R.idx+1:0)+' / '+R.units.length; $('#rPlay').textContent=R.playing?'⏸ 暫停':'▶ 朗讀全文'; }
-R.gen=0;
+R.gen=0; R.mode='all';
+function allowed(i){ const r=R.roles[i]; if(R.mode==='all')return true;
+  if(R.mode==='q')return r==='fact'||r==='head'; if(R.mode==='a')return r==='expl'||r==='tip'; return true; }
 async function play(){ if(!R.units.length)return; R.playing=true; const g=++R.gen; updateProg();
   while(R.playing && g===R.gen){
     if($('#readCard').style.display==='none'){ R.playing=false; break; }
     if(R.idx>=R.units.length){ R.playing=false; break; }
+    if(!allowed(R.idx)){ R.idx++; continue; }   // 模式過濾：跳過不念的句子
     highlight(R.idx); updateProg();
     await sayOnce(speakClean(R.units[R.idx]));
     if(!R.playing || g!==R.gen) break;   // 被暫停或有新迴圈接手→退出，避免兩個迴圈搶反白
@@ -366,6 +375,9 @@ async function play(){ if(!R.units.length)return; R.playing=true; const g=++R.ge
   }
   if(g===R.gen) updateProg();
 }
+document.querySelectorAll('.modebtn').forEach(b=>b.onclick=()=>{ R.mode=b.dataset.mode;
+  document.querySelectorAll('.modebtn').forEach(x=>x.classList.toggle('on',x===b));
+  if(R.playing){ pause(); play(); } });
 function pause(){ R.playing=false; R.gen++; stopSpeak(); updateProg(); }   // gen++ 讓正在等待的舊迴圈確實結束
 function goto(i,keepPlaying){ const was=keepPlaying!=null?keepPlaying:R.playing; pause();
   R.idx=Math.max(0,Math.min(R.units.length-1,i)); highlight(R.idx); updateProg(); if(was) play(); }
