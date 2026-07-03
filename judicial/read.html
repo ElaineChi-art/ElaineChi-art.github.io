@@ -69,18 +69,22 @@
   .ov{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;z-index:100}
   .ov.show{display:flex;align-items:center;justify-content:center;padding:14px}
   .reader{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:100%;max-width:760px;height:min(90vh,860px);display:flex;flex-direction:column;position:relative;overflow:hidden}
+  /* 主閱讀器＝滿版大頁面（仿英文閱讀器），設定用的小 modal 不受影響 */
+  #ov.show{align-items:stretch;justify-content:center;padding:0}
+  #ov .reader{max-width:1000px;width:100%;height:100vh;height:100dvh;border-radius:0;border:none}
+  #ov .rbody{padding:26px clamp(18px,5vw,60px) 70px}
   .rnav{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);flex-shrink:0}
   .rtitle{font-family:var(--serif);font-weight:600;font-size:15px;color:var(--acc);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .rbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:22px 26px 40px}
   .para{font-size:calc(18px*var(--fs));line-height:2.05;color:var(--tx);text-align:left;margin-bottom:15px}
-  .para.head{font-family:var(--serif);font-weight:600;font-size:calc(24px*var(--fs));color:var(--acc);text-align:center;margin:4px 0 18px}
+  .para.head{font-family:var(--serif);font-weight:600;font-size:calc(27px*var(--fs));color:var(--acc);text-align:center;margin:6px 0 22px}
   .para.tip{color:var(--green)}
   .para.point{color:var(--tx)}
   .para .hl{color:var(--acc);font-weight:700}
   /* 課本式（仿英文閱讀神器）：案例題目＝連續原文、解析＝下方小字註解、不打斷閱讀 */
-  .factline{font-family:var(--serif);font-size:calc(19px*var(--fs));line-height:1.95;color:var(--tx);margin-top:9px;font-weight:500}
+  .factline{font-family:var(--serif);font-size:calc(21px*var(--fs));line-height:2.1;color:var(--tx);margin-top:10px;font-weight:500}
   .factline .sent{text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--acc) 55%,transparent);text-decoration-thickness:1.5px;text-underline-offset:4px}
-  .explline{font-size:calc(13px*var(--fs));line-height:1.65;color:var(--mut);padding-left:15px;margin:1px 0 6px;position:relative}
+  .explline{font-size:calc(14px*var(--fs));line-height:1.7;color:var(--mut);padding-left:16px;margin:2px 0 8px;position:relative}
   .explline::before{content:'';position:absolute;left:4px;top:3px;bottom:3px;width:2px;border-radius:2px;background:color-mix(in srgb,var(--acc) 35%,transparent)}
   .explline .hl{color:var(--acc);font-weight:600}
   .factline .hl{color:var(--acc);font-weight:700}
@@ -196,7 +200,7 @@
 
 <script>
 "use strict";
-const APP_VERSION='v8';
+const APP_VERSION='v9';
 const LS='readDocs_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
