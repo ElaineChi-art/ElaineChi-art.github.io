@@ -72,6 +72,10 @@
   header.hd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
   h1{font-family:var(--serif);font-weight:600;font-size:32px;letter-spacing:.6px}
   .sub{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--mut);opacity:.85;margin-top:4px}
+  .modeswitch{display:inline-flex;gap:4px;margin-top:11px;background:var(--panel2);border:1px solid var(--line);border-radius:22px;padding:3px}
+  .modeswitch .ms{font-size:13px;font-weight:600;padding:6px 15px;border-radius:18px;text-decoration:none;color:var(--mut);white-space:nowrap;cursor:pointer}
+  .modeswitch .ms.on{background:var(--acc2);color:#f3e7e3}
+  .modeswitch a.ms:hover{color:var(--tx)}
   .toolbtns{display:flex;gap:8px;flex-wrap:wrap}
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:18px;
@@ -168,6 +172,10 @@
   .wcard .en{font-family:var(--serif);font-weight:600;font-size:20px;padding-right:44px;line-height:1.25}
   .wcard .pos{font-style:italic;color:var(--acc);font-size:12.5px;font-family:var(--serif)}
   .wcard .zh{font-size:13.5px;color:var(--tx);opacity:.92;word-break:break-word}
+  .wcard .cardex{font-size:calc(12.5px*var(--fs));color:var(--mut);margin-top:7px;line-height:1.5;word-break:break-word;
+       border-top:1px dashed var(--line);padding-top:7px}
+  .wcard .cardex .extrans{display:block;color:var(--mut);margin-top:3px}
+  html.hidetrans .wcard .cardex .extrans{display:none}
   .wcard .chk{position:absolute;top:11px;right:12px;width:18px;height:18px;cursor:pointer;accent-color:var(--acc2)}
   .wcard .sp{position:absolute;top:36px;right:10px}
   .lv-new{border-left-color:var(--grey)} .lv-weak{border-left-color:var(--red)}
@@ -224,8 +232,12 @@
   <div class="wrap">
     <header class="hd">
       <div>
-        <h1>英文閱讀神器</h1>
-        <div class="sub">Read · Annotate · Remember</div>
+        <h1>Lexicon</h1>
+        <div class="sub">英文閱讀神器</div>
+        <div class="modeswitch">
+          <a class="ms" href="https://elainechi-art.github.io/vocab/">🔤 每日單字</a>
+          <span class="ms on">📖 閱讀神器</span>
+        </div>
       </div>
       <div class="toolbtns">
         <button class="btn ghost sm" onclick="openPrefs()">⚙︎ 外觀</button>
@@ -364,7 +376,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v13';
+const APP_VERSION='v14';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -703,11 +715,23 @@ function openText(id){
   const rd=document.getElementById('reader');
   rd.innerHTML=renderReaderHTML(t);
   rd.classList.toggle('sentmode', sentMode);
+  ensureExamples(t);
   renderWords(); renderShelf(); buildLvFilter(); setQType(curType);
+  bgTranslateExamples(t);   // 背景把例句中文補齊，邊翻邊顯示
 }
 
 /* ---------- 單字表 ---------- */
-let wordSel=new Set();
+let wordSel=new Set(), bgExBusy=false;
+// 幫每個字補上「文章例句」(w.ex 取文章中含該字的句子)，中文(w.exZh)背景翻譯邊翻邊顯示
+function ensureExamples(t){ let changed=false;
+  t.words.forEach(w=>{ if(w.ex===undefined){ w.ex=(findSentences(t.article,w.w)[0]||''); changed=true; } });
+  if(changed) save();
+}
+async function bgTranslateExamples(t){
+  if(bgExBusy) return; bgExBusy=true;
+  try{ for(const w of t.words){ if(t!==DB.texts[DB.cur]) break; if(w.ex && !w.exZh){ const zh=await translate(w.ex); if(zh){ w.exZh=zh; save(); if(t===DB.texts[DB.cur]) renderWords(); } await new Promise(r=>setTimeout(r,70)); } } }
+  finally{ bgExBusy=false; }
+}
 function renderWords(){
   const t=DB.texts[DB.cur]; if(!t) return;
   document.getElementById('wordCount').textContent=t.words.length+' 個';
@@ -721,6 +745,7 @@ function renderWords(){
       <div class="en" style="cursor:pointer" onclick="openDetail('${esc(keyOf(w.w))}')">${esc(w.w)} <span style="font-size:11px;color:var(--mut)">詳解 ›</span></div>
       <div class="pos">${esc(w.pos||'')}</div>
       <div class="zh">${esc(w.zh||'')}</div>
+      ${w.ex?`<div class="cardex">${esc(w.ex).replace(new RegExp('('+w.w.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')+')','ig'),'<b style="color:var(--acc)">$1</b>')}${w.exZh?`<span class="extrans">${esc(w.exZh)}</span>`:''}</div>`:''}
       <div class="lvset">
         <button class="lvb weak ${w.level==='weak'?'on':''}" onclick="setLevel(${i},'weak')">不熟</button>
         <button class="lvb mid ${w.level==='mid'?'on':''}" onclick="setLevel(${i},'mid')">普通</button>

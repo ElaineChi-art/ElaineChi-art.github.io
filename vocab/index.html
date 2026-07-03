@@ -57,6 +57,10 @@
   .wrap{max-width:1000px;margin:0 auto;padding:20px 18px 90px}
   h1{font-size:24px;margin-bottom:4px}
   .sub{color:var(--mut);font-size:14px;margin-bottom:18px}
+  .modeswitch{display:inline-flex;gap:4px;margin:2px 0 16px;background:var(--panel2);border:1px solid var(--line);border-radius:22px;padding:3px}
+  .modeswitch .ms{font-size:13px;font-weight:600;padding:6px 15px;border-radius:18px;text-decoration:none;color:var(--mut);white-space:nowrap;cursor:pointer}
+  .modeswitch .ms.on{background:var(--acc2);color:#fff}
+  .modeswitch a.ms:hover{color:var(--tx)}
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
   .sec-h{font-size:17px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:9px}
@@ -452,6 +456,10 @@
     <div>
       <h1>Lexicon</h1>
       <div class="sub">每日英文單字</div>
+      <div class="modeswitch">
+        <span class="ms on">🔤 每日單字</span>
+        <a class="ms" href="https://elainechi-art.github.io/reading/">📖 閱讀神器</a>
+      </div>
     </div>
     <div class="row" style="gap:8px;flex-shrink:0">
       <button class="btn ghost sm" id="btnTheme">外觀</button>
@@ -558,7 +566,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v72 ・ 2026-07-01</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v73 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -570,7 +578,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='72';
+const APP_VERSION='73';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
