@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="單字庫">
+<meta name="apple-mobile-web-app-title" content="Lexicon">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -444,12 +444,6 @@
 </style>
 </head>
 <body>
-<nav class="topnav">
-  <a href="https://elainechi-art.github.io/">🏠 首頁</a>
-  <a href="https://elainechi-art.github.io/judicial/">📚 司法官・律師複習</a>
-  <a class="active" href="./">英文單字</a>
-  <a href="https://elainechi-art.github.io/music-os/ecosystem.html">🎵 音樂版稅 OS</a>
-</nav>
 
 <div class="wrap">
   <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap">
@@ -566,7 +560,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v74 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v75 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -578,7 +572,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='74';
+const APP_VERSION='75';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});

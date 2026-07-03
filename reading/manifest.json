@@ -1,9 +1,13 @@
 {
-  "name": "英文閱讀神器",
-  "short_name": "閱讀神器",
-  "start_url": ".",
+  "name": "Lexicon",
+  "short_name": "Lexicon",
+  "start_url": "/reading/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#100c0d",
-  "theme_color": "#100c0d",
-  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+  "orientation": "portrait",
+  "background_color": "#0a0d12",
+  "theme_color": "#0a0d12",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
 }

@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>英文閱讀神器</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#100c0d">
+<meta name="theme-color" content="#0a0d12">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="閱讀神器">
+<meta name="apple-mobile-web-app-title" content="Lexicon">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -245,14 +245,6 @@
 </style>
 </head>
 <body>
-  <nav class="topnav">
-    <a href="https://elainechi-art.github.io/">🏠 首頁</a>
-    <a href="https://elainechi-art.github.io/vocab/">🔤 每日單字</a>
-    <a class="active" href="https://elainechi-art.github.io/reading/">📖 英文閱讀神器</a>
-    <a href="https://elainechi-art.github.io/resume/">👤 我的履歷</a>
-    <a href="https://elainechi-art.github.io/judicial/">📚 司法官複習</a>
-  </nav>
-
   <div class="wrap">
     <header class="hd">
       <div>
@@ -400,7 +392,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v16';
+const APP_VERSION='v17';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
