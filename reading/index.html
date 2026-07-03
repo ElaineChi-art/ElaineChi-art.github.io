@@ -21,15 +21,15 @@
   (function(){
     var q=location.search, owner=false;
     try{
-      if(/[?&]owner=1/.test(q)) localStorage.setItem('readingOwner','1');
-      if(/[?&]owner=0/.test(q)) localStorage.removeItem('readingOwner');
-      owner = localStorage.getItem('readingOwner')==='1';
+      if(/[?&]owner=1/.test(q)) localStorage.setItem('lexOwner','1');
+      if(/[?&]owner=0/.test(q)){ localStorage.removeItem('lexOwner'); localStorage.removeItem('vocabOwner'); localStorage.removeItem('readingOwner'); }
+      owner = localStorage.getItem('lexOwner')==='1' || localStorage.getItem('vocabOwner')==='1' || localStorage.getItem('readingOwner')==='1';
     }catch(e){}
     var forceShare = /[?&]share\b/.test(q) || /\bshare\b/.test(location.hash);
     if(forceShare || !owner) document.documentElement.classList.add('share');
-    try{ var th=localStorage.getItem('readingTheme')||'wine'; if(th!=='wine') document.documentElement.setAttribute('data-theme',th); }catch(e){}
-    try{ if(localStorage.getItem('readingHideTrans')==='1') document.documentElement.classList.add('hidetrans'); }catch(e){}
-    try{ var fs=localStorage.getItem('readingFont'); if(fs&&fs!=='m') document.documentElement.setAttribute('data-fs',fs); }catch(e){}
+    try{ var th=localStorage.getItem('lexTheme')||localStorage.getItem('vocabTheme')||localStorage.getItem('readingTheme')||'sapphire'; if(th!=='wine') document.documentElement.setAttribute('data-theme',th); }catch(e){}
+    try{ if((localStorage.getItem('lexHideTrans')||localStorage.getItem('vocabHideTrans')||localStorage.getItem('readingHideTrans'))==='1') document.documentElement.classList.add('hidetrans'); }catch(e){}
+    try{ var fs=localStorage.getItem('lexFont')||localStorage.getItem('vocabFont')||localStorage.getItem('readingFont'); if(fs&&fs!=='m') document.documentElement.setAttribute('data-fs',fs); }catch(e){}
   })();
 </script>
 <style>
@@ -240,8 +240,8 @@
         </div>
       </div>
       <div class="toolbtns">
-        <button class="btn ghost sm" onclick="openPrefs()">⚙︎ 外觀</button>
-        <button class="btn ghost sm" onclick="openApiKey()">🔑 挑字金鑰</button>
+        <button class="btn ghost sm" onclick="openPrefs()">外觀</button>
+        <button class="btn ghost sm" onclick="openApiKey()">AI 金鑰</button>
       </div>
     </header>
 
@@ -376,7 +376,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v14';
+const APP_VERSION='v15';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -1029,17 +1029,20 @@ function mark(w,ok){ w.stats=w.stats||{r:0,w:0}; if(ok){w.stats.r++; if(!w.level
 
 /* ---------- 偏好 ---------- */
 const THEMES=[['wine','酒紅'],['sapphire','靛藍'],['emerald','翡翠'],['amethyst','紫晶'],['graphite','石墨'],['parchment','羊皮紙']];
+// 兩站共用設定：lex* 為主，向下相容舊的 vocab*/reading*
+function lexGet(s){ try{ return localStorage.getItem('lex'+s)||localStorage.getItem('vocab'+s)||localStorage.getItem('reading'+s)||''; }catch(e){ return ''; } }
 function openPrefs(){
-  document.getElementById('themeRow').innerHTML=THEMES.map(([v,n])=>{ const cur=(localStorage.getItem('readingTheme')||'wine')===v; return `<button class="pill ${cur?'on':''}" onclick="setTheme('${v}')">${n}</button>`; }).join('');
-  const fs=localStorage.getItem('readingFont')||'m';
+  const curTh=lexGet('Theme')||'sapphire';
+  document.getElementById('themeRow').innerHTML=THEMES.map(([v,n])=>{ const cur=curTh===v; return `<button class="pill ${cur?'on':''}" onclick="setTheme('${v}')">${n}</button>`; }).join('');
+  const fs=lexGet('Font')||'m';
   document.getElementById('fsRow').innerHTML=[['s','小'],['m','中'],['l','大'],['xl','特大']].map(([v,n])=>`<button class="pill ${fs===v?'on':''}" onclick="setFs('${v}')">${n}</button>`).join('');
-  const ht=localStorage.getItem('readingHideTrans')==='1';
+  const ht=lexGet('HideTrans')==='1';
   document.getElementById('htOn').classList.toggle('on',!ht); document.getElementById('htOff').classList.toggle('on',ht);
   prefsOv.classList.add('show');
 }
-function setTheme(v){ localStorage.setItem('readingTheme',v); if(v==='wine')document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',v); openPrefs(); }
-function setFs(v){ localStorage.setItem('readingFont',v); if(v==='m')document.documentElement.removeAttribute('data-fs'); else document.documentElement.setAttribute('data-fs',v); openPrefs(); }
-function setHideTrans(on){ localStorage.setItem('readingHideTrans',on?'1':'0'); document.documentElement.classList.toggle('hidetrans',on); openPrefs(); }
+function setTheme(v){ localStorage.setItem('lexTheme',v); if(v==='wine')document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',v); openPrefs(); }
+function setFs(v){ localStorage.setItem('lexFont',v); if(v==='m')document.documentElement.removeAttribute('data-fs'); else document.documentElement.setAttribute('data-fs',v); openPrefs(); }
+function setHideTrans(on){ localStorage.setItem('lexHideTrans',on?'1':'0'); document.documentElement.classList.toggle('hidetrans',on); openPrefs(); }
 
 /* ---------- 自動挑字金鑰（三家：Gemini/OpenRouter 免費、Claude 付費）---------- */
 function openApiKey(){

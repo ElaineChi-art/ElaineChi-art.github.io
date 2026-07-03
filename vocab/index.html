@@ -23,15 +23,15 @@
   (function(){
     var q=location.search, owner=false;
     try{
-      if(/[?&]owner=1/.test(q)) localStorage.setItem('vocabOwner','1');
-      if(/[?&]owner=0/.test(q)) localStorage.removeItem('vocabOwner');
-      owner = localStorage.getItem('vocabOwner')==='1';
+      if(/[?&]owner=1/.test(q)) localStorage.setItem('lexOwner','1');
+      if(/[?&]owner=0/.test(q)){ localStorage.removeItem('lexOwner'); localStorage.removeItem('vocabOwner'); localStorage.removeItem('readingOwner'); }
+      owner = localStorage.getItem('lexOwner')==='1' || localStorage.getItem('vocabOwner')==='1' || localStorage.getItem('readingOwner')==='1';
     }catch(e){}
     var forceShare = /[?&]share\b/.test(q) || /\bshare\b/.test(location.hash);
     if(forceShare || !owner) document.documentElement.classList.add('share');
-    try{ var th=localStorage.getItem('vocabTheme')||'sapphire'; if(th!=='wine') document.documentElement.setAttribute('data-theme',th); }catch(e){}
-    try{ if(localStorage.getItem('vocabHideTrans')==='1') document.documentElement.classList.add('hidetrans'); }catch(e){}
-    try{ var fs=localStorage.getItem('vocabFont'); if(fs&&fs!=='m') document.documentElement.setAttribute('data-fs',fs); }catch(e){}
+    try{ var th=localStorage.getItem('lexTheme')||localStorage.getItem('vocabTheme')||localStorage.getItem('readingTheme')||'sapphire'; if(th!=='wine') document.documentElement.setAttribute('data-theme',th); }catch(e){}
+    try{ if((localStorage.getItem('lexHideTrans')||localStorage.getItem('vocabHideTrans')||localStorage.getItem('readingHideTrans'))==='1') document.documentElement.classList.add('hidetrans'); }catch(e){}
+    try{ var fs=localStorage.getItem('lexFont')||localStorage.getItem('vocabFont')||localStorage.getItem('readingFont'); if(fs&&fs!=='m') document.documentElement.setAttribute('data-fs',fs); }catch(e){}
   })();
 </script>
 <style>
@@ -566,7 +566,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v73 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v74 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -578,7 +578,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='73';
+const APP_VERSION='74';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -2302,11 +2302,12 @@ const THEMES=[
   {id:'graphite', name:'石墨',            bg:'#0e0f10', a:'#c2c7ce', a2:'#474c54'},
   {id:'parchment',name:'羊皮紙（淺）',     bg:'#ece3d2', a:'#9c6f3a', a2:'#7d3a44'},
 ];
-function currentTheme(){ try{ return localStorage.getItem('vocabTheme')||'sapphire'; }catch(e){ return 'sapphire'; } }
+function lexGet(s){ try{ return localStorage.getItem('lex'+s)||localStorage.getItem('vocab'+s)||localStorage.getItem('reading'+s)||''; }catch(e){ return ''; } }
+function currentTheme(){ return lexGet('Theme')||'sapphire'; }
 function applyTheme(id){
   if(id==='wine') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme',id);
-  try{ localStorage.setItem('vocabTheme',id); }catch(e){}
+  try{ localStorage.setItem('lexTheme',id); }catch(e){}
   const m=document.querySelector('meta[name=theme-color]');
   const t=THEMES.find(x=>x.id===id); if(m&&t) m.setAttribute('content',t.bg);
 }
@@ -2349,19 +2350,19 @@ function openTheme(){
      </div>`;
   document.getElementById('ov').classList.add('show');
   document.querySelectorAll('.themesw').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.id); openTheme(); });
-  const curFs=(localStorage.getItem('vocabFont')||'m');
+  const curFs=(lexGet('Font')||'m');
   document.querySelectorAll('.fsbtn').forEach(b=>{
     if(b.dataset.fs===curFs) b.classList.add('on');
     b.onclick=()=>{ const f=b.dataset.fs;
       if(f==='m') document.documentElement.removeAttribute('data-fs'); else document.documentElement.setAttribute('data-fs',f);
-      try{ localStorage.setItem('vocabFont',f); }catch(e){}
+      try{ localStorage.setItem('lexFont',f); }catch(e){}
       document.querySelectorAll('.fsbtn').forEach(x=>x.classList.toggle('on',x===b)); };
   });
   const tb=document.getElementById('btnTransToggle');
   const hidden=()=>document.documentElement.classList.contains('hidetrans');
   tb.textContent=hidden()?'已隱藏（點來顯示）':'顯示中（點來隱藏）';
   tb.onclick=()=>{ const h=!hidden(); document.documentElement.classList.toggle('hidetrans',h);
-    try{ localStorage.setItem('vocabHideTrans', h?'1':'0'); }catch(e){}
+    try{ localStorage.setItem('lexHideTrans', h?'1':'0'); }catch(e){}
     tb.textContent=h?'已隱藏（點來顯示）':'顯示中（點來隱藏）';
     if(!h) bgTranslate(); };
   // 備份／搬移
