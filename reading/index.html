@@ -229,11 +229,16 @@
       <label class="fld">重要單字表（一行一個：<b>單字或片語 (詞性)：中文</b>）　— 沒有的話按下方「AI 自動挑」或先留空</label>
       <textarea id="inWords" rows="5" placeholder="Expansion (n.)：擴張、擴展&#10;Merger and acquisition (n. phr.)：合併與收購（併購）&#10;Joint venture (n. phr.)：合資企業"></textarea>
       <div class="row" style="margin-top:14px">
-        <select id="pickMode" style="max-width:270px">
+        <select id="pickMode" style="max-width:250px">
           <option value="free">免費・免金鑰（難字偵測＋字典＋翻譯）</option>
           <option value="gemini">Google Gemini（免費金鑰・更聰明）</option>
           <option value="openrouter">OpenRouter 免費模型（免費金鑰）</option>
           <option value="anthropic">Claude（付費金鑰）</option>
+        </select>
+        <select id="pickDensity" style="max-width:180px" title="要挑多少單字">
+          <option value="more">密度：多（初學友善）</option>
+          <option value="std">密度：中（標準）</option>
+          <option value="few">密度：少（精選難字）</option>
         </select>
         <button class="btn" onclick="autoPick()" id="aiBtn">✨ 自動挑單字</button>
         <button class="btn ghost" onclick="saveText()">＋ 加入書櫃並閱讀</button>
@@ -339,7 +344,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v7';
+const APP_VERSION='v8';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -483,43 +488,50 @@ function pool(arr,n,fn){
 }
 
 // 免費・免金鑰：難字偵測 → 免費字典判詞性（順便排除人名）→ 免費翻譯
+// 最基礎的字（多益 400 以下也會的）——「多」密度只排除這些，其餘難字盡量都挑出來
+const CORE=new Set('a an the this that these those and or but if so as of to in on at by for with from into onto up down out off over under about above below i you he she it we they me him her us them my your his its our their who whom what which whose is am are was were be been being have has had do does did will would shall should can could may might must not no yes here there then now very just too also only one two three four five six seven eight nine ten first second next last many much more most some any all each every other another go goes going went come comes came get gets got give gave make makes made made take took see saw seen know knew say said tell told want need use used like good bad new old big small day days time year years people man men woman women thing things way ways over than when where why how while because'.split(/\s+/));
+
 async function freePick(article){
   const btn=document.getElementById('aiBtn'), msg=document.getElementById('inMsg');
   btn.disabled=true; const orig=btn.textContent; btn.textContent='挑選中…'; msg.className='msg';
   try{
+    // 密度：多＝排除最少、挑最多（適合初學）；中＝標準；少＝只留最難
+    const dens=(document.getElementById('pickDensity')||{}).value||'more';
+    let excl=CORE, minLen=4, wordCap=60, phraseCap=14;
+    if(dens==='std'){ excl=COMMON; minLen=4; wordCap=32; phraseCap=10; }
+    else if(dens==='few'){ excl=COMMON; minLen=5; wordCap=16; phraseCap=6; }
     msg.textContent='① 偵測難字…';
-    // 單字候選：字首任意、其後≥4 個小寫字母（CamelCase 公司名如 GlobalTech 會被自動略過）
-    const singles=[...new Set((article.match(/\b[A-Za-z][a-z]{4,}\b/g)||[]).map(w=>w.toLowerCase()))]
-      .filter(w=>!COMMON.has(w));
+    const wre=new RegExp('\\b[A-Za-z][a-z]{'+(minLen-1)+',}\\b','g');
+    const singles=[...new Set((article.match(wre)||[]).map(w=>w.toLowerCase()))].filter(w=>!excl.has(w));
     singles.sort((a,b)=> b.length-a.length);
-    const cand=singles.slice(0,32);
+    const cand=singles.slice(0, Math.max(wordCap+20,70));
     // 片語候選：連續兩個小寫實詞（大寫開頭的人名地名不會進來）
-    const phrases=[]; const pset=new Set(); let pm; const pre=/\b([a-z]{4,})\s+([a-z]{4,})\b/g;
+    const phrases=[]; const pset=new Set(); let pm;
+    const pre=new RegExp('\\b([a-z]{'+(minLen-1)+',})\\s+([a-z]{'+(minLen-1)+',})\\b','g');
     while((pm=pre.exec(article))){ const a=pm[1],b=pm[2];
-      if(COMMON.has(a)||COMMON.has(b)) continue; const k=a+' '+b; if(pset.has(k)) continue; pset.add(k); phrases.push(k); }
+      if(excl.has(a)&&excl.has(b)) continue; const k=a+' '+b; if(pset.has(k)) continue; pset.add(k); phrases.push(k); }
     phrases.sort((a,b)=> b.length-a.length);
-    let chosenP=phrases.slice(0,6);
+    let chosenP=phrases.slice(0,phraseCap);
     // 免費字典：驗證是不是真的英文字＋抓詞性（人名/地名會 404 被排除）
-    msg.textContent='② 查字典・判詞性…';
+    msg.textContent='② 查字典・判詞性…（挑越多越久，請稍等）';
     const kept=[];
-    await pool(cand,6, async w=>{
+    await pool(cand,8, async w=>{
       try{ const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w));
         if(r.ok){ const d=await r.json(); const mean=d[0]&&d[0].meanings&&d[0].meanings[0];
           kept.push({w, pos: mean?(POSZH[mean.partOfSpeech]||mean.partOfSpeech||''):''}); } }catch(e){}
     });
     kept.sort((a,b)=> b.w.length-a.w.length);
-    let words=kept.slice(0,15);
-    // 若某單字已包含在片語裡，就不重複列
+    let words=kept.slice(0,wordCap);
     const inP=new Set(); chosenP.forEach(p=>p.split(' ').forEach(x=>inP.add(x)));
     words=words.filter(x=>!inP.has(x.w));
-    let items=chosenP.map(p=>({w:p,pos:'n. phr.'})).concat(words).slice(0,24);
-    if(!items.length){ msg.className='msg err'; msg.textContent='沒偵測到明顯的難字，請改用 Gemini 或自己貼單字表'; return; }
-    // 免費翻譯
-    msg.textContent='③ 翻譯中…（'+items.length+' 個）';
-    await pool(items,5, async it=>{ it.zh=await translate(it.w)||''; });
-    const lines=items.filter(it=>it.zh).map(it=>`${it.w} (${it.pos})：${it.zh}`).join('\n');
-    document.getElementById('inWords').value=lines;
-    msg.textContent='✓ 免費挑出 '+items.filter(it=>it.zh).length+' 個單字/片語，可自行增刪後按「加入書櫃」';
+    let items=chosenP.map(p=>({w:p,pos:'n. phr.'})).concat(words).slice(0, wordCap+phraseCap);
+    if(!items.length){ msg.className='msg err'; msg.textContent='沒偵測到難字，換「密度：多」或自己貼單字表'; return; }
+    // 免費翻譯（並發翻，較快）
+    msg.textContent='③ 翻譯中…（'+items.length+' 個，請稍等）';
+    await pool(items,8, async it=>{ it.zh=await translate(it.w)||''; });
+    const ok=items.filter(it=>it.zh);
+    document.getElementById('inWords').value=ok.map(it=>`${it.w} (${it.pos})：${it.zh}`).join('\n');
+    msg.textContent='✓ 免費挑出 '+ok.length+' 個單字/片語，可自行增刪後按「加入書櫃」';
   }catch(e){ msg.className='msg err'; msg.textContent='免費挑字失敗：'+e.message; }
   finally{ btn.disabled=false; btn.textContent=orig; }
 }
