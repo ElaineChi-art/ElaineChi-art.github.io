@@ -106,15 +106,15 @@
 
   /* ============ 沉浸閱讀（課本式標注）============ */
   /* 課本式標注：用 <ruby> + ruby-position:under，中文真正佔一行排在單字正下方，會把下一行往下推、不重疊，英文仍在句子基線 */
-  .reader{font-family:var(--serif);line-height:1.95;font-size:calc(20px*var(--fs));letter-spacing:.2px}
+  .reader{font-family:var(--serif);line-height:2.05;font-size:calc(20px*var(--fs));letter-spacing:.2px}
   .reader p{margin:0 0 14px}
   .reader ruby.anno{ruby-position:under;-webkit-ruby-position:under;ruby-align:center}
-  .reader ruby.anno > .w{cursor:pointer;padding-bottom:2px;
+  .reader ruby.anno > .w{cursor:pointer;padding-bottom:1px;
        background-image:linear-gradient(var(--acc),var(--acc));background-size:100% 2px;background-repeat:no-repeat;background-position:0 100%;
        -webkit-box-decoration-break:clone;box-decoration-break:clone}
   .reader ruby.anno > .w:hover{background-color:color-mix(in srgb,var(--acc) 14%,transparent)}
   .reader ruby.anno > rt{font-family:var(--sans);font-size:calc(11px*var(--fs));line-height:1.35;color:var(--acc);
-       font-weight:500;letter-spacing:0;padding-top:3px;text-align:center}
+       font-weight:500;letter-spacing:0;padding-top:8px;text-align:center}
   .reader ruby.anno > rt .pos{color:var(--mut);font-style:italic;margin-right:2px}
   html.hidetrans .reader ruby.anno > rt{display:none}
   html.hidetrans .reader{line-height:1.75}
@@ -186,7 +186,7 @@
   .kv{display:flex;flex-direction:column;gap:12px;margin-top:16px}
   .foot{margin-top:34px;text-align:center;color:var(--mut);font-size:12px;line-height:1.9;letter-spacing:.3px}
   .foot a{color:var(--acc)}
-  @media (max-width:560px){ .wrap{padding:16px 12px 100px} .card{padding:16px 14px} .reader{font-size:calc(18px*var(--fs));line-height:1.95} h1{font-size:27px} }
+  @media (max-width:560px){ .wrap{padding:16px 12px 100px} .card{padding:16px 14px} .reader{font-size:calc(18px*var(--fs));line-height:2.05} h1{font-size:27px} }
 </style>
 </head>
 <body>
@@ -332,7 +332,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v4';
+const APP_VERSION='v5';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
