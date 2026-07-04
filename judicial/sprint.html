@@ -176,6 +176,7 @@
   <div class="ses-top">
     <button class="x" id="sesX">✕</button>
     <div class="ses-bar"><div id="sesBar"></div></div>
+    <button class="x" id="sesMute" title="靜音／開聲">🔊</button>
     <div class="ses-cnt" id="sesCnt"></div>
   </div>
   <div class="ses-body" id="sesBody"></div>
@@ -251,6 +252,7 @@ function todayDone(){return (log()[iso(new Date())]||{done:0}).done;}
 function pos(){return L("sjg_pos","{}");}                 // {group:index}
 function getPos(g){return pos()[g]||0;}
 function setPos(g,v){const o=pos();o[g]=v;S("sjg_pos",o);}
+function muted(){return localStorage.getItem("sjg_mute")==="1";}
 function wrongSet(){return L("sjg_wrong","[]");}          // [key,...]
 function addWrong(k){const a=wrongSet();if(!a.includes(k)){a.push(k);S("sjg_wrong",a);}}
 function delWrong(k){S("sjg_wrong",wrongSet().filter(x=>x!==k));}
@@ -387,17 +389,18 @@ function answer(idx){
   let t=`<div class="teach"><div class="res ${correct?'ok':'no'}">${correct?"✅ 答對了！":"❌ 沒關係，這題記起來就賺到"}　正解：${L[ans]}</div>`;
   if(!correct&&whyW)t+=`<div class="blk"><span class="l">你選的 ${L[idx]} 為什麼錯</span>${esc(whyW)}</div>`;
   if(whyC)t+=`<div class="blk"><span class="l">✅ 正解 ${L[ans]} 為什麼對</span>${esc(whyC)}</div>`;
+  if(p.ans)t+=`<div class="blk"><span class="l">✅ 正解說明</span><span class="key">${esc(p.ans)}</span></div>`;
   if(p.concept)t+=`<div class="blk"><span class="l">📌 這題考點</span><span class="cpt">${esc(p.concept)}</span></div>`;
   if(p.key)t+=`<div class="blk"><span class="l">🔑 核心規則</span><span class="key">${esc(p.key)}</span></div>`;
-  if(p.trap)t+=`<div class="blk"><span class="l">⚠️ 易混淆</span>${esc(p.trap)}</div>`;
+  if(p.trap)t+=`<div class="blk"><span class="l">⚠️ 易混淆（其他選項的陷阱）</span>${esc(p.trap)}</div>`;
   if(lawH)t+=`<div class="blk"><span class="l">📜 法條原文</span>${lawH}</div>`;
-  t+=`<button class="audio" id="teachAudio">🔊 唸給我聽</button></div>
+  t+=`<button class="audio" id="teachAudio">🔊 再唸一次</button></div>
       <button class="nextbtn" id="nextBtn">下一張 →</button>`;
   document.getElementById("teach").innerHTML=t;
-  // 自動朗讀
-  const spk=(correct?"答對了。":"這題答案是"+L[ans]+"。")+(p.concept||"")+"。"+(p.key||whyC||"");
-  speak(spk.replace(/§/g,"第").replace(/[「」『』]/g,""));
-  document.getElementById("teachAudio").onclick=()=>speak(((p.concept||"")+"。"+(p.key||"")+"。"+(whyC||"")+"。"+(p.trap?"要分清楚："+p.trap:"")).replace(/§/g,"第"));
+  // 自動朗讀（可靜音）
+  const spk=((correct?"答對了。":"這題答案是"+L[ans]+"。")+(p.concept||"")+"。"+(p.key||whyC||p.ans||"")).replace(/§/g,"第").replace(/[「」『』]/g,"");
+  if(!muted())speak(spk);
+  document.getElementById("teachAudio").onclick=()=>speak(((p.concept||"")+"。"+(p.key||p.ans||"")+"。"+(whyC||"")+"。"+(p.trap?"要分清楚："+p.trap:"")).replace(/§/g,"第").replace(/[「」『』]/g,""));
   const nb=document.getElementById("nextBtn");nb.onclick=next;nb.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 function next(){stopSpeak();SES.i++;renderCard();}
@@ -420,6 +423,9 @@ function renderDone(){
 }
 document.getElementById("startBtn").onclick=startSession;
 document.getElementById("sesX").onclick=closeSession;
+(function(){const mb=document.getElementById("sesMute");
+  const set=()=>mb.textContent=muted()?"🔇":"🔊";set();
+  mb.onclick=()=>{localStorage.setItem("sjg_mute",muted()?"0":"1");set();if(muted())stopSpeak();};})();
 
 renderCountdown();renderLaunch();renderWeek();renderCal();renderStreak();
 document.getElementById("monthWrap").addEventListener("toggle",renderCal);
