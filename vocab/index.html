@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="單字庫">
+<meta name="apple-mobile-web-app-title" content="Lexicon">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -57,6 +57,26 @@
   .wrap{max-width:1000px;margin:0 auto;padding:20px 18px 90px}
   h1{font-size:24px;margin-bottom:4px}
   .sub{color:var(--mut);font-size:14px;margin-bottom:18px}
+  .modeswitch{display:none}
+  /* 單一薄頂欄：左 Lexicon・中分頁・右設定（內容區最大化）*/
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:70;display:flex;align-items:center;justify-content:center;gap:10px;
+    height:calc(46px + env(safe-area-inset-top,0px));padding:0 12px;padding-top:env(safe-area-inset-top,0px);
+    background:color-mix(in srgb,var(--nav) 86%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--line)}
+  .topbar .brand{position:absolute;left:14px;top:env(safe-area-inset-top,0px);height:46px;display:flex;align-items:center;
+    font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:.5px;color:var(--tx)}
+  .seg{display:inline-flex;background:color-mix(in srgb,var(--tx) 5%,transparent);border:1px solid var(--line);border-radius:18px;padding:2px}
+  .seg button{font-size:13px;font-weight:600;padding:5px 16px;border-radius:16px;border:none;background:transparent;
+    color:var(--mut);cursor:pointer;white-space:nowrap;transition:background .2s,color .2s}
+  .seg button.on{background:var(--acc2);color:#fff}
+  .setbtn{font-size:13px;font-weight:600;padding:6px 15px;border-radius:16px;border:1px solid var(--line);
+    background:color-mix(in srgb,var(--tx) 7%,transparent);color:var(--tx);cursor:pointer;white-space:nowrap}
+  .setbtn:hover{border-color:var(--acc)}
+  body{padding-top:calc(46px + env(safe-area-inset-top,0px))}
+  #readingPane{position:fixed;left:0;right:0;bottom:0;top:calc(46px + env(safe-area-inset-top,0px));z-index:45;background:var(--bg)}
+  #readingPane.hide{display:none}
+  #fRead{width:100%;height:100%;border:none;display:block}
+  @media(max-width:520px){ .topbar .brand{display:none} }
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
   .sec-h{font-size:17px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:9px}
@@ -441,18 +461,19 @@
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap">
-    <div>
-      <h1>Lexicon</h1>
-      <div class="sub">每日英文單字</div>
-    </div>
-    <div class="row" style="gap:8px;flex-shrink:0">
-      <button class="btn ghost sm" id="btnTheme">外觀</button>
-      <button class="btn ghost sm" id="btnVoice">語音</button>
-      <button class="btn ghost sm sharebtn" id="btnShare">分享</button>
-    </div>
+<div class="topbar">
+  <div class="brand">Lexicon</div>
+  <div class="seg">
+    <button class="on" id="atV" onclick="appTab('vocab')">每日單字</button>
+    <button id="atR" onclick="appTab('reading')">閱讀神器</button>
   </div>
+  <button class="setbtn" onclick="openTheme()">設定</button>
+</div>
+<div style="display:none">
+  <button id="btnTheme"></button><button id="btnVoice"></button><button class="sharebtn" id="btnShare"></button>
+</div>
+
+<div class="wrap">
 
   <!-- 1. INPUT -->
   <div class="card">
@@ -552,7 +573,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v81 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v82 ・ 2026-07-05</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -560,11 +581,43 @@
 <div id="bgStatus"><span class="dot"></span>翻譯中…</div>
 
 <!-- word detail modal -->
+<div id="readingPane" class="hide"><iframe id="fRead" data-src="/reading/?rv=23" title="閱讀神器"></iframe></div>
+<script>
+  function appTab(t){
+    var rp=document.getElementById('readingPane'), fr=document.getElementById('fRead');
+    if(t==='reading' && !fr.src){ fr.src=fr.dataset.src; fr.addEventListener('load',syncFrame,{once:true}); }
+    rp.classList.toggle('hide', t!=='reading');
+    document.getElementById('atV').classList.toggle('on', t==='vocab');
+    document.getElementById('atR').classList.toggle('on', t==='reading');
+    try{ localStorage.setItem('lexTab', t); }catch(e){}
+  }
+  // 上方「設定」改主題/字級/隱藏中文時，即時同步到閱讀神器 iframe
+  function syncFrame(){
+    var fr=document.getElementById('fRead'); if(!fr||!fr.contentDocument) return;
+    var de=document.documentElement, fde=fr.contentDocument.documentElement;
+    var th=de.getAttribute('data-theme'); th?fde.setAttribute('data-theme',th):fde.removeAttribute('data-theme');
+    var fs=de.getAttribute('data-fs'); fs?fde.setAttribute('data-fs',fs):fde.removeAttribute('data-fs');
+    fde.classList.toggle('hidetrans', de.classList.contains('hidetrans'));
+  }
+  try{ new MutationObserver(syncFrame).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-fs','class']}); }catch(e){}
+  // 從「設定」開啟閱讀神器的 AI 金鑰視窗（切到閱讀分頁再開）
+  function openReadingApiKey(){
+    var fr=document.getElementById('fRead'); appTab('reading');
+    var go=function(){ try{ fr.contentWindow.openApiKey(); }catch(e){ setTimeout(go,300); } };
+    if(fr.contentWindow && fr.contentWindow.openApiKey) go(); else fr.addEventListener('load',go,{once:true});
+  }
+  (function(){
+    var t='vocab'; try{ t=localStorage.getItem('lexTab')||'vocab'; }catch(e){}
+    if(/[?&#]reading/.test(location.search+location.hash)) t='reading';
+    appTab(t);
+  })();
+</script>
+
 <div class="ov" id="ov"><div class="modal" id="ovInner"></div></div>
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='81';
+const APP_VERSION='82';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1970,7 +2023,6 @@ function advance(ok,it){
   record(it.date,it.key,ok);
   Q.results.push({word:it.rec.word,ok});
 }
-// 測驗自動捲動：解析出現→捲到解析上方看完整；下一題→捲到題目
 function scrollQuizTop(){ try{ var q=document.getElementById('quizCard'); if(q)q.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} }
 function scrollAna(){ setTimeout(function(){ try{ var a=document.getElementById('ana'); if(a&&a.innerHTML) a.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} },60); }
 
@@ -2309,7 +2361,12 @@ function openTheme(){
   document.getElementById('ovInner').innerHTML=
     `<button class="x" onclick="document.getElementById('ov').classList.remove('show')">✕</button>
      <h2 style="font-size:22px">外觀與偏好</h2>
-     <div style="font-size:13px;color:var(--mut);margin:6px 0 12px">設定會記在這個裝置。</div>
+     <div style="font-size:13px;color:var(--mut);margin:6px 0 12px">設定會記在這個裝置，兩個分頁共用。</div>
+     <div class="row" style="gap:8px;margin-bottom:14px">
+       <button class="btn ghost sm" onclick="document.getElementById('btnVoice').click()">語音設定</button>
+       <button class="btn ghost sm" onclick="document.getElementById('ov').classList.remove('show');openReadingApiKey()">AI 金鑰</button>
+       <button class="btn ghost sm sharebtn" onclick="document.getElementById('btnShare').click()">分享給朋友</button>
+     </div>
      <div class="themegrid">${THEMES.map(t=>
        `<button class="themesw${t.id===cur?' on':''}" data-id="${t.id}">
           <span class="swatch" style="background:${t.bg}"><i style="background:${t.a}"></i></span>
@@ -2471,7 +2528,6 @@ document.getElementById('btnVoice').onclick=()=>{
 
 /* ============ back to top ============ */
 const toTop=document.getElementById('toTop');
-// 隨位置變化：可往下捲(在上/卡片區時) → 到底顯示回頂
 function updToTop(){ const doc=document.documentElement, y=window.scrollY||doc.scrollTop, h=doc.scrollHeight, vh=window.innerHeight;
   if(h<=vh+80){ toTop.classList.remove('show'); return; } toTop.classList.add('show');
   if(y+vh>=h-140){ toTop.textContent='↑'; toTop.dataset.dir='up'; toTop.title='回到頂端'; }
