@@ -2,110 +2,135 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>🤖 衝刺計畫 · 讀書機器人</title>
 <style>
-  :root{
-    --gold:#ffd86b; --teal:#7fe0cf; --coral:#ff9e8a; --lilac:#c3a7ff;
-    --txt:#eef1f7; --mut:#9aa4b8; --line:rgba(255,255,255,.09);
-    --card:rgba(255,255,255,.045);
-  }
+  :root{--gold:#ffd86b;--teal:#7fe0cf;--coral:#ff9e8a;--lilac:#c3a7ff;
+    --txt:#eef1f7;--mut:#9aa4b8;--line:rgba(255,255,255,.09);--card:rgba(255,255,255,.045);--ok:#7fe0a0;--no:#ff8f8f}
   *{box-sizing:border-box}
   html,body{margin:0;min-height:100%;color:var(--txt);
     font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
-    background:
-      radial-gradient(1200px 600px at 15% -5%, #2a2247 0%, transparent 55%),
-      radial-gradient(1000px 700px at 100% 0%, #1d2c3f 0%, transparent 50%),
-      linear-gradient(180deg,#141026 0%,#0f1524 45%,#0b0f18 100%);
-    background-attachment:fixed;
-  }
+    background:radial-gradient(1200px 600px at 15% -5%,#2a2247 0%,transparent 55%),
+      radial-gradient(1000px 700px at 100% 0%,#1d2c3f 0%,transparent 50%),
+      linear-gradient(180deg,#141026 0%,#0f1524 45%,#0b0f18 100%);background-attachment:fixed}
   a{color:inherit}
   .topnav{display:flex;gap:6px;padding:9px 16px;overflow-x:auto;border-bottom:1px solid var(--line);
     position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:rgba(11,15,24,.55)}
   .topnav a{color:var(--mut);text-decoration:none;font-size:14px;font-weight:600;padding:7px 15px;border-radius:10px;white-space:nowrap}
   .topnav a:hover{background:rgba(255,255,255,.06);color:#fff}
   .topnav a.active{background:rgba(127,224,207,.15);color:var(--teal)}
-
-  .wrap{max-width:760px;margin:0 auto;padding:20px 16px 70px}
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px 70px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px;margin-bottom:18px;
     box-shadow:0 10px 40px rgba(0,0,0,.28);backdrop-filter:blur(6px)}
-
-  /* 倒數列 */
   .cds{display:flex;gap:12px;flex-wrap:wrap}
   .cd{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
   .cd .lab{font-size:12.5px;color:var(--mut);font-weight:600}
-  .cd .big{font-size:30px;font-weight:800;letter-spacing:-.5px;margin-top:2px}
+  .cd .big{font-size:30px;font-weight:800;margin-top:2px}
   .cd .big b{font-size:15px;font-weight:600;color:var(--mut)}
-  .cd.pri .big{color:var(--gold)} .cd.sec .big{color:var(--teal)}
+  .cd.pri .big{color:var(--gold)}.cd.sec .big{color:var(--teal)}
   .cd .date{font-size:12px;color:var(--mut);margin-top:2px}
-
-  /* 機器人 hero */
   .robot{display:flex;gap:14px;align-items:flex-start}
   .robot .face{font-size:40px;flex:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}
   .robot .msg{font-size:16px;line-height:1.6;font-weight:600}
   .quote{margin-top:14px;padding:12px 15px;border-left:3px solid var(--gold);
     background:rgba(255,216,107,.08);border-radius:0 12px 12px 0;font-size:14px;line-height:1.7;color:#ffeab0}
   .quote small{color:var(--mut)}
-  .nowbtn{display:block;margin-top:16px;text-align:left;text-decoration:none;
+  /* 今日啟動 */
+  .launch-h{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .launch-h .t{font-size:18px;font-weight:800}
+  .phase{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 10px;border-radius:20px}
+  .launch-sub{font-size:13px;color:var(--mut);margin:4px 0 14px;line-height:1.6}
+  .pbar{height:12px;background:rgba(255,255,255,.08);border-radius:8px;overflow:hidden;margin:10px 0 4px}
+  .pbar>div{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));width:0;transition:width .4s}
+  .pnum{font-size:12.5px;color:var(--mut)}
+  .startbtn{display:block;width:100%;margin-top:16px;text-align:left;text-decoration:none;
     background:linear-gradient(135deg,#ffdf86,#ff9e8a);color:#1a1020;border:none;border-radius:16px;
-    padding:16px 18px;font-family:inherit;font-weight:800;font-size:16px;cursor:pointer;width:100%;
+    padding:18px 20px;font-family:inherit;font-weight:800;font-size:17px;cursor:pointer;
     box-shadow:0 8px 24px rgba(255,158,138,.28);transition:transform .12s}
-  .nowbtn:hover{transform:translateY(-2px)}
-  .nowbtn .s{display:block;font-size:12px;font-weight:700;opacity:.7;margin-bottom:3px}
-  .nowbtn.done{background:linear-gradient(135deg,#8fe6c2,#7fe0cf);box-shadow:0 8px 24px rgba(127,224,207,.25)}
-
-  /* 今日 */
-  .today-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
-  .today-h .t{font-size:18px;font-weight:800}
-  .today-h .sub{font-size:12.5px;color:var(--mut)}
-  .ring{margin-left:auto;flex:none}
-  .phase{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 10px;border-radius:20px;margin-left:6px}
-  .task{display:flex;gap:12px;align-items:flex-start;padding:12px 4px;border-top:1px solid var(--line);cursor:pointer;user-select:none}
-  .task:first-of-type{border-top:none}
-  .cbx{flex:none;width:26px;height:26px;border-radius:9px;border:2px solid #48506a;margin-top:1px;
-    display:flex;align-items:center;justify-content:center;font-size:15px;color:transparent;transition:all .15s}
-  .task.done .cbx{background:var(--teal);border-color:var(--teal);color:#0c1018;transform:scale(1.05)}
-  .task.done .tx{color:var(--mut);text-decoration:line-through}
-  .tmid{flex:1;min-width:0}
-  .tx{font-size:14.5px;font-weight:600;line-height:1.5}
-  .tmeta{font-size:12px;color:var(--mut);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
-  .tgo{color:var(--teal);text-decoration:none;font-weight:700}
-  .tgo:hover{text-decoration:underline}
-  .celebrate{text-align:center;padding:16px;font-size:15px;font-weight:700;color:var(--teal);display:none}
-
-  /* 週視圖 */
+  .startbtn:hover{transform:translateY(-2px)}
+  .startbtn .s{display:block;font-size:12px;font-weight:700;opacity:.7;margin-bottom:3px}
+  .flow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .flow .step{font-size:12px;color:var(--mut);background:rgba(255,255,255,.04);border:1px solid var(--line);
+    border-radius:20px;padding:5px 11px}
+  /* 週 */
   .sec-h{font-size:14px;font-weight:800;color:var(--mut);margin:2px 0 12px;letter-spacing:1px}
   .wk{display:flex;flex-direction:column;gap:8px}
-  .wkrow{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:14px;background:rgba(255,255,255,.03);
-    border:1px solid transparent;cursor:pointer;text-decoration:none;color:inherit}
+  .wkrow{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid transparent;cursor:pointer}
   .wkrow:hover{background:rgba(255,255,255,.06)}
   .wkrow.today{border-color:var(--gold);background:rgba(255,216,107,.08)}
   .wkrow .dot{width:11px;height:11px;border-radius:50%;flex:none}
-  .wkrow .dd{font-size:13px;font-weight:800;width:52px;flex:none}
+  .wkrow .dd{font-size:13px;font-weight:800;width:52px;flex:none;line-height:1.3}
   .wkrow .fo{font-size:13.5px;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .wkrow .pg{font-size:12px;color:var(--mut);flex:none}
   .wkrow.exam{background:rgba(255,158,138,.13);border-color:var(--coral)}
   .wkrow.exam .fo{color:var(--coral);font-weight:800}
-
-  /* 月曆 */
   details.month>summary{cursor:pointer;font-size:14px;font-weight:800;color:var(--mut);list-style:none;padding:4px 0}
   details.month>summary::-webkit-details-marker{display:none}
   .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
-  .cal .wd{text-align:center;font-size:11px;color:var(--mut);font-weight:700;padding-bottom:2px}
+  .cal .wd{text-align:center;font-size:11px;color:var(--mut);font-weight:700}
   .cal .cell{aspect-ratio:1;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid var(--line);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;position:relative;text-decoration:none;color:inherit}
-  .cal .cell.off{opacity:.25}
-  .cal .cell.today{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
-  .cal .cell .n{font-weight:700}
+    display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;position:relative;cursor:pointer}
+  .cal .cell.off{opacity:.25;cursor:default}
+  .cal .cell.today{box-shadow:0 0 0 1px var(--gold) inset}
   .cal .cell .cd2{width:7px;height:7px;border-radius:50%;margin-top:3px}
   .cal .cell.ok{background:rgba(127,224,207,.16)}
   .cal .cell.ok:after{content:"✓";position:absolute;top:2px;right:5px;font-size:10px;color:var(--teal);font-weight:800}
   .cal .cell.exam{background:rgba(255,158,138,.18);border-color:var(--coral)}
-
-  .foot{text-align:center;color:var(--mut);font-size:13px;line-height:1.9;margin-top:8px}
+  .foot{text-align:center;color:var(--mut);font-size:13px;line-height:1.9}
   .streak{display:inline-flex;align-items:center;gap:6px;background:rgba(255,216,107,.1);border:1px solid rgba(255,216,107,.3);
     border-radius:20px;padding:5px 13px;font-weight:700;color:var(--gold);font-size:13px}
   .mini{font-size:11.5px;color:var(--mut);text-align:center;margin-top:14px;line-height:1.7}
+
+  /* ===== 全螢幕跟讀 session ===== */
+  #ses{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;
+    background:linear-gradient(180deg,#161230 0%,#0f1524 60%,#0b0f18 100%)}
+  #ses.on{display:flex}
+  .ses-top{display:flex;align-items:center;gap:12px;padding:12px 16px}
+  .ses-top .x{background:rgba(255,255,255,.08);border:none;color:#cfd6e2;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;flex:none}
+  .ses-bar{flex:1;height:10px;background:rgba(255,255,255,.08);border-radius:8px;overflow:hidden}
+  .ses-bar>div{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));width:0;transition:width .3s}
+  .ses-cnt{font-size:13px;color:var(--mut);font-weight:700;flex:none}
+  .ses-body{flex:1;overflow-y:auto;padding:6px 18px 26px;max-width:680px;width:100%;margin:0 auto}
+  .rline{display:flex;gap:10px;align-items:center;margin:6px 0 16px}
+  .rline .rf{font-size:26px}
+  .rline .rt{font-size:14px;color:var(--teal);font-weight:700}
+  .qtag{display:inline-block;font-size:11.5px;font-weight:700;color:#0c1018;background:var(--gold);border-radius:20px;padding:2px 10px;margin-bottom:8px}
+  .qtag.rev{background:var(--lilac)}
+  .qmeta{font-size:12px;color:var(--mut);margin-bottom:6px}
+  .stem{font-size:17px;line-height:1.7;font-weight:600;margin-bottom:16px}
+  .opt{display:flex;gap:11px;align-items:flex-start;width:100%;text-align:left;
+    background:rgba(255,255,255,.04);border:1.5px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:10px;
+    font-family:inherit;font-size:15px;line-height:1.55;color:var(--txt);cursor:pointer;transition:all .12s}
+  .opt:hover{background:rgba(255,255,255,.08)}
+  .opt .lt{flex:none;font-weight:800;color:var(--mut)}
+  .opt.correct{background:rgba(127,224,160,.16);border-color:var(--ok)}
+  .opt.correct .lt{color:var(--ok)}
+  .opt.wrong{background:rgba(255,143,143,.14);border-color:var(--no)}
+  .opt.wrong .lt{color:var(--no)}
+  .opt.dim{opacity:.5}
+  .opt:disabled{cursor:default}
+  .teach{background:rgba(127,224,207,.07);border:1px solid rgba(127,224,207,.25);border-radius:16px;padding:15px 16px;margin-top:6px;animation:slidein .25s}
+  @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .teach .res{font-size:16px;font-weight:800;margin-bottom:8px}
+  .teach .res.ok{color:var(--ok)}.teach .res.no{color:var(--no)}
+  .teach .blk{margin:8px 0;font-size:13.5px;line-height:1.7}
+  .teach .blk .l{display:block;font-size:11.5px;color:var(--mut);font-weight:700;margin-bottom:2px}
+  .teach .law{color:#d9b25a}.teach .cpt{color:#bfe0ff}.teach .key{color:#9fe0b0}
+  .teach mark{background:rgba(255,216,107,.22);color:#ffe79c;border-radius:3px;padding:0 2px;font-weight:bold}
+  .teach .audio{background:rgba(255,255,255,.08);border:1px solid var(--line);color:#9fd0ff;border-radius:20px;
+    padding:5px 13px;font-size:12.5px;cursor:pointer;font-family:inherit;margin-top:4px}
+  .nextbtn{display:block;width:100%;margin-top:16px;background:linear-gradient(135deg,#8fe6c2,#7fe0cf);color:#0c1018;
+    border:none;border-radius:16px;padding:16px;font-family:inherit;font-weight:800;font-size:16px;cursor:pointer;box-shadow:0 8px 22px rgba(127,224,207,.25)}
+  .nextbtn:hover{filter:brightness(1.05)}
+  .done-wrap{text-align:center;padding:30px 10px}
+  .done-wrap .big{font-size:44px}
+  .done-wrap .t{font-size:22px;font-weight:800;margin:10px 0 6px}
+  .done-wrap .sub{color:var(--mut);font-size:15px;line-height:1.8;margin-bottom:20px}
+  .done-wrap .btns{display:flex;gap:10px;flex-direction:column;max-width:320px;margin:0 auto}
+  .done-wrap button,.done-wrap a{display:block;border-radius:14px;padding:15px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer;text-decoration:none;border:none}
+  .b-again{background:linear-gradient(135deg,#ffdf86,#ff9e8a);color:#1a1020}
+  .b-fish{background:rgba(127,224,207,.15);border:1px solid var(--teal);color:var(--teal)}
+  .b-stop{background:rgba(255,255,255,.06);color:var(--mut)}
 </style>
 </head>
 <body>
@@ -118,255 +143,285 @@
 
 <div class="wrap">
   <div class="cds" id="cds"></div>
-
   <div class="card">
-    <div class="robot">
-      <div class="face" id="rface">🤖</div>
-      <div>
-        <div class="msg" id="rmsg"></div>
-      </div>
-    </div>
+    <div class="robot"><div class="face" id="rface">🤖</div><div class="msg" id="rmsg"></div></div>
     <div class="quote">「You have no choice — 黃老師覺得你會考得不錯。」<br><small>—— 撐起你大學四年的一句話，今天也帶著它。</small></div>
-    <a class="nowbtn" id="nowbtn" href="#today"><span class="s">⏳ 現在，就只做這一件</span><span id="nowtxt"></span></a>
-  </div>
-
-  <div class="card" id="today">
-    <div class="today-h">
-      <div>
-        <span class="t" id="todayTitle"></span><span class="phase" id="todayPhase"></span>
-        <div class="sub" id="todaySub"></div>
-      </div>
-      <svg class="ring" id="ring" width="52" height="52" viewBox="0 0 52 52">
-        <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="6"/>
-        <circle id="ringfg" cx="26" cy="26" r="22" fill="none" stroke="#7fe0cf" stroke-width="6"
-          stroke-linecap="round" transform="rotate(-90 26 26)" stroke-dasharray="138" stroke-dashoffset="138"/>
-        <text id="ringtxt" x="26" y="30" text-anchor="middle" font-size="13" font-weight="800" fill="#eef1f7">0%</text>
-      </svg>
-    </div>
-    <div id="tasklist"></div>
-    <div class="celebrate" id="celebrate">🎉 今天的份量做完了！你真的做到了，去餵魚獎勵自己 🐢</div>
   </div>
 
   <div class="card">
-    <div class="sec-h">📅 這一週（點任一天看當天任務）</div>
+    <div class="launch-h"><span class="t" id="lTitle"></span><span class="phase" id="lPhase"></span></div>
+    <div class="launch-sub" id="lSub"></div>
+    <div class="pbar"><div id="lBar"></div></div>
+    <div class="pnum" id="lNum"></div>
+    <div class="flow" id="lFlow"></div>
+    <button class="startbtn" id="startBtn"><span class="s">🤖 不用想，我一張一張帶你做</span><span id="startTxt">▶ 開始今天的跟讀</span></button>
+  </div>
+
+  <div class="card">
+    <div class="sec-h">📅 這一週（點任一天看／做那天）</div>
     <div class="wk" id="week"></div>
   </div>
-
   <div class="card">
-    <details class="month" id="monthWrap">
-      <summary>🗓️ 展開看整個衝刺月曆（到考試當天）</summary>
-      <div id="cal"></div>
-    </details>
+    <details class="month" id="monthWrap"><summary>🗓️ 展開看整個衝刺月曆（到考試當天）</summary><div id="cal"></div></details>
   </div>
-
   <div class="foot">
     <span class="streak" id="streak">🔥 連續 0 天</span>
-    <div class="mini">你是高觸覺、需要「做中學」的人：所以每個任務都很小、有手感、能勾掉。<br>
-      忘記是正常的 → 我幫你排了間隔複習；分心也沒關係 → 一次只看一格。<br>
-      累了就去 <a href="farm.html" style="color:var(--teal)">🐢 水族箱</a> 餵魚，回來再繼續。</div>
+    <div class="mini">你是需要「做中學」、容易忘也容易分心的人 → 所以我一次只給你一張，答完立刻教你＋唸給你聽。<br>
+      忘記很正常，答錯的我會自動排到下次回鍋。累了就去 <a href="farm.html" style="color:var(--teal)">🐢 水族箱</a> 餵魚。</div>
   </div>
 </div>
 
+<!-- 全螢幕跟讀 -->
+<div id="ses">
+  <div class="ses-top">
+    <button class="x" id="sesX">✕</button>
+    <div class="ses-bar"><div id="sesBar"></div></div>
+    <div class="ses-cnt" id="sesCnt"></div>
+  </div>
+  <div class="ses-body" id="sesBody"></div>
+</div>
+
+<script src="data.js"></script>
+<script src="notes.js"></script>
+<script src="diagrams.js"></script>
+<script src="laws.js"></script>
 <script>
-/* ===== 日期與考試 ===== */
-const SL_EXAM=new Date("2026-08-01T09:00:00");   // 司法官律師 第一試
-const MJ_EXAM=new Date("2026-08-08T09:00:00");   // 調查局 第一試筆試
-const EPOCH=new Date("2026-01-01T00:00:00");
-const DAY=86400000;
+/* ===== 資料與分類 ===== */
+const Q=window.QUESTIONS||[], NOTES=window.NOTES||{}, DIAG=window.DIAG||{};
+function keyOf(q){return q.year+"-"+q.section+"-"+q.num;}
+function subOf(q){
+  const n=q.num,sec=q.section;
+  if(sec==="刑事組")return n<=35?"刑法":n<=60?"刑訴":"法律倫理";
+  if(sec==="民事組")return n<=50?"民法":"民訴";
+  if(sec==="商事組")return n<=15?"公司法":n<=25?"保險法":n<=35?"票據法":n<=45?"證交法":n<=55?"強制執行":"法學英文";
+  if(sec==="公法組"){
+    const law=((NOTES[keyOf(q)]||{}).body||"").split("\n").find(l=>l.trim().startsWith("⚖️"))||"";
+    if(/涉外|國際私法|準據法|反致|法律適用法/.test(law))return "國際私法";
+    if(/國際公法|條約|公約|海洋法|聯合國|領海|引渡|戰爭|國際法院|外交/.test(law))return "國際公法";
+    if(/行政/.test(law))return "行政法";
+    return "憲法";
+  }
+  return q.subject;
+}
+function parseNote(note){
+  const lines=(note.body||"").split("\n");
+  const grab=e=>{const m=lines.find(l=>l.trim().startsWith(e));return m?m.replace(e,"").replace(/^法條：/,"").trim():"";};
+  return {law:grab("⚖️"),key:grab("🔑"),ans:grab("✅"),trap:grab("❌"),concept:note.concept||""};
+}
+// 每個「衝刺科目」對應到題庫的哪些 subject
+const GROUPS={
+ "刑法":["刑法"],"民法":["民法"],"刑訴":["刑訴","法律倫理"],"民訴":["民訴"],
+ "憲法":["憲法"],"行政法":["行政法"],
+ "商事法":["公司法","保險法","票據法","證交法","強制執行"],
+ "國際法+法學英文":["國際公法","國際私法","法學英文"]
+};
+const ROWS=[];
+Q.forEach(q=>{const note=NOTES[keyOf(q)];if(!note)return;ROWS.push({q,k:keyOf(q),sub:subOf(q),note,p:parseNote(note)});});
+function groupRows(g){
+  const subs=GROUPS[g]||[g];
+  return ROWS.filter(r=>subs.includes(r.sub)).sort((a,b)=>a.q.year-b.q.year||a.q.num-b.q.num);
+}
+
+/* ===== 考試/日期 ===== */
+const SL_EXAM=new Date("2026-08-01T09:00:00"), MJ_EXAM=new Date("2026-08-08T09:00:00");
+const EPOCH=new Date("2026-01-01T00:00:00"), DAY=86400000;
 function d0(d){const x=new Date(d);x.setHours(0,0,0,0);return x;}
 function iso(d){const x=d0(d);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0");}
-function daysTo(target){return Math.ceil((d0(target)-d0(new Date()))/DAY);}
+function daysTo(t){return Math.ceil((d0(t)-d0(new Date()))/DAY);}
 function between(a,b){return Math.round((d0(b)-d0(a))/DAY);}
 const WD=["日","一","二","三","四","五","六"];
-
-/* ===== 科目輪替與配色 ===== */
-const SUBJ={
- "刑法":{c:"#ff8a8a"},"民法":{c:"#ffd86b"},"刑訴":{c:"#ffb27f"},"民訴":{c:"#f4c06b"},
- "憲法":{c:"#7fb5ff"},"行政法":{c:"#7fd4ff"},
- "商事法":{c:"#c3a7ff"},"國際法+法學英文":{c:"#9fe0a8"}
-};
-// 8天循環（重科在前，每天新讀＋回鍋前一天）
 const CYCLE=["刑法","民法","刑訴","行政法","憲法","民訴","商事法","國際法+法學英文"];
-const STUDY={
- "刑法":"outline.html","民法":"graph.html","刑訴":"graph.html","民訴":"graph.html",
- "憲法":"graph.html","行政法":"graph.html","商事法":"graph.html","國際法+法學英文":"graph.html"
-};
+const SUBC={"刑法":"#ff8a8a","民法":"#ffd86b","刑訴":"#ffb27f","民訴":"#f4c06b","憲法":"#7fb5ff","行政法":"#7fd4ff","商事法":"#c3a7ff","國際法+法學英文":"#9fe0a8"};
 function cyc(d){const di=Math.round((d0(d)-EPOCH)/DAY);return CYCLE[((di%CYCLE.length)+CYCLE.length)%CYCLE.length];}
-function prevCyc(d){const di=Math.round((d0(d)-EPOCH)/DAY);return CYCLE[(((di-1)%CYCLE.length)+CYCLE.length)%CYCLE.length];}
-
-/* ===== 產生每一天的小任務 ===== */
-function T(ic,txt,min,link,go){return{ic,txt,min,link,go};}
-function genDay(date){
-  const dISO=iso(date);
-  const isSL = dISO===iso(SL_EXAM), isMJ = dISO===iso(MJ_EXAM);
-  const toSL = between(date,SL_EXAM);      // >0 尚未考
-  const focus=cyc(date), prev=prevCyc(date), link=STUDY[focus];
-  let phase, pcolor, tasks=[];
-  if(isSL) return {focus:"司律一試",phase:"考試日",pcolor:"#ff9e8a",exam:true,
-    tasks:[T("🌅","早起、吃早餐，帶准考證＋身分證＋2B鉛筆＋手錶",0),
-           T("🧘","進場前：深呼吸10次，告訴自己『我準備過了』",0),
-           T("✅","綜合法學（一）：先寫會的，不確定先跳過，回頭再猜",0),
-           T("✅","綜合法學（二）：同上，每題都劃卡、不留空",0),
-           T("💪","考完不對答案，回家休息，準備 8/8 調查局",0)]};
-  if(isMJ) return {focus:"調查局筆試",phase:"考試日",pcolor:"#ff9e8a",exam:true,
-    tasks:[T("🌅","帶齊證件文具，提早到考場",0),
-           T("✅","國文／法學知識與英文：穩穩作答",0),
-           T("✅","專業法科：把這一個月練的都用出來",0),
-           T("🎉","考完了！不管結果，你完整走完了這條路",0)]};
-  // 分階段
-  if(toSL>13){ phase="打地基 · 廣度"; pcolor="#7fe0cf";
-    tasks=[
-      T("🌅","開機：看倒數＋讀今天機器人的話（就2分鐘）",2),
-      T("🌱",`精修樹：讀「${focus}」1個體系，只求看懂骨架`,35,"outline.html","去讀"),
-      T("🔊",`聽重點：把該體系🔑用語音聽一遍（可起來走動）`,12,"outline.html","去聽"),
-      T("✍️",`選項拆解：做「${focus}」該體系歷屆 A~D，看每個選項為什麼對/錯`,30,"outline.html","去做"),
-      T("📝",`刷題：「${focus}」逐題 20 題（不會的先看答案記考點）`,35,"index.html","去刷"),
-      T("🔁",`昨日回鍋：「${prev}」易錯卡快掃一遍`,18,"index.html","去複習"),
-      T("🕸️",`關聯圖：「${focus}」掃一遍，建立整體感`,15,"graph.html","去看"),
-      T("📝",`再刷 20 題「${focus}」，這次遮答案自測`,35,"index.html","去刷"),
-      T("❌","把今天做錯的按 🔁『再看』入庫（之後會回鍋）",12,"index.html","去標"),
-      T("🐢","收工：餵水族箱＋對自己說『我今天有進步』",5,"farm.html","去獎勵"),
-    ];
-  } else if(toSL>6){ phase="循環強化 · 刷題"; pcolor="#ffd86b";
-    tasks=[
-      T("🌅","開機：看倒數，選出今天最想攻的一科",2),
-      T("🔁",`遺忘曲線：快速回鍋前 2 天科目的🔑重點＋易錯卡`,25,"index.html","去複習"),
-      T("🌱",`精修樹：補「${focus}」中／高難度那層`,25,"outline.html","去補"),
-      T("📝",`大量刷題：「${focus}」30 題，計時、遮答案`,40,"index.html","去刷"),
-      T("❌","訂正：做錯的做成易錯卡＋想『為什麼會錯』",20,"index.html","去訂正"),
-      T("🔊",`聽：「${focus}」重點與口訣（休息時聽）`,12,"outline.html","去聽"),
-      T("📝",`跨科混合刷：錯題衝刺模式 20 題`,30,"index.html","去衝刺"),
-      T("🐢","收工獎勵：餵魚，記錄今天連續第幾天",5,"farm.html","去獎勵"),
-    ];
-  } else { phase="最後衝刺 · 心態"; pcolor="#ff9e8a";
-    tasks=[
-      T("🌅","開機：告訴自己『我只要把會的穩穩拿到就會上』",2),
-      T("⭐","易錯卡總複習：把所有科目的易錯卡過一輪",35,"index.html","去複習"),
-      T("📝","模擬整卷：計時寫一節綜合法學（當真的考）",50,"index.html","去模擬"),
-      T("❌","訂正模擬：只看錯的，標記高頻陷阱",25,"index.html","去訂正"),
-      T("🔊","聽口訣：把最容易忘的口訣聽熟",15,"outline.html","去聽"),
-      T("🧘","心態：早點收工，散步10分鐘，今晚11點前睡",0),
-      T("🐢","獎勵：餵魚，看看這個月你養大了多少",5,"farm.html","去看"),
-    ];
-  }
-  return {focus,phase,pcolor,tasks};
+function phaseOf(date){const toSL=between(date,SL_EXAM);
+  if(iso(date)===iso(SL_EXAM))return{name:"司律一試 考試日",c:"#ff9e8a",exam:"SL"};
+  if(iso(date)===iso(MJ_EXAM))return{name:"調查局 考試日",c:"#ff9e8a",exam:"MJ"};
+  if(toSL>13)return{name:"打地基·廣度",c:"#7fe0cf",target:40};
+  if(toSL>6)return{name:"循環強化·刷題",c:"#ffd86b",target:60};
+  if(toSL>0)return{name:"最後衝刺·心態",c:"#ff9e8a",target:40};
+  return{name:"調查局衝刺週",c:"#7fb5ff",target:50};
 }
 
-/* ===== 完成度儲存 ===== */
-function loadDone(){try{return JSON.parse(localStorage.getItem("sjg_sprint_done")||"{}");}catch(e){return{};}}
-function saveDone(o){localStorage.setItem("sjg_sprint_done",JSON.stringify(o));}
-function dayDone(dISO){return (loadDone()[dISO]||[]);}
-function toggleTask(dISO,i){
-  const o=loadDone(),arr=new Set(o[dISO]||[]);
-  arr.has(i)?arr.delete(i):arr.add(i);
-  o[dISO]=[...arr]; saveDone(o);
-}
-function streak(){
-  const o=loadDone(); let s=0; let d=new Date();
-  // 今天沒做也算「還沒中斷」；從昨天往前數連續有完成的天
-  for(let k=0;k<400;k++){
-    const key=iso(new Date(d0(new Date()).getTime()-k*DAY));
-    const g=genDay(new Date(d0(new Date()).getTime()-k*DAY));
-    const need=g.tasks.filter(t=>t.min>0).length||g.tasks.length;
-    const done=(o[key]||[]).length;
-    if(k===0){ if(done>0)s++; continue; }
-    if(done>0) s++; else break;
-  }
-  return s;
-}
+/* ===== 儲存 ===== */
+function L(k,d){try{return JSON.parse(localStorage.getItem(k)||d);}catch(e){return JSON.parse(d);}}
+function S(k,v){localStorage.setItem(k,JSON.stringify(v));}
+function log(){return L("sjg_sprint_log","{}");}          // {date:{done:n}}
+function bumpToday(){const o=log(),k=iso(new Date());o[k]=o[k]||{done:0};o[k].done++;S("sjg_sprint_log",o);}
+function todayDone(){return (log()[iso(new Date())]||{done:0}).done;}
+function pos(){return L("sjg_pos","{}");}                 // {group:index}
+function getPos(g){return pos()[g]||0;}
+function setPos(g,v){const o=pos();o[g]=v;S("sjg_pos",o);}
+function wrongSet(){return L("sjg_wrong","[]");}          // [key,...]
+function addWrong(k){const a=wrongSet();if(!a.includes(k)){a.push(k);S("sjg_wrong",a);}}
+function delWrong(k){S("sjg_wrong",wrongSet().filter(x=>x!==k));}
+function streak(){const o=log();let s=0;for(let k=0;k<400;k++){const key=iso(new Date(d0(new Date()).getTime()-k*DAY));const dn=(o[key]||{done:0}).done;if(k===0){if(dn>0)s++;continue;}if(dn>0)s++;else break;}return s;}
 
-/* ===== 機器人訊息 ===== */
-const MSGS=[
- "早安。今天不用想全部，只要做完眼前這一格就好。",
- "你已經在別人放棄的路上多走了一步，這就是差距。",
- "忘記很正常，我把該複習的都排好了，你只管做。",
- "分心了？沒關係，回來點下一個小任務就好。",
- "一次一題，一天一點，27天後你會謝謝現在的自己。",
- "你大學把每件事做滿，這次也是。老天有眼。",
- "不用完美，只要今天比昨天多會一點點。",
- "做不下去時，先餵一次魚，再回來做一格。",
-];
+/* ===== 語音 ===== */
+function pickVoice(){const vs=speechSynthesis.getVoices();const sc=v=>{const lang=(v.lang||"").toLowerCase().replace("_","-"),n=(v.name||"").toLowerCase();let s;if(lang==="zh-tw"||lang.startsWith("zh-hant"))s=100;else if(lang==="zh-hk")s=60;else if(lang.startsWith("zh"))s=40;else return -1;if(/premium|enhanced|neural|natural|siri|美佳|mei.?jia|婷婷/.test(n))s+=25;if(/compact|eloquence|novelty|whisper|zarvox/.test(n))s-=40;if(v.localService)s+=3;return s;};let b=null,bs=-1;vs.forEach(v=>{const s=sc(v);if(s>bs){bs=s;b=v;}});return b;}
+if("speechSynthesis" in window){try{speechSynthesis.getVoices();}catch(e){}speechSynthesis.onvoiceschanged=()=>{};}
+function speak(t){if(!("speechSynthesis"in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.pitch=1;const rt=localStorage.getItem("sjg_rate");u.rate=rt?(parseFloat(rt)||1):1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}speechSynthesis.speak(u);}
+function stopSpeak(){if("speechSynthesis"in window)speechSynthesis.cancel();}
+
+/* ===== 每題選項的觀念（why） ===== */
+function optWhy(r,i){const d=DIAG[r.k];if(d&&d.o&&d.o.length===r.q.options.length&&d.o[i])return d.o[i].why||"";return "";}
+function lawTextOf(r){
+  const arts=(window.QARTS||{})[r.k]||[];const seen=new Set();let h="";
+  arts.forEach(a=>{const id=a[0]+a[1];if(seen.has(id))return;seen.add(id);const txt=((window.LAWS||{})[a[0]]||{})[a[1]];if(!txt)return;
+    const short=(window.LAW_SHORT||{})[a[0]]||a[0];const f=a[1].indexOf("-")>=0?("第"+a[1].split("-")[0]+"條之"+a[1].split("-")[1]):("第"+a[1]+"條");
+    h+=`<div><b class="law">${short} ${f}</b> ${esc(txt).replace(/\n/g,"／")}</div>`;});
+  return h;
+}
+function esc(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+
+/* ===== 機器人語句 ===== */
+const MSGS=["早安。今天不用想全部，我一張一張帶你，你只要點就好。","你已經在別人放棄的路上多走一步了。","忘記很正常，答錯的我都幫你記著、之後回鍋。","分心了沒關係，回來點下一張就好。","一次一題，一天一點，考試那天你會謝謝現在。","你大學把每件事做滿，這次也是。老天有眼。","不用完美，今天比昨天多會一點就贏了。","做不下去時先餵一次魚，再回來一張。"];
 function todayMsg(){const di=Math.round((d0(new Date())-EPOCH)/DAY);return MSGS[((di%MSGS.length)+MSGS.length)%MSGS.length];}
 
-/* ===== 渲染 ===== */
+/* ===== 首頁渲染 ===== */
 let viewDate=new Date();
-function renderCountdown(){
-  const sl=Math.max(0,daysTo(SL_EXAM)), mj=Math.max(0,daysTo(MJ_EXAM));
+function renderCountdown(){const sl=Math.max(0,daysTo(SL_EXAM)),mj=Math.max(0,daysTo(MJ_EXAM));
   document.getElementById("cds").innerHTML=
-    `<div class="cd pri"><div class="lab">🎯 司法官律師 一試</div><div class="big">${sl}<b> 天</b></div><div class="date">2026/8/1（六）</div></div>
-     <div class="cd sec"><div class="lab">🕵️ 調查局 筆試</div><div class="big">${mj}<b> 天</b></div><div class="date">2026/8/8（六）</div></div>`;
-}
-function renderToday(){
-  const g=genDay(viewDate), dISO=iso(viewDate), done=new Set(dayDone(dISO));
-  const isToday=dISO===iso(new Date());
+   `<div class="cd pri"><div class="lab">🎯 司法官律師 一試</div><div class="big">${sl}<b> 天</b></div><div class="date">2026/8/1（六）</div></div>
+    <div class="cd sec"><div class="lab">🕵️ 調查局 筆試</div><div class="big">${mj}<b> 天</b></div><div class="date">2026/8/8（六）</div></div>`;}
+function renderLaunch(){
   document.getElementById("rmsg").textContent=todayMsg();
-  document.getElementById("todayTitle").textContent=(isToday?"今天":`${viewDate.getMonth()+1}/${viewDate.getDate()}`)+"　主攻："+g.focus;
-  const ph=document.getElementById("todayPhase"); ph.textContent=g.phase; ph.style.background=g.pcolor+"33"; ph.style.color=g.pcolor;
-  document.getElementById("todaySub").textContent=`${WD[viewDate.getDay()]==""?"":"週"+WD[viewDate.getDay()]} · 共 ${g.tasks.length} 個小任務`;
-  const tl=document.getElementById("tasklist"); tl.innerHTML="";
-  g.tasks.forEach((t,i)=>{
-    const el=document.createElement("div"); el.className="task"+(done.has(i)?" done":"");
-    el.innerHTML=`<div class="cbx">✓</div><div class="tmid"><div class="tx">${t.ic} ${t.txt}</div>
-      <div class="tmeta">${t.min>0?`⏱ ${t.min} 分`:`🌟 提醒`}${t.link?` · <a class="tgo" href="${t.link}" onclick="event.stopPropagation()">${t.go||"前往"} →</a>`:""}</div></div>`;
-    el.onclick=(e)=>{ if(e.target.closest("a"))return; toggleTask(dISO,i); renderToday(); renderWeek(); renderStreak(); };
-    tl.appendChild(el);
-  });
-  // 進度環
-  const tot=g.tasks.length, dn=[...done].filter(i=>i<tot).length, pct=tot?Math.round(dn/tot*100):0;
-  document.getElementById("ringfg").style.strokeDashoffset=138-138*pct/100;
-  document.getElementById("ringtxt").textContent=pct+"%";
-  document.getElementById("celebrate").style.display=(tot&&dn>=tot)?"block":"none";
-  // 現在就做這一件
-  const nextI=g.tasks.findIndex((t,i)=>!done.has(i));
-  const nb=document.getElementById("nowbtn"), nt=document.getElementById("nowtxt");
-  if(nextI<0){ nb.classList.add("done"); nt.textContent="今天做完了 🎉 去餵魚獎勵自己"; nb.href="farm.html"; document.getElementById("rface").textContent="🥳"; }
-  else{ nb.classList.remove("done"); const t=g.tasks[nextI]; nt.textContent=`${t.ic} ${t.txt}`; nb.href=t.link||"#today"; document.getElementById("rface").textContent="🤖"; }
+  const ph=phaseOf(viewDate),isToday=iso(viewDate)===iso(new Date());
+  const focus=cyc(viewDate);
+  document.getElementById("lTitle").textContent=(isToday?"今天":`${viewDate.getMonth()+1}/${viewDate.getDate()}`)+"　主攻："+(ph.exam?ph.name:focus);
+  const pe=document.getElementById("lPhase");pe.textContent=ph.name;pe.style.background=ph.c+"33";pe.style.color=ph.c;
+  const done=isToday?todayDone():0,target=ph.target||30;
+  document.getElementById("lBar").style.width=Math.min(100,done/target*100)+"%";
+  document.getElementById("lNum").textContent=ph.exam?"今天是考試日，深呼吸，你準備過了 💪":`今天目標 ${target} 張 · 已完成 ${done} 張`;
+  document.getElementById("lSub").textContent=ph.exam?"帶齊准考證、身分證、文具、手錶。先寫會的，不留空。":
+    "點下面，機器人會出題給你答，答完立刻教你正解＋考點＋法條並唸給你聽。你只要一直點就好。";
+  const flow=ph.exam?["🌅 帶齊證件","🧘 深呼吸","✅ 先寫會的","💪 不留空"]:
+    ["🧠 出題給你答","💡 立刻教你為什麼","🔊 唸給你聽","🔁 答錯自動回鍋","🐢 做完餵魚"];
+  document.getElementById("lFlow").innerHTML=flow.map(s=>`<span class="step">${s}</span>`).join("");
+  const sb=document.getElementById("startBtn");
+  if(ph.exam){sb.style.display="none";}else{sb.style.display="block";
+    document.getElementById("startTxt").textContent=(done>0?"▶ 繼續今天的跟讀":"▶ 開始今天的跟讀")+`（${focus}）`;}
 }
-function renderWeek(){
-  const wk=document.getElementById("week"); wk.innerHTML="";
-  const start=d0(new Date());
-  for(let k=0;k<7;k++){
-    const d=new Date(start.getTime()+k*DAY), dISO=iso(d), g=genDay(d);
-    const done=dayDone(dISO).filter(i=>i<g.tasks.length).length, tot=g.tasks.length;
-    const isToday=k===0, col=g.exam?"#ff9e8a":(SUBJ[g.focus]?SUBJ[g.focus].c:"#7fe0cf");
-    const row=document.createElement("a"); row.href="#today";
-    row.className="wkrow"+(isToday?" today":"")+(g.exam?" exam":"");
+function renderWeek(){const wk=document.getElementById("week");wk.innerHTML="";const start=d0(new Date());
+  for(let k=0;k<7;k++){const d=new Date(start.getTime()+k*DAY),ph=phaseOf(d),focus=cyc(d),isToday=k===0;
+    const done=(log()[iso(d)]||{done:0}).done,col=ph.exam?"#ff9e8a":SUBC[focus];
+    const row=document.createElement("div");row.className="wkrow"+(isToday?" today":"")+(ph.exam?" exam":"");
     row.innerHTML=`<span class="dot" style="background:${col}"></span>
       <span class="dd">${d.getMonth()+1}/${d.getDate()}<br><span style="font-size:11px;color:var(--mut);font-weight:600">週${WD[d.getDay()]}</span></span>
-      <span class="fo">${g.exam?("📝 "+g.focus):("主攻 "+g.focus)}</span>
-      <span class="pg">${g.exam?"加油！":(isToday?`${done}/${tot}`:`${tot} 項`)}</span>`;
-    row.onclick=()=>{ viewDate=d; renderToday(); window.scrollTo({top:document.getElementById("today").offsetTop-60,behavior:"smooth"}); };
-    wk.appendChild(row);
-  }
-}
-function renderCal(){
-  const cal=document.getElementById("cal"); if(!cal)return;
-  const first=d0(new Date()); const last=d0(MJ_EXAM);
-  // 對齊到週日起
-  const gridStart=new Date(first.getTime()-first.getDay()*DAY);
+      <span class="fo">${ph.exam?("📝 "+ph.name):("主攻 "+focus)}</span>
+      <span class="pg">${ph.exam?"加油！":(isToday?(done+" 張"):"待做")}</span>`;
+    row.onclick=()=>{viewDate=d;renderLaunch();window.scrollTo({top:0,behavior:"smooth"});};
+    wk.appendChild(row);}}
+function renderCal(){const cal=document.getElementById("cal");if(!cal)return;
+  const first=d0(new Date()),last=d0(MJ_EXAM),gridStart=new Date(first.getTime()-first.getDay()*DAY);
   let html=WD.map(w=>`<div class="wd">${w}</div>`).join("");
-  const done=loadDone();
-  for(let k=0;k<49;k++){
-    const d=new Date(gridStart.getTime()+k*DAY);
-    if(d>last && d.getDay()===0 && d>new Date(last.getTime()+7*DAY)) break;
-    const inRange=d>=first&&d<=last, dISO=iso(d), g=inRange?genDay(d):null;
-    const isToday=dISO===iso(new Date());
-    const isExam=inRange&&g&&g.exam;
-    const tot=g?g.tasks.length:0, dn=(done[dISO]||[]).filter(i=>i<tot).length;
-    const ok=inRange&&tot&&dn>=tot;
-    const col=g?(g.exam?"#ff9e8a":(SUBJ[g.focus]?SUBJ[g.focus].c:"#7fe0cf")):"transparent";
-    html+=`<a class="cell${inRange?"":" off"}${isToday?" today":""}${ok?" ok":""}${isExam?" exam":""}" ${inRange?'href="#today" data-d="'+dISO+'"':""}>
-      <span class="n">${d.getDate()}</span>${inRange?`<span class="cd2" style="background:${col}"></span>`:""}</a>`;
-  }
+  for(let k=0;k<49;k++){const d=new Date(gridStart.getTime()+k*DAY);if(d>new Date(last.getTime()+6*DAY))break;
+    const inR=d>=first&&d<=last,ph=inR?phaseOf(d):null,isToday=iso(d)===iso(new Date());
+    const done=(log()[iso(d)]||{done:0}).done,ok=inR&&!ph.exam&&done>=(ph.target||30);
+    const col=ph?(ph.exam?"#ff9e8a":SUBC[cyc(d)]):"transparent";
+    html+=`<div class="cell${inR?"":" off"}${isToday?" today":""}${ok?" ok":""}${inR&&ph.exam?" exam":""}" ${inR?'data-d="'+iso(d)+'"':""}>
+      <span style="font-weight:700">${d.getDate()}</span>${inR?`<span class="cd2" style="background:${col}"></span>`:""}</div>`;}
   cal.innerHTML=html;
-  cal.querySelectorAll("a.cell[data-d]").forEach(a=>a.onclick=(e)=>{
-    e.preventDefault(); viewDate=new Date(a.dataset.d+"T00:00:00"); renderToday();
-    window.scrollTo({top:document.getElementById("today").offsetTop-60,behavior:"smooth"});
-  });
-}
+  cal.querySelectorAll(".cell[data-d]").forEach(c=>c.onclick=()=>{viewDate=new Date(c.dataset.d+"T00:00:00");renderLaunch();window.scrollTo({top:0,behavior:"smooth"});});}
 function renderStreak(){document.getElementById("streak").textContent=`🔥 連續 ${streak()} 天`;}
 
-renderCountdown(); renderToday(); renderWeek(); renderCal(); renderStreak();
+/* ===== 跟讀 SESSION 引擎 ===== */
+const SES={cards:[],i:0,correct:0,newAns:0,startPos:0,group:"",answered:false};
+function buildSession(group){
+  const rows=groupRows(group);
+  const cards=[];
+  // 先回鍋 3~5 題答錯的（可跨科）
+  const wr=wrongSet().slice(0,5);
+  wr.forEach(k=>{const r=ROWS.find(x=>x.k===k);if(r)cards.push({type:"review",r});});
+  // 本科新題（從進度指標往下 15 題）
+  const start=getPos(group)%Math.max(1,rows.length);
+  SES.startPos=start;
+  for(let j=0;j<15 && (start+j)<rows.length;j++)cards.push({type:"quiz",r:rows[start+j]});
+  // 若到底了，從頭補
+  if(cards.filter(c=>c.type==="quiz").length<15){let need=15-cards.filter(c=>c.type==="quiz").length;for(let j=0;j<need&&j<rows.length;j++)cards.push({type:"quiz",r:rows[j]});}
+  SES.cards=cards;SES.i=0;SES.correct=0;SES.newAns=0;SES.group=group;SES.answered=false;
+}
+function startSession(){
+  const focus=cyc(viewDate);
+  buildSession(focus);
+  document.getElementById("ses").classList.add("on");
+  document.body.style.overflow="hidden";
+  renderCard();
+}
+function closeSession(){
+  stopSpeak();
+  document.getElementById("ses").classList.remove("on");
+  document.body.style.overflow="";
+  // 存進度
+  setPos(SES.group,(getPos(SES.group)+SES.newAns));
+  renderLaunch();renderWeek();renderCal();renderStreak();
+}
+function renderCard(){
+  const body=document.getElementById("sesBody");
+  const total=SES.cards.length;
+  document.getElementById("sesBar").style.width=(SES.i/total*100)+"%";
+  document.getElementById("sesCnt").textContent=`${Math.min(SES.i+1,total)}/${total}`;
+  if(SES.i>=total){renderDone();return;}
+  const card=SES.cards[SES.i],r=card.r,L=["A","B","C","D","E","F"];
+  SES.answered=false;
+  const rl=(SES.i%5===0)?`<div class="rline"><span class="rf">🤖</span><span class="rt">${todayMsg()}</span></div>`:"";
+  let h=rl+`<div class="qtag ${card.type==="review"?"rev":""}">${card.type==="review"?"🔁 回鍋（上次答錯）":"🧠 第 "+(SES.i+1)+" 題"}</div>
+    <div class="qmeta">${r.q.year}年 ${r.sub} 第${r.q.num}題</div>
+    <div class="stem">${esc(r.q.stem)}</div><div id="opts">`;
+  r.q.options.forEach((o,i)=>{h+=`<button class="opt" data-i="${i}"><span class="lt">${L[i]}</span><span>${esc(o)}</span></button>`;});
+  h+=`</div><div id="teach"></div>`;
+  body.innerHTML=h;body.scrollTop=0;
+  body.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+}
+function answer(idx){
+  if(SES.answered)return;SES.answered=true;
+  const card=SES.cards[SES.i],r=card.r,ans=r.q.ansIndex,L=["A","B","C","D","E","F"];
+  const correct=idx===ans;
+  if(correct){SES.correct++;if(card.type==="review")delWrong(r.k);}else{addWrong(r.k);}
+  if(card.type==="quiz")SES.newAns++;
+  bumpToday();
+  document.querySelectorAll(".opt").forEach(b=>{const i=+b.dataset.i;b.disabled=true;
+    if(i===ans)b.classList.add("correct");else if(i===idx)b.classList.add("wrong");else b.classList.add("dim");});
+  // 教學
+  const p=r.p,note=r.note,whyC=optWhy(r,ans),whyW=correct?"":optWhy(r,idx);
+  const lawH=lawTextOf(r);
+  let t=`<div class="teach"><div class="res ${correct?'ok':'no'}">${correct?"✅ 答對了！":"❌ 沒關係，這題記起來就賺到"}　正解：${L[ans]}</div>`;
+  if(!correct&&whyW)t+=`<div class="blk"><span class="l">你選的 ${L[idx]} 為什麼錯</span>${esc(whyW)}</div>`;
+  if(whyC)t+=`<div class="blk"><span class="l">✅ 正解 ${L[ans]} 為什麼對</span>${esc(whyC)}</div>`;
+  if(p.concept)t+=`<div class="blk"><span class="l">📌 這題考點</span><span class="cpt">${esc(p.concept)}</span></div>`;
+  if(p.key)t+=`<div class="blk"><span class="l">🔑 核心規則</span><span class="key">${esc(p.key)}</span></div>`;
+  if(p.trap)t+=`<div class="blk"><span class="l">⚠️ 易混淆</span>${esc(p.trap)}</div>`;
+  if(lawH)t+=`<div class="blk"><span class="l">📜 法條原文</span>${lawH}</div>`;
+  t+=`<button class="audio" id="teachAudio">🔊 唸給我聽</button></div>
+      <button class="nextbtn" id="nextBtn">下一張 →</button>`;
+  document.getElementById("teach").innerHTML=t;
+  // 自動朗讀
+  const spk=(correct?"答對了。":"這題答案是"+L[ans]+"。")+(p.concept||"")+"。"+(p.key||whyC||"");
+  speak(spk.replace(/§/g,"第").replace(/[「」『』]/g,""));
+  document.getElementById("teachAudio").onclick=()=>speak(((p.concept||"")+"。"+(p.key||"")+"。"+(whyC||"")+"。"+(p.trap?"要分清楚："+p.trap:"")).replace(/§/g,"第"));
+  const nb=document.getElementById("nextBtn");nb.onclick=next;nb.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function next(){stopSpeak();SES.i++;renderCard();}
+function renderDone(){
+  stopSpeak();
+  const body=document.getElementById("sesBody");
+  document.getElementById("sesBar").style.width="100%";
+  const total=SES.cards.length,acc=total?Math.round(SES.correct/total*100):0;
+  const msg=acc>=80?"你超猛，這批幾乎全對！":acc>=55?"穩穩的，錯的我幫你排回鍋了。":"沒關係，錯的就是賺到的，回鍋再遇到你就會了。";
+  body.innerHTML=`<div class="done-wrap"><div class="big">🎉</div>
+    <div class="t">做完這一輪了！</div>
+    <div class="sub">答對 ${SES.correct}/${total}（${acc}%）· ${msg}<br>今天累積 ${todayDone()} 張，連續 ${streak()} 天 🔥</div>
+    <div class="btns">
+      <button class="b-again" id="dAgain">💪 再來一輪</button>
+      <a class="b-fish" href="farm.html">🐢 去餵魚獎勵自己</a>
+      <button class="b-stop" id="dStop">今天先到這，休息一下</button>
+    </div></div>`;
+  document.getElementById("dAgain").onclick=()=>{setPos(SES.group,getPos(SES.group)+SES.newAns);buildSession(cyc(viewDate));renderCard();};
+  document.getElementById("dStop").onclick=closeSession;
+}
+document.getElementById("startBtn").onclick=startSession;
+document.getElementById("sesX").onclick=closeSession;
+
+renderCountdown();renderLaunch();renderWeek();renderCal();renderStreak();
 document.getElementById("monthWrap").addEventListener("toggle",renderCal);
 </script>
 </body>
