@@ -187,7 +187,16 @@
 <script src="diagrams.js"></script>
 <script src="laws.js"></script>
 <script>
+/* ===== 防呆：任何錯誤直接顯示在畫面上，不要一片空白 ===== */
+window.addEventListener("error",function(e){
+  var d=document.getElementById("errbox");
+  if(!d){d=document.createElement("div");d.id="errbox";
+    d.style.cssText="position:fixed;left:8px;right:8px;bottom:8px;background:#3a1224;color:#ffd7dd;padding:12px 14px;border-radius:12px;font-size:13px;z-index:99999;white-space:pre-wrap;box-shadow:0 6px 24px rgba(0,0,0,.5)";
+    (document.body||document.documentElement).appendChild(d);}
+  d.textContent="⚠️ 出錯了（截圖給機器人看）：\n"+(e.message||e)+"\n@ "+((e.filename||"").split("/").pop())+" 行"+(e.lineno||"?");
+});
 /* ===== 資料與分類 ===== */
+if(!window.QUESTIONS){throw new Error("題庫 data.js 沒載入成功，請重新整理");}
 const Q=window.QUESTIONS||[], NOTES=window.NOTES||{}, DIAG=window.DIAG||{};
 function keyOf(q){return q.year+"-"+q.section+"-"+q.num;}
 function subOf(q){
@@ -427,8 +436,9 @@ document.getElementById("sesX").onclick=closeSession;
   const set=()=>mb.textContent=muted()?"🔇":"🔊";set();
   mb.onclick=()=>{localStorage.setItem("sjg_mute",muted()?"0":"1");set();if(muted())stopSpeak();};})();
 
-renderCountdown();renderLaunch();renderWeek();renderCal();renderStreak();
-document.getElementById("monthWrap").addEventListener("toggle",renderCal);
+try{renderCountdown();renderLaunch();renderWeek();renderCal();renderStreak();
+  document.getElementById("monthWrap").addEventListener("toggle",renderCal);
+}catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 </script>
 </body>
 </html>
