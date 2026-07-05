@@ -43,6 +43,9 @@
   .pbar{height:12px;background:rgba(255,255,255,.08);border-radius:8px;overflow:hidden;margin:10px 0 4px}
   .pbar>div{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));width:0;transition:width .4s}
   .pnum{font-size:12.5px;color:var(--mut)}
+  .pace{margin-top:10px;background:rgba(127,224,207,.08);border:1px solid rgba(127,224,207,.25);border-radius:12px;
+    padding:10px 13px;font-size:12.5px;line-height:1.7;color:#cfe9e2}
+  .pace b{color:var(--teal)} .pace .warn{color:var(--coral);font-weight:700}
   .startbtn{display:block;width:100%;margin-top:16px;text-align:left;text-decoration:none;
     background:linear-gradient(135deg,#ffdf86,#ff9e8a);color:#1a1020;border:none;border-radius:16px;
     padding:18px 20px;font-family:inherit;font-weight:800;font-size:17px;cursor:pointer;
@@ -153,6 +156,7 @@
     <div class="launch-sub" id="lSub"></div>
     <div class="pbar"><div id="lBar"></div></div>
     <div class="pnum" id="lNum"></div>
+    <div class="pace" id="lPace"></div>
     <div class="flow" id="lFlow"></div>
     <button class="startbtn" id="startBtn"><span class="s">🤖 不用想，我一張一張帶你做</span><span id="startTxt">▶ 開始今天的跟讀</span></button>
   </div>
@@ -231,6 +235,15 @@ function groupRows(g){
   const subs=GROUPS[g]||[g];
   return ROWS.filter(r=>subs.includes(r.sub)).sort((a,b)=>a.q.year-b.q.year||a.q.num-b.q.num);
 }
+const GLEN={}; Object.keys(GROUPS).forEach(g=>GLEN[g]=groupRows(g).length);
+function bankStats(){
+  let covered=0; const total=ROWS.length;
+  Object.keys(GROUPS).forEach(g=>covered+=Math.min(getPos(g),GLEN[g]));
+  const remaining=Math.max(0,total-covered);
+  const dToSL=Math.max(1,daysTo(SL_EXAM)), effDays=Math.max(1,dToSL-5);
+  const perDay=Math.min(remaining,Math.ceil(remaining/effDays));
+  return {covered,total,pct:Math.round(covered/total*100),remaining,perDay,rounds:Math.max(1,Math.ceil(perDay/18)),dToSL};
+}
 
 /* ===== 考試/日期 ===== */
 const SL_EXAM=new Date("2026-08-01T09:00:00"), MJ_EXAM=new Date("2026-08-08T09:00:00");
@@ -300,9 +313,20 @@ function renderLaunch(){
   const focus=cyc(viewDate);
   document.getElementById("lTitle").textContent=(isToday?"今天":`${viewDate.getMonth()+1}/${viewDate.getDate()}`)+"　主攻："+(ph.exam?ph.name:focus);
   const pe=document.getElementById("lPhase");pe.textContent=ph.name;pe.style.background=ph.c+"33";pe.style.color=ph.c;
-  const done=isToday?todayDone():0,target=ph.target||30;
-  document.getElementById("lBar").style.width=Math.min(100,done/target*100)+"%";
-  document.getElementById("lNum").textContent=ph.exam?"今天是考試日，深呼吸，你準備過了 💪":`今天目標 ${target} 張 · 已完成 ${done} 張`;
+  const bs=bankStats();
+  const done=isToday?todayDone():0,target=ph.exam?0:Math.max(bs.perDay,20);
+  document.getElementById("lBar").style.width=(ph.exam?100:Math.min(100,done/target*100))+"%";
+  document.getElementById("lNum").textContent=ph.exam?"今天是考試日，深呼吸，你準備過了 💪":`今天目標 約 ${target} 題（${Math.ceil(target/18)} 輪）· 已完成 ${done} 題`;
+  const pe2=document.getElementById("lPace");
+  if(ph.exam){pe2.style.display="none";}
+  else{pe2.style.display="block";
+    const onTrack=done>=target;
+    pe2.innerHTML=`📊 <b>題庫已掃 ${bs.pct}%</b>（${bs.covered}/${bs.total} 題）· 距 8/1 還 ${bs.dToSL} 天<br>`+
+      (bs.remaining<=0?`🎉 整份都掃過一輪了！接下來專心把<b>錯題</b>回鍋到熟就好。`:
+        `要在 8/1 前掃完一輪，${bs.dToSL>5?`平均每天約 <b>${bs.perDay} 題（${bs.rounds} 輪）</b>`:`剩下時間<span class="warn">改為只複習錯題＋易錯點</span>`}。`)+
+      `<br>${onTrack?"✅ 你今天已達標，超前的話更好！":`今天做滿 <b>${target} 題</b> 就跟得上。`}<br>`+
+      `<span style="color:var(--mut)">💡 不用每題完美：掃過一次＋把<b>答錯的</b>做到熟＝會上的準備。</span>`;
+  }
   document.getElementById("lSub").textContent=ph.exam?"帶齊准考證、身分證、文具、手錶。先寫會的，不留空。":
     "點下面，機器人會出題給你答，答完立刻教你正解＋考點＋法條並唸給你聽。你只要一直點就好。";
   const flow=ph.exam?["🌅 帶齊證件","🧘 深呼吸","✅ 先寫會的","💪 不留空"]:
