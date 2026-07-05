@@ -109,17 +109,19 @@
   .lec-bar{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden}
   .lec-bar>div{height:100%;background:linear-gradient(90deg,#ffd86b,#ff9e8a);width:0;transition:width .3s}
   .lec-cnt{font-size:13px;color:#9aa4b8;font-weight:700}
-  .lec-stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;overflow-y:auto}
-  .lec-sys{font-size:14px;font-weight:700;color:#7fb5ff;letter-spacing:2px;margin-bottom:18px}
-  .lec-head{font-size:30px;font-weight:800;line-height:1.4;color:#fff;max-width:760px;margin-bottom:18px}
-  .lec-head .law{color:#ffd86b}
-  .lec-body{font-size:19px;line-height:1.9;color:#cfd9e8;max-width:720px}
-  .lec-tag{display:inline-block;font-size:13px;font-weight:800;border-radius:20px;padding:3px 14px;margin-bottom:16px}
-  .lt-tier{background:rgba(127,224,207,.16);color:#7fe0cf}
-  .lt-trap{background:rgba(255,158,138,.18);color:#ff9e8a}
-  .lt-key{background:rgba(127,181,255,.16);color:#9db4ff}
-  .lt-mn{background:rgba(195,167,255,.16);color:#c3a7ff}
-  .lec-big .lec-head{font-size:40px}
+  .lec-stage{flex:1;overflow-y:auto;padding:16px 18px 45vh;max-width:780px;width:100%;margin:0 auto}
+  .lecitem{padding:9px 13px;border-radius:12px;margin:3px 0;font-size:16px;line-height:1.7;color:#9aa4b8;border:1px solid transparent;transition:background .2s,border-color .2s,transform .2s,color .2s}
+  .lecitem .law{color:#ffd86b;font-weight:700}
+  .lecitem.d2{margin-left:20px;font-size:15px}
+  .lecitem.d3{margin-left:40px;font-size:14.5px}
+  .lecitem.d4{margin-left:58px;font-size:14px}
+  .lecitem.sys{font-size:23px;font-weight:800;color:#fff;margin-top:26px;border-bottom:1px solid var(--line);padding-bottom:8px}
+  .lecitem.tier{font-size:17px;font-weight:800;color:#7fe0cf;margin-top:16px}
+  .lecitem.topic{font-weight:800;color:#e9eefb;font-size:17px;margin-top:6px}
+  .lecitem.key{color:#9db4ff}.lecitem.trap{color:#ff9e8a}.lecitem.mn{color:#c3a7ff}
+  .lecitem.reading{background:rgba(255,216,107,.14);border-color:var(--gold);color:#fff;transform:scale(1.015);box-shadow:0 4px 22px rgba(255,216,107,.14)}
+  .lecitem.reading .law{color:#ffe79c}
+  .lecitem.done{opacity:.55}
   .lec-ctrl{display:flex;align-items:center;justify-content:center;gap:16px;padding:18px 18px calc(24px + env(safe-area-inset-bottom))}
   .lec-ctrl button{background:rgba(255,255,255,.08);border:1px solid var(--line);color:#eef1f7;border-radius:50%;
     width:54px;height:54px;font-size:22px;cursor:pointer}
@@ -1032,73 +1034,83 @@ function bodyHTML(c){
 }
 function esc(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
 
-/* ===== 🎧 自動上課播放器 ===== */
+/* ===== 🎧 自動上課播放器（完整體系一次攤開＋逐段高亮朗讀） ===== */
 function lecClean(s){return (s||"").replace(/§\s*([0-9]+(?:-[0-9]+)?)/g,(m,x)=>"第"+x.replace("-","之")+"條")
   .replace(/[🔑⚠️✅❌★🧠📌🟢🟡🔴「」『』]/g," ").replace(/[（）()]/g," ").replace(/\s+/g," ").trim();}
-function lecPushNode(n,arr,sys){
-  if(typeof n==="string"){arr.push({sys,head:esc(n),tag:"",say:lecClean(n)});return;}
-  const tag=(n.tag==="trap"||n.tag==="no")?"trap":n.tag==="mn"?"mn":(n.tag==="key"||n.tag==="star")?"key":"";
+function lecNode(n,arr,depth){
+  if(typeof n==="string"){arr.push({depth,cls:"",html:esc(n),say:lecClean(n)});return;}
+  const cls=(n.tag==="trap"||n.tag==="no")?"trap":n.tag==="mn"?"mn":(n.tag==="key"||n.tag==="star")?"key":(depth<=1?"topic":"");
+  const ic=(n.tag==="trap"||n.tag==="no")?"⚠️ ":n.tag==="mn"?"🧠 ":(n.tag==="key"||n.tag==="star")?"🔑 ":"";
   const pre=(n.tag==="trap"||n.tag==="no")?"注意，":n.tag==="mn"?"口訣，":n.tag==="star"?"重點，":"";
-  arr.push({sys,head:(n.law?`<span class="law">${esc(n.law)}</span> `:"")+esc(n.l),tag,say:lecClean((n.law?n.law+"，":"")+pre+n.l)});
-  if(n.c)n.c.forEach(cc=>lecPushNode(cc,arr,sys));
+  arr.push({depth,cls,html:(n.law?`<span class="law">${esc(n.law)}</span> `:"")+ic+esc(n.l),say:lecClean((n.law?n.law+"，":"")+pre+n.l)});
+  if(n.c)n.c.forEach(cc=>lecNode(cc,arr,depth+1));
 }
-function lectureSlides(sub,sys,all){
+function buildLecItems(sub,sys,all){
   const systems=all?systemsOf(sub).map(s=>s.sys):[sys];
-  const arr=[{sys:sub,head:`${esc(sub)}　體系複習`,body:"躺著聽就好，我一段一段講給你聽 🎧",tag:"",big:true,say:`${sub}，體系複習開始。放輕鬆，躺著聽就好。`}];
-  systems.forEach(system=>{
-    arr.push({sys:sub,head:esc(system),tag:"tier",big:true,say:`體系。${lecClean(system)}。`});
+  const arr=[{depth:0,cls:"sys",html:`${esc(sub)}　·　${esc(systems[0])}${all?"（整科連播）":""}`,say:`${sub}。${lecClean(systems[0])}。體系複習開始，放輕鬆躺著聽就好。`}];
+  systems.forEach((system,si)=>{
+    if(si>0) arr.push({depth:0,cls:"sys",html:esc(system),say:`體系。${lecClean(system)}。`});
     const cur=CURATED[sub+"|"+system];
     if(cur){cur.tiers.forEach(tier=>{const T=TIERLABEL[tier.t];
-      arr.push({sys:system,head:esc(T.name),body:esc(T.desc),tag:"tier",say:lecClean(T.name)+"。"+T.desc});
-      tier.nodes.forEach(n=>lecPushNode(n,arr,system));});}
-    else{conceptsOf(sub,system).forEach(c=>{
-      arr.push({sys:system,head:(c.badge!=="—"?`<span class="law">${c.badge}</span> `:"")+esc(c.concept),body:esc(c.key||""),tag:c.key?"key":"",
-        say:lecClean("考點。"+c.concept+"。"+(c.key?"重點，"+c.key:""))});});}
+      arr.push({depth:0,cls:"tier",html:esc(T.name)+`　<span style="font-weight:400;color:#7f8aa0;font-size:13px">${esc(T.desc)}</span>`,say:lecClean(T.name)});
+      tier.nodes.forEach(n=>lecNode(n,arr,1));});}
+    else{const cps=conceptsOf(sub,system);
+      if(!cps.length)arr.push({depth:1,cls:"",html:"（此體系尚無資料）",say:""});
+      cps.forEach(c=>{arr.push({depth:1,cls:"topic",html:(c.badge!=="—"?`<span class="law">${c.badge}</span> `:"")+esc(c.concept),say:lecClean("考點。"+c.concept)});
+        if(c.key)arr.push({depth:2,cls:"key",html:"🔑 "+esc(c.key),say:lecClean("重點，"+c.key)});});}
   });
-  arr.push({sys:sub,head:"🎉 複習完成",body:"你把整個範圍聽完一遍了，很棒，去睡吧 🌙",tag:"",big:true,say:"複習完成。你把整個範圍聽完一遍了，你很棒，去睡吧。"});
+  arr.push({depth:0,cls:"tier",html:"🎉 複習完成，你把整個範圍聽完一遍了，去睡吧 🌙",say:"複習完成。你把整個範圍聽完一遍了，你很棒，去睡吧。"});
   return arr;
 }
-const LEC={slides:[],i:0,playing:false,wake:null,timer:null};
-function lecCancel(){if("speechSynthesis"in window)speechSynthesis.cancel();}
+const LEC={items:[],nodes:null,i:0,playing:false,wake:null,timer:null,token:0};
+function lecCancel(){if("speechSynthesis"in window)try{speechSynthesis.cancel();}catch(e){}}
 function lecIcon(){document.getElementById("lecPlay").textContent=LEC.playing?"⏸":"▶";}
 function startLecture(all){
   if(!curSys){alert("先在左邊選一個體系");return;}
-  LEC.slides=lectureSlides(curSub,curSys,all);LEC.i=0;LEC.playing=true;lecIcon();
+  LEC.items=buildLecItems(curSub,curSys,all);LEC.i=0;LEC.playing=true;lecIcon();
+  const stage=document.getElementById("lecStage");
+  stage.innerHTML=LEC.items.map((it,idx)=>`<div class="lecitem d${Math.min(it.depth,4)} ${it.cls}" data-idx="${idx}">${it.html}</div>`).join("");
+  LEC.nodes=stage.querySelectorAll(".lecitem");
+  LEC.nodes.forEach(nd=>nd.onclick=()=>{LEC.i=+nd.dataset.idx;LEC.playing=true;lecIcon();step();});
   document.getElementById("lec").classList.add("on");document.body.style.overflow="hidden";
-  requestWake();playSlide();
+  requestWake();step();
 }
-function playSlide(){
+function step(){
   clearTimeout(LEC.timer);lecCancel();
-  const s=LEC.slides[LEC.i];if(!s){closeLecture();return;}
-  document.getElementById("lecBar").style.width=((LEC.i+1)/LEC.slides.length*100)+"%";
-  document.getElementById("lecCnt").textContent=`${LEC.i+1}/${LEC.slides.length}`;
-  const tagH=s.tag&&s.tag!=="tier"?`<span class="lec-tag lt-${s.tag}">${s.tag==="trap"?"⚠️ 陷阱":s.tag==="mn"?"🧠 口訣":"🔑 重點"}</span>`:"";
-  const stage=document.getElementById("lecStage");stage.className="lec-stage"+(s.big?" lec-big":"");
-  stage.innerHTML=`${(s.sys&&s.sys!==curSub&&s.sys!==s.head.replace(/<[^>]+>/g,""))?`<div class="lec-sys">${esc(s.sys)}</div>`:""}${tagH?`<div>${tagH}</div>`:""}
-    <div class="lec-head">${s.head}</div>${s.body?`<div class="lec-body">${s.body}</div>`:""}`;
-  if(LEC.playing)lecSpeak(s.say);
+  if(LEC.i>=LEC.items.length){LEC.playing=false;lecIcon();return;}
+  const tok=++LEC.token;
+  LEC.nodes.forEach((nd,idx)=>{nd.classList.toggle("reading",idx===LEC.i);nd.classList.toggle("done",idx<LEC.i);});
+  document.getElementById("lecBar").style.width=((LEC.i+1)/LEC.items.length*100)+"%";
+  document.getElementById("lecCnt").textContent=`${LEC.i+1}/${LEC.items.length}`;
+  const cur=LEC.nodes[LEC.i]; if(cur)cur.scrollIntoView({block:"center",behavior:"smooth"});
+  const say=LEC.items[LEC.i].say||"";
+  // 安全機制：不論語音成不成功，時間到就自動往下（不會卡在標題）
+  const dur=Math.max(2500,say.length*(160/(parseFloat(document.getElementById("lecRate").value)||1))+1600);
+  LEC.timer=setTimeout(()=>{if(LEC.playing&&tok===LEC.token)advance();},dur);
+  if(LEC.playing&&say)lecSpeak(say,tok);
 }
-function lecSpeak(text){
-  if(!("speechSynthesis"in window)){LEC.timer=setTimeout(nextSlide,Math.max(2600,text.length*90));return;}
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text||"　");u.lang="zh-TW";u.pitch=1;
-  u.rate=parseFloat(document.getElementById("lecRate").value)||1;
-  const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}
-  u.onend=()=>{if(LEC.playing)LEC.timer=setTimeout(nextSlide,450);};
-  LEC.timer=setTimeout(()=>{if(LEC.playing&&!speechSynthesis.speaking)nextSlide();},Math.max(5000,text.length*160+3500));
-  speechSynthesis.speak(u);
+function lecSpeak(text,tok){
+  if(!("speechSynthesis"in window))return;
+  try{speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);u.lang="zh-TW";u.pitch=1;
+    u.rate=parseFloat(document.getElementById("lecRate").value)||1;
+    const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}
+    u.onend=()=>{if(LEC.playing&&tok===LEC.token){clearTimeout(LEC.timer);LEC.timer=setTimeout(advance,350);}};
+    speechSynthesis.speak(u);
+  }catch(e){}
 }
-function nextSlide(){if(LEC.i<LEC.slides.length-1){LEC.i++;playSlide();}else{LEC.playing=false;lecIcon();lecCancel();}}
-function closeLecture(){LEC.playing=false;clearTimeout(LEC.timer);lecCancel();releaseWake();
+function advance(){if(LEC.i<LEC.items.length-1){LEC.i++;step();}
+  else{LEC.playing=false;lecIcon();lecCancel();LEC.nodes&&LEC.nodes.forEach(n=>n.classList.remove("reading"));}}
+function closeLecture(){LEC.playing=false;LEC.token++;clearTimeout(LEC.timer);lecCancel();releaseWake();
   document.getElementById("lec").classList.remove("on");document.body.style.overflow="";}
 async function requestWake(){try{if("wakeLock" in navigator)LEC.wake=await navigator.wakeLock.request("screen");}catch(e){}}
 function releaseWake(){try{if(LEC.wake){LEC.wake.release();LEC.wake=null;}}catch(e){}}
 document.getElementById("lecX").onclick=closeLecture;
-document.getElementById("lecPlay").onclick=()=>{LEC.playing=!LEC.playing;lecIcon();if(LEC.playing)playSlide();else{clearTimeout(LEC.timer);lecCancel();}};
-document.getElementById("lecNext").onclick=()=>{if(LEC.i<LEC.slides.length-1)LEC.i++;LEC.playing=true;lecIcon();playSlide();};
-document.getElementById("lecPrev").onclick=()=>{if(LEC.i>0)LEC.i--;LEC.playing=true;lecIcon();playSlide();};
-document.getElementById("lecRate").onchange=()=>{if(LEC.playing)playSlide();};
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&LEC.wake===null&&document.getElementById("lec").classList.contains("on"))requestWake();});
+document.getElementById("lecPlay").onclick=()=>{LEC.playing=!LEC.playing;lecIcon();if(LEC.playing)step();else{LEC.token++;clearTimeout(LEC.timer);lecCancel();}};
+document.getElementById("lecNext").onclick=()=>{if(LEC.i<LEC.items.length-1)LEC.i++;LEC.playing=true;lecIcon();step();};
+document.getElementById("lecPrev").onclick=()=>{if(LEC.i>0)LEC.i--;LEC.playing=true;lecIcon();step();};
+document.getElementById("lecRate").onchange=()=>{if(LEC.playing)step();};
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&document.getElementById("lec").classList.contains("on"))requestWake();});
 
 buildSide();
 render();
