@@ -100,7 +100,17 @@
   .qtag{display:inline-block;font-size:11.5px;font-weight:700;color:#0c1018;background:var(--gold);border-radius:20px;padding:2px 10px;margin-bottom:8px}
   .qtag.rev{background:var(--lilac)}
   .qmeta{font-size:12px;color:var(--mut);margin-bottom:6px}
-  .stem{font-size:17px;line-height:1.7;font-weight:600;margin-bottom:16px}
+  .stem{font-size:18px;line-height:1.9;font-weight:600;margin-bottom:12px;letter-spacing:.2px}
+  .ses-body.big .stem{font-size:21px;line-height:2}
+  .ses-body.big .opt{font-size:17px}
+  .pty{font-weight:800;padding:0 1px;border-radius:3px}
+  .p-甲{color:#ffd86b}.p-乙{color:#7fe0cf}.p-丙{color:#ff9e8a}.p-丁{color:#c3a7ff}.p-戊{color:#7fb5ff}.p-己{color:#9fe0a8}
+  .qhelp{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .hlp{background:rgba(255,255,255,.06);border:1px solid var(--line);color:#cfe9e2;border-radius:20px;
+    padding:7px 13px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600}
+  .hlp:hover{background:rgba(255,255,255,.11)}
+  .hint{display:none;background:rgba(255,216,107,.1);border:1px solid rgba(255,216,107,.3);border-radius:12px;
+    padding:11px 14px;margin-bottom:14px;font-size:14px;line-height:1.7;color:#ffeab0}
   .opt{display:flex;gap:11px;align-items:flex-start;width:100%;text-align:left;
     background:rgba(255,255,255,.04);border:1.5px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:10px;
     font-family:inherit;font-size:15px;line-height:1.55;color:var(--txt);cursor:pointer;transition:all .12s}
@@ -180,6 +190,7 @@
   <div class="ses-top">
     <button class="x" id="sesX">✕</button>
     <div class="ses-bar"><div id="sesBar"></div></div>
+    <button class="x" id="sesFont" title="字放大">A⁺</button>
     <button class="x" id="sesMute" title="靜音／開聲">🔊</button>
     <div class="ses-cnt" id="sesCnt"></div>
   </div>
@@ -296,6 +307,8 @@ function lawTextOf(r){
   return h;
 }
 function esc(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+// 標色甲乙丙丁戊，讓情境角色好追蹤（對閱讀吃力的人幫助很大）
+function colorParties(s){return s.replace(/[甲乙丙丁戊己]/g,c=>`<span class="pty p-${c}">${c}</span>`);}
 
 /* ===== 機器人語句 ===== */
 const MSGS=["早安。今天不用想全部，我一張一張帶你，你只要點就好。","你已經在別人放棄的路上多走一步了。","忘記很正常，答錯的我都幫你記著、之後回鍋。","分心了沒關係，回來點下一張就好。","一次一題，一天一點，考試那天你會謝謝現在。","你大學把每件事做滿，這次也是。老天有眼。","不用完美，今天比昨天多會一點就贏了。","做不下去時先餵一次魚，再回來一張。"];
@@ -400,12 +413,20 @@ function renderCard(){
   SES.answered=false;
   const rl=(SES.i%5===0)?`<div class="rline"><span class="rf">🤖</span><span class="rt">${todayMsg()}</span></div>`:"";
   let h=rl+`<div class="qtag ${card.type==="review"?"rev":""}">${card.type==="review"?"🔁 回鍋（上次答錯）":"🧠 第 "+(SES.i+1)+" 題"}</div>
-    <div class="qmeta">${r.q.year}年 ${r.sub} 第${r.q.num}題</div>
-    <div class="stem">${esc(r.q.stem)}</div><div id="opts">`;
-  r.q.options.forEach((o,i)=>{h+=`<button class="opt" data-i="${i}"><span class="lt">${L[i]}</span><span>${esc(o)}</span></button>`;});
+    <div class="qmeta">${r.q.year}年 ${r.sub} 第${r.q.num}題　·　讀不懂沒關係，看不太懂就先猜，重點在解答</div>
+    <div class="stem">${colorParties(esc(r.q.stem))}</div>
+    <div class="qhelp"><button class="hlp" id="readStem">🔊 唸題目給我聽</button><button class="hlp" id="hintBtn">🔑 看不懂？先看這題在考什麼</button></div>
+    <div class="hint" id="hintBox"></div>
+    <div id="opts">`;
+  r.q.options.forEach((o,i)=>{h+=`<button class="opt" data-i="${i}"><span class="lt">${L[i]}</span><span>${colorParties(esc(o))}</span></button>`;});
   h+=`</div><div id="teach"></div>`;
   body.innerHTML=h;body.scrollTop=0;
   body.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+  document.getElementById("readStem").onclick=()=>speak(r.q.stem);
+  document.getElementById("hintBtn").onclick=()=>{const hb=document.getElementById("hintBox");
+    hb.style.display="block";hb.innerHTML="📌 <b>這題在考：</b>"+esc(r.p.concept||"（先自己猜一個，答完看解答）");
+    document.getElementById("hintBtn").style.display="none";};
+  if(!muted())speak(r.q.stem);   // 自動唸題目：邊看邊聽，理解更快
 }
 function answer(idx){
   if(SES.answered)return;SES.answered=true;
@@ -459,6 +480,9 @@ document.getElementById("sesX").onclick=closeSession;
 (function(){const mb=document.getElementById("sesMute");
   const set=()=>mb.textContent=muted()?"🔇":"🔊";set();
   mb.onclick=()=>{localStorage.setItem("sjg_mute",muted()?"0":"1");set();if(muted())stopSpeak();};})();
+(function(){const fb=document.getElementById("sesFont"),body=document.getElementById("sesBody");
+  if(localStorage.getItem("sjg_fontbig")==="1")body.classList.add("big");
+  fb.onclick=()=>{body.classList.toggle("big");localStorage.setItem("sjg_fontbig",body.classList.contains("big")?"1":"0");};})();
 
 try{renderCountdown();renderLaunch();renderWeek();renderCal();renderStreak();
   document.getElementById("monthWrap").addEventListener("toggle",renderCal);
