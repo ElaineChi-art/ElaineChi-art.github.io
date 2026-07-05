@@ -1035,6 +1035,7 @@ function bodyHTML(c){
 function esc(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
 
 /* ===== 🎧 自動上課播放器（完整體系一次攤開＋逐段高亮朗讀） ===== */
+function uniq(a){return [...new Set((a||[]).filter(Boolean))];}
 function lecClean(s){return (s||"").replace(/§\s*([0-9]+(?:-[0-9]+)?)/g,(m,x)=>"第"+x.replace("-","之")+"條")
   .replace(/[🔑⚠️✅❌★🧠📌🟢🟡🔴「」『』]/g," ").replace(/[（）()]/g," ").replace(/\s+/g," ").trim();}
 function lecNode(n,arr,depth){
@@ -1056,8 +1057,16 @@ function buildLecItems(sub,sys,all){
       tier.nodes.forEach(n=>lecNode(n,arr,1));});}
     else{const cps=conceptsOf(sub,system);
       if(!cps.length)arr.push({depth:1,cls:"",html:"（此體系尚無資料）",say:""});
-      cps.forEach(c=>{arr.push({depth:1,cls:"topic",html:(c.badge!=="—"?`<span class="law">${c.badge}</span> `:"")+esc(c.concept),say:lecClean("考點。"+c.concept)});
-        if(c.key)arr.push({depth:2,cls:"key",html:"🔑 "+esc(c.key),say:lecClean("重點，"+c.key)});});}
+      cps.forEach(c=>{
+        const showB=c.badge!=="—"&&c.concept.indexOf("§")<0;
+        arr.push({depth:1,cls:"topic",html:(showB?`<span class="law">${c.badge}</span> `:"")+esc(c.concept),say:lecClean("考點。"+c.concept)});
+        const law=(c.rs.find(r=>r.p.law)||{p:{}}).p.law||"";
+        const keys=uniq(c.rs.map(r=>r.p.key)), anss=uniq(c.rs.map(r=>r.p.ans)), traps=uniq(c.rs.map(r=>r.p.trap));
+        if(law)arr.push({depth:2,cls:"",html:`<span class="law">⚖️ ${esc(law)}</span>`,say:lecClean("法條，"+law)});
+        keys.forEach(k=>arr.push({depth:2,cls:"key",html:"🔑 "+esc(k),say:lecClean("核心規則，"+k)}));
+        anss.forEach(a=>arr.push({depth:2,cls:"key",html:"✅ "+esc(a),say:lecClean("正解，"+a)}));
+        traps.forEach(t=>arr.push({depth:2,cls:"trap",html:"⚠️ "+esc(t),say:lecClean("注意，別搞混，"+t)}));
+      });}
   });
   arr.push({depth:0,cls:"tier",html:"🎉 複習完成，你把整個範圍聽完一遍了，去睡吧 🌙",say:"複習完成。你把整個範圍聽完一遍了，你很棒，去睡吧。"});
   return arr;
