@@ -122,6 +122,12 @@
   .lecitem.reading{background:rgba(255,216,107,.14);border-color:var(--gold);color:#fff;transform:scale(1.015);box-shadow:0 4px 22px rgba(255,216,107,.14)}
   .lecitem.reading .law{color:#ffe79c}
   .lecitem.done{opacity:.55}
+  /* 關鍵字秒殺卡 */
+  .lecitem.kwcard{display:block;margin:9px 0;padding:15px 16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--line)}
+  .lecitem.kwcard .kw{display:block;font-size:20px;font-weight:800;color:#ffd86b;margin-bottom:5px;line-height:1.4}
+  .lecitem.kwcard .rf{display:block;font-size:15.5px;color:#cfd9e8;line-height:1.75}
+  .lecitem.kwcard.reading{background:rgba(255,158,138,.14);border-color:var(--coral);transform:scale(1.02)}
+  .lecitem.kwcard.reading .kw{color:#ffdf86}
   .lec-ctrl{display:flex;align-items:center;justify-content:center;gap:16px;padding:18px 18px calc(24px + env(safe-area-inset-bottom))}
   .lec-ctrl button{background:rgba(255,255,255,.08);border:1px solid var(--line);color:#eef1f7;border-radius:50%;
     width:54px;height:54px;font-size:22px;cursor:pointer}
@@ -936,7 +942,9 @@ function render(){
   let html=`<h1 class="sys-title">⚖️ ${curSub}　${curSys}</h1>
     <div class="sys-sub">共 ${cps.length} 個考點　·　依難易分層、每個考點可展開看「每一個選項的觀念」與法條原文</div>
     <div class="tools">
-      <button id="lecBtn" style="border-color:var(--gold);color:#ffd86b">🎧 自動上課（躺著聽本體系）</button>
+      <button id="kwBtn" style="border-color:var(--coral);color:#ff9e8a">⚡ 關鍵字秒殺（看到就反射）</button>
+      <button id="kwAllBtn">⚡ 整科秒殺</button>
+      <button id="lecBtn" style="border-color:var(--gold);color:#ffd86b">🎧 自動上課</button>
       <button id="lecAllBtn">🎧 整科連播</button>
       <button id="expAll">🔽 全部展開</button><button id="colAll">🔼 全部收合</button></div>`;
   if(cur){
@@ -994,6 +1002,8 @@ function render(){
   };
   document.getElementById("lecBtn").onclick=()=>startLecture(false);
   document.getElementById("lecAllBtn").onclick=()=>startLecture(true);
+  document.getElementById("kwBtn").onclick=()=>startKeyword(false);
+  document.getElementById("kwAllBtn").onclick=()=>startKeyword(true);
 }
 // 每題 A~D 選項逐項拆解 → 樹狀（考點→題→選項）
 function autoTreeHTML(cps){
@@ -1074,15 +1084,41 @@ function buildLecItems(sub,sys,all){
 const LEC={items:[],nodes:null,i:0,playing:false,wake:null,timer:null,token:0};
 function lecCancel(){if("speechSynthesis"in window)try{speechSynthesis.cancel();}catch(e){}}
 function lecIcon(){document.getElementById("lecPlay").textContent=LEC.playing?"⏸":"▶";}
-function startLecture(all){
-  if(!curSys){alert("先在左邊選一個體系");return;}
-  LEC.items=buildLecItems(curSub,curSys,all);LEC.i=0;LEC.playing=true;lecIcon();
+function runLecture(items){
+  LEC.items=items;LEC.i=0;LEC.playing=true;lecIcon();
   const stage=document.getElementById("lecStage");
-  stage.innerHTML=LEC.items.map((it,idx)=>`<div class="lecitem d${Math.min(it.depth,4)} ${it.cls}" data-idx="${idx}">${it.html}</div>`).join("");
+  stage.innerHTML=items.map((it,idx)=>`<div class="lecitem d${Math.min(it.depth,4)} ${it.cls}" data-idx="${idx}">${it.html}</div>`).join("");
   LEC.nodes=stage.querySelectorAll(".lecitem");
   LEC.nodes.forEach(nd=>nd.onclick=()=>{LEC.i=+nd.dataset.idx;LEC.playing=true;lecIcon();step();});
   document.getElementById("lec").classList.add("on");document.body.style.overflow="hidden";
   requestWake();step();
+}
+function startLecture(all){if(!curSys){alert("先在左邊選一個體系");return;}runLecture(buildLecItems(curSub,curSys,all));}
+function startKeyword(all){if(!curSys){alert("先在左邊選一個體系");return;}runLecture(buildKeywordItems(curSub,curSys,all));}
+function stripKw(c){return (c||"").replace(/§[0-9的之\-、]+/g,"").replace(/\s+/g,"").trim();}
+function reflexOf(c){
+  const key=c.key||"";
+  const ans=uniq(c.rs.map(r=>r.p.ans))[0]||"";
+  const trap=uniq(c.rs.map(r=>r.p.trap))[0]||"";
+  if(key)return key;
+  if(ans)return ans.replace(/^答案[A-Ea-e][^：:]*[：:]/,"").replace(/^[（(][對錯][)）]/,"").trim();
+  if(trap)return "別搞混："+trap;
+  return "";
+}
+function buildKeywordItems(sub,sys,all){
+  const systems=all?systemsOf(sub).map(s=>s.sys):[sys];
+  const arr=[{depth:0,cls:"sys",html:`⚡ ${esc(sub)} 關鍵字秒殺　·　看到左邊，反射右邊`,say:`${sub}，關鍵字秒殺。看到關鍵字，就反射答案，開始。`}];
+  systems.forEach(system=>{
+    arr.push({depth:0,cls:"tier",html:esc(system),say:lecClean(system)});
+    conceptsOf(sub,system).forEach(c=>{
+      const kw=stripKw(c.concept); if(!kw)return;
+      const rf=reflexOf(c)||"（看解答記一下）";
+      arr.push({depth:1,cls:"kwcard",html:`<span class="kw">${esc(kw)}</span><span class="rf">→ ${esc(rf)}</span>`,
+        say:lecClean("看到，"+kw+"。想到，"+rf)});
+    });
+  });
+  arr.push({depth:0,cls:"tier",html:"🎉 這輪關鍵字全部過完了！多過幾次就變反射 💪",say:"關鍵字秒殺完成，多過幾次就變反射，你很棒。"});
+  return arr;
 }
 function step(){
   clearTimeout(LEC.timer);lecCancel();
