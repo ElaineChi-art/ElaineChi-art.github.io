@@ -1129,20 +1129,22 @@ function step(){
   document.getElementById("lecCnt").textContent=`${LEC.i+1}/${LEC.items.length}`;
   const cur=LEC.nodes[LEC.i]; if(cur)cur.scrollIntoView({block:"center",behavior:"smooth"});
   const say=LEC.items[LEC.i].say||"";
-  // 安全機制：不論語音成不成功，時間到就自動往下（不會卡在標題）
-  const dur=Math.max(2500,say.length*(160/(parseFloat(document.getElementById("lecRate").value)||1))+1600);
+  const rate=parseFloat(document.getElementById("lecRate").value)||1;
+  // 看門狗：以「唸完(onend)」為主；此計時器只是備援，設得很寬鬆，永遠比真正語音長 → 不會打斷聲音
+  const dur=say?(say.length*320/rate+6000):2200;
   LEC.timer=setTimeout(()=>{if(LEC.playing&&tok===LEC.token)advance();},dur);
   if(LEC.playing&&say)lecSpeak(say,tok);
 }
 function lecSpeak(text,tok){
   if(!("speechSynthesis"in window))return;
-  try{speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(text);u.lang="zh-TW";u.pitch=1;
-    u.rate=parseFloat(document.getElementById("lecRate").value)||1;
-    const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}
-    u.onend=()=>{if(LEC.playing&&tok===LEC.token){clearTimeout(LEC.timer);LEC.timer=setTimeout(advance,350);}};
-    speechSynthesis.speak(u);
-  }catch(e){}
+  try{speechSynthesis.cancel();}catch(e){}
+  const u=new SpeechSynthesisUtterance(text);u.lang="zh-TW";u.pitch=1;
+  u.rate=parseFloat(document.getElementById("lecRate").value)||1;
+  const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}
+  u.onend=()=>{if(LEC.playing&&tok===LEC.token){clearTimeout(LEC.timer);LEC.timer=setTimeout(advance,420);}};
+  u.onerror=()=>{};   // 出錯就交給看門狗
+  // 取消後稍等再播，避開 Chrome「cancel 後立刻 speak 會吃掉語音」的 bug
+  setTimeout(()=>{if(LEC.playing&&tok===LEC.token){try{speechSynthesis.resume();speechSynthesis.speak(u);}catch(e){}}},90);
 }
 function advance(){if(LEC.i<LEC.items.length-1){LEC.i++;step();}
   else{LEC.playing=false;lecIcon();lecCancel();LEC.nodes&&LEC.nodes.forEach(n=>n.classList.remove("reading"));}}
