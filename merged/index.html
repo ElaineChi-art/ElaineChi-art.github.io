@@ -444,6 +444,30 @@
     display:inline-flex;align-items:center;gap:6px}
   .schcat span{font-size:11px;opacity:.7}
   .schcat.on{border-color:var(--acc);color:var(--tx);background:color-mix(in srgb,var(--acc) 13%,transparent)}
+  /* 更新提示卡（質感） */
+  .updtoast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,150%);
+    z-index:99999;display:flex;align-items:center;gap:12px;width:max-content;max-width:min(460px,calc(100vw - 24px));
+    padding:12px 12px 12px 17px;border-radius:20px;border:1px solid color-mix(in srgb,var(--acc) 34%,var(--line));
+    background:color-mix(in srgb,var(--panel2) 82%,transparent);
+    -webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5);
+    box-shadow:0 20px 55px rgba(0,0,0,.34),0 2px 10px rgba(0,0,0,.14),inset 0 1px 0 color-mix(in srgb,#fff 8%,transparent);
+    opacity:0;transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .4s}
+  .updtoast.show{transform:translate(-50%,0);opacity:1}
+  .updtoast .ut-ic{font-size:22px;line-height:1;filter:drop-shadow(0 2px 7px color-mix(in srgb,var(--acc) 45%,transparent))}
+  .updtoast .ut-tx{display:flex;flex-direction:column;line-height:1.32;min-width:0}
+  .updtoast .ut-tx b{font-size:14.5px;font-weight:700;color:var(--tx)}
+  .updtoast .ut-tx span{font-size:11.5px;color:var(--mut)}
+  .updtoast .ut-btn{flex:none;margin-left:4px;border:0;cursor:pointer;font-family:inherit;font-weight:700;font-size:14px;color:#fff;
+    background:linear-gradient(120deg,var(--acc),var(--acc2));padding:9px 18px;border-radius:13px;
+    box-shadow:0 5px 16px color-mix(in srgb,var(--acc) 40%,transparent);transition:transform .12s}
+  .updtoast .ut-btn:active{transform:scale(.95)}
+  .updtoast .ut-x{flex:none;border:0;background:transparent;color:var(--mut);cursor:pointer;font-size:14px;padding:6px 4px;opacity:.7}
+  .minitoast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translate(-50%,20px);
+    z-index:99999;background:color-mix(in srgb,var(--panel2) 90%,transparent);color:var(--tx);
+    -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid var(--line);
+    padding:10px 18px;border-radius:999px;font-size:13.5px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.28);
+    opacity:0;transition:transform .35s cubic-bezier(.22,1,.36,1),opacity .3s}
+  .minitoast.show{transform:translate(-50%,0);opacity:1}
   /* 書庫小色標（卡片/大字卡） */
   .shtag{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 11px;border-radius:9px;
     border:1px solid var(--line);color:var(--tx);background:color-mix(in srgb,var(--tx) 5%,transparent);white-space:nowrap}
@@ -609,7 +633,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v87 ・ 2026-07-07</b>（多益內建書庫＋自動排程＋回鍋）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v88 ・ 2026-07-07</b>（質感更新提示＋檢查更新）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -654,19 +678,41 @@
 <script src="toeic-seed.js?v=toeic3"></script>
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='87';
-async function checkUpdate(){
+const APP_VERSION='88';
+async function checkUpdate(manual){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
-    if(!r.ok)return;
+    if(!r.ok){ if(manual)alert('現在連不上伺服器，請稍後再試。'); return; }
     const j=await r.json();
     const v=(j&&j.v!=null)?String(j.v):null;
-    if(!v || v===APP_VERSION) return;
-    const cur=new URL(location.href).searchParams.get('_v');
-    if(cur===v) return;                       // 已針對這版重載過 → 避免迴圈
-    const u=new URL(location.href); u.searchParams.set('_v',v);
-    location.replace(u.toString());           // 改網址強制抓新 HTML
-  }catch(e){}
+    if(!v || v===APP_VERSION){ if(manual)toast('已經是最新版 ✓'); return; }
+    showUpdateToast(v);                        // 有新版 → 顯示質感更新卡（點了才更新，過程平順、不影響資料）
+  }catch(e){ if(manual)alert('檢查更新失敗，請稍後再試。'); }
+}
+function forceUpdate(v){
+  try{ const u=new URL(location.href);
+    u.searchParams.set('_v', v||String(Date.now()));
+    u.searchParams.set('_t', Date.now());     // 時間戳 → 一定抓到最新版，連主畫面圖示也能更新
+    location.replace(u.toString());
+  }catch(e){ location.reload(); }
+}
+function showUpdateToast(v){
+  if(document.getElementById('updToast')) return;
+  const t=document.createElement('div'); t.id='updToast'; t.className='updtoast';
+  t.innerHTML=`<div class="ut-ic">✨</div>
+    <div class="ut-tx"><b>有新版本</b><span>點一下更新到最新 · 不會影響你的單字與進度</span></div>
+    <button class="ut-btn">更新</button>
+    <button class="ut-x" aria-label="稍後">✕</button>`;
+  t.querySelector('.ut-btn').onclick=()=>forceUpdate(v);
+  t.querySelector('.ut-x').onclick=()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); };
+  document.body.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+}
+// 輕量提示（給「已是最新版」等）
+function toast(msg){
+  const t=document.createElement('div'); t.className='minitoast'; t.textContent=msg;
+  document.body.appendChild(t); requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); },2200);
 }
 checkUpdate(); setInterval(checkUpdate, 60000);
 
@@ -2585,6 +2631,7 @@ function openTheme(){
        <button class="btn ghost sm" onclick="document.getElementById('btnVoice').click()">語音設定</button>
        <button class="btn ghost sm" onclick="document.getElementById('ov').classList.remove('show');openReadingApiKey()">AI 金鑰</button>
        <button class="btn ghost sm sharebtn" onclick="document.getElementById('btnShare').click()">分享給朋友</button>
+       <button class="btn ghost sm" onclick="checkUpdate(true)">🔄 檢查更新</button>
      </div>
      <div class="themegrid">${THEMES.map(t=>
        `<button class="themesw${t.id===cur?' on':''}" data-id="${t.id}">
