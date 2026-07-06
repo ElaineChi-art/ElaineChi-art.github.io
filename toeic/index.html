@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>多益 990 每日訓練</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f1420">
+<style>
+:root{
+  --bg:#0f1420; --bg2:#161d2e; --card:#1b2334; --line:#2a3550;
+  --ink:#eaf0ff; --sub:#9fb0d0; --dim:#6b7ea3;
+  --gold:#e7c072; --gold2:#f3d89a; --grn:#6fd68a; --red:#f08a8a; --blu:#7fb0ff;
+  --shadow:0 10px 40px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+  font-size:17px;line-height:1.7;overscroll-behavior-y:none}
+body{padding:0 0 90px;max-width:640px;margin:0 auto;min-height:100vh;
+  background:radial-gradient(1200px 500px at 50% -10%,#1a2540 0%,var(--bg) 55%)}
+h1,h2,h3{font-family:"Cormorant Garamond","Noto Serif TC",serif;font-weight:600;letter-spacing:.02em}
+a{color:var(--gold2);text-decoration:none}
+.wrap{padding:18px 18px 0}
+
+/* header */
+header{padding:26px 20px 12px;text-align:center}
+header .kick{font-size:12px;letter-spacing:.35em;color:var(--gold);text-transform:uppercase}
+header h1{font-size:34px;margin:6px 0 2px;color:var(--gold2)}
+header .sub{font-size:13px;color:var(--sub)}
+
+/* card */
+.card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);
+  border-radius:20px;padding:20px;margin:14px 0;box-shadow:var(--shadow)}
+.card h2{font-size:22px;margin:0 0 4px}
+.muted{color:var(--sub);font-size:14px}
+.tiny{color:var(--dim);font-size:12px}
+
+/* today panel */
+.quote{border-left:3px solid var(--gold);padding:8px 0 8px 14px;margin:10px 0;
+  color:var(--gold2);font-family:"Noto Serif TC",serif;font-size:15px;line-height:1.6}
+.stat-row{display:flex;gap:10px;margin:14px 0 4px}
+.stat{flex:1;background:#131a29;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:26px;color:var(--gold2);font-family:"Cormorant Garamond",serif}
+.stat span{font-size:11px;color:var(--dim)}
+
+/* buttons */
+.btn{display:block;width:100%;border:0;border-radius:16px;padding:16px;font-size:18px;font-weight:700;
+  cursor:pointer;margin:10px 0;font-family:inherit;transition:transform .08s,filter .15s}
+.btn:active{transform:scale(.98)}
+.btn.gold{background:linear-gradient(135deg,var(--gold),#d8a94e);color:#1a1206}
+.btn.ghost{background:#141c2c;color:var(--ink);border:1px solid var(--line)}
+.btn.sm{padding:12px;font-size:15px;margin:6px 0}
+.row{display:flex;gap:10px}
+.row .btn{margin:8px 0}
+
+/* flashcard */
+#study{display:none}
+.fc{min-height:320px;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:26px 18px;position:relative}
+.fc .word{font-size:44px;font-weight:700;letter-spacing:.01em;font-family:"Cormorant Garamond",serif}
+.fc .pos{color:var(--gold);font-size:14px;margin-top:6px;letter-spacing:.1em}
+.fc .back{margin-top:18px;width:100%;display:none}
+.fc .zh{font-size:22px;color:var(--gold2);margin:6px 0}
+.fc .ex{font-size:16px;color:var(--ink);margin-top:14px;line-height:1.65;text-align:left;
+  background:#131a29;border:1px solid var(--line);border-radius:14px;padding:14px}
+.fc .ex .en b{color:var(--gold2);font-style:normal}
+.fc .ex .zht{color:var(--sub);font-size:14px;margin-top:6px;display:block}
+.tapHint{color:var(--dim);font-size:13px;margin-top:20px}
+.spk{position:absolute;top:10px;right:12px;background:#141c2c;border:1px solid var(--line);
+  border-radius:12px;padding:8px 12px;color:var(--gold2);font-size:18px;cursor:pointer}
+.grade{display:none;gap:8px;margin-top:6px}
+.grade .btn{margin:0}
+.g0{background:#3a2020;color:var(--red);border:1px solid #5a2e2e}
+.g1{background:#31302015;background:#2a2a1a;color:var(--gold2);border:1px solid #4a4526}
+.g2{background:#1c3324;color:var(--grn);border:1px solid #2e5a3e}
+.prog{height:8px;background:#131a29;border-radius:8px;overflow:hidden;margin:4px 0 12px}
+.prog>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:0;transition:width .3s}
+
+/* quiz */
+#quiz{display:none}
+.q .stem{font-size:20px;margin:6px 0 16px;text-align:center}
+.q .stem .big{font-size:30px;color:var(--gold2);font-family:"Cormorant Garamond",serif}
+.opt{display:block;width:100%;text-align:left;background:#141c2c;border:1px solid var(--line);
+  border-radius:14px;padding:15px 16px;margin:9px 0;color:var(--ink);font-size:17px;cursor:pointer;font-family:inherit}
+.opt:active{transform:scale(.99)}
+.opt.ok{background:#1c3324;border-color:#2e5a3e;color:var(--grn)}
+.opt.no{background:#3a2020;border-color:#5a2e2e;color:var(--red)}
+.opt.dim{opacity:.5}
+
+/* nav */
+nav{position:fixed;bottom:0;left:0;right:0;max-width:640px;margin:0 auto;display:flex;
+  background:rgba(15,20,32,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);z-index:20}
+nav button{flex:1;background:0;border:0;color:var(--dim);padding:12px 4px 16px;font-size:11px;cursor:pointer;font-family:inherit}
+nav button .ic{display:block;font-size:22px;margin-bottom:2px}
+nav button.on{color:var(--gold2)}
+
+/* calendar */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}
+.cal .d{aspect-ratio:1;border-radius:8px;background:#131a29;display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--dim);border:1px solid transparent}
+.cal .d.on{background:linear-gradient(135deg,var(--gold),#c99a44);color:#1a1206;font-weight:700}
+.cal .d.today{border-color:var(--gold2)}
+.cal .h{color:var(--dim);font-size:10px;text-align:center;padding-bottom:2px}
+.done-msg{text-align:center;padding:30px 10px}
+.done-msg .em{font-size:52px}
+.pill{display:inline-block;background:#141c2c;border:1px solid var(--line);border-radius:999px;
+  padding:4px 12px;font-size:12px;color:var(--sub);margin:3px 4px 0 0}
+.seg{display:flex;background:#131a29;border:1px solid var(--line);border-radius:12px;padding:4px;margin:10px 0}
+.seg button{flex:1;background:0;border:0;color:var(--sub);padding:9px;border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit}
+.seg button.on{background:var(--card);color:var(--gold2)}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kick">TOEIC · Road to 990</div>
+  <h1>多益 990</h1>
+  <div class="sub">每天一點點 · 語音優先 · 不用讀一大段</div>
+</header>
+
+<!-- ============ TODAY ============ -->
+<section id="today" class="wrap">
+  <div class="card">
+    <h2>今天</h2>
+    <label class="tiny" style="display:block;margin:2px 0 4px;color:var(--dim)">攻略情境（21 個多益場景）</label>
+    <select id="deckSel" onchange="setDeck(this.value)" style="width:100%;background:#131a29;color:var(--gold2);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:15px;font-family:inherit;margin-bottom:10px"></select>
+    <div class="muted" id="todayLine">載入中…</div>
+    <div class="quote" id="anchor">You have no choice — 990 不是天才才拿得到，是每天沒斷過的人拿到的。</div>
+    <div class="stat-row">
+      <div class="stat"><b id="sNew">0</b><span>今天新字</span></div>
+      <div class="stat"><b id="sDue">0</b><span>該複習</span></div>
+      <div class="stat"><b id="sStreak">0</b><span>連續天數</span></div>
+    </div>
+    <button class="btn gold" onclick="startStudy()">▶︎ 開始今天（背單字）</button>
+    <div class="row">
+      <button class="btn ghost sm" onclick="go('quiz');newQuiz()">⚡ 直接測驗</button>
+      <button class="btn ghost sm" onclick="go('stats')">📅 看進度</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:18px">現在的策略</h2>
+    <p class="muted" style="margin:6px 0">你有兩場仗：<b style="color:var(--gold2)">司律 8/1</b> 是最急的，先顧它。多益 990 是馬拉松——<b style="color:var(--gold2)">現在每天 15 分鐘</b>維持手感，<b>8/1 考完再火力全開</b>。別讓英文吃掉刑法時間。</p>
+    <div>
+      <span class="pill">① 背單字（會唸給你聽）</span>
+      <span class="pill">② 立刻測驗鞏固</span>
+      <span class="pill">③ 隔幾天自動回鍋</span>
+    </div>
+    <p class="tiny" style="margin-top:12px">單字來源：你下載的<b style="color:var(--sub)">多益解密</b>整套教材——單字書 21 情境＋13 場景講義，共 <b style="color:var(--sub)">2600+ 單字</b>與 <b style="color:var(--sub)">628 句必考句型</b>。上面選單挑情境，下面 🎧 句型可以躺著聽。</p>
+  </div>
+</section>
+
+<!-- ============ STUDY ============ -->
+<section id="study" class="wrap">
+  <div class="prog"><i id="fcBar"></i></div>
+  <div class="tiny" style="text-align:center" id="fcCnt"></div>
+  <div class="card">
+    <div class="fc" id="fcInner" onclick="flip()">
+      <div class="spk" onclick="event.stopPropagation();sayWord()">🔊</div>
+      <div class="tiny" id="fcDeck" style="position:absolute;top:14px;left:14px;color:var(--dim)"></div>
+      <div class="word" id="fcWord">—</div>
+      <div class="pos" id="fcPos"></div>
+      <div class="back" id="fcBack">
+        <div class="zh" id="fcZh"></div>
+        <div class="ex" id="fcEx"></div>
+      </div>
+      <div class="tapHint" id="fcHint">點一下看中文＋例句</div>
+    </div>
+    <div class="grade" id="fcGrade">
+      <button class="btn g0" onclick="grade(0)">不熟</button>
+      <button class="btn g1" onclick="grade(1)">普通</button>
+      <button class="btn g2" onclick="grade(2)">熟</button>
+    </div>
+  </div>
+  <button class="btn ghost sm" onclick="go('today')">結束，回今天</button>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section id="quiz" class="wrap">
+  <div class="prog"><i id="qzBar"></i></div>
+  <div class="seg" id="qzMode">
+    <button data-m="mix" class="on" onclick="setQMode('mix')">綜合</button>
+    <button data-m="e2z" onclick="setQMode('e2z')">英→中</button>
+    <button data-m="z2e" onclick="setQMode('z2e')">中→英</button>
+    <button data-m="cloze" onclick="setQMode('cloze')">例句填空</button>
+  </div>
+  <div class="card">
+    <div class="q" id="qBody"></div>
+  </div>
+  <button class="btn ghost sm" onclick="go('today')">回今天</button>
+</section>
+
+<!-- ============ PATTERN ============ -->
+<section id="pattern" class="wrap">
+  <div class="prog"><i id="ptBar"></i></div>
+  <div class="tiny" style="text-align:center" id="ptCnt"></div>
+  <div class="card">
+    <div class="fc" id="ptInner" onclick="ptFlip()">
+      <div class="spk" onclick="event.stopPropagation();ptSay()">🔊</div>
+      <div class="tiny" id="ptDeck" style="position:absolute;top:14px;left:14px;color:var(--dim)"></div>
+      <div style="font-size:15px;color:var(--gold);letter-spacing:.1em;margin-bottom:14px">必考句型</div>
+      <div id="ptEn" style="font-size:24px;line-height:1.5;font-weight:600">—</div>
+      <div class="back" id="ptBack" style="text-align:center">
+        <div class="zh" id="ptZh" style="font-size:19px"></div>
+      </div>
+      <div class="tapHint" id="ptHint">點一下看中文</div>
+    </div>
+    <div class="row">
+      <button class="btn ghost sm" onclick="ptSay()">🔊 再聽一次</button>
+      <button class="btn gold sm" onclick="ptNext()">下一句 ›</button>
+    </div>
+  </div>
+  <button class="btn ghost sm" onclick="go('today')">回今天</button>
+</section>
+
+<!-- ============ STATS ============ -->
+<section id="stats" class="wrap">
+  <div class="card">
+    <h2>進度</h2>
+    <div class="stat-row">
+      <div class="stat"><b id="tTotal">0</b><span>總字數</span></div>
+      <div class="stat"><b id="tMaster">0</b><span>已熟</span></div>
+      <div class="stat"><b id="tStreak">0</b><span>連續天數</span></div>
+    </div>
+    <h3 style="font-size:16px;margin:16px 0 0" id="calTitle"></h3>
+    <div class="cal" id="cal"></div>
+    <p class="tiny" style="margin-top:14px">金色=那天有讀。目標是格子不要斷。</p>
+  </div>
+  <div class="card">
+    <h2 style="font-size:18px">990 的路（老實說）</h2>
+    <p class="muted" style="margin:6px 0">990 是滿分等級，靠三件事堆出來：<br>
+    <b style="color:var(--gold2)">① 單字量</b>（8/1 前每天 10 字，之後每天 25 字）<br>
+    <b style="color:var(--gold2)">② 聽力反射</b>（Part 2/3/4：聽到就懂，不翻譯）<br>
+    <b style="color:var(--gold2)">③ 閱讀速度</b>（Part 7 最難，靠大量讀短文）</p>
+    <p class="tiny">這頁先幫你顧「單字＋反射」。8/1 後我再幫你加聽力跟閱讀速度訓練。</p>
+  </div>
+  <button class="btn ghost sm" onclick="go('today')">回今天</button>
+</section>
+
+<!-- ============ NAV ============ -->
+<nav>
+  <button data-v="today" class="on" onclick="go('today')"><span class="ic">🏠</span>今天</button>
+  <button data-v="study" onclick="startStudy()"><span class="ic">📇</span>背單字</button>
+  <button data-v="quiz" onclick="go('quiz');newQuiz()"><span class="ic">⚡</span>測驗</button>
+  <button data-v="pattern" onclick="go('pattern');startPattern()"><span class="ic">🎧</span>句型</button>
+  <button data-v="stats" onclick="go('stats')"><span class="ic">📅</span>進度</button>
+</nav>
+
+<script src="words.js"></script>
+<script src="patterns.js"></script>
+<script>
+/* ---------- storage ---------- */
+const LS={
+  get srs(){return JSON.parse(localStorage.getItem('toeic_srs')||'{}')},
+  set srs(v){localStorage.setItem('toeic_srs',JSON.stringify(v))},
+  get log(){return JSON.parse(localStorage.getItem('toeic_log')||'{}')},
+  set log(v){localStorage.setItem('toeic_log',JSON.stringify(v))},
+  get sets(){return JSON.parse(localStorage.getItem('toeic_sets')||'{"new":10,"deck":"__all__"}')},
+  set sets(v){localStorage.setItem('toeic_sets',JSON.stringify(v))}
+};
+const WORDS=(window.TOEIC_WORDS||[]).map((w,i)=>({...w,id:i}));
+const DECKS=window.TOEIC_DECKS||[...new Set(WORDS.map(w=>w.deck))];
+function curDeck(){return LS.sets.deck||'__all__'}
+function inDeck(w){const d=curDeck();return d==='__all__'||w.deck===d}
+function setDeck(v){const s=LS.sets;s.deck=v;LS.sets=s;renderToday()}
+function fillDeckSel(){
+  const sel=document.getElementById('deckSel');if(!sel)return;
+  const cnt=d=>WORDS.filter(w=>w.deck===d).length;
+  const done=d=>WORDS.filter(w=>w.deck===d&&card(w.id).seen>0).length;
+  let html=`<option value="__all__">全部依順序（${WORDS.length} 字）</option>`;
+  DECKS.forEach((d,i)=>{html+=`<option value="${d}">${String(i+1).padStart(2,'0')}. ${d}（${done(d)}/${cnt(d)}）</option>`});
+  sel.innerHTML=html;sel.value=curDeck();
+}
+const INTERVAL=[0,1,2,4,7,15,30,60]; // days by level
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function addDays(n){const d=new Date();d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+
+/* ---------- SRS selection ---------- */
+function card(id){const s=LS.srs;return s[id]||{lv:0,due:'0000-00-00',seen:0}}
+function dueList(){const t=today();return WORDS.filter(w=>inDeck(w)&&(()=>{const c=card(w.id);return c.seen>0 && c.due<=t})())}
+function newList(){return WORDS.filter(w=>inDeck(w)&&card(w.id).seen===0)}
+function todaysBatch(){
+  const due=dueList();
+  const n=LS.sets.new;
+  const fresh=newList().slice(0,n);
+  return [...due,...fresh];
+}
+
+/* ---------- TTS ---------- */
+let VOICES=[];
+function loadVoices(){VOICES=speechSynthesis.getVoices()}
+if('speechSynthesis'in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+function pickVoice(){
+  const en=VOICES.filter(v=>/en[-_]/i.test(v.lang)||/English/i.test(v.name));
+  const score=v=>{let s=0;const n=(v.name||'').toLowerCase();
+    if(/en[-_]us/i.test(v.lang))s+=5;if(/en[-_]gb/i.test(v.lang))s+=3;
+    if(/samantha|ava|allison|siri|zoe|karen|daniel|serena|google/.test(n))s+=4;
+    if(/^en/i.test(v.lang))s+=1;return s;};
+  return en.sort((a,b)=>score(b)-score(a))[0]||VOICES[0];
+}
+let MUTE=false;
+function speak(text,rate){
+  if(MUTE||!('speechSynthesis'in window)||!text)return;
+  try{speechSynthesis.cancel()}catch(e){}
+  const u=new SpeechSynthesisUtterance(text);
+  const v=pickVoice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-US';
+  u.rate=rate||.92;u.pitch=1;
+  setTimeout(()=>{try{speechSynthesis.resume();speechSynthesis.speak(u)}catch(e){}},60);
+}
+function sayWord(){const w=STUDY.batch[STUDY.i];if(w)speak(w.w,.9)}
+
+/* ---------- view switching ---------- */
+function go(v){
+  ['today','study','quiz','pattern','stats'].forEach(s=>document.getElementById(s).style.display=(s===v?'block':'none'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  try{speechSynthesis.cancel()}catch(e){}
+  if(v==='today')renderToday();
+  if(v==='stats')renderStats();
+  window.scrollTo(0,0);
+}
+
+/* ---------- TODAY ---------- */
+function streak(){
+  const log=LS.log;let s=0;let d=new Date();
+  // if today not done yet, start counting from yesterday
+  const t=today();if(!log[t])d.setDate(d.getDate()-1);
+  for(;;){const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(log[k]){s++;d.setDate(d.getDate()-1)}else break}
+  return s;
+}
+function renderToday(){
+  fillDeckSel();
+  const due=dueList().length, fresh=Math.min(LS.sets.new,newList().length);
+  document.getElementById('sNew').textContent=fresh;
+  document.getElementById('sDue').textContent=due;
+  document.getElementById('sStreak').textContent=streak();
+  const t=LS.log[today()]||0;
+  document.getElementById('todayLine').innerHTML= t? `今天已讀 <b style="color:var(--gold2)">${t}</b> 張 👏 有空可以再來幾張` : `今天還沒開始 · 目標 <b style="color:var(--gold2)">${fresh+due}</b> 張（${fresh} 新 + ${due} 複習）`;
+}
+
+/* ---------- STUDY ENGINE ---------- */
+const STUDY={batch:[],i:0,flipped:false};
+function startStudy(){
+  STUDY.batch=todaysBatch();STUDY.i=0;
+  if(STUDY.batch.length===0){
+    go('study');
+    document.getElementById('study').querySelector('.card').innerHTML=
+      '<div class="done-msg"><div class="em">🎉</div><h2>今天沒有待背的字了</h2><p class="muted">複習都清光了。去測驗鞏固，或明天再來。</p></div>';
+    return;
+  }
+  go('study');showCard();
+}
+function showCard(){
+  const s=document.getElementById('study');
+  if(STUDY.i>=STUDY.batch.length){
+    s.querySelector('.card').innerHTML=
+      '<div class="done-msg"><div class="em">✅</div><h2>這輪背完了！</h2><p class="muted">連續 '+streak()+' 天。去⚡測驗把它們釘牢。</p><button class="btn gold" onclick="go(\'quiz\');newQuiz()">開始測驗</button></div>';
+    document.getElementById('fcBar').style.width='100%';
+    return;
+  }
+  STUDY.flipped=false;
+  const w=STUDY.batch[STUDY.i];
+  document.getElementById('fcWord').textContent=w.w;
+  document.getElementById('fcDeck').textContent=w.deck||'';
+  document.getElementById('fcPos').textContent=(w.p||[]).join(' · ');
+  document.getElementById('fcZh').textContent=(w.z||[]).join('；');
+  const ex=highlightWord(w.e,w.w);
+  document.getElementById('fcEx').innerHTML=`<span class="en">${ex}</span><span class="zht">${w.t||''}</span>`;
+  document.getElementById('fcBack').style.display='none';
+  document.getElementById('fcHint').style.display='block';
+  document.getElementById('fcGrade').style.display='none';
+  document.getElementById('fcBar').style.width=(STUDY.i/STUDY.batch.length*100)+'%';
+  document.getElementById('fcCnt').textContent=`${STUDY.i+1} / ${STUDY.batch.length}`;
+  speak(w.w,.9);
+}
+function highlightWord(sent,w){
+  if(!sent)return'';
+  try{const re=new RegExp('\\b('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\w*)\\b','ig');
+    return sent.replace(re,'<b>$1</b>');}catch(e){return sent}
+}
+function flip(){
+  if(STUDY.flipped)return;
+  STUDY.flipped=true;
+  document.getElementById('fcBack').style.display='block';
+  document.getElementById('fcHint').style.display='none';
+  document.getElementById('fcGrade').style.display='flex';
+  const w=STUDY.batch[STUDY.i];
+  setTimeout(()=>speak(w.e,.92),300);
+}
+function grade(g){
+  const w=STUDY.batch[STUDY.i];const s=LS.srs;const c=card(w.id);
+  let lv=c.lv;
+  if(g===0)lv=Math.max(0,lv-1);else if(g===1)lv=Math.min(INTERVAL.length-1,lv+1);else lv=Math.min(INTERVAL.length-1,lv+2);
+  s[w.id]={lv,due:addDays(INTERVAL[lv]||0),seen:(c.seen||0)+1};
+  LS.srs=s;
+  if(g===0){STUDY.batch.push(w);} // requeue hard ones this session
+  const log=LS.log;log[today()]=(log[today()]||0)+1;LS.log=log;
+  STUDY.i++;showCard();
+}
+
+/* ---------- QUIZ ENGINE ---------- */
+const QUIZ={mode:'mix',pool:[],n:0,total:10};
+function setQMode(m){QUIZ.mode=m;document.querySelectorAll('#qzMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));newQuiz()}
+function quizPool(){
+  const seen=WORDS.filter(w=>card(w.id).seen>0);
+  return (seen.length>=4?seen:WORDS);
+}
+function newQuiz(){QUIZ.pool=quizPool();QUIZ.n=0;QUIZ.total=Math.min(10,QUIZ.pool.length);nextQ()}
+function pick(arr,n,not){const r=[];const p=arr.filter(x=>x!==not);while(r.length<n&&p.length){r.push(p.splice(Math.random()*p.length|0,1)[0])}return r}
+function nextQ(){
+  const body=document.getElementById('qBody');
+  document.getElementById('qzBar').style.width=(QUIZ.n/QUIZ.total*100)+'%';
+  if(QUIZ.n>=QUIZ.total){
+    body.innerHTML='<div class="done-msg"><div class="em">⭐️</div><h2>測驗完成</h2><p class="muted">再來一輪，或回去背新字。</p><button class="btn gold" onclick="newQuiz()">再一輪</button></div>';
+    return;
+  }
+  const w=QUIZ.pool[Math.random()*QUIZ.pool.length|0];
+  let mode=QUIZ.mode;if(mode==='mix')mode=['e2z','z2e','cloze'][Math.random()*3|0];
+  const others=pick(QUIZ.pool,3,w);
+  if(mode==='e2z'){
+    const opts=shuffle([w,...others]);
+    body.innerHTML=`<div class="stem"><span class="big">${w.w}</span><div class="tiny">${(w.p||[]).join(' · ')}</div></div>`+
+      opts.map(o=>`<button class="opt" onclick="answer(this,${o.id===w.id},${w.id})">${(o.z||[]).join('；')}</button>`).join('');
+    speak(w.w,.9);
+  }else if(mode==='z2e'){
+    const opts=shuffle([w,...others]);
+    body.innerHTML=`<div class="stem">${(w.z||[]).join('；')}</div>`+
+      opts.map(o=>`<button class="opt" onclick="answer(this,${o.id===w.id},${w.id})">${o.w}</button>`).join('');
+  }else{ // cloze
+    const blanked=(w.e||'').replace(new RegExp('\\b'+w.w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\w*\\b','i'),'____');
+    const opts=shuffle([w,...others]);
+    body.innerHTML=`<div class="stem" style="font-size:17px;text-align:left;line-height:1.7">${blanked}</div>`+
+      opts.map(o=>`<button class="opt" onclick="answer(this,${o.id===w.id},${w.id})">${o.w}</button>`).join('');
+  }
+}
+function answer(el,correct,wid){
+  const btns=el.parentElement.querySelectorAll('.opt');
+  const w=WORDS[wid];
+  btns.forEach(b=>{b.onclick=null;
+    if(b.textContent===w.w||b.textContent===(w.z||[]).join('；'))b.classList.add('ok');});
+  if(!correct)el.classList.add('no');
+  // update srs slightly
+  const s=LS.srs,c=card(wid);
+  if(correct){s[wid]={lv:Math.min(INTERVAL.length-1,c.lv+1),due:addDays(INTERVAL[Math.min(INTERVAL.length-1,c.lv+1)]),seen:(c.seen||0)+1}}
+  else{s[wid]={lv:Math.max(0,c.lv-1),due:addDays(0),seen:(c.seen||0)+1}}
+  LS.srs=s;
+  speak(w.w,.9);
+  QUIZ.n++;
+  setTimeout(nextQ,correct?750:1600);
+}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* ---------- STATS ---------- */
+function renderStats(){
+  document.getElementById('tTotal').textContent=WORDS.length;
+  document.getElementById('tMaster').textContent=WORDS.filter(w=>card(w.id).lv>=4).length;
+  document.getElementById('tStreak').textContent=streak();
+  const now=new Date();const y=now.getFullYear(),m=now.getMonth();
+  document.getElementById('calTitle').textContent=`${y} 年 ${m+1} 月`;
+  const first=new Date(y,m,1).getDay();const days=new Date(y,m+1,0).getDate();
+  const log=LS.log;const t=today();
+  let html=['日','一','二','三','四','五','六'].map(h=>`<div class="h">${h}</div>`).join('');
+  for(let i=0;i<first;i++)html+='<div class="d"></div>';
+  for(let d=1;d<=days;d++){
+    const k=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const on=log[k]?'on':'';const td=(k===t)?'today':'';
+    html+=`<div class="d ${on} ${td}" title="${log[k]||0} 張">${d}</div>`;
+  }
+  document.getElementById('cal').innerHTML=html;
+}
+
+/* ---------- PATTERN ENGINE ---------- */
+const PATS=(window.TOEIC_PATTERNS||[]);
+const PT={list:[],i:0,flipped:false};
+function ptPool(){
+  const d=curDeck();
+  if(d==='__all__')return PATS;
+  const scene=d.replace('場景｜','');
+  const sub=PATS.filter(p=>p.deck===scene);
+  return sub.length?sub:PATS;
+}
+function startPattern(){
+  PT.list=shuffle(ptPool());PT.i=0;
+  if(!PT.list.length){document.getElementById('ptEn').textContent='（沒有句型資料）';return;}
+  ptShow();
+}
+function ptShow(){
+  if(PT.i>=PT.list.length)PT.i=0;
+  PT.flipped=false;
+  const p=PT.list[PT.i];
+  document.getElementById('ptEn').textContent=p.e;
+  document.getElementById('ptZh').textContent=p.t;
+  document.getElementById('ptDeck').textContent=p.deck||'';
+  document.getElementById('ptBack').style.display='none';
+  document.getElementById('ptHint').style.display='block';
+  document.getElementById('ptBar').style.width=((PT.i+1)/PT.list.length*100)+'%';
+  document.getElementById('ptCnt').textContent=`${PT.i+1} / ${PT.list.length}`;
+  ptSay();
+}
+function ptSay(){const p=PT.list[PT.i];if(p)speak(p.e,.95)}
+function ptFlip(){
+  if(PT.flipped)return;PT.flipped=true;
+  document.getElementById('ptBack').style.display='block';
+  document.getElementById('ptHint').style.display='none';
+}
+function ptNext(){
+  const log=LS.log;log[today()]=(log[today()]||0)+1;LS.log=log;
+  PT.i++;ptShow();
+}
+
+/* ---------- init ---------- */
+renderToday();
+</script>
+</body>
+</html>

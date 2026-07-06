@@ -391,13 +391,14 @@
     <div class="modal" id="detModal"></div>
   </div>
 
+<script src="toeic-reading.js?v=1"></script>
 <script>
 /* ============================================================
    資料模型：localStorage readingDB_v1
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v23';
+const APP_VERSION='v24';
 const LS='readingDB_v1';
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
@@ -1141,6 +1142,22 @@ function importData(input){ const f=input.files[0]; if(!f)return; const r=new Fi
 
 /* ---------- 啟動 ---------- */
 document.getElementById('ver').textContent=APP_VERSION;
+// 多益 990 閱讀・預載書櫃（只載一次，之後可自行新增/刪除；載過就不再重覆）
+function seedReadingTOEIC(){
+  try{
+    if(!window.TOEIC_READING || localStorage.getItem('readingSeededTOEIC')==='1') return;
+    const shelfName=window.TOEIC_READING_SHELF||'多益 990 閱讀';
+    let sh=DB.shelves.find(s=>s.name===shelfName);
+    if(!sh){ sh={id:uid(),name:shelfName}; DB.shelves.push(sh); }
+    window.TOEIC_READING.forEach(p=>{
+      const t={id:uid(),title:p.title,article:p.article,words:parseWordLines(p.words),
+        shelf:sh.id,created:Date.now(),updated:Date.now()};
+      DB.texts[t.id]=t; if(!DB.cur)DB.cur=t.id;
+    });
+    localStorage.setItem('readingSeededTOEIC','1'); save();
+  }catch(e){ console.warn('seedReadingTOEIC failed',e); }
+}
+seedReadingTOEIC();
 renderShelf();
 if(DB.cur&&DB.texts[DB.cur]) openText(DB.cur);
 // 首次示範資料

@@ -412,6 +412,38 @@
   .shelfchip.on{border-color:var(--acc);color:var(--tx);background:color-mix(in srgb,var(--acc) 13%,transparent);
     box-shadow:0 1px 8px color-mix(in srgb,var(--acc) 16%,transparent)}
   .shelfchip.on::after{content:'✓';font-size:11px;color:var(--acc);font-weight:700}
+  /* 內建多益書庫：可橫向滑動的分類 chips */
+  .catbar{display:flex;gap:8px;overflow-x:auto;padding:10px 2px 12px;margin:2px 0 6px;
+    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
+  .catbar::-webkit-scrollbar{display:none}
+  .catchip{flex:0 0 auto;scroll-snap-align:start;cursor:pointer;border-radius:14px;padding:9px 15px 8px;
+    border:1px solid var(--line);background:color-mix(in srgb,var(--tx) 4%,transparent);
+    display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:88px;transition:transform .12s,border-color .15s,background .15s}
+  .catchip:active{transform:scale(.96)}
+  .catchip .cname{font-size:13.5px;font-weight:600;color:var(--tx);white-space:nowrap;line-height:1.25}
+  .catchip .cnum{font-size:11px;color:var(--mut);letter-spacing:.02em}
+  .catchip .cbar{width:100%;height:3px;border-radius:3px;margin-top:3px;background:color-mix(in srgb,var(--tx) 12%,transparent);overflow:hidden}
+  .catchip .cbar>i{display:block;height:100%;border-radius:3px;background:var(--acc)}
+  .catchip.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent);
+    box-shadow:0 3px 14px color-mix(in srgb,var(--acc) 18%,transparent)}
+  /* 今日回鍋按鈕 */
+  .reviewbtn{width:100%;margin:10px 0 2px;padding:13px 16px;border-radius:14px;cursor:pointer;text-align:left;
+    border:1px solid color-mix(in srgb,var(--acc) 40%,var(--line));
+    background:linear-gradient(120deg,color-mix(in srgb,var(--acc) 16%,transparent),color-mix(in srgb,var(--acc) 5%,transparent));
+    color:var(--tx);font-size:15px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:10px;
+    transition:transform .12s,box-shadow .15s}
+  .reviewbtn:active{transform:scale(.99)}
+  .reviewbtn .rbadge{margin-left:auto;background:var(--acc);color:#fff;border-radius:999px;padding:2px 11px;font-size:13px;font-weight:700}
+  .reviewbtn.on{box-shadow:0 4px 18px color-mix(in srgb,var(--acc) 22%,transparent)}
+  /* 排程分類多選 */
+  .schcats{display:flex;flex-wrap:wrap;gap:7px}
+  .schcat{font-size:12.5px;padding:6px 11px;border-radius:11px;cursor:pointer;font-family:inherit;
+    border:1px solid var(--line);background:color-mix(in srgb,var(--tx) 4%,transparent);color:var(--mut);
+    display:inline-flex;align-items:center;gap:6px}
+  .schcat span{font-size:11px;opacity:.7}
+  .schcat.on{border-color:var(--acc);color:var(--tx);background:color-mix(in srgb,var(--acc) 13%,transparent)}
   /* 書庫小色標（卡片/大字卡） */
   .shtag{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 11px;border-radius:9px;
     border:1px solid var(--line);color:var(--tx);background:color-mix(in srgb,var(--tx) 5%,transparent);white-space:nowrap}
@@ -519,6 +551,8 @@
   <!-- 3. WORD LIST -->
   <div class="card">
     <div class="sec-h"><span class="sec-n">3</span><span id="listTitle">單字清單</span></div>
+    <!-- 今日回鍋（間隔複習到期的字）：有到期才出現 -->
+    <button id="reviewBtn" class="reviewbtn" style="display:none" onclick="showReview()"></button>
     <!-- 書庫/熟悉度一行；全選＋搜尋一行；批次操作只在需要時出現 -->
     <div id="listBar" style="display:none;margin:10px 0 8px">
       <div class="row" style="gap:8px;margin-bottom:8px">
@@ -536,6 +570,8 @@
         <input type="text" id="listSearch" placeholder="搜尋單字／中文" style="flex:1;min-width:0">
       </div>
     </div>
+    <!-- 內建多益書庫展開的分類（可橫向滑動） -->
+    <div id="catBar" class="catbar" style="display:none"></div>
     <div class="actbar" id="listActions" style="display:none">
       <span class="pill" id="selCount">已勾 0</span>
       <button class="btn ghost sm" id="btnAddToShelf">＋ 加入書庫</button>
@@ -573,7 +609,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v78 ・ 2026-07-04</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v87 ・ 2026-07-07</b>（多益內建書庫＋自動排程＋回鍋）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -581,7 +617,7 @@
 <div id="bgStatus"><span class="dot"></span>翻譯中…</div>
 
 <!-- word detail modal -->
-<div id="readingPane" class="hide"><iframe id="fRead" data-src="/reading/?rv=23" title="閱讀神器"></iframe></div>
+<div id="readingPane" class="hide"><iframe id="fRead" data-src="../reading/index.html?rv=24" title="閱讀神器"></iframe></div>
 <script>
   function appTab(t){
     var rp=document.getElementById('readingPane'), fr=document.getElementById('fRead');
@@ -615,9 +651,10 @@
 
 <div class="ov" id="ov"><div class="modal" id="ovInner"></div></div>
 
+<script src="toeic-seed.js?v=toeic3"></script>
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='78d';
+const APP_VERSION='87';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -644,6 +681,82 @@ function allDates(){return Object.keys(DB).filter(d=>Object.keys(DB[d].words||{}
 /* ============ 書庫 Bookshelves ============ */
 let SHELVES=JSON.parse(localStorage.getItem('vocabShelves')||'[]');
 function saveShelves(){ localStorage.setItem('vocabShelves',JSON.stringify(SHELVES)); }
+
+/* ============ 多益內建書庫（全部收進「內建多益書庫」一個書庫；預設 park 在待排程日期，不塞進日曆；使用者可到設定自動排程或整個刪除，完全不影響自己的字） ============ */
+const TOEIC_SHELF='內建多益書庫';
+const TOEIC_BACKLOG='2099-01-01';   // 待排程區：放著但不出現在日常月曆
+function seedTOEIC(){
+  try{
+    const S=window.TOEIC_SEED; if(!S) return;
+    if(localStorage.getItem('lexSeededTOEIC')===S.ver) return;   // 已載過這版就不重覆
+    const SHELF=S.shelf||TOEIC_SHELF;
+    const oldCats=new Set(S.catOrder||[]);
+    const bday=day(TOEIC_BACKLOG);
+    // 1) 遷移舊版：把所有「預載字」集中到 backlog、收進單一書庫、舊主題名轉成 toeicCat（只動預載字，使用者自己的字完全不碰）
+    Object.keys(DB).forEach(dt=>{
+      if(dt===TOEIC_BACKLOG) return;
+      const ws=DB[dt].words||{};
+      Object.keys(ws).forEach(k=>{
+        const rec=ws[k]; if(!rec.seedTOEIC) return;
+        if(!rec.toeicCat){ const old=(rec.shelves||[]).find(s=>oldCats.has(s)); if(old)rec.toeicCat=old; }
+        rec.shelves=[SHELF];
+        if(!bday.words[k]) bday.words[k]=rec;
+        delete ws[k];
+      });
+      if(dt!==today() && !Object.keys(DB[dt].words||{}).length) delete DB[dt];  // 清空的日期移除（保留今天）
+    });
+    // 2) 舊的主題書庫名移除，只留單一內建書庫
+    SHELVES=SHELVES.filter(s=>!oldCats.has(s) && s!==SHELF);
+    SHELVES.push(SHELF);
+    // 3) 載入本版所有字到 backlog（存在就補分類/例句，不覆蓋使用者改動）
+    (S.words||[]).forEach(w=>{
+      const key=(w.w||'').toLowerCase().trim(); if(!key) return;
+      let rec=bday.words[key];
+      if(rec){
+        rec.shelves=[SHELF]; if(!rec.toeicCat)rec.toeicCat=w.cat;
+        if(rec.seedTOEIC && w.ex && (!rec.sentences||!rec.sentences.length)) rec.sentences=[{ex:w.ex,exZh:w.exZh||'',src:'dict'}];
+        return;
+      }
+      bday.words[key]={ word:w.w, phonetic:'', audio:'',
+        wordZh:(w.zh||'').replace(/\//g,'；'), pos:w.pos||'',
+        meanings:[], sentences:w.ex?[{ex:w.ex,exZh:w.exZh||'',src:'dict'}]:[], note:'',
+        stats:{right:0,wrong:0,last:null}, level:null, addedAt:Date.now(),
+        shelves:[SHELF], toeicCat:w.cat, seedTOEIC:true };
+    });
+    saveShelves(); save();
+    localStorage.setItem('lexSeededTOEIC',S.ver);
+  }catch(e){ console.warn('seedTOEIC failed',e); }
+}
+// 自動排程：把「選到的分類」的多益字，從今天起每天 perDay 個排進月曆；沒選的收回待排程區。使用者自己的字完全不動。
+function getSchedule(){ try{ return JSON.parse(localStorage.getItem('toeicSchedule')||'null'); }catch(e){ return null; } }
+function scheduleTOEIC(perDay, cats){
+  perDay=Math.max(1, perDay|0); const catSet=new Set(cats||[]);
+  // 收集所有預載字
+  const all=[];
+  Object.keys(DB).forEach(dt=>Object.keys(DB[dt].words||{}).forEach(k=>{ const rec=DB[dt].words[k]; if(rec.seedTOEIC) all.push({k,rec}); }));
+  // 從原本日期移除（清空且非今天的日期一併移除）
+  Object.keys(DB).forEach(dt=>{ const ws=DB[dt].words||{}; Object.keys(ws).forEach(k=>{ if(ws[k].seedTOEIC) delete ws[k]; });
+    if(dt!==today() && !Object.keys(DB[dt].words||{}).length) delete DB[dt]; });
+  const order=(window.TOEIC_SEED&&window.TOEIC_SEED.catOrder)||[];
+  const catIdx=c=>{ const i=order.indexOf(c); return i<0?999:i; };
+  const chosen=all.filter(x=>catSet.has(x.rec.toeicCat)).sort((a,b)=>catIdx(a.rec.toeicCat)-catIdx(b.rec.toeicCat));
+  const rest=all.filter(x=>!catSet.has(x.rec.toeicCat));
+  chosen.forEach((x,i)=>{ const d=day(ymdOffset(Math.floor(i/perDay))); d.words[x.k]=x.rec; });
+  const bday=day(TOEIC_BACKLOG); rest.forEach(x=>{ bday.words[x.k]=x.rec; });
+  localStorage.setItem('toeicSchedule',JSON.stringify({perDay,cats:[...catSet],when:today()}));
+  save();
+  daySel.clear(); daySel.add(today()); calState.ref=today(); reviewMode=false;
+  renderCal(); renderList();
+  return {days:Math.ceil(chosen.length/perDay), total:chosen.length};
+}
+function clearScheduleToBacklog(){
+  const bday=day(TOEIC_BACKLOG);
+  Object.keys(DB).forEach(dt=>{ if(dt===TOEIC_BACKLOG)return; const ws=DB[dt].words||{};
+    Object.keys(ws).forEach(k=>{ if(ws[k].seedTOEIC){ bday.words[k]=ws[k]; delete ws[k]; } });
+    if(dt!==today() && !Object.keys(DB[dt].words||{}).length) delete DB[dt]; });
+  localStorage.removeItem('toeicSchedule'); save(); daySel.clear(); daySel.add(today()); calState.ref=today();
+  renderCal(); renderList();
+}
 function eachWord(fn){ Object.keys(DB).forEach(d=>Object.keys(DB[d].words||{}).forEach(k=>fn(DB[d].words[k],d,k))); }
 function allShelves(){ const set=new Set(SHELVES); eachWord(r=>(r.shelves||[]).forEach(s=>set.add(s)));
   const extra=[...set].filter(s=>!SHELVES.includes(s)); return [...SHELVES, ...extra.sort()]; }
@@ -750,6 +863,32 @@ async function bgTranslate(){
       for(const k of Object.keys(DB[dt].words||{})){
         const rec=DB[dt].words[k];
         if(!rec.wordZh){ show(); const v=await translate(rec.word); if(v){rec.wordZh=v;save();did++;if(did%6===0 && !detailOpen())renderList();} await sleep(60); }
+        // 預載字（單字）→ 用免費字典補完整：相似詞(→補充)、多句例句(湊到3句,講義例句排第一)、補充說明。只試一次。
+        if(rec.seedTOEIC && !rec._enriched && /^[a-zA-Z][a-zA-Z'\-]*$/.test((rec.word||'').trim())){
+          show(); rec._enriched=true;
+          const data=await fetchDict(rec.word.trim());
+          if(Array.isArray(data)){
+            const meanings=[];
+            for(const entry of data){
+              if(!rec.phonetic && entry.phonetic) rec.phonetic=entry.phonetic;
+              (entry.phonetics||[]).forEach(p=>{ if(!rec.phonetic&&p.text)rec.phonetic=p.text; });
+              (entry.meanings||[]).forEach(m=>meanings.push({ pos:m.partOfSpeech||'',
+                defs:(m.definitions||[]).slice(0,6).map(d=>({def:d.definition||'',defZh:'',ex:d.example||'',exZh:''})),
+                syn:(m.synonyms||[]).slice(0,6), ant:(m.antonyms||[]).slice(0,6) }));
+            }
+            if(meanings.length){
+              rec.meanings=meanings;
+              if(!rec.pos && meanings[0]) rec.pos=(POS_ZH[meanings[0].pos]||meanings[0].pos||'');
+              const have=(rec.sentences||[]).map(s=>(s.ex||'').toLowerCase());
+              const dictEx=[];
+              meanings.forEach(m=>m.defs.forEach(d=>{ if(d.ex && !have.includes(d.ex.toLowerCase())){ have.push(d.ex.toLowerCase()); dictEx.push({ex:d.ex,exZh:'',src:'dict'}); } }));
+              rec.sentences=[...(rec.sentences||[]), ...dictEx].slice(0,3);   // 講義例句在前，補到 3 句
+              if(!rec.note) rec.note=buildGrammarNote(meanings);              // 同義/反義/定義 → 補充
+              save(); did++; if(did%4===0 && !detailOpen())renderList();
+            }
+          }
+          await sleep(80);
+        }
         if(rec.sentences) for(const s of rec.sentences){
           if(s.ex && !s.exZh){ show(); const v=await translate(s.ex); if(v){s.exZh=v;save();did++;if(did%6===0 && !detailOpen())renderList();} await sleep(60); }
         }
@@ -913,10 +1052,31 @@ function levelOf(rec){
   if(acc<0.8) return {k:'mid',acc,label:'普通'};
   return {k:'strong',acc,label:'熟'};
 }
+// 間隔複習（回鍋）：標熟悉度就算下次該複習的日期。不熟→很快回來，越熟拉越長。
+const SRS_INT=[1,2,4,8,16,32,60];
+function ymdOffset(n){ const d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+n);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function bumpSRS(rec,lvl){
+  let s=rec.srsLv||0;
+  if(lvl==='weak') s=0;
+  else if(lvl==='mid') s=Math.min(s+1,SRS_INT.length-1);
+  else if(lvl==='strong') s=Math.min(s+2,SRS_INT.length-1);
+  rec.srsLv=s; rec.due=ymdOffset(lvl==='weak'?1:SRS_INT[s]); rec.reviewedAt=today();
+}
 function setLevel(date,key,lvl,force){
   const rec=DB[date]&&DB[date].words[key]; if(!rec)return;
   rec.level = (!force && rec.level===lvl)? null : lvl; // 一般點同一級=取消回自動；force 一律設定
-  save(); renderList();
+  if(rec.level) bumpSRS(rec,rec.level);               // 標了熟悉度→排下次回鍋
+  save(); renderList(); if(typeof updateReviewBtn==='function')updateReviewBtn();
+}
+// 今日該回鍋的字：有排過複習、且到期（due<=今天）
+function dueReviewEntries(){
+  const t=today(), seen=new Set(), out=[];
+  Object.keys(DB).forEach(dt=>Object.keys(DB[dt].words||{}).forEach(k=>{
+    const rec=DB[dt].words[k];
+    if(rec.due && rec.due<=t && rec.level && !seen.has(k)){ seen.add(k); out.push({date:dt,key:k,rec}); }
+  }));
+  return out;
 }
 function record(date,word,ok){
   const w=DB[date]&&DB[date].words[word]; if(!w)return;
@@ -929,7 +1089,8 @@ function markByResult(date,key,ok){
   const rec=DB[date]&&DB[date].words[key]; if(!rec)return;
   const cur=levelOf(rec).k;
   rec.level = ok ? (cur==='strong'?'strong' : cur==='mid'?'strong' : 'mid') : 'weak';
-  save(); renderList();
+  bumpSRS(rec,rec.level);            // 測驗結果也排下次回鍋
+  save(); renderList(); if(typeof updateReviewBtn==='function')updateReviewBtn();
 }
 
 /* ============ reusable calendar ============ */
@@ -1420,7 +1581,41 @@ document.getElementById('calAll').onclick=()=>{allDates().forEach(d=>daySel.add(
 document.getElementById('calClear').onclick=()=>{daySel.clear();renderCal();renderList();};
 
 /* ============ 3. WORD LIST ============ */
-let viewEntries=[], listMulti=false;
+let viewEntries=[], listMulti=false, toeicCatSel=null, reviewMode=false;
+// 今日回鍋按鈕：顯示到期字數；點了進入複習清單
+function updateReviewBtn(){
+  const btn=document.getElementById('reviewBtn'); if(!btn)return;
+  const n=dueReviewEntries().length;
+  if(reviewMode){ btn.style.display='flex'; btn.classList.add('on');
+    btn.innerHTML=`🔁 複習中 · ${n} 字到期<span class="rbadge" onclick="event.stopPropagation();endReview()">結束</span>`; return; }
+  if(n>0){ btn.style.display='flex'; btn.classList.remove('on');
+    btn.innerHTML=`🔁 今日回鍋 · 該複習了<span class="rbadge">${n}</span>`; }
+  else{ btn.style.display='none'; }
+}
+function showReview(){ if(!dueReviewEntries().length)return; reviewMode=true; updateReviewBtn(); drawGrid(); document.getElementById('gridScroll').scrollIntoView({behavior:'smooth',block:'nearest'}); }
+function endReview(){ reviewMode=false; updateReviewBtn(); drawGrid(); }
+// 內建多益書庫展開的分類列（可橫向滑動）；點分類就只看該分類
+function renderCatBar(){
+  const bar=document.getElementById('catBar'); if(!bar)return;
+  const shelf=(document.getElementById('listShelf')||{}).value||'all';
+  if(shelf!==TOEIC_SHELF){ bar.style.display='none'; bar.innerHTML=''; return; }
+  // 統計每個分類的字數與已熟數
+  const tot={}, strong={}, order=(window.TOEIC_SEED&&window.TOEIC_SEED.catOrder)||[];
+  eachWord(r=>{ if((r.shelves||[]).includes(TOEIC_SHELF)&&r.toeicCat){
+    tot[r.toeicCat]=(tot[r.toeicCat]||0)+1; if(levelOf(r).k==='strong')strong[r.toeicCat]=(strong[r.toeicCat]||0)+1; } });
+  const cats=order.filter(c=>tot[c]); Object.keys(tot).forEach(c=>{ if(!cats.includes(c))cats.push(c); });
+  const chip=(name,label,n,s)=>{
+    const pct=n?Math.round((s||0)/n*100):0;
+    return `<div class="catchip${toeicCatSel===name?' on':''}" data-cat="${escapeHtml(name)}">
+      <span class="cname">${escapeHtml(label)}</span>
+      <span class="cnum">${s||0}/${n} 熟</span>
+      <span class="cbar"><i style="width:${pct}%"></i></span></div>`;
+  };
+  const totalAll=Object.values(tot).reduce((a,b)=>a+b,0), strongAll=Object.values(strong).reduce((a,b)=>a+b,0);
+  bar.innerHTML=chip('','全部',totalAll,strongAll)+cats.map(c=>chip(c,c,tot[c],strong[c])).join('');
+  bar.style.display='flex';
+  bar.querySelectorAll('.catchip').forEach(b=>b.onclick=()=>{ toeicCatSel=b.dataset.cat||null; renderCatBar(); drawGrid(); });
+}
 function renderList(){
   const dates=[...daySel].sort();
   listMulti=dates.length>1;
@@ -1435,10 +1630,15 @@ function renderList(){
   currentEntries=entries;
   populateShelfFilter();
   document.getElementById('listTitle').textContent = dates.length? dates.join('、')+' 的單字' : '單字清單';
+  const anyWords=Object.keys(DB).some(dt=>Object.keys(DB[dt].words||{}).length);
   document.getElementById('listEmpty').style.display=entries.length?'none':'block';
+  document.getElementById('listEmpty').innerHTML=anyWords
+    ? '這天沒有單字。可切換上面「書庫」選「內建多益書庫」瀏覽，或在月曆選其他日期。'
+    : '在上方月曆點選有單字的日期，這裡就會列出來。';
   document.getElementById('gridScroll').style.display=entries.length?'block':'none';
-  document.getElementById('listBar').style.display=entries.length?'block':'none';  // 有字才顯示工具列
+  document.getElementById('listBar').style.display=anyWords?'block':'none';  // 有任何字（含內建書庫）就顯示工具列
   document.getElementById('listStat').innerHTML=entries.length?`共 ${entries.length} 字`:'';
+  renderCatBar(); updateReviewBtn();
   drawGrid();
 }
 function groupKeyOf(rec,g){
@@ -1448,16 +1648,35 @@ function groupKeyOf(rec,g){
   return '';
 }
 function drawGrid(){
-  let v=currentEntries.slice();
   const q=((document.getElementById('listSearch')||{}).value||'').trim().toLowerCase();
   const f=(document.getElementById('listFilter')||{}).value||'all';
   const shelf=(document.getElementById('listShelf')||{}).value||'all';
+  // 選了某個書庫 → 跨「所有日期」顯示整個書庫（不受月曆選取限制）；否則只看月曆選取的日期
+  let v;
+  if(reviewMode){
+    v=dueReviewEntries();
+  }else if(shelf!=='all'){
+    const seen=new Set(); v=[];
+    Object.keys(DB).sort().forEach(dt=>Object.keys(DB[dt].words||{}).forEach(k=>{
+      const rec=DB[dt].words[k];
+      if((rec.shelves||[]).includes(shelf) && !seen.has(k)){ seen.add(k); v.push({date:dt,key:k,rec}); }
+    }));
+    // 內建多益書庫：若選了某個分類，只顯示該分類
+    if(shelf===TOEIC_SHELF && toeicCatSel) v=v.filter(e=>e.rec.toeicCat===toeicCatSel);
+  }else{
+    v=currentEntries.slice();
+  }
+  const showDate = listMulti || shelf!=='all' || reviewMode;
   if(q) v=v.filter(e=>e.rec.word.toLowerCase().includes(q)||(e.rec.wordZh||'').toLowerCase().includes(q));
-  if(shelf!=='all') v=v.filter(e=>(e.rec.shelves||[]).includes(shelf));
   if(f!=='all') v=v.filter(e=>levelOf(e.rec).k===f);
   viewEntries=v;
+  if(v.length){ document.getElementById('gridScroll').style.display='block';
+    document.getElementById('listEmpty').style.display='none';
+    document.getElementById('listBar').style.display='block'; }
   document.getElementById('listCount').textContent =
-    (q||shelf!=='all'||f!=='all') && currentEntries.length ? `顯示 ${v.length} / ${currentEntries.length}` : '';
+    reviewMode ? `今日回鍋 · ${v.length} 字（標熟悉度就會排下次複習）` :
+    (shelf!=='all') ? `${shelf}：共 ${v.length} 字` :
+    ((q||f!=='all') && currentEntries.length ? `顯示 ${v.length} / ${currentEntries.length}` : '');
   const grid=document.getElementById('grid'); grid.innerHTML='';
   const total=v.length;
   v.forEach(({date,key,rec},idx)=>{
@@ -1467,7 +1686,7 @@ function drawGrid(){
     el.innerHTML=`<input type="checkbox" class="chk"${selected.has(id)?' checked':''}>
       <div class="cardpos">${idx+1} / ${total}</div>
       <div class="en">${rec.word}</div>
-      <div class="ph">${rec.phonetic||''}${listMulti?` <span style="color:var(--mut)">${date}</span>`:''}</div>
+      <div class="ph">${rec.phonetic||''}${showDate?` <span style="color:var(--mut)">${date}</span>`:''}</div>
       <div class="zh">${rec.pos?'<span class="cpos">'+escapeHtml(rec.pos)+'</span>':''}${escapeHtml(rec.wordZh||'（無翻譯）')}</div>
       ${ex?`<div class="cardex">${escapeHtml(ex.ex)}${ex.exZh?`<span class="extrans" style="display:block;color:var(--mut);margin-top:2px">${escapeHtml(ex.exZh)}</span>`:''}</div>`:''}
       <div class="lvset">
@@ -1495,17 +1714,17 @@ function drawGrid(){
 }
 ['listFilter','listShelf'].forEach(id=>{
   const el=document.getElementById(id);
-  if(el) el.addEventListener('change',drawGrid);
+  if(el) el.addEventListener('change',()=>{ if(id==='listShelf'){ toeicCatSel=null; renderCatBar(); } drawGrid(); });
 });
 (function(){ const se=document.getElementById('listSearch'); if(se)se.addEventListener('input',drawGrid); })();
 function populateShelfFilter(){
   const sel=document.getElementById('listShelf'); if(!sel)return;
   const cur=sel.value;
-  // 計算「目前選的日期」裡每個書庫有幾個字（不是總量）
-  const dayCnt={}; currentEntries.forEach(e=>(e.rec.shelves||[]).forEach(s=>{dayCnt[s]=(dayCnt[s]||0)+1;}));
+  // 書庫選項顯示「整個書庫」的總字數（跨所有日期），選了就跨日期顯示整個主題
+  const gCnt={}; eachWord(r=>(r.shelves||[]).forEach(s=>{gCnt[s]=(gCnt[s]||0)+1;}));
   const total=currentEntries.length;
-  sel.innerHTML=`<option value="all">全部書庫（${total}）</option>`+
-    allShelves().map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}（${dayCnt[s]||0}）</option>`).join('');
+  sel.innerHTML=`<option value="all">目前日期（${total}）</option>`+
+    allShelves().map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}（${gCnt[s]||0}）</option>`).join('');
   if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
 }
 function updateSelCount(){
@@ -2396,8 +2615,48 @@ function openTheme(){
        <button class="btn ghost sm" id="btnImportCode" style="margin-top:6px">匯入備份碼</button>
        <div class="msg" id="dataMsg" style="min-height:16px"></div>
        <div style="font-size:12px;color:var(--mut)">手機按「下載備份檔／複製備份碼」傳到電腦，再到電腦這裡匯入。匯入是<b>合併</b>，不會蓋掉原本的。</div>
+     </div>
+     <div class="edsec" style="margin-top:12px">
+       <div style="font-weight:600;margin-bottom:2px">📅 多益自動排程</div>
+       <div style="font-size:12px;color:var(--mut);margin-bottom:10px">選每天幾個字、要讀哪些分類，一鍵排進月曆當每日進度。標熟悉度後會<b>自動回鍋複習</b>（像讀書機器人）。完全不影響你自己加的單字。</div>
+       <div class="row" style="align-items:center;gap:10px">
+         <label class="fld" style="margin:0">每天新學</label>
+         <input type="number" id="schPerDay" min="1" max="100" value="${(getSchedule()||{}).perDay||10}" style="width:90px">
+         <span style="font-size:13px;color:var(--mut)">個單字</span>
+       </div>
+       <div style="font-size:13px;margin:12px 0 6px">要排進來的分類（可多選）</div>
+       <div id="schCats" class="schcats"></div>
+       <div class="row" style="gap:6px;margin-top:8px">
+         <button class="btn ghost sm" id="schAll" style="flex:none">全選</button>
+         <button class="btn ghost sm" id="schNone" style="flex:none">全不選</button>
+       </div>
+       <button class="btn" id="schGo" style="width:100%;margin-top:12px">📅 排進月曆</button>
+       <button class="btn ghost sm" id="schClear" style="width:100%;margin-top:6px">清掉排程（單字收回書庫，不會刪除）</button>
+       <div class="msg" id="schMsg" style="min-height:16px;margin-top:4px"></div>
      </div>`;
   document.getElementById('ov').classList.add('show');
+  // ── 多益自動排程 ──
+  (function(){
+    const cats=(window.TOEIC_SEED&&window.TOEIC_SEED.catOrder)||[];
+    // 沒排過→預設幫你選好 5 個核心商務分類（最常考）
+    const CORE=['辦公室事宜','人事及管理','業務拓展','財務及投資','商務會議及談判'].filter(c=>cats.includes(c));
+    const saved=new Set((getSchedule()||{}).cats||CORE);
+    const host=document.getElementById('schCats'); if(!host)return;
+    const cnt={}; eachWord(r=>{ if((r.shelves||[]).includes(TOEIC_SHELF)&&r.toeicCat)cnt[r.toeicCat]=(cnt[r.toeicCat]||0)+1; });
+    const draw=()=>{ host.innerHTML=cats.map(c=>`<button class="schcat${saved.has(c)?' on':''}" data-c="${escapeHtml(c)}">${escapeHtml(c)}<span>${cnt[c]||0}</span></button>`).join('');
+      host.querySelectorAll('.schcat').forEach(b=>b.onclick=()=>{ const c=b.dataset.c; saved.has(c)?saved.delete(c):saved.add(c); b.classList.toggle('on'); }); };
+    draw();
+    document.getElementById('schAll').onclick=()=>{ cats.forEach(c=>saved.add(c)); draw(); };
+    document.getElementById('schNone').onclick=()=>{ saved.clear(); draw(); };
+    const msg=t=>{ document.getElementById('schMsg').textContent=t; };
+    document.getElementById('schGo').onclick=()=>{
+      const per=Math.max(1,parseInt(document.getElementById('schPerDay').value)||15);
+      if(!saved.size){ msg('請至少選一個分類。'); return; }
+      const r=scheduleTOEIC(per,[...saved]);
+      msg(`已排程：${r.total} 個字，每天 ${per} 個，共約 ${r.days} 天。到月曆看今天的進度吧！`);
+    };
+    document.getElementById('schClear').onclick=()=>{ clearScheduleToBacklog(); msg('已清掉排程，單字收回「內建多益書庫」（沒有刪除）。'); };
+  })();
   document.querySelectorAll('.themesw').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.id); openTheme(); });
   const curFs=(lexGet('Font')||'m');
   document.querySelectorAll('.fsbtn').forEach(b=>{
@@ -2554,7 +2813,9 @@ function migrateSentenceSrc(){
 /* ============ init ============ */
 (function init(){
   migrateSentenceSrc();   // 自動把舊資料中你自己打的例句標成「我的」
-  const start = DB[today()] ? today() : allDates()[0];
+  seedTOEIC();            // 多益 990 預載書庫（每日定量）
+  const realDates = allDates().filter(d=>d!==TOEIC_BACKLOG);  // 排除多益待排程區，避免視圖跳到 2099
+  const start = DB[today()] ? today() : (realDates[0]||today());
   if(start){ daySel.add(start); calState.ref=start; }
   renderCal(); renderList();
   setTimeout(bgTranslate, 1500); // 載入後背景補翻譯
