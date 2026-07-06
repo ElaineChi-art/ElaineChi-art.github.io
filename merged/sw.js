@@ -1,40 +1,20 @@
-/* 合併版 Service Worker v2：HTML / JS / JSON 一律只走網路最新（永不提供舊版），
-   其他靜態資源才快取。並在啟用時清掉舊版快取，解決「主畫面 App 卡舊版」。 */
-const CACHE = 'lex-cache-v2';
-
+/* 自我移除版 Service Worker：解除註冊、清掉所有快取、讓頁面重新載入最新版。
+   目的：移除先前加入的 SW（它可能造成主畫面 App 卡舊版），還原成單純的版本檢查自動更新。
+   這會自動發生在每個使用者身上，不需要他們做任何事，也不會動到資料。 */
 self.addEventListener('install', () => { self.skipWaiting(); });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.map(k => (k !== CACHE ? caches.delete(k) : null)));  // 清掉所有舊快取
-    await self.clients.claim();
-  })());
-});
-
-self.addEventListener('fetch', (e) => {
-  const req = e.request;
-  if (req.method !== 'GET') return;
-  const url = new URL(req.url);
-  if (url.origin !== location.origin) return;
-
-  const p = url.pathname;
-  // 程式檔（頁面/HTML/JS/JSON）→ 只走網路，永遠最新；離線才退回快取
-  const isCode = req.mode === 'navigate' || p.endsWith('/') ||
-                 p.endsWith('.html') || p.endsWith('.js') || p.endsWith('.json');
-
-  e.respondWith((async () => {
     try {
-      const res = await fetch(req, { cache: 'no-store' });
-      if (!isCode && res && res.ok) {                 // 只快取圖片等靜態資源，不快取程式檔
-        const c = await caches.open(CACHE);
-        c.put(req, res.clone());
-      }
-      return res;
-    } catch (err) {
-      const cached = await caches.match(req);
-      if (cached) return cached;
-      throw err;
-    }
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));   // 清掉所有舊快取
+    } catch (_) {}
+    try { await self.registration.unregister(); } catch (_) {}   // 解除自己
+    try {
+      const cs = await self.clients.matchAll({ type: 'window' });
+      cs.forEach(c => { try { c.navigate(c.url); } catch (_) {} });  // 重新載入 → 拿最新版
+    } catch (_) {}
   })());
 });
+
+/* 不再攔截任何請求：一律走瀏覽器原本的網路行為（等同沒有 SW）。 */

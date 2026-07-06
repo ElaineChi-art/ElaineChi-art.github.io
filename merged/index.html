@@ -643,7 +643,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v95 ・ 2026-07-07</b>（SW 只走網路最新·清舊快取）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v96 ・ 2026-07-07</b>（移除SW·還原自動更新）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -688,7 +688,7 @@
 <script src="toeic-seed.js?v=toeic3"></script>
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='95';
+const APP_VERSION='96';
 try{ window.LEX_VERSION=APP_VERSION; }catch(e){}   // 供內嵌的閱讀頁判斷主框是否為最新版
 async function checkUpdate(manual){
   try{
@@ -729,11 +729,14 @@ function toast(msg){
   setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); },2200);
 }
 checkUpdate(); setInterval(checkUpdate, 60000);
-// Service Worker（網路優先）：讓所有裝置含主畫面圖示都能自動更新、不卡舊版
+// 移除先前的 Service Worker（它可能造成卡舊版）＋清掉快取，還原成單純的版本檢查自動更新。
+// 自動發生、不需使用者操作、不動資料。載入自我移除版 sw.js 讓仍被舊 SW 控制的頁面也能解脫。
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').then(reg=>{ try{ reg.update(); }catch(e){} }).catch(()=>{});
-  let _swReloaded=false;
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(_swReloaded)return; _swReloaded=true; location.reload(); });
+  navigator.serviceWorker.getRegistrations().then(rs=>{
+    if(rs && rs.length){ rs.forEach(r=>{ r.update&&r.update(); }); }   // 觸發抓新(自我移除)的 sw.js
+    else { navigator.serviceWorker.register('sw.js').catch(()=>{}); }   // 沒有舊 SW→註冊自我移除版讓它清乾淨後解除
+  }).catch(()=>{});
+  try{ if(window.caches) caches.keys().then(ks=>ks.forEach(k=>caches.delete(k))).catch(()=>{}); }catch(_){}
 }
 // 點視窗外圍的暗色區 = 關閉（比找那顆叉叉好按很多）
 (function(){ const ov=document.getElementById('ov'); if(!ov)return;
