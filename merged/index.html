@@ -633,7 +633,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v90 ・ 2026-07-07</b>（Service Worker 自動更新）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v91 ・ 2026-07-07</b>（閱讀頁自動修復單字主框）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -641,7 +641,7 @@
 <div id="bgStatus"><span class="dot"></span>翻譯中…</div>
 
 <!-- word detail modal -->
-<div id="readingPane" class="hide"><iframe id="fRead" data-src="../reading/index.html?rv=24" title="閱讀神器"></iframe></div>
+<div id="readingPane" class="hide"><iframe id="fRead" data-src="../reading/index.html?rv=25" title="閱讀神器"></iframe></div>
 <script>
   function appTab(t){
     var rp=document.getElementById('readingPane'), fr=document.getElementById('fRead');
@@ -678,7 +678,8 @@
 <script src="toeic-seed.js?v=toeic3"></script>
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='90';
+const APP_VERSION='91';
+try{ window.LEX_VERSION=APP_VERSION; }catch(e){}   // 供內嵌的閱讀頁判斷主框是否為最新版
 async function checkUpdate(manual){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});

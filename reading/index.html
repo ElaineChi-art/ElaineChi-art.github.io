@@ -398,8 +398,28 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v24';
+const APP_VERSION='v25';
 const LS='readingDB_v1';
+/* 若被合併版當 iframe 嵌入：閱讀頁每次都會重新從網路載入(不被 iOS 主畫面凍結)，
+   所以由「活的」閱讀頁去把可能被凍住的『單字主框』強制刷新到最新版一次。同源才做得到。 */
+(function repairShell(){
+  try{
+    if(!(window.top && window.top!==window.self)) return;         // 沒被嵌入就不做
+    const top=window.top; void top.location.href;                 // 跨源會丟例外→被 catch 擋掉
+    if(top.sessionStorage.getItem('shellFixed')) return;          // 一個工作階段只修一次
+    fetch('../merged/version.json?_='+Date.now(),{cache:'no-store'})
+      .then(r=>r.ok?r.json():null).then(j=>{
+        if(!j||j.v==null) return;
+        const server=String(j.v);
+        const loaded=(top.LEX_VERSION!=null)?String(top.LEX_VERSION):null;   // 主框目前載入的版本
+        if(loaded===server) return;                               // 主框已是最新 → 不動
+        top.sessionStorage.setItem('shellFixed','1');
+        const u=new URL(top.location.href);
+        u.searchParams.set('_v',server); u.searchParams.set('_t',Date.now());
+        top.location.replace(u.toString());                       // 強制主框抓最新版(資料不受影響)
+      }).catch(()=>{});
+  }catch(e){}
+})();
 const POSZH={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',pronoun:'pron.',conjunction:'conj.',interjection:'int.',determiner:'det.',article:'art.',numeral:'num.'};
 let DB=load();
 let curType='flash', quizIdx=0, quizItems=[], quizScore=0, lvSel=new Set(['weak','mid','strong','new']);
