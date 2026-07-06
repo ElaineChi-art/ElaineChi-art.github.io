@@ -1,14 +1,14 @@
-/* 合併版 Service Worker：網路優先（永遠先抓最新，離線才用快取）。
-   讓所有裝置（含 iPhone 主畫面圖示）都能自動更新到最新版，且不會卡在舊版。 */
-const CACHE = 'lex-cache-v1';
+/* 合併版 Service Worker v2：HTML / JS / JSON 一律只走網路最新（永不提供舊版），
+   其他靜態資源才快取。並在啟用時清掉舊版快取，解決「主畫面 App 卡舊版」。 */
+const CACHE = 'lex-cache-v2';
 
-self.addEventListener('install', () => { self.skipWaiting(); });   // 新版立即就位
+self.addEventListener('install', () => { self.skipWaiting(); });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.map(k => (k !== CACHE ? caches.delete(k) : null)));
-    await self.clients.claim();                                    // 立即接管所有頁面
+    await Promise.all(keys.map(k => (k !== CACHE ? caches.delete(k) : null)));  // 清掉所有舊快取
+    await self.clients.claim();
   })());
 });
 
@@ -16,15 +16,19 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== location.origin) return;                      // 只管自家資源
+  if (url.origin !== location.origin) return;
 
-  // 網路優先：永遠先拿最新版；成功就順便更新快取；離線時才退回快取
+  const p = url.pathname;
+  // 程式檔（頁面/HTML/JS/JSON）→ 只走網路，永遠最新；離線才退回快取
+  const isCode = req.mode === 'navigate' || p.endsWith('/') ||
+                 p.endsWith('.html') || p.endsWith('.js') || p.endsWith('.json');
+
   e.respondWith((async () => {
     try {
       const res = await fetch(req, { cache: 'no-store' });
-      if (res && res.ok) {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
+      if (!isCode && res && res.ok) {                 // 只快取圖片等靜態資源，不快取程式檔
+        const c = await caches.open(CACHE);
+        c.put(req, res.clone());
       }
       return res;
     } catch (err) {
