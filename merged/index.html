@@ -633,7 +633,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v88 ・ 2026-07-07</b>（質感更新提示＋檢查更新）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v90 ・ 2026-07-07</b>（Service Worker 自動更新）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -678,7 +678,7 @@
 <script src="toeic-seed.js?v=toeic3"></script>
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='88';
+const APP_VERSION='90';
 async function checkUpdate(manual){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -686,7 +686,10 @@ async function checkUpdate(manual){
     const j=await r.json();
     const v=(j&&j.v!=null)?String(j.v):null;
     if(!v || v===APP_VERSION){ if(manual)toast('已經是最新版 ✓'); return; }
-    showUpdateToast(v);                        // 有新版 → 顯示質感更新卡（點了才更新，過程平順、不影響資料）
+    // 有新版 → 自動用時間戳強制重抓（連主畫面圖示也能更新，資料完全不受影響）
+    const guard=new URL(location.href).searchParams.get('_v');
+    if(guard===v && !manual) return;          // 這版已重抓過一次仍是舊的 → 停手，避免無限重整
+    forceUpdate(v);
   }catch(e){ if(manual)alert('檢查更新失敗，請稍後再試。'); }
 }
 function forceUpdate(v){
@@ -715,6 +718,12 @@ function toast(msg){
   setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); },2200);
 }
 checkUpdate(); setInterval(checkUpdate, 60000);
+// Service Worker（網路優先）：讓所有裝置含主畫面圖示都能自動更新、不卡舊版
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(reg=>{ try{ reg.update(); }catch(e){} }).catch(()=>{});
+  let _swReloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(_swReloaded)return; _swReloaded=true; location.reload(); });
+}
 
 /* ============ storage ============ */
 const KEY='vocabDB_v1';
