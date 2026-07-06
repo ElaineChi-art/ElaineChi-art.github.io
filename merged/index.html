@@ -188,10 +188,12 @@
 
   /* modal */
   .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;
-      justify-content:center;z-index:100;padding:24px 14px}
+      justify-content:center;z-index:100;
+      padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(20px + env(safe-area-inset-bottom,0px))}
   .ov.show{display:flex}
   .modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;max-width:640px;position:relative;
-         width:100%;padding:22px;max-height:calc(100vh - 48px);overflow-y:auto}
+         width:100%;padding:22px;overflow-y:auto;
+         max-height:calc(100vh - 40px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
   .modal h2{font-size:26px;margin-bottom:2px}
   /* 閱讀卡：固定大小、置中、內部捲動、左右邊可點換頁 */
   #ovInner.reader{height:min(86vh,720px);max-height:none;overflow:hidden;padding:0;position:relative;display:flex;flex-direction:column}
@@ -221,7 +223,7 @@
   .roptbox{display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:center}
   .roptchip{font-size:12.5px;padding:5px 13px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer}
   .roptchip.on{border-color:var(--acc);color:var(--tx);background:color-mix(in srgb,var(--acc) 16%,transparent)}
-  .x{float:right;margin:-6px -6px 0 12px;cursor:pointer;
+  .x{float:right;margin:0 -2px 0 12px;cursor:pointer;
      width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:24px;line-height:1;
      border:none;border-radius:50%;color:var(--tx);
      background:color-mix(in srgb,var(--tx) 10%,transparent)}
@@ -641,7 +643,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v93 ・ 2026-07-07</b>（設定關閉鈕好按＋點外關閉）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v94 ・ 2026-07-07</b>（設定視窗避開瀏海）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -686,7 +688,7 @@
 <script src="toeic-seed.js?v=toeic3"></script>
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='93';
+const APP_VERSION='94';
 try{ window.LEX_VERSION=APP_VERSION; }catch(e){}   // 供內嵌的閱讀頁判斷主框是否為最新版
 async function checkUpdate(manual){
   try{
