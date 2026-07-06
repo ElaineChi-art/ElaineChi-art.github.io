@@ -79,9 +79,17 @@
   .modeswitch a.ms:hover{color:var(--tx)}
   /* 嵌在每日單字分頁裡時：隱藏自己的標題、切換器、工具鈕（外觀/AI金鑰）——全部由上方「設定」統一控制 */
   html.embedded header.hd h1, html.embedded header.hd .sub, html.embedded .modeswitch, html.embedded .toolbtns{display:none}
-  html.embedded header.hd{margin-bottom:4px}
-  html.embedded .wrap{max-width:1000px;padding:14px 18px 90px}   /* 版面長寬跟每日單字一致 */
+  html.embedded header.hd{display:none}                          /* 嵌入時整個空標題列收掉，頂部與每日單字一致 */
+  html.embedded .wrap{max-width:1000px;padding:20px 18px 90px}   /* 版面長寬/上緣跟每日單字一致 */
   html.embedded .foot a{display:none}   /* 嵌入分頁時隱藏頁尾『每日單字』連結，改用上方分頁 */
+  /* 手機上與「每日單字」分頁完全一致：段落副標換到第二行、任何東西都不超出右緣 */
+  @media(max-width:520px){
+    .sec-h{flex-wrap:wrap}
+    .sec-sub{flex-basis:100%;margin:3px 0 0 0}
+    .row{flex-wrap:wrap}
+    input,select,textarea{max-width:100%}
+    html.embedded .wrap{padding:18px 14px 90px}
+  }
   .toolbtns{display:flex;gap:8px;flex-wrap:wrap}
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:18px;
@@ -398,7 +406,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v25';
+const APP_VERSION='v26';
 const LS='readingDB_v1';
 /* 若被合併版當 iframe 嵌入：閱讀頁每次都會重新從網路載入(不被 iOS 主畫面凍結)，
    所以由「活的」閱讀頁去把可能被凍住的『單字主框』強制刷新到最新版一次。同源才做得到。 */
@@ -1151,12 +1159,15 @@ function importData(input){ const f=input.files[0]; if(!f)return; const r=new Fi
 
 /* ---------- 隨位置變化的上下鍵：在上/卡片區→↓到最底；到底→↑回頂 ---------- */
 (function(){ const toTop=document.getElementById('toTop'); if(!toTop) return;
-  function upd(){ const doc=document.documentElement, y=window.scrollY||doc.scrollTop, h=doc.scrollHeight, vh=window.innerHeight;
+  const se=()=>document.scrollingElement||document.documentElement||document.body;   // iframe/iOS 可靠取捲動元素
+  function upd(){ const el=se(), y=el.scrollTop, h=el.scrollHeight, vh=window.innerHeight;
     if(h<=vh+80){ toTop.classList.remove('show'); return; } toTop.classList.add('show');
     if(y+vh>=h-140){ toTop.textContent='↑'; toTop.dataset.dir='up'; toTop.title='回到頂端'; }
     else { toTop.textContent='↓'; toTop.dataset.dir='down'; toTop.title='到最底'; } }
   window.addEventListener('scroll',upd,{passive:true}); window.addEventListener('resize',upd);
-  toTop.onclick=()=>window.scrollTo({top: toTop.dataset.dir==='up'?0:document.documentElement.scrollHeight, behavior:'smooth'});
+  toTop.onclick=()=>{ const el=se(), top=toTop.dataset.dir==='up'?0:el.scrollHeight;
+    try{ el.scrollTo({top,behavior:'smooth'}); }catch(e){ el.scrollTop=top; }
+    setTimeout(upd,600); };
   setInterval(upd,800); upd();
 })();
 

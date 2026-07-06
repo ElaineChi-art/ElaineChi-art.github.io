@@ -76,7 +76,11 @@
   #readingPane{position:fixed;left:0;right:0;bottom:0;top:calc(46px + env(safe-area-inset-top,0px));z-index:45;background:var(--bg)}
   #readingPane.hide{display:none}
   #fRead{width:100%;height:100%;border:none;display:block}
-  @media(max-width:520px){ .topbar .brand{display:none} }
+  @media(max-width:520px){ .topbar .brand{display:none}
+    .sec-h{flex-wrap:wrap}
+    .row{flex-wrap:wrap}
+    input,select,textarea{max-width:100%}
+  }
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
   .sec-h{font-size:17px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:9px}
@@ -633,7 +637,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v91 ・ 2026-07-07</b>（閱讀頁自動修復單字主框）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v92 ・ 2026-07-07</b>（手機版型一致化）（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -678,7 +682,7 @@
 <script src="toeic-seed.js?v=toeic3"></script>
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='91';
+const APP_VERSION='92';
 try{ window.LEX_VERSION=APP_VERSION; }catch(e){}   // 供內嵌的閱讀頁判斷主框是否為最新版
 async function checkUpdate(manual){
   try{
