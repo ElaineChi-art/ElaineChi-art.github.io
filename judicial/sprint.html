@@ -82,6 +82,9 @@
   .foot{text-align:center;color:var(--mut);font-size:13px;line-height:1.9}
   .streak{display:inline-flex;align-items:center;gap:6px;background:rgba(255,216,107,.1);border:1px solid rgba(255,216,107,.3);
     border-radius:20px;padding:5px 13px;font-weight:700;color:var(--gold);font-size:13px}
+  .fixbtn{margin-left:8px;background:transparent;border:1px solid var(--line);border-radius:16px;
+    padding:5px 12px;color:var(--mut);font-size:12px;cursor:pointer;font-family:inherit}
+  .fixbtn:hover{border-color:var(--gold);color:var(--gold)}
   .mini{font-size:11.5px;color:var(--mut);text-align:center;margin-top:14px;line-height:1.7}
 
   /* ===== 全螢幕跟讀 session ===== */
@@ -180,6 +183,7 @@
   </div>
   <div class="foot">
     <span class="streak" id="streak">🔥 連續 0 天</span>
+    <button id="fixStreak" class="fixbtn" onclick="fixStreak()" title="把被拆散/漏記的天數補回來">✏️ 補登天數</button>
     <div class="mini">你是需要「做中學」、容易忘也容易分心的人 → 所以我一次只給你一張，答完立刻教你＋唸給你聽。<br>
       忘記很正常，答錯的我會自動排到下次回鍋。累了就去 <a href="farm.html" style="color:var(--teal)">🐢 水族箱</a> 餵魚。</div>
   </div>
@@ -371,6 +375,22 @@ function renderCal(){const cal=document.getElementById("cal");if(!cal)return;
   cal.innerHTML=html;
   cal.querySelectorAll(".cell[data-d]").forEach(c=>c.onclick=()=>{viewDate=new Date(c.dataset.d+"T00:00:00");renderLaunch();window.scrollTo({top:0,behavior:"smooth"});});}
 function renderStreak(){document.getElementById("streak").textContent=`🔥 連續 ${streak()} 天`;}
+// 補登：把漏記/被拆散的讀書天數補回來（你確實有讀那幾天）
+function fixStreak(){
+  const cur=streak();
+  const inp=prompt(`你到今天為止，實際連續讀了幾天？\n（幫你把前幾天補回來、找回連續天數）\n目前顯示：${cur} 天`, String(Math.max(cur,3)));
+  if(inp===null)return;
+  const n=Math.max(0,Math.min(400,parseInt(inp)||0));
+  if(!n)return;
+  const o=log();
+  for(let k=0;k<n;k++){
+    const key=iso(new Date(d0(new Date()).getTime()-k*DAY));
+    if(!o[key]||!(o[key].done>0)) o[key]={done:(o[key]&&o[key].done)||1};
+  }
+  S("sjg_sprint_log",o);
+  renderStreak();renderWeek();renderCal();
+  alert(`補登完成！連續天數更新為 ${streak()} 天 🔥`);
+}
 
 /* ===== 跟讀 SESSION 引擎 ===== */
 const SES={cards:[],i:0,correct:0,newAns:0,startPos:0,group:"",answered:false};
@@ -484,6 +504,13 @@ document.getElementById("sesX").onclick=closeSession;
   if(localStorage.getItem("sjg_fontbig")==="1")body.classList.add("big");
   fb.onclick=()=>{body.classList.toggle("big");localStorage.setItem("sjg_fontbig",body.classList.contains("big")?"1":"0");};})();
 
+try{
+  // 開 sprint.html?setdays=N 就自動把連續天數補到 N（找回被拆散/漏記的天數）
+  const _sd=new URLSearchParams(location.search).get("setdays");
+  if(_sd){ const n=Math.max(0,Math.min(400,parseInt(_sd)||0));
+    if(n){ const o=log(); for(let k=0;k<n;k++){ const key=iso(new Date(d0(new Date()).getTime()-k*DAY));
+      if(!o[key]||!(o[key].done>0)) o[key]={done:(o[key]&&o[key].done)||1}; } S("sjg_sprint_log",o); } }
+}catch(e){}
 try{renderCountdown();renderLaunch();renderWeek();renderCal();renderStreak();
   document.getElementById("monthWrap").addEventListener("toggle",renderCal);
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
