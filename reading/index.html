@@ -81,14 +81,16 @@
   html.embedded header.hd h1, html.embedded header.hd .sub, html.embedded .modeswitch, html.embedded .toolbtns{display:none}
   html.embedded header.hd{display:none}                          /* 嵌入時整個空標題列收掉，頂部與每日單字一致 */
   html.embedded .wrap{max-width:1000px;padding:20px 18px 90px}   /* 版面長寬/上緣跟每日單字一致 */
+  html.embedded .card{padding:18px;border-radius:14px;margin-bottom:16px}  /* 卡片內距/圓角/間距跟每日單字一致 */
   html.embedded .foot a{display:none}   /* 嵌入分頁時隱藏頁尾『每日單字』連結，改用上方分頁 */
-  /* 手機上與「每日單字」分頁完全一致：段落副標換到第二行、任何東西都不超出右緣 */
+  /* 手機上與「每日單字」分頁完全一致：上緣、卡片內距、段落副標換行、不超出右緣 */
   @media(max-width:520px){
     .sec-h{flex-wrap:wrap}
     .sec-sub{flex-basis:100%;margin:3px 0 0 0}
     .row{flex-wrap:wrap}
     input,select,textarea{max-width:100%}
-    html.embedded .wrap{padding:18px 14px 90px}
+    html.embedded .wrap{padding:16px 12px 90px}
+    html.embedded .card{padding:14px 12px}
   }
   .toolbtns{display:flex;gap:8px;flex-wrap:wrap}
 
@@ -406,7 +408,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v26';
+const APP_VERSION='v27';
 const LS='readingDB_v1';
 /* 若被合併版當 iframe 嵌入：閱讀頁每次都會重新從網路載入(不被 iOS 主畫面凍結)，
    所以由「活的」閱讀頁去把可能被凍住的『單字主框』強制刷新到最新版一次。同源才做得到。 */
