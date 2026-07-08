@@ -262,28 +262,29 @@
   .lvfilter label{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);
      border:1px solid var(--line);padding:7px 13px;border-radius:9px;cursor:pointer;font-size:14px}
   .quizbox{text-align:center}
-  .flash{background:var(--panel2);border:1px solid var(--line);border-radius:16px;min-height:200px;
+  .flash{background:var(--panel2);border:1px solid var(--line);border-radius:16px;min-height:calc(200px*var(--fs));
          display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-         padding:30px;cursor:pointer;font-size:30px;font-weight:700}
-  .flash .hint{font-size:13px;color:var(--mut);font-weight:400}
+         padding:calc(30px*var(--fs));cursor:pointer;font-size:calc(30px*var(--fs));font-weight:700}
+  .flash .hint{font-size:calc(13px*var(--fs));color:var(--mut);font-weight:400}
   .opt{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);
-       color:var(--tx);border-radius:10px;padding:13px 16px;margin-bottom:9px;cursor:pointer;font-size:16px}
+       color:var(--tx);border-radius:10px;padding:calc(13px*var(--fs)) calc(16px*var(--fs));margin-bottom:9px;cursor:pointer;font-size:calc(16px*var(--fs))}
   .opt:hover{border-color:var(--acc2)}
   .opt.correct{background:color-mix(in srgb,var(--green) 22%,var(--panel2));border-color:var(--green);color:var(--tx);font-weight:600}
   .opt.wrong{background:color-mix(in srgb,var(--red) 18%,var(--panel2));border-color:var(--red);color:var(--tx)}
   .opt.dim{opacity:.5}
-  .optzh{float:right;color:var(--mut);font-weight:400;font-size:14px}
-  .progress{font-size:13px;color:var(--mut);margin-bottom:12px}
-  .analysis{background:var(--panel2);border-radius:10px;padding:14px;margin-top:14px;text-align:left;font-size:14px;line-height:1.7}
+  .optzh{float:right;color:var(--mut);font-weight:400;font-size:calc(14px*var(--fs))}
+  .progress{font-size:calc(13px*var(--fs));color:var(--mut);margin-bottom:12px}
+  .analysis{background:var(--panel2);border-radius:10px;padding:14px;margin-top:14px;text-align:left;font-size:calc(14px*var(--fs));line-height:1.7}
   #quizCard,#ana{scroll-margin-top:60px}
-  .anaopt{padding:4px 0;font-size:14px}
+  .anaopt{padding:4px 0;font-size:calc(14px*var(--fs))}
   .anaopt.c{color:var(--green)}
-  .anatag{font-size:11px;padding:1px 8px;border-radius:10px;margin-left:6px}
+  .anatag{font-size:calc(11px*var(--fs));padding:1px 8px;border-radius:10px;margin-left:6px}
   .anatag.ok{color:var(--green);border:1px solid var(--green)}
   .anatag.no{color:var(--red);border:1px solid var(--red)}
   .anahr{height:1px;background:var(--line);margin:10px 0}
-  .scorebox{font-size:18px;line-height:1.9}
-  .big{font-size:46px;font-weight:800}
+  .scorebox{font-size:calc(18px*var(--fs));line-height:1.9}
+  .big{font-size:calc(46px*var(--fs));font-weight:800}
+  .qsent{font-size:calc(17px*var(--fs));line-height:1.7;text-align:left;margin-bottom:14px}
   .autonow{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:24px 18px;text-align:center}
   input[type=range]{accent-color:var(--acc2)}
 
@@ -573,7 +574,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v83 ・ 2026-07-05</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v84 ・ 2026-07-09</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -617,7 +618,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='83';
+const APP_VERSION='84';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
@@ -1267,7 +1268,7 @@ function drawReview(){
   let warn=false, mis=false;
   host.innerHTML=
     `<div style="font-size:13px;margin-bottom:8px">將加入 <b style="color:var(--acc)">${reviewEntries.length}</b> 個單字 —— 可直接修正（單字／中文／例句），確認後按「加入單字」：</div>`
-    + reviewEntries.map((e,i)=>{
+    + reviewEntries.map((e,i)=>[i,e]).reverse().map(([i,e])=>{   // 顯示反序：最後輸入的排最上面（data-i 仍為真實索引）
         const long=(e.word||'').split(/\s+/).length>4; if(long)warn=true;
         const bad=e.suspect && !long && !e.confirmed; if(bad)mis=true;
         const style=(long||bad)?' style="border-color:var(--red)"':'';
@@ -2244,7 +2245,7 @@ function renderFill(body,it){
   if(others.length<3) others=[...new Set(others.concat(allWordStrings().filter(w=>w.toLowerCase()!==word.toLowerCase())))];
   const uniq=others.sort(()=>Math.random()-0.5).slice(0,3);
   const opts=[word,...uniq].sort(()=>Math.random()-0.5);
-  body.innerHTML=`<div style="font-size:17px;line-height:1.7;text-align:left;margin-bottom:14px">${blanked}</div>
+  body.innerHTML=`<div class="qsent">${blanked}</div>
     <div id="opts"></div><div id="ana"></div>`;
   const ob=document.getElementById('opts');
   opts.forEach(o=>{
@@ -2263,12 +2264,12 @@ function renderFill(body,it){
       speak(word);
       const usage=(it.rec.note||'').trim();
       document.getElementById('ana').innerHTML=`<div class="analysis">
-        <div style="font-size:15px;margin-bottom:8px"><b>${ok?'✓ 答對了':'✗ 答錯了'}</b></div>
+        <div style="font-size:calc(15px*var(--fs));margin-bottom:8px"><b>${ok?'✓ 答對了':'✗ 答錯了'}</b></div>
         <div><b style="color:var(--acc)">${escapeHtml(word)}</b> ${it.rec.phonetic||''} <button class="speak" onclick="speak('${word.replace(/'/g,'')}')">聽</button></div>
         <div style="margin-top:4px">${it.rec.pos?'<span class="cpos">'+escapeHtml(it.rec.pos)+'</span>':''}${escapeHtml(it.rec.wordZh||'')}</div>
         ${ex.ex?`<div style="margin-top:6px">例句：${escapeHtml(ex.ex)}</div>${ex.exZh?'<div class="extrans">'+escapeHtml(ex.exZh)+'</div>':''}`:''}
-        ${usage?`<div class="anahr"></div><div style="white-space:pre-wrap;font-size:13px;line-height:1.7">${escapeHtml(usage)}</div>`:''}
-        <div style="font-size:12px;color:var(--mut);margin-top:10px">調整熟悉度（同步到上面清單）：</div>${quizLvHtml(it.date,it.key)}
+        ${usage?`<div class="anahr"></div><div style="white-space:pre-wrap;font-size:calc(13px*var(--fs));line-height:1.7">${escapeHtml(usage)}</div>`:''}
+        <div style="font-size:calc(12px*var(--fs));color:var(--mut);margin-top:10px">調整熟悉度（同步到上面清單）：</div>${quizLvHtml(it.date,it.key)}
         <button class="btn sm" style="margin-top:12px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
       scrollAna();
     };
@@ -2300,7 +2301,7 @@ function renderSpell(body,it){
       <b>${ok?'✓ 拼對了！':'✗ 拼錯了'}</b>　正解：<b>${it.rec.word}</b> ${it.rec.phonetic||''}<br>
       ${ok?'':'你輸入：'+(inp.value||'（空白）')+'<br>'}
       中文：${it.rec.wordZh||''}<br>
-      <div style="font-size:12px;color:var(--mut);margin-top:8px">調整熟悉度（同步到上面清單）：</div>${quizLvHtml(it.date,it.key)}
+      <div style="font-size:calc(12px*var(--fs));color:var(--mut);margin-top:8px">調整熟悉度（同步到上面清單）：</div>${quizLvHtml(it.date,it.key)}
       <button class="btn sm" style="margin-top:12px" onclick="Q.i++;nextQ()">下一題 →</button></div>`;
     scrollAna();
   };
