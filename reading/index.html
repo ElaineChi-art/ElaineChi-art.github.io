@@ -234,19 +234,19 @@
   .lvfilter{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
   .quizbox{text-align:center}
   .qtypes{display:flex;gap:8px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
-  .flash{background:var(--panel2);border:1px solid var(--line);border-radius:16px;min-height:190px;display:flex;flex-direction:column;
-       align-items:center;justify-content:center;gap:10px;padding:30px;cursor:pointer}
-  .flash .big{font-family:var(--serif);font-size:34px;font-weight:600}
-  .flash .hint{font-size:13px;color:var(--mut)}
+  .flash{background:var(--panel2);border:1px solid var(--line);border-radius:16px;min-height:calc(190px*var(--fs));display:flex;flex-direction:column;
+       align-items:center;justify-content:center;gap:10px;padding:calc(30px*var(--fs));cursor:pointer}
+  .flash .big{font-family:var(--serif);font-size:calc(34px*var(--fs));font-weight:600}
+  .flash .hint{font-size:calc(13px*var(--fs));color:var(--mut)}
   .opt{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--tx);
-       border-radius:11px;padding:13px 16px;margin-bottom:9px;cursor:pointer;font-size:16px}
+       border-radius:11px;padding:calc(13px*var(--fs)) calc(16px*var(--fs));margin-bottom:9px;cursor:pointer;font-size:calc(16px*var(--fs))}
   .opt:hover{border-color:var(--acc)}
   .opt.correct{background:color-mix(in srgb,var(--green) 22%,var(--panel2));border-color:var(--green);font-weight:600}
   .opt.wrong{background:color-mix(in srgb,var(--red) 18%,var(--panel2));border-color:var(--red)}
   .opt.dim{opacity:.5}
-  .optzh{float:right;color:var(--mut);font-weight:400;font-size:14px}
-  .progress{font-size:13px;color:var(--mut);margin-bottom:12px}
-  .scorebox{font-size:18px;line-height:1.9} .scorebox .big{font-family:var(--serif);font-size:48px;font-weight:700}
+  .optzh{float:right;color:var(--mut);font-weight:400;font-size:calc(14px*var(--fs))}
+  .progress{font-size:calc(13px*var(--fs));color:var(--mut);margin-bottom:12px}
+  .scorebox{font-size:calc(18px*var(--fs));line-height:1.9} .scorebox .big{font-family:var(--serif);font-size:calc(48px*var(--fs));font-weight:700}
   input[type=range]{accent-color:var(--acc2)}
 
   /* ============ Modal ============ */
@@ -408,7 +408,7 @@
    { texts:{ id:{id,title,article,words:[{w,pos,zh,note,level,stats:{r,w}}],shelf,created,updated} },
      shelves:[{id,name}], cur:id }
    ============================================================ */
-const APP_VERSION='v27';
+const APP_VERSION='v28';
 const LS='readingDB_v1';
 /* 若被合併版當 iframe 嵌入：閱讀頁每次都會重新從網路載入(不被 iOS 主畫面凍結)，
    所以由「活的」閱讀頁去把可能被凍住的『單字主框』強制刷新到最新版一次。同源才做得到。 */
@@ -1082,7 +1082,7 @@ function renderQuiz(){
   if(curType==='flash'){
     box.innerHTML=prog+`<div class="flash" onclick="this.querySelector('.bk').style.display='block';this.querySelector('.ft').style.display='none'">
       <div class="ft"><div class="big">${esc(cur.w)}</div><div class="hint">點一下看中文</div></div>
-      <div class="bk" style="display:none"><div style="color:var(--acc);font-style:italic;font-family:var(--serif)">${esc(cur.pos||'')}</div><div class="big" style="font-size:26px">${esc(cur.zh||'')}</div></div></div>
+      <div class="bk" style="display:none"><div style="color:var(--acc);font-style:italic;font-family:var(--serif)">${esc(cur.pos||'')}</div><div class="big" style="font-size:calc(26px*var(--fs))">${esc(cur.zh||'')}</div></div></div>
       <div class="row" style="justify-content:center;margin-top:14px">
         <button class="btn ghost" onclick="ansFlash(false)">✕ 不熟</button>
         <button class="btn" onclick="ansFlash(true)">✓ 記得</button></div>`;
@@ -1091,7 +1091,7 @@ function renderQuiz(){
     box.innerHTML=prog+`<div class="flash" style="min-height:120px"><div class="big">${esc(cur.w)}</div><div class="hint">${esc(cur.pos||'')} · 選出正確中文</div></div>
       <div style="margin-top:14px">${opts.map(o=>`<button class="opt" onclick="ansFill(this,${o.correct})">${esc(o.zh)}</button>`).join('')}</div>`;
   } else {
-    box.innerHTML=prog+`<div class="flash" style="min-height:120px"><div class="big" style="font-size:26px">${esc(cur.zh||'')}</div><div class="hint">${esc(cur.pos||'')} · 拼出英文</div></div>
+    box.innerHTML=prog+`<div class="flash" style="min-height:120px"><div class="big" style="font-size:calc(26px*var(--fs))">${esc(cur.zh||'')}</div><div class="hint">${esc(cur.pos||'')} · 拼出英文</div></div>
       <div class="row" style="margin-top:14px;justify-content:center"><input type="text" id="spellIn" style="max-width:300px" placeholder="輸入英文…" onkeydown="if(event.key==='Enter')ansSpell()">
       <button class="btn" onclick="ansSpell()">送出</button></div><div class="msg" id="spellMsg" style="text-align:center"></div>`;
     setTimeout(()=>{const s=document.getElementById('spellIn');s&&s.focus();},50);

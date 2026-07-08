@@ -574,7 +574,7 @@
   </div>
 
   <div class="devhint" style="text-align:center;color:var(--mut);font-size:12px;margin-top:24px;opacity:.8">
-    版本 <b>v84 ・ 2026-07-09</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
+    版本 <b>v85 ・ 2026-07-09</b>（看到這個就是最新版；若朋友看到的版本不同或沒有，代表還在舊版快取）
   </div>
 </div>
 
@@ -582,7 +582,7 @@
 <div id="bgStatus"><span class="dot"></span>翻譯中…</div>
 
 <!-- word detail modal -->
-<div id="readingPane" class="hide"><iframe id="fRead" data-src="/reading/?rv=27" title="閱讀神器"></iframe></div>
+<div id="readingPane" class="hide"><iframe id="fRead" data-src="/reading/?rv=28" title="閱讀神器"></iframe></div>
 <script>
   function appTab(t){
     var rp=document.getElementById('readingPane'), fr=document.getElementById('fRead');
@@ -618,7 +618,7 @@
 
 <script>
 /* ============ auto-update (所有人開著就會自動更新到最新版) ============ */
-const APP_VERSION='84';
+const APP_VERSION='85';
 async function checkUpdate(){
   try{
     const r=await fetch('version.json?_='+Date.now(),{cache:'no-store'});
