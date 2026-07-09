@@ -37,7 +37,8 @@
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 12px 30px -22px #000}
   .sec-h{font-family:var(--serif);font-weight:700;font-size:21px;margin-bottom:6px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
   .sec-sub{font-size:12.5px;color:var(--mut);font-weight:400;font-family:var(--sans)}
-  .btn{background:var(--acc2);color:#eaf1fb;border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
+  .btn{background:var(--acc2);color:#eaf1fb;border:none;border-radius:10px;padding:11px 20px;font-size:15px;font-weight:600;cursor:pointer}
+  .btn:disabled{opacity:.5}
   .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--tx)}
   .btn.ghost:hover{border-color:var(--acc)}
   .btn.sm{padding:6px 12px;font-size:13px;border-radius:8px}
@@ -45,50 +46,50 @@
   .pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 11px;border-radius:20px;border:1px solid var(--line);color:var(--mut);background:transparent}
   input[type=date],input[type=number]{background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:9px 11px;font-size:14px;font-family:inherit}
   .hide{display:none}
+  .speak{cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--acc);border-radius:7px;padding:3px 9px;font-size:14px}
 
-  /* today mission */
-  .hero{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
-  .ring{--p:0;width:96px;height:96px;border-radius:50%;flex:none;display:grid;place-items:center;
+  .hero{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .ring{--p:0;width:92px;height:92px;border-radius:50%;flex:none;display:grid;place-items:center;
     background:conic-gradient(var(--acc) calc(var(--p)*1%), var(--line) 0);position:relative}
   .ring::before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--panel)}
-  .ring b{position:relative;font-family:var(--serif);font-size:24px;font-weight:700}
+  .ring b{position:relative;font-family:var(--serif);font-size:23px;font-weight:700}
   .ring small{position:relative;display:block;text-align:center;font-size:10px;color:var(--mut)}
-  .daymeta{flex:1;min-width:180px}
-  .daymeta .big{font-family:var(--serif);font-size:26px;font-weight:700}
+  .daymeta{flex:1;min-width:170px}
+  .daymeta .big{font-family:var(--serif);font-size:25px;font-weight:700}
   .daymeta .mut{color:var(--mut);font-size:13px;margin-top:2px}
-  .task{display:flex;gap:11px;align-items:flex-start;padding:12px 13px;border:1px solid var(--line);border-radius:12px;margin-top:10px;background:var(--panel2)}
-  .task.done{opacity:.6}
-  .task .chk{width:22px;height:22px;flex:none;border-radius:7px;border:1.5px solid var(--acc2);cursor:pointer;display:grid;place-items:center;font-size:14px;color:#fff;margin-top:1px}
-  .task.done .chk{background:var(--green);border-color:var(--green)}
-  .task .body{flex:1;min-width:0}
-  .task .t{font-weight:600;font-size:14.5px}
-  .task .d{font-size:12.5px;color:var(--mut);margin-top:3px;line-height:1.6;word-break:break-word}
-  .task .tag{font-size:10.5px;padding:1px 8px;border-radius:10px;border:1px solid var(--line);color:var(--mut);margin-left:6px;white-space:nowrap}
-  .file{font-size:12px;color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,transparent);border:1px solid color-mix(in srgb,var(--acc) 30%,transparent);border-radius:7px;padding:3px 8px;display:inline-block;margin-top:5px;word-break:break-all}
-  .streak{font-size:13px;color:var(--yellow)}
+  .streak{font-size:13px;color:var(--yellow);margin-top:4px}
 
-  /* plan */
+  /* learn card */
+  .lcard{background:var(--panel2);border:1px solid var(--line);border-radius:18px;min-height:calc(220px*var(--fs));
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:26px;text-align:center;cursor:pointer;position:relative}
+  .lcard .sc{position:absolute;top:12px;left:14px;font-size:11px}
+  .lcard .en{font-family:var(--serif);font-size:calc(40px*var(--fs));font-weight:700;color:var(--acc);line-height:1.1}
+  .lcard .pos{font-style:italic;color:var(--mut);font-family:var(--serif);font-size:calc(15px*var(--fs))}
+  .lcard .zh{font-size:calc(22px*var(--fs));font-weight:600}
+  .lcard .ex{font-size:calc(15px*var(--fs));line-height:1.6;color:var(--tx);margin-top:6px}
+  .lcard .ex b{color:var(--acc)}
+  .lcard .exz{font-size:calc(13.5px*var(--fs));color:var(--mut);line-height:1.5}
+  .lcard .tap{font-size:12px;color:var(--mut)}
+  .lnav{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px}
+  .dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1}
+  .dots i{width:7px;height:7px;border-radius:50%;background:var(--line);display:inline-block}
+  .dots i.on{background:var(--acc)}
+  .dots i.seen{background:var(--acc2)}
+
+  /* quiz */
+  .qh{font-family:var(--serif);font-size:calc(30px*var(--fs));font-weight:700;text-align:center;margin:6px 0 4px}
+  .qhint{text-align:center;color:var(--mut);font-size:calc(13px*var(--fs));margin-bottom:14px}
+  .opt{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--tx);
+    border-radius:11px;padding:calc(13px*var(--fs)) calc(16px*var(--fs));margin-bottom:9px;cursor:pointer;font-size:calc(16px*var(--fs))}
+  .opt:hover{border-color:var(--acc)}
+  .opt.correct{background:color-mix(in srgb,var(--green) 22%,var(--panel2));border-color:var(--green);font-weight:600}
+  .opt.wrong{background:color-mix(in srgb,var(--red) 18%,var(--panel2));border-color:var(--red)}
+  .opt.dim{opacity:.5}
+  .qprog{text-align:center;font-size:calc(13px*var(--fs));color:var(--mut);margin-bottom:10px}
+
   .wk{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;background:var(--panel2)}
   .wk h3{font-size:15px;margin-bottom:4px}
   .wk .wsub{font-size:12.5px;color:var(--mut);line-height:1.7}
-
-  /* mindmap */
-  .mm-sc{border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--panel2);overflow:hidden}
-  .mm-hd{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
-  .mm-hd .dot{width:10px;height:10px;border-radius:50%;flex:none}
-  .mm-hd .nm{font-weight:600;font-size:15px;flex:1}
-  .mm-hd .cnt{font-size:12px;color:var(--mut)}
-  .mm-hd .cv{font-size:12px;color:var(--mut);transition:transform .2s}
-  .mm-sc.open .cv{transform:rotate(90deg)}
-  .mm-body{display:none;padding:0 14px 12px 34px}
-  .mm-sc.open .mm-body{display:block}
-  .mm-sub{display:flex;align-items:center;gap:9px;padding:8px 0;border-top:1px dashed var(--line)}
-  .mm-sub .chk{width:19px;height:19px;flex:none;border-radius:6px;border:1.5px solid var(--acc2);cursor:pointer;display:grid;place-items:center;font-size:12px;color:#fff}
-  .mm-sub.done .chk{background:var(--green);border-color:var(--green)}
-  .mm-sub .st{flex:1;font-size:13.5px}
-  .mm-sub.done .st{color:var(--mut);text-decoration:line-through}
-  .mm-sub .ch{font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums}
-
   .barwrap{height:8px;background:var(--line);border-radius:5px;overflow:hidden;margin:8px 0}
   .bar{height:100%;background:var(--acc)}
   .grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:10px}
@@ -107,10 +108,10 @@
 <div class="topbar">
   <div class="brand">990</div>
   <div class="seg" id="seg">
-    <button class="on" data-t="today">今日任務</button>
-    <button data-t="plan">讀書計畫</button>
-    <button data-t="map">場景心智圖</button>
-    <button data-t="stats">進度</button>
+    <button class="on" data-t="today">今日學習</button>
+    <button data-t="plan">計畫</button>
+    <button data-t="map">場景進度</button>
+    <button data-t="stats">統計</button>
     <button data-t="method">990 方法</button>
   </div>
 </div>
@@ -118,262 +119,398 @@
 <div class="wrap">
   <div style="margin-bottom:14px">
     <h1>多益 990 作戰計畫</h1>
-    <div class="sub">8-Week Sprint · Scenario Mastery</div>
+    <div class="sub">Learn · Answer · Repeat</div>
   </div>
 
-  <!-- 今日任務 -->
+  <!-- 今日學習 -->
   <section id="tab-today">
     <div class="card">
       <div class="hero">
-        <div class="ring" id="dayRing"><b id="ringPct">0%</b><small>今日完成</small></div>
+        <div class="ring" id="dayRing"><b id="ringPct">0%</b><small>今日</small></div>
         <div class="daymeta">
           <div class="big" id="dayTitle">Day 1</div>
-          <div class="mut" id="dayDesc">設定開始日期就會排出每天任務</div>
+          <div class="mut" id="dayDesc"></div>
           <div class="streak" id="streak"></div>
         </div>
       </div>
-      <div class="row" style="margin-top:10px">
+      <div class="row" style="margin-top:12px">
         <span class="sec-sub">開始日期</span>
         <input type="date" id="startDate">
-        <button class="btn ghost sm" id="btnToday">跳到今天</button>
+        <span class="sec-sub">每天</span>
+        <select id="perDay" style="background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:8px 10px;font-size:14px">
+          <option value="6">6 字</option><option value="8" selected>8 字</option><option value="10">10 字</option><option value="12">12 字</option>
+        </select>
       </div>
-      <div id="taskList"></div>
+      <div id="robot" style="margin-top:14px"></div>
     </div>
   </section>
 
-  <!-- 讀書計畫 -->
+  <!-- 計畫 -->
   <section id="tab-plan" class="hide">
     <div class="card">
-      <div class="sec-h">8 週總覽 <span class="sec-sub">每天 60–90 分鐘・做得完的量</span></div>
+      <div class="sec-h">怎麼跟著做 <span class="sec-sub">每天固定量，點開就學＋作答，隔天回鍋</span></div>
       <div id="planList"></div>
     </div>
   </section>
 
-  <!-- 心智圖 -->
+  <!-- 場景進度 -->
   <section id="tab-map" class="hide">
     <div class="card">
-      <div class="sec-h">場景心智圖 <span class="sec-sub">13 大場景 · 60 主題（勾選＝已讀）</span></div>
-      <div class="row" style="margin-bottom:12px">
-        <button class="btn ghost sm" id="mmExpand">全部展開</button>
-        <button class="btn ghost sm" id="mmCollapse">全部收合</button>
-      </div>
-      <div id="mmList"></div>
+      <div class="sec-h">13 場景 · 核心字彙掌握度</div>
+      <div id="scProgress"></div>
     </div>
   </section>
 
-  <!-- 進度 -->
+  <!-- 統計 -->
   <section id="tab-stats" class="hide">
     <div class="card">
-      <div class="sec-h">整體進度</div>
+      <div class="sec-h">學習統計</div>
       <div class="grid2" id="statGrid"></div>
-      <div style="margin-top:16px" id="scProgress"></div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn ghost sm" id="reviewWeak">複習不熟的字</button>
+        <span class="sec-sub">把答錯過的字再測一次</span>
+      </div>
     </div>
   </section>
 
   <!-- 方法 -->
   <section id="tab-method" class="hide">
     <div class="card">
-      <div class="sec-h">990 心法 <span class="sec-sub">滿分不是運氣，是把每一分都拿回來</span></div>
+      <div class="sec-h">990 心法</div>
       <ul class="meth">
-        <li><b>單字先行</b>：每天用 <a href="https://elainechi-art.github.io/vocab/" target="_blank">Lexicon 每日單字</a> 背當天場景的商用字，把講義的重點字丟進去，用測驗鞏固。</li>
-        <li><b>場景精讀</b>：每天讀 1–2 份「多益解密」講義（本機 Downloads），把不熟的句型／搭配詞抄進 <a href="https://elainechi-art.github.io/reading/" target="_blank">閱讀神器</a> 標注理解。</li>
-        <li><b>聽力（Part 1–4）</b>：每天 20 分鐘精聽＋跟讀（shadowing）。990 聽力要「聽到就懂」，用官方 ETS 題本／音檔（版權，請用你自己的）。</li>
-        <li><b>閱讀（Part 5–7）</b>：Part 5 文法字彙求「秒殺」；Part 7 練<b>略讀＋定位</b>，先看題目關鍵字再回文章找。用閱讀神器的段落分析練快讀。</li>
-        <li><b>錯題本</b>：每題錯的都要「為什麼錯＋正確邏輯」，弱項場景回頭補該章講義。</li>
-        <li><b>計時模擬</b>：第 7–8 週每 2 天一回完整計時模考（聽 45 分＋讀 75 分），養成不超時、不空題。</li>
-        <li><b>990 門檻</b>：聽力幾乎零錯、閱讀留 5–10 分檢查。目標是<b>穩定</b>，不是偶爾高分。</li>
+        <li><b>機器人負責反射</b>：每天 8 字學＋測，把場景核心字練到「看到秒懂」。這是本頁內建的通用多益字彙。</li>
+        <li><b>講義當精讀</b>：學完當天場景，翻你本機的「多益解密」講義做延伸（版權教材，只在本機）。</li>
+        <li><b>聽力跟讀</b>：每天 20 分鐘 Part 1–4 精聽＋shadowing，用官方 ETS 音檔。</li>
+        <li><b>閱讀定位</b>：Part 5 秒殺；Part 7 先看題目關鍵字再回文章找。</li>
+        <li><b>錯題本＋計時模考</b>：後段每 2 天一回完整計時模考，錯題寫「為什麼錯」。</li>
+        <li><b>把講義重點字加進來</b>：也可以用 <a href="https://elainechi-art.github.io/vocab/" target="_blank">Lexicon 每日單字</a> 補自己整理的字。</li>
       </ul>
-    </div>
-    <div class="card">
-      <div class="sec-h">本機講義清單 <span class="sec-sub">版權教材內文不上線；下方是檔名，從你的 Downloads 開啟</span></div>
-      <div id="fileList" style="font-size:12.5px;color:var(--mut);line-height:1.9"></div>
     </div>
   </section>
 
   <div class="foot">
-    多益 990 作戰計畫 · <span id="ver">v1</span> · 進度存在你自己的瀏覽器<br>
-    <a href="https://elainechi-art.github.io/vocab/">🔤 Lexicon 單字/閱讀</a> · 教材版權屬原作者，內文不公開
+    多益 990 作戰計畫 · <span id="ver">v2</span> · 進度存在你自己的瀏覽器<br>
+    <a href="https://elainechi-art.github.io/vocab/">🔤 Lexicon</a> · 內建字彙為通用多益商用字（原創），教材版權屬原作者、內文不公開
   </div>
 </div>
 
 <script>
-/* 場景架構（來自講義章節分類，非教材內文）。scenarios: {ch,name,color,subs[]} */
-const SCENARIOS=[
- {ch:4, name:'購物', color:'#e0a3a3', subs:['訂單管理：處理與配送','購物前期：選擇與詢問','交易進行：定價與結帳','商業運作：B2B與展示','售後服務：問題解決']},
- {ch:5, name:'一般商務', color:'#a7c4e6', subs:['策略規劃與發展','市場營銷與客戶管理','商業合作與法務管理','會議溝通與協調','企業聲譽與品質保證']},
- {ch:6, name:'旅遊', color:'#8fd0c0', subs:['交通運輸服務','行程規劃與預定','服務中斷與客服','住宿與旅遊體驗','旅遊資訊與公告']},
- {ch:7, name:'人事', color:'#c9a7e0', subs:['人才招募與入職','薪酬福利與獎勵','績效發展與培訓','日常營運管理','組織文化與員工體驗']},
- {ch:8, name:'辦公室', color:'#c6b06a', subs:['日常行政與工作管理','會議與溝通協調','辦公環境與設備管理','安全管理與外部服務','變革與特殊情況']},
- {ch:9, name:'娛樂', color:'#e6b98f', subs:['媒體內容與傳播','活動參與體驗','活動幕後運作','導覽與特別活動']},
- {ch:10, name:'企業房產', color:'#9db0c9', subs:['建設與維護管理','物業交易與搜尋','設施與公用事業管理','倉儲與物流服務']},
- {ch:11, name:'生產', color:'#8fb8d0', subs:['品質管理與產品開發','設備與材料管理','生產規劃與執行','營運設施與安全','成本效益與產品上市']},
- {ch:12, name:'用餐', color:'#d0a08f', subs:['訂位與用餐體驗','點餐與飲食需求','行銷與外送服務','餐廳營運管理','美食教育與體驗']},
- {ch:13, name:'技術領域', color:'#8fd0a8', subs:['系統應用與設備管理','技術支援與問題解決','技術學習與知識傳遞','技術創新與產業活動']},
- {ch:14, name:'保健', color:'#d08f8f', subs:['就醫預約與互動','藥物與健康產品','健康管理與營養','醫療行政與設施','健身與健康活動']},
- {ch:15, name:'財務預算', color:'#b8d08f', subs:['銀行與個人理財','企業財務管理','付款與稅務管理','財務專業服務']},
- {ch:16, name:'企業發展', color:'#a8b8e6', subs:['產品創新與市場競爭','策略聯盟與資源整合','營運優化與技術升級','擴張與資本投資策略']},
-];
-const APP_VERSION='v1';
-// 攤平成 60 個主題，每個有 id、章節、標題、檔名
-const TOPICS=[]; SCENARIOS.forEach(s=>s.subs.forEach((t,i)=>{ TOPICS.push({id:'Ch'+s.ch+'-'+(i+1),ch:s.ch,sc:s.name,color:s.color,title:t,file:'Ch'+s.ch+'-'+(i+1)+' '+s.name+'場景-'+t+'.pdf'}); }));
+/* ========= 內建原創多益核心字彙（依 13 場景；通用商用字，非任何教材內文） ========= */
+const WB={
+ '購物':[
+  ['invoice','n.','發票、請款單','Please send the invoice to our accounting department.','請把發票寄到我們的會計部門。'],
+  ['shipment','n.','貨運、出貨','The shipment will arrive within three business days.','貨物將在三個工作天內送達。'],
+  ['purchase order','n. phr.','採購訂單','We received your purchase order this morning.','我們今天早上收到你們的採購訂單。'],
+  ['refund','n./v.','退款','You can get a full refund within 30 days.','你可以在 30 天內獲得全額退款。'],
+  ['warranty','n.','保固','The product comes with a two-year warranty.','這個產品附有兩年保固。'],
+  ['in stock','phr.','有現貨','The item is currently in stock.','這個品項目前有現貨。'],
+  ['discount','n.','折扣','Members receive a 15% discount on all orders.','會員所有訂單享 15% 折扣。'],
+  ['retailer','n.','零售商','The retailer offers free returns on clothing.','這家零售商的服飾提供免費退貨。'],
+  ['merchandise','n.','商品','All merchandise must be inspected before shipping.','所有商品出貨前都必須檢查。'],
+  ['out of stock','phr.','缺貨','That model is out of stock until next week.','那款下週前都缺貨。'],
+ ],
+ '一般商務':[
+  ['revenue','n.','營收','Quarterly revenue rose by 12 percent.','季營收成長了 12%。'],
+  ['strategy','n.','策略','Our marketing strategy targets younger customers.','我們的行銷策略鎖定年輕客群。'],
+  ['negotiate','v.','談判、協商','They negotiated a better price with the supplier.','他們和供應商談到更好的價格。'],
+  ['proposal','n.','提案','The board approved the merger proposal.','董事會通過了合併提案。'],
+  ['stakeholder','n.','利害關係人','We must keep all stakeholders informed.','我們必須讓所有利害關係人掌握資訊。'],
+  ['forecast','n./v.','預測','The sales forecast for next quarter looks strong.','下一季的銷售預測看起來很強。'],
+  ['expand','v.','擴張','The company plans to expand into Asian markets.','公司計畫擴張到亞洲市場。'],
+  ['competitor','n.','競爭對手','Our main competitor lowered its prices.','我們的主要競爭對手降價了。'],
+  ['quarterly','adj.','每季的','The quarterly report is due on Friday.','季報星期五截止。'],
+  ['comply','v.','遵守','All branches must comply with the new policy.','所有分公司都必須遵守新政策。'],
+ ],
+ '旅遊':[
+  ['itinerary','n.','行程表','Your travel itinerary has been emailed to you.','你的旅遊行程表已寄到你的信箱。'],
+  ['reservation','n.','預訂','I would like to make a reservation for two nights.','我想預訂兩晚。'],
+  ['boarding pass','n. phr.','登機證','Please have your boarding pass ready.','請準備好你的登機證。'],
+  ['departure','n.','出發、離站','The departure has been delayed by an hour.','出發時間延後了一小時。'],
+  ['layover','n.','中途停留、轉機','We have a two-hour layover in Tokyo.','我們在東京轉機停留兩小時。'],
+  ['luggage','n.','行李','Each passenger may check one piece of luggage.','每位乘客可托運一件行李。'],
+  ['accommodation','n.','住宿','The hotel offers accommodation for business travelers.','這家飯店提供商務旅客住宿。'],
+  ['fare','n.','票價、車資','The train fare increased last month.','火車票價上個月調漲了。'],
+  ['delay','n./v.','延誤','Bad weather caused the flight to delay.','壞天氣造成班機延誤。'],
+  ['confirm','v.','確認','Please confirm your booking by tomorrow.','請在明天前確認你的預訂。'],
+ ],
+ '人事':[
+  ['recruit','v.','招募','We are recruiting engineers for the new project.','我們正在為新專案招募工程師。'],
+  ['candidate','n.','應徵者、人選','The candidate has excellent qualifications.','這位應徵者資歷優秀。'],
+  ['resume','n.','履歷','Please attach your resume to the application.','請在申請中附上你的履歷。'],
+  ['salary','n.','薪水','The salary is negotiable based on experience.','薪資可依經驗面議。'],
+  ['benefits','n.','福利','The company offers generous health benefits.','公司提供優渥的健康福利。'],
+  ['promotion','n.','升遷','She earned a promotion to senior manager.','她升遷為資深經理。'],
+  ['appraisal','n.','考核、評估','Annual performance appraisals begin next week.','年度績效考核下週開始。'],
+  ['onboarding','n.','入職訓練','The onboarding process takes about a week.','入職訓練大約需要一週。'],
+  ['resign','v.','辭職','He decided to resign from his position.','他決定辭去職務。'],
+  ['workforce','n.','勞動力、員工總數','The company is expanding its workforce.','公司正在擴充人力。'],
+ ],
+ '辦公室':[
+  ['agenda','n.','議程','Please review the agenda before the meeting.','請在開會前看過議程。'],
+  ['deadline','n.','截止期限','We must meet the deadline by Friday.','我們必須在週五前趕上截止期限。'],
+  ['colleague','n.','同事','My colleague will cover for me while I am away.','我不在時同事會幫我代班。'],
+  ['supplies','n.','用品、耗材','We are running low on office supplies.','我們的辦公用品快用完了。'],
+  ['schedule','n./v.','排程、時間表','The meeting is scheduled for 3 p.m.','會議排在下午三點。'],
+  ['facility','n.','設施','The building has excellent parking facilities.','這棟大樓有很好的停車設施。'],
+  ['maintenance','n.','維護','Routine maintenance is done every month.','例行維護每個月進行一次。'],
+  ['overtime','n.','加班','Employees are paid extra for overtime.','員工加班有額外薪資。'],
+  ['minutes','n.','會議記錄','Please take the minutes of the meeting.','請做這場會議的記錄。'],
+  ['reimburse','v.','報銷、償還','The company will reimburse your travel costs.','公司會報銷你的差旅費。'],
+ ],
+ '娛樂':[
+  ['venue','n.','場地','The concert venue holds ten thousand people.','演唱會場地可容納一萬人。'],
+  ['audience','n.','觀眾','The audience gave a standing ovation.','觀眾起立鼓掌。'],
+  ['broadcast','v./n.','播出、轉播','The event will be broadcast live online.','活動將在線上直播。'],
+  ['exhibit','n./v.','展覽、展出','The museum will exhibit modern art this fall.','博物館今秋將展出現代藝術。'],
+  ['admission','n.','入場費、入場','Admission is free for children under six.','六歲以下兒童免費入場。'],
+  ['sponsor','n./v.','贊助商、贊助','A local bank sponsored the festival.','一家在地銀行贊助了這個節慶。'],
+  ['rehearsal','n.','排練','The final rehearsal is tonight.','最後一次排練在今晚。'],
+  ['premiere','n.','首映、首演','The film premiere attracted many celebrities.','這部電影首映吸引許多名人。'],
+  ['performance','n.','表演、演出','Tonight’s performance sold out quickly.','今晚的演出很快就售罄。'],
+  ['review','n.','評論','The play received excellent reviews.','這齣戲得到很好的評價。'],
+ ],
+ '企業房產':[
+  ['lease','n./v.','租約、租賃','They signed a three-year lease for the office.','他們簽了三年的辦公室租約。'],
+  ['tenant','n.','房客、承租人','The tenant reported a broken heater.','房客回報暖氣壞了。'],
+  ['property','n.','房產、物業','The company invested in commercial property.','公司投資了商業房產。'],
+  ['premises','n.','店面、經營場所','Smoking is not allowed on the premises.','場所內禁止吸菸。'],
+  ['renovation','n.','翻修','The lobby is closed for renovation.','大廳因翻修而關閉。'],
+  ['utilities','n.','水電等公用事業','Rent does not include utilities.','租金不含水電費。'],
+  ['warehouse','n.','倉庫','Goods are stored in the central warehouse.','貨物存放在中央倉庫。'],
+  ['inspection','n.','檢查','The building passed its safety inspection.','這棟大樓通過了安全檢查。'],
+  ['mortgage','n.','房貸','They applied for a mortgage to buy the property.','他們申請房貸來買這處房產。'],
+  ['vacant','adj.','空置的','Two units on the third floor are vacant.','三樓有兩戶是空的。'],
+ ],
+ '生產':[
+  ['manufacture','v.','製造','The factory manufactures car parts.','這家工廠製造汽車零件。'],
+  ['assembly','n.','組裝','The assembly line runs 24 hours a day.','裝配線一天運轉 24 小時。'],
+  ['defect','n.','瑕疵','Any product with a defect is removed.','有瑕疵的產品都會被剔除。'],
+  ['inventory','n.','庫存','We check inventory levels every week.','我們每週檢查庫存量。'],
+  ['supplier','n.','供應商','The supplier delivered the materials on time.','供應商準時交付了原料。'],
+  ['quality control','n. phr.','品質管理','Quality control ensures product safety.','品管確保產品安全。'],
+  ['output','n.','產量','Factory output increased last quarter.','工廠產量上季增加了。'],
+  ['equipment','n.','設備','The new equipment improved efficiency.','新設備提升了效率。'],
+  ['prototype','n.','原型','Engineers built a prototype of the device.','工程師做了這個裝置的原型。'],
+  ['assemble','v.','組裝、集合','Workers assemble the units by hand.','工人以手工組裝這些單元。'],
+ ],
+ '用餐':[
+  ['reservation','n.','訂位','I made a dinner reservation for six.','我訂了六人的晚餐位子。'],
+  ['beverage','n.','飲料','The menu lists a wide range of beverages.','菜單列了各式各樣的飲料。'],
+  ['cuisine','n.','料理、菜系','The restaurant serves authentic Italian cuisine.','這家餐廳供應道地的義大利料理。'],
+  ['catering','n.','外燴、餐飲服務','We hired a catering company for the event.','我們為活動請了外燴公司。'],
+  ['ingredient','n.','食材、原料','All ingredients are locally sourced.','所有食材都是在地採購。'],
+  ['takeout','n.','外帶','The café offers takeout and delivery.','這家咖啡廳提供外帶和外送。'],
+  ['bill','n.','帳單','Could we have the bill, please?','可以幫我們結帳嗎？'],
+  ['appetizer','n.','開胃菜','The soup is served as an appetizer.','這道湯當開胃菜。'],
+  ['reserve','v.','預留、預訂','Please reserve a table by the window.','請幫我留一張靠窗的桌子。'],
+  ['serve','v.','供應、上菜','Breakfast is served until ten.','早餐供應到十點。'],
+ ],
+ '技術領域':[
+  ['software','n.','軟體','The new software improves data security.','新軟體提升了資料安全。'],
+  ['upgrade','n./v.','升級','The system upgrade will happen overnight.','系統升級會在夜間進行。'],
+  ['technical support','n. phr.','技術支援','Contact technical support if the app crashes.','若 App 當機請聯絡技術支援。'],
+  ['troubleshoot','v.','排除故障','The technician troubleshot the network issue.','技師排除了網路問題。'],
+  ['install','v.','安裝','Please install the latest update.','請安裝最新的更新。'],
+  ['device','n.','裝置','The device is compatible with most phones.','這個裝置和多數手機相容。'],
+  ['malfunction','n./v.','故障','A malfunction shut down the server.','一次故障使伺服器停機。'],
+  ['backup','n.','備份','Always keep a backup of your files.','務必保留檔案的備份。'],
+  ['interface','n.','介面','The app has a user-friendly interface.','這個 App 有好用的介面。'],
+  ['compatible','adj.','相容的','The printer is compatible with all laptops.','這台印表機和所有筆電相容。'],
+ ],
+ '保健':[
+  ['appointment','n.','預約','I have a doctor’s appointment at noon.','我中午有看診預約。'],
+  ['prescription','n.','處方','The pharmacist filled my prescription.','藥師幫我配了處方藥。'],
+  ['symptom','n.','症狀','Fatigue is a common symptom of stress.','疲勞是壓力常見的症狀。'],
+  ['insurance','n.','保險','The clinic accepts most health insurance.','這家診所接受大多數健康保險。'],
+  ['physician','n.','醫師','Consult a physician before taking the medicine.','服藥前請諮詢醫師。'],
+  ['pharmacy','n.','藥局','The pharmacy is open until midnight.','藥局營業到午夜。'],
+  ['dosage','n.','劑量','Do not exceed the recommended dosage.','請勿超過建議劑量。'],
+  ['checkup','n.','健康檢查','An annual checkup is recommended.','建議每年做一次健康檢查。'],
+  ['treatment','n.','治療','The treatment reduced her symptoms.','這個療程減輕了她的症狀。'],
+  ['nutrition','n.','營養','Good nutrition supports recovery.','良好的營養有助於復原。'],
+ ],
+ '財務預算':[
+  ['budget','n.','預算','The project went over budget.','這個專案超出預算了。'],
+  ['expense','n.','支出、費用','Please submit your travel expenses.','請提交你的差旅費用。'],
+  ['deposit','n./v.','存款、訂金','A deposit is required to book the venue.','預訂場地需要付訂金。'],
+  ['withdraw','v.','提款、撤回','You can withdraw cash at any branch.','你可以在任一分行提款。'],
+  ['interest','n.','利息','The account earns two percent interest.','這個帳戶有 2% 的利息。'],
+  ['tax','n.','稅','The price does not include tax.','這個價格不含稅。'],
+  ['audit','n./v.','稽核','The firm passed the annual audit.','這家公司通過了年度稽核。'],
+  ['transaction','n.','交易','Every transaction is recorded automatically.','每筆交易都會自動記錄。'],
+  ['statement','n.','對帳單','Your monthly statement is available online.','你的月對帳單可在線上查看。'],
+  ['invoice','n.','發票、帳單','The invoice is due within 30 days.','這張帳單 30 天內到期。'],
+ ],
+ '企業發展':[
+  ['innovation','n.','創新','Innovation drives the company’s growth.','創新驅動公司的成長。'],
+  ['acquisition','n.','收購','The acquisition expanded their market share.','這樁收購擴大了他們的市占率。'],
+  ['partnership','n.','合作關係','They formed a partnership with a tech firm.','他們和一家科技公司建立合作關係。'],
+  ['investment','n.','投資','The investment paid off within two years.','這筆投資兩年內就回本了。'],
+  ['expansion','n.','擴張','The expansion created hundreds of jobs.','這次擴張創造了數百個工作機會。'],
+  ['launch','n./v.','推出、上市','The product launch was a huge success.','產品上市非常成功。'],
+  ['patent','n.','專利','The company filed a patent for the design.','公司為這個設計申請了專利。'],
+  ['venture','n.','（新）事業、創投','The joint venture entered a new market.','這個合資事業進入了新市場。'],
+  ['scalable','adj.','可擴充的','The business model is highly scalable.','這個商業模式高度可擴充。'],
+  ['market share','n. phr.','市場占有率','They gained market share last year.','他們去年提升了市占率。'],
+ ],
+};
+const SC_ORDER=['購物','一般商務','旅遊','人事','辦公室','娛樂','企業房產','生產','用餐','技術領域','保健','財務預算','企業發展'];
+const SC_COLOR={'購物':'#e0a3a3','一般商務':'#a7c4e6','旅遊':'#8fd0c0','人事':'#c9a7e0','辦公室':'#c6b06a','娛樂':'#e6b98f','企業房產':'#9db0c9','生產':'#8fb8d0','用餐':'#d0a08f','技術領域':'#8fd0a8','保健':'#d08f8f','財務預算':'#b8d08f','企業發展':'#a8b8e6'};
+// 攤平成順序字表
+const WORDS=[]; SC_ORDER.forEach(sc=> (WB[sc]||[]).forEach(w=> WORDS.push({sc,en:w[0],pos:w[1],zh:w[2],ex:w[3],exZh:w[4], id:sc+'|'+w[0]}) ));
+const APP_VERSION='v2';
 
-const LS='toeic990';
+const LS='toeic990v2';
 let DB=load();
-function load(){ try{ const d=JSON.parse(localStorage.getItem(LS)); if(d) return d; }catch(e){} return {start:todayStr(), done:{}, tasks:{}}; }
+function load(){ try{ const d=JSON.parse(localStorage.getItem(LS)); if(d) return d; }catch(e){} return {start:todayStr(), perDay:8, dayDone:{}, wordStats:{}}; }
 function save(){ try{ localStorage.setItem(LS,JSON.stringify(DB)); }catch(e){} }
 function todayStr(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function daysBetween(a,b){ return Math.floor((new Date(b)-new Date(a))/86400000); }
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='en-US'; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 
-/* ---- 8 週計畫：前 6 週跑主題(每週一~六各2題、週日複習)，7-8 週模考+複習 ---- */
-function buildPlan(){
-  const plan=[]; let ti=0;
-  for(let w=0; w<8; w++){
-    for(let d=0; d<7; d++){
-      const day={week:w+1, dow:d};
-      if(w<6){
-        if(d===6){ day.type='review'; }
-        else { day.type='study'; day.topics=TOPICS.slice(ti,ti+2).map(t=>t.id); ti+=Math.min(2,TOPICS.length-ti); }
-      } else {
-        day.type = (d===6)?'rest' : (d%2===0?'mock':'review');
-      }
-      plan.push(day);
-    }
-  }
-  return plan;
-}
-const PLAN=buildPlan();
-const topicById=id=>TOPICS.find(t=>t.id===id);
+function perDay(){ return DB.perDay||8; }
+function dayIndex(){ return daysBetween(DB.start, todayStr()); }
+function wordsForDay(k){ return WORDS.slice(k*perDay(), k*perDay()+perDay()); }
+function totalDaysNeeded(){ return Math.ceil(WORDS.length/perDay()); }
 
-/* ---- 今日任務 ---- */
-function currentDayIndex(){ const n=daysBetween(DB.start, todayStr()); return n; }
-function dailyTasks(dayIdx){
-  const p=PLAN[dayIdx]; const list=[];
-  if(!p){ return list; }
-  if(p.type==='study'){
-    (p.topics||[]).forEach(id=>{ const t=topicById(id); if(t) list.push({k:'read:'+id, t:'場景精讀　'+t.sc+'・'+t.title, d:'讀這份「多益解密」講義，把不熟的搭配詞/句型抄進閱讀神器標注。', tag:t.id, file:t.file}); });
-    list.push({k:'vocab', t:'單字　背今日場景商用字', d:'把講義重點字丟進 Lexicon 每日單字，做翻卡/填空鞏固。', tag:'單字', link:'https://elainechi-art.github.io/vocab/'});
-    list.push({k:'listen', t:'聽力　Part 1–4 精聽＋跟讀 20 分', d:'用官方題本音檔，聽完馬上 shadowing 跟讀。', tag:'聽力'});
-    list.push({k:'read57', t:'閱讀　Part 5–7 練習 20 分', d:'Part5 秒殺文法字彙；Part7 先看題目關鍵字再定位。', tag:'閱讀'});
-  } else if(p.type==='review'){
-    list.push({k:'review', t:'週複習　把本週場景主題重測一遍', d:'到心智圖把本週主題快速回想；不熟的重讀講義＋Lexicon 只測不熟的字。', tag:'複習'});
-    list.push({k:'vocab', t:'單字　複習本週新字', d:'Lexicon 篩「不熟/普通」複習測驗。', tag:'單字', link:'https://elainechi-art.github.io/vocab/'});
-  } else if(p.type==='mock'){
-    list.push({k:'mock', t:'全真模擬考　計時一整回', d:'聽 45 分＋讀 75 分，不超時、不空題。用官方 ETS 題本（版權自備）。', tag:'模考'});
-    list.push({k:'wrong', t:'錯題本　訂正 + 回補弱項場景', d:'每題寫「為什麼錯＋正確邏輯」，弱項場景回頭讀該章講義。', tag:'訂正'});
-  } else if(p.type==='rest'){
-    list.push({k:'rest', t:'彈性日　補進度或休息', d:'落後就補、超前就多做一回 Part7；也可以完全休息。', tag:'彈性'});
-  }
-  return list;
-}
+/* ---- 今日學習機器人 ---- */
+let phase='learn', li=0, quizItems=[], qi=0, qScore=0;
 function renderToday(){
-  const dayIdx=currentDayIndex();
-  const dateKey=todayStr();
   document.getElementById('startDate').value=DB.start;
-  const tl=document.getElementById('taskList');
-  if(dayIdx<0){ document.getElementById('dayTitle').textContent='還沒開始'; document.getElementById('dayDesc').textContent='開始日期在未來（'+DB.start+'）'; tl.innerHTML=''; ring(0); document.getElementById('streak').textContent=''; return; }
-  if(dayIdx>=PLAN.length){ document.getElementById('dayTitle').textContent='計畫完成 🎉'; document.getElementById('dayDesc').textContent='8 週跑完了！接下來就是持續模考保持手感。'; tl.innerHTML=''; ring(100); return; }
-  const p=PLAN[dayIdx]; const tasks=dailyTasks(dayIdx);
-  const typeName={study:'場景精讀日',review:'複習日',mock:'模擬考日',rest:'彈性/休息日'}[p.type]||'';
-  document.getElementById('dayTitle').textContent='Day '+(dayIdx+1)+'　·　第 '+p.week+' 週';
-  document.getElementById('dayDesc').textContent=typeName;
-  const checks=DB.tasks[dateKey]||{};
-  let doneN=0;
-  tl.innerHTML=tasks.map(t=>{
-    const done=!!checks[t.k]; if(done)doneN++;
-    return `<div class="task ${done?'done':''}">
-      <div class="chk" onclick="toggleTask('${t.k}','${t.tag||''}')">${done?'✓':''}</div>
-      <div class="body">
-        <div class="t">${esc(t.t)}${t.tag?`<span class="tag">${esc(t.tag)}</span>`:''}</div>
-        <div class="d">${esc(t.d)}${t.link?` <a href="${t.link}" target="_blank">開啟 →</a>`:''}</div>
-        ${t.file?`<div class="file">📄 ${esc(t.file)}</div>`:''}
-      </div></div>`;
-  }).join('') || '<div class="d" style="color:var(--mut);padding:10px 0">今天沒有排定任務。</div>';
-  ring(tasks.length? Math.round(doneN/tasks.length*100):0);
-  document.getElementById('streak').textContent='🔥 連續 '+streak()+' 天有完成';
+  document.getElementById('perDay').value=perDay();
+  const k=dayIndex(); const host=document.getElementById('robot');
+  const learnedWords=Object.keys(DB.wordStats).length;
+  document.getElementById('streak').textContent='🔥 連續 '+streak()+' 天　·　已學 '+learnedWords+' / '+WORDS.length+' 字';
+  if(k<0){ document.getElementById('dayTitle').textContent='還沒開始'; document.getElementById('dayDesc').textContent='開始日期在未來（'+DB.start+'）'; host.innerHTML=''; ring(0); return; }
+  const words=wordsForDay(k);
+  if(!words.length){
+    document.getElementById('dayTitle').textContent='新字學完了 🎉';
+    document.getElementById('dayDesc').textContent='核心字彙都學過一輪，進入複習衝刺模式';
+    ring(100);
+    host.innerHTML=`<div style="text-align:center;padding:8px 0"><div class="sec-sub" style="margin-bottom:12px">把答錯過、不熟的字再測一遍，保持 990 手感。</div>
+      <button class="btn" onclick="startReview()">開始複習測驗</button></div>`;
+    return;
+  }
+  const sc=words[0].sc;
+  document.getElementById('dayTitle').textContent='Day '+(k+1)+' / '+totalDaysNeeded();
+  document.getElementById('dayDesc').textContent='今日場景：'+sc+'　·　'+words.length+' 個新字';
+  const done=DB.dayDone[todayStr()];
+  ring(done?100:(phase==='quiz'?60:15));
+  if(done){ host.innerHTML=`<div style="text-align:center;padding:10px 0">
+     <div class="qh" style="font-size:calc(22px*var(--fs))">今日完成 ✓</div>
+     <div class="sec-sub" style="margin-bottom:14px">明天回來學下一批（Day ${k+2}）。想的話可以再複習一次。</div>
+     <button class="btn ghost" onclick="phase='learn';li=0;renderRobot()">再看一次今日單字</button></div>`; return; }
+  renderRobot();
 }
-function ring(pct){ const r=document.getElementById('dayRing'); r.style.setProperty('--p',pct); document.getElementById('ringPct').textContent=pct+'%'; }
-function toggleTask(k,tag){
-  const dk=todayStr(); DB.tasks[dk]=DB.tasks[dk]||{}; DB.tasks[dk][k]=!DB.tasks[dk][k];
-  // 場景精讀勾選 → 同步標記該主題已讀
-  if(k.indexOf('read:')===0){ const id=k.slice(5); DB.done[id]=DB.tasks[dk][k]?1:DB.done[id]; }
-  save(); renderToday(); renderStats(); renderMap();
-}
-function streak(){ let s=0; for(let i=0;;i++){ const d=new Date(); d.setDate(d.getDate()-i); const dk=todayStr(d); const c=DB.tasks[dk]; if(c&&Object.values(c).some(Boolean)) s++; else { if(i===0) continue; break; } } return s; }
-
-/* ---- 計畫總覽 ---- */
-function renderPlan(){
-  const host=document.getElementById('planList');
-  const weeks=[
-    ['第 1–2 週','購物・一般商務・旅遊・人事（Ch4–7）','打底四大高頻場景：訂單/交易、策略/行銷、交通/住宿、招募/績效。每天 2 主題＋單字＋聽讀。'],
-    ['第 3–4 週','辦公室・娛樂・房產・生產（Ch8–11）','行政/會議、媒體/活動、物業/物流、品管/生產。開始每 2 天穿插一小段計時 Part7。'],
-    ['第 5–6 週','用餐・技術・保健・財務・企業發展（Ch12–16）','跑完剩餘場景，弱項標記；單字量累積到全場景覆蓋。'],
-    ['第 7 週','全真模考 ×3＋弱項回補','隔天一回完整計時模考，錯題訂正、回讀弱場景講義。'],
-    ['第 8 週','衝刺模考＋保養手感','再 3 回模考＋Part5 秒殺特訓＋Part7 定位加速，穩定 990。'],
-  ];
-  host.innerHTML=weeks.map(w=>`<div class="wk"><h3>${w[0]}　<span style="color:var(--acc);font-weight:600">${esc(w[1])}</span></h3><div class="wsub">${esc(w[2])}</div></div>`).join('')
-   + `<div class="wsub" style="color:var(--mut);margin-top:6px">＊每天固定：Lexicon 單字、Part1–4 聽力跟讀、Part5–7 閱讀、複習昨日。週日彈性/複習。</div>`;
-}
-
-/* ---- 心智圖 ---- */
-function renderMap(){
-  const host=document.getElementById('mmList');
-  host.innerHTML=SCENARIOS.map(s=>{
-    const subs=s.subs.map((t,i)=>{ const id='Ch'+s.ch+'-'+(i+1); const done=!!DB.done[id];
-      return `<div class="mm-sub ${done?'done':''}"><div class="chk" onclick="toggleTopic('${id}',event)">${done?'✓':''}</div>
-        <div class="st">${esc(t)}</div><div class="ch">${id}</div></div>`; }).join('');
-    const dn=s.subs.filter((t,i)=>DB.done['Ch'+s.ch+'-'+(i+1)]).length;
-    return `<div class="mm-sc" data-ch="${s.ch}">
-      <div class="mm-hd" onclick="this.parentNode.classList.toggle('open')">
-        <span class="dot" style="background:${s.color}"></span>
-        <span class="nm">Ch${s.ch}　${esc(s.name)}場景</span>
-        <span class="cnt">${dn}/${s.subs.length}</span><span class="cv">▶</span>
+function renderRobot(){
+  const k=dayIndex(); const words=wordsForDay(k); const host=document.getElementById('robot');
+  if(phase==='learn'){
+    const w=words[li];
+    host.innerHTML=`<div class="lcard" id="lc" onclick="flip()">
+        <span class="sc pill" style="border-color:${SC_COLOR[w.sc]};color:${SC_COLOR[w.sc]}">${esc(w.sc)}</span>
+        <div class="ft"><div class="en">${esc(w.en)}</div><button class="speak" onclick="event.stopPropagation();speak('${esc(w.en).replace(/'/g,"")}')">🔊 唸</button><div class="tap">點卡片看中文與例句</div></div>
+        <div class="bk hide"><div class="pos">${esc(w.pos)}</div><div class="zh">${esc(w.zh)}</div>
+          <div class="ex">${esc(w.ex).replace(new RegExp('('+w.en.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')+')','ig'),'<b>$1</b>')}</div>
+          <div class="exz">${esc(w.exZh)}</div></div>
       </div>
-      <div class="mm-body">${subs}</div>
-    </div>`;
+      <div class="lnav">
+        <button class="btn ghost sm" onclick="prevW()" ${li===0?'disabled':''}>← 上一個</button>
+        <div class="dots">${words.map((_,i)=>`<i class="${i===li?'on':(i<li?'seen':'')}"></i>`).join('')}</div>
+        ${li<words.length-1?`<button class="btn sm" onclick="nextW()">下一個 →</button>`:`<button class="btn sm" onclick="startQuiz()">開始測驗 →</button>`}
+      </div>`;
+  } else if(phase==='quiz'){
+    renderQuiz();
+  }
+}
+function flip(){ const c=document.getElementById('lc'); if(!c)return; c.querySelector('.ft').classList.toggle('hide'); c.querySelector('.bk').classList.toggle('hide'); }
+function nextW(){ li++; renderRobot(); }
+function prevW(){ if(li>0)li--; renderRobot(); }
+function startQuiz(){ const words=wordsForDay(dayIndex()); phase='quiz'; quizItems=shuffle(words); qi=0; qScore=0; ring(60); renderRobot(); }
+function startReview(){
+  const weak=WORDS.filter(w=>{ const s=DB.wordStats[w.id]; return s&&s.w>0; });
+  const pool=weak.length? weak : WORDS.filter(w=>DB.wordStats[w.id]);
+  if(!pool.length){ alert('目前沒有答錯過的字，先去今日學習吧！'); return; }
+  phase='quiz'; quizItems=shuffle(pool).slice(0,12); qi=0; qScore=0;
+  showTab('today'); document.getElementById('dayDesc').textContent='複習測驗（不熟的字）';
+  renderQuiz();
+}
+function renderQuiz(){
+  const host=document.getElementById('robot');
+  if(qi>=quizItems.length){
+    const pct=Math.round(qScore/quizItems.length*100);
+    // 標記今日完成
+    if(dayIndex()>=0 && wordsForDay(dayIndex()).length){ DB.dayDone[todayStr()]=1; }
+    save();
+    host.innerHTML=`<div style="text-align:center;padding:12px 0">
+      <div class="qh">${pct} 分</div><div class="sec-sub">答對 ${qScore} / ${quizItems.length}</div>
+      <div style="margin-top:16px" class="row" style="justify-content:center">
+        <button class="btn ghost" onclick="phase='learn';li=0;renderToday()">回今日</button>
+        <button class="btn" onclick="startQuiz()">再測一次</button></div></div>`;
+    renderStats(); renderScProgress();
+    return;
+  }
+  const w=quizItems[qi];
+  const wrong=shuffle(WORDS.filter(x=>x.id!==w.id)).slice(0,3);
+  const opts=shuffle([{zh:w.zh,ok:true},...wrong.map(x=>({zh:x.zh,ok:false}))]);
+  host.innerHTML=`<div class="qprog">${qi+1} / ${quizItems.length}　·　答對 ${qScore}</div>
+    <div class="qh">${esc(w.en)} <button class="speak" onclick="speak('${esc(w.en).replace(/'/g,"")}')">🔊</button></div>
+    <div class="qhint">${esc(w.pos)}　·　選出正確中文</div>
+    <div id="opts">${opts.map(o=>`<button class="opt" onclick="ansQ(this,${o.ok})">${esc(o.zh)}</button>`).join('')}</div>`;
+}
+function ansQ(btn,ok){
+  const w=quizItems[qi]; document.querySelectorAll('#opts .opt').forEach(b=>b.style.pointerEvents='none');
+  btn.classList.add(ok?'correct':'wrong');
+  if(!ok){ document.querySelectorAll('#opts .opt').forEach(b=>{ if(b.textContent===w.zh)b.classList.add('correct'); }); }
+  const s=DB.wordStats[w.id]||{r:0,w:0}; ok?s.r++:s.w++; DB.wordStats[w.id]=s; if(ok)qScore++; save();
+  setTimeout(()=>{ qi++; renderQuiz(); }, ok?650:1200);
+}
+function ring(p){ const r=document.getElementById('dayRing'); r.style.setProperty('--p',p); document.getElementById('ringPct').textContent=p+'%'; }
+function streak(){ let s=0; for(let i=0;;i++){ const d=new Date(); d.setDate(d.getDate()-i); if(DB.dayDone[todayStr(d)]) s++; else { if(i===0) continue; break; } } return s; }
+
+/* ---- 計畫 ---- */
+function renderPlan(){
+  document.getElementById('planList').innerHTML=
+   `<div class="wk"><h3>怎麼用</h3><div class="wsub">每天打開「今日學習」→ 翻卡學 ${perDay()} 個新字（點卡片看中文例句、🔊 聽發音）→ 立刻小測 → 完成打勾。隔天回來就是下一批。</div></div>
+    <div class="wk"><h3>節奏</h3><div class="wsub">內建核心字約 ${WORDS.length} 字，每天 ${perDay()} 字 → 約 ${totalDaysNeeded()} 天跑完一輪；之後進入「複習衝刺」，把答錯的字反覆測到熟。可在上方改每天字數。</div></div>
+    <div class="wk"><h3>搭配</h3><div class="wsub">學完當天場景，翻你本機的「多益解密」講義做延伸精讀；聽力每天 20 分 Part1–4 跟讀；後段加計時模考。詳見「990 方法」。</div></div>`;
+}
+/* ---- 場景進度 ---- */
+function renderScProgress(){
+  document.getElementById('scProgress').innerHTML=SC_ORDER.map(sc=>{
+    const list=WB[sc]||[]; const done=list.filter(w=>DB.wordStats[sc+'|'+w[0]]).length; const pct=Math.round(done/list.length*100);
+    return `<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><span style="font-size:13.5px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${SC_COLOR[sc]};margin-right:6px"></span>${esc(sc)}</span><span style="font-size:12px;color:var(--mut)">${done}/${list.length}</span></div><div class="barwrap"><div class="bar" style="width:${pct}%;background:${SC_COLOR[sc]}"></div></div></div>`;
   }).join('');
 }
-function toggleTopic(id,ev){ if(ev)ev.stopPropagation(); DB.done[id]=DB.done[id]?0:1; save(); renderMap(); renderStats(); renderToday(); }
-
-/* ---- 進度 ---- */
+/* ---- 統計 ---- */
 function renderStats(){
-  const total=TOPICS.length; const done=TOPICS.filter(t=>DB.done[t.id]).length;
-  const dayIdx=currentDayIndex(); const dleft=Math.max(0,PLAN.length-Math.max(0,dayIdx));
+  const learned=Object.keys(DB.wordStats).length;
+  const mastered=WORDS.filter(w=>{const s=DB.wordStats[w.id];return s&&s.r>=2&&s.w===0;}).length;
+  const weak=WORDS.filter(w=>{const s=DB.wordStats[w.id];return s&&s.w>0;}).length;
   document.getElementById('statGrid').innerHTML=`
-    <div class="stat"><div class="n">${Math.round(done/total*100)}%</div><div class="l">場景主題完成（${done}/${total}）</div></div>
-    <div class="stat"><div class="n">${Math.max(0,dayIdx+1<1?0:dayIdx+1)}</div><div class="l">目前第幾天 / 共 ${PLAN.length} 天</div></div>
-    <div class="stat"><div class="n">${streak()}</div><div class="l">連續完成天數 🔥</div></div>
-    <div class="stat"><div class="n">${dleft}</div><div class="l">距離計畫結束（天）</div></div>`;
-  document.getElementById('scProgress').innerHTML=SCENARIOS.map(s=>{
-    const dn=s.subs.filter((t,i)=>DB.done['Ch'+s.ch+'-'+(i+1)]).length; const pct=Math.round(dn/s.subs.length*100);
-    return `<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><span style="font-size:13.5px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${s.color};margin-right:6px"></span>${esc(s.name)}</span><span style="font-size:12px;color:var(--mut)">${dn}/${s.subs.length}</span></div><div class="barwrap"><div class="bar" style="width:${pct}%;background:${s.color}"></div></div></div>`;
-  }).join('');
-}
-
-/* ---- 講義清單 ---- */
-function renderFiles(){
-  document.getElementById('fileList').innerHTML=SCENARIOS.map(s=>
-    `<div style="margin-top:8px"><b style="color:var(--tx)">Ch${s.ch}・${esc(s.name)}</b><br>`+
-    s.subs.map((t,i)=>`Ch${s.ch}-${i+1} ${esc(s.name)}場景-${esc(t)}.pdf`).join('<br>')+`</div>`
-  ).join('');
+    <div class="stat"><div class="n">${learned}</div><div class="l">學過的字（共 ${WORDS.length}）</div></div>
+    <div class="stat"><div class="n">${mastered}</div><div class="l">已熟練（連對且沒錯）</div></div>
+    <div class="stat"><div class="n">${weak}</div><div class="l">要加強（答錯過）</div></div>
+    <div class="stat"><div class="n">${streak()}</div><div class="l">連續天數 🔥</div></div>`;
 }
 
 /* ---- tabs ---- */
 function showTab(t){
   ['today','plan','map','stats','method'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('hide',x!==t));
   document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  try{ localStorage.setItem('toeic990Tab',t); }catch(e){}
+  if(t==='map')renderScProgress(); if(t==='stats')renderStats(); if(t==='plan')renderPlan();
+  try{ localStorage.setItem('t990tab',t); }catch(e){}
 }
 document.getElementById('seg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) showTab(b.dataset.t); });
-document.getElementById('startDate').addEventListener('change',e=>{ DB.start=e.target.value||todayStr(); save(); renderToday(); renderStats(); });
-document.getElementById('btnToday').onclick=()=>{ DB.start=todayStr(); save(); renderToday(); renderStats(); };
-document.getElementById('mmExpand').onclick=()=>document.querySelectorAll('.mm-sc').forEach(x=>x.classList.add('open'));
-document.getElementById('mmCollapse').onclick=()=>document.querySelectorAll('.mm-sc').forEach(x=>x.classList.remove('open'));
+document.getElementById('startDate').addEventListener('change',e=>{ DB.start=e.target.value||todayStr(); save(); phase='learn';li=0; renderToday(); });
+document.getElementById('perDay').addEventListener('change',e=>{ DB.perDay=+e.target.value; save(); phase='learn';li=0; renderToday(); renderPlan(); });
+document.getElementById('reviewWeak').onclick=startReview;
 
 /* ---- init ---- */
 document.getElementById('ver').textContent=APP_VERSION;
-renderToday(); renderPlan(); renderMap(); renderStats(); renderFiles();
-try{ showTab(localStorage.getItem('toeic990Tab')||'today'); }catch(e){}
+renderToday(); renderPlan(); renderScProgress(); renderStats();
+try{ showTab(localStorage.getItem('t990tab')||'today'); }catch(e){}
 </script>
 <script data-goatcounter="https://elainechi.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
