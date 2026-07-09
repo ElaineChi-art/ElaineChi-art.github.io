@@ -1,0 +1,11 @@
+{
+  "name": "多益 990 作戰計畫",
+  "short_name": "990作戰",
+  "start_url": "/toeic990/",
+  "scope": "/toeic990/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0d12",
+  "theme_color": "#0a0d12",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

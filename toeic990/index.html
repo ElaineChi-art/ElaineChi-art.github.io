@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>多益 990 作戰計畫</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="990作戰">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{ --bg:#0a0d12; --panel:#141921; --panel2:#1b2230; --line:#28323f; --tx:#e7edf4; --mut:#8b97a8;
+    --acc:#a7c4e6; --acc2:#33598a; --green:#82a37f; --yellow:#c6a45f; --red:#bd7a7a; --nav:#070a0e; --glow:#142033;
+    --serif:"Cormorant Garamond","Noto Serif TC",Georgia,serif; --sans:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif; --fs:1; }
+  html,body{max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}
+  body{font-family:var(--sans);color:var(--tx);min-height:100vh;letter-spacing:.2px;-webkit-font-smoothing:antialiased;
+    background:radial-gradient(1100px 640px at 50% -10%, var(--glow) 0%, var(--bg) 60%);font-size:calc(15px*var(--fs))}
+  a{color:var(--acc)}
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:center;gap:10px;
+    height:calc(48px + env(safe-area-inset-top,0px));padding:0 12px;padding-top:env(safe-area-inset-top,0px);
+    background:color-mix(in srgb,var(--nav) 86%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+  .topbar .brand{position:absolute;left:14px;font-family:var(--serif);font-weight:700;font-size:17px;letter-spacing:.5px}
+  .seg{display:inline-flex;background:color-mix(in srgb,var(--tx) 5%,transparent);border:1px solid var(--line);border-radius:18px;padding:2px;gap:1px;overflow:auto;max-width:calc(100vw - 24px)}
+  .seg button{font-size:13px;font-weight:600;padding:6px 13px;border-radius:16px;border:none;background:transparent;color:var(--mut);cursor:pointer;white-space:nowrap}
+  .seg button.on{background:var(--acc2);color:#fff}
+  .wrap{max-width:920px;margin:0 auto;padding:18px 16px 90px}
+  h1{font-family:var(--serif);font-weight:700;font-size:30px;letter-spacing:.5px}
+  .sub{font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mut);margin-top:3px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 12px 30px -22px #000}
+  .sec-h{font-family:var(--serif);font-weight:700;font-size:21px;margin-bottom:6px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .sec-sub{font-size:12.5px;color:var(--mut);font-weight:400;font-family:var(--sans)}
+  .btn{background:var(--acc2);color:#eaf1fb;border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--tx)}
+  .btn.ghost:hover{border-color:var(--acc)}
+  .btn.sm{padding:6px 12px;font-size:13px;border-radius:8px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 11px;border-radius:20px;border:1px solid var(--line);color:var(--mut);background:transparent}
+  input[type=date],input[type=number]{background:var(--panel2);border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:9px 11px;font-size:14px;font-family:inherit}
+  .hide{display:none}
+
+  /* today mission */
+  .hero{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+  .ring{--p:0;width:96px;height:96px;border-radius:50%;flex:none;display:grid;place-items:center;
+    background:conic-gradient(var(--acc) calc(var(--p)*1%), var(--line) 0);position:relative}
+  .ring::before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--panel)}
+  .ring b{position:relative;font-family:var(--serif);font-size:24px;font-weight:700}
+  .ring small{position:relative;display:block;text-align:center;font-size:10px;color:var(--mut)}
+  .daymeta{flex:1;min-width:180px}
+  .daymeta .big{font-family:var(--serif);font-size:26px;font-weight:700}
+  .daymeta .mut{color:var(--mut);font-size:13px;margin-top:2px}
+  .task{display:flex;gap:11px;align-items:flex-start;padding:12px 13px;border:1px solid var(--line);border-radius:12px;margin-top:10px;background:var(--panel2)}
+  .task.done{opacity:.6}
+  .task .chk{width:22px;height:22px;flex:none;border-radius:7px;border:1.5px solid var(--acc2);cursor:pointer;display:grid;place-items:center;font-size:14px;color:#fff;margin-top:1px}
+  .task.done .chk{background:var(--green);border-color:var(--green)}
+  .task .body{flex:1;min-width:0}
+  .task .t{font-weight:600;font-size:14.5px}
+  .task .d{font-size:12.5px;color:var(--mut);margin-top:3px;line-height:1.6;word-break:break-word}
+  .task .tag{font-size:10.5px;padding:1px 8px;border-radius:10px;border:1px solid var(--line);color:var(--mut);margin-left:6px;white-space:nowrap}
+  .file{font-size:12px;color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,transparent);border:1px solid color-mix(in srgb,var(--acc) 30%,transparent);border-radius:7px;padding:3px 8px;display:inline-block;margin-top:5px;word-break:break-all}
+  .streak{font-size:13px;color:var(--yellow)}
+
+  /* plan */
+  .wk{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;background:var(--panel2)}
+  .wk h3{font-size:15px;margin-bottom:4px}
+  .wk .wsub{font-size:12.5px;color:var(--mut);line-height:1.7}
+
+  /* mindmap */
+  .mm-sc{border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--panel2);overflow:hidden}
+  .mm-hd{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+  .mm-hd .dot{width:10px;height:10px;border-radius:50%;flex:none}
+  .mm-hd .nm{font-weight:600;font-size:15px;flex:1}
+  .mm-hd .cnt{font-size:12px;color:var(--mut)}
+  .mm-hd .cv{font-size:12px;color:var(--mut);transition:transform .2s}
+  .mm-sc.open .cv{transform:rotate(90deg)}
+  .mm-body{display:none;padding:0 14px 12px 34px}
+  .mm-sc.open .mm-body{display:block}
+  .mm-sub{display:flex;align-items:center;gap:9px;padding:8px 0;border-top:1px dashed var(--line)}
+  .mm-sub .chk{width:19px;height:19px;flex:none;border-radius:6px;border:1.5px solid var(--acc2);cursor:pointer;display:grid;place-items:center;font-size:12px;color:#fff}
+  .mm-sub.done .chk{background:var(--green);border-color:var(--green)}
+  .mm-sub .st{flex:1;font-size:13.5px}
+  .mm-sub.done .st{color:var(--mut);text-decoration:line-through}
+  .mm-sub .ch{font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums}
+
+  .barwrap{height:8px;background:var(--line);border-radius:5px;overflow:hidden;margin:8px 0}
+  .bar{height:100%;background:var(--acc)}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:10px}
+  .stat{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel2)}
+  .stat .n{font-family:var(--serif);font-size:30px;font-weight:700;color:var(--acc)}
+  .stat .l{font-size:12px;color:var(--mut);margin-top:2px}
+  ul.meth{list-style:none;font-size:13.5px;line-height:1.85}
+  ul.meth li{padding:6px 0 6px 20px;position:relative;border-bottom:1px solid var(--line)}
+  ul.meth li::before{content:"›";position:absolute;left:2px;color:var(--acc)}
+  ul.meth li:last-child{border-bottom:none}
+  .foot{margin-top:26px;text-align:center;color:var(--mut);font-size:12px;line-height:1.9}
+  @media(max-width:560px){ .wrap{padding:14px 12px 90px} .card{padding:16px 14px} h1{font-size:25px} }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">990</div>
+  <div class="seg" id="seg">
+    <button class="on" data-t="today">今日任務</button>
+    <button data-t="plan">讀書計畫</button>
+    <button data-t="map">場景心智圖</button>
+    <button data-t="stats">進度</button>
+    <button data-t="method">990 方法</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div style="margin-bottom:14px">
+    <h1>多益 990 作戰計畫</h1>
+    <div class="sub">8-Week Sprint · Scenario Mastery</div>
+  </div>
+
+  <!-- 今日任務 -->
+  <section id="tab-today">
+    <div class="card">
+      <div class="hero">
+        <div class="ring" id="dayRing"><b id="ringPct">0%</b><small>今日完成</small></div>
+        <div class="daymeta">
+          <div class="big" id="dayTitle">Day 1</div>
+          <div class="mut" id="dayDesc">設定開始日期就會排出每天任務</div>
+          <div class="streak" id="streak"></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <span class="sec-sub">開始日期</span>
+        <input type="date" id="startDate">
+        <button class="btn ghost sm" id="btnToday">跳到今天</button>
+      </div>
+      <div id="taskList"></div>
+    </div>
+  </section>
+
+  <!-- 讀書計畫 -->
+  <section id="tab-plan" class="hide">
+    <div class="card">
+      <div class="sec-h">8 週總覽 <span class="sec-sub">每天 60–90 分鐘・做得完的量</span></div>
+      <div id="planList"></div>
+    </div>
+  </section>
+
+  <!-- 心智圖 -->
+  <section id="tab-map" class="hide">
+    <div class="card">
+      <div class="sec-h">場景心智圖 <span class="sec-sub">13 大場景 · 60 主題（勾選＝已讀）</span></div>
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn ghost sm" id="mmExpand">全部展開</button>
+        <button class="btn ghost sm" id="mmCollapse">全部收合</button>
+      </div>
+      <div id="mmList"></div>
+    </div>
+  </section>
+
+  <!-- 進度 -->
+  <section id="tab-stats" class="hide">
+    <div class="card">
+      <div class="sec-h">整體進度</div>
+      <div class="grid2" id="statGrid"></div>
+      <div style="margin-top:16px" id="scProgress"></div>
+    </div>
+  </section>
+
+  <!-- 方法 -->
+  <section id="tab-method" class="hide">
+    <div class="card">
+      <div class="sec-h">990 心法 <span class="sec-sub">滿分不是運氣，是把每一分都拿回來</span></div>
+      <ul class="meth">
+        <li><b>單字先行</b>：每天用 <a href="https://elainechi-art.github.io/vocab/" target="_blank">Lexicon 每日單字</a> 背當天場景的商用字，把講義的重點字丟進去，用測驗鞏固。</li>
+        <li><b>場景精讀</b>：每天讀 1–2 份「多益解密」講義（本機 Downloads），把不熟的句型／搭配詞抄進 <a href="https://elainechi-art.github.io/reading/" target="_blank">閱讀神器</a> 標注理解。</li>
+        <li><b>聽力（Part 1–4）</b>：每天 20 分鐘精聽＋跟讀（shadowing）。990 聽力要「聽到就懂」，用官方 ETS 題本／音檔（版權，請用你自己的）。</li>
+        <li><b>閱讀（Part 5–7）</b>：Part 5 文法字彙求「秒殺」；Part 7 練<b>略讀＋定位</b>，先看題目關鍵字再回文章找。用閱讀神器的段落分析練快讀。</li>
+        <li><b>錯題本</b>：每題錯的都要「為什麼錯＋正確邏輯」，弱項場景回頭補該章講義。</li>
+        <li><b>計時模擬</b>：第 7–8 週每 2 天一回完整計時模考（聽 45 分＋讀 75 分），養成不超時、不空題。</li>
+        <li><b>990 門檻</b>：聽力幾乎零錯、閱讀留 5–10 分檢查。目標是<b>穩定</b>，不是偶爾高分。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="sec-h">本機講義清單 <span class="sec-sub">版權教材內文不上線；下方是檔名，從你的 Downloads 開啟</span></div>
+      <div id="fileList" style="font-size:12.5px;color:var(--mut);line-height:1.9"></div>
+    </div>
+  </section>
+
+  <div class="foot">
+    多益 990 作戰計畫 · <span id="ver">v1</span> · 進度存在你自己的瀏覽器<br>
+    <a href="https://elainechi-art.github.io/vocab/">🔤 Lexicon 單字/閱讀</a> · 教材版權屬原作者，內文不公開
+  </div>
+</div>
+
+<script>
+/* 場景架構（來自講義章節分類，非教材內文）。scenarios: {ch,name,color,subs[]} */
+const SCENARIOS=[
+ {ch:4, name:'購物', color:'#e0a3a3', subs:['訂單管理：處理與配送','購物前期：選擇與詢問','交易進行：定價與結帳','商業運作：B2B與展示','售後服務：問題解決']},
+ {ch:5, name:'一般商務', color:'#a7c4e6', subs:['策略規劃與發展','市場營銷與客戶管理','商業合作與法務管理','會議溝通與協調','企業聲譽與品質保證']},
+ {ch:6, name:'旅遊', color:'#8fd0c0', subs:['交通運輸服務','行程規劃與預定','服務中斷與客服','住宿與旅遊體驗','旅遊資訊與公告']},
+ {ch:7, name:'人事', color:'#c9a7e0', subs:['人才招募與入職','薪酬福利與獎勵','績效發展與培訓','日常營運管理','組織文化與員工體驗']},
+ {ch:8, name:'辦公室', color:'#c6b06a', subs:['日常行政與工作管理','會議與溝通協調','辦公環境與設備管理','安全管理與外部服務','變革與特殊情況']},
+ {ch:9, name:'娛樂', color:'#e6b98f', subs:['媒體內容與傳播','活動參與體驗','活動幕後運作','導覽與特別活動']},
+ {ch:10, name:'企業房產', color:'#9db0c9', subs:['建設與維護管理','物業交易與搜尋','設施與公用事業管理','倉儲與物流服務']},
+ {ch:11, name:'生產', color:'#8fb8d0', subs:['品質管理與產品開發','設備與材料管理','生產規劃與執行','營運設施與安全','成本效益與產品上市']},
+ {ch:12, name:'用餐', color:'#d0a08f', subs:['訂位與用餐體驗','點餐與飲食需求','行銷與外送服務','餐廳營運管理','美食教育與體驗']},
+ {ch:13, name:'技術領域', color:'#8fd0a8', subs:['系統應用與設備管理','技術支援與問題解決','技術學習與知識傳遞','技術創新與產業活動']},
+ {ch:14, name:'保健', color:'#d08f8f', subs:['就醫預約與互動','藥物與健康產品','健康管理與營養','醫療行政與設施','健身與健康活動']},
+ {ch:15, name:'財務預算', color:'#b8d08f', subs:['銀行與個人理財','企業財務管理','付款與稅務管理','財務專業服務']},
+ {ch:16, name:'企業發展', color:'#a8b8e6', subs:['產品創新與市場競爭','策略聯盟與資源整合','營運優化與技術升級','擴張與資本投資策略']},
+];
+const APP_VERSION='v1';
+// 攤平成 60 個主題，每個有 id、章節、標題、檔名
+const TOPICS=[]; SCENARIOS.forEach(s=>s.subs.forEach((t,i)=>{ TOPICS.push({id:'Ch'+s.ch+'-'+(i+1),ch:s.ch,sc:s.name,color:s.color,title:t,file:'Ch'+s.ch+'-'+(i+1)+' '+s.name+'場景-'+t+'.pdf'}); }));
+
+const LS='toeic990';
+let DB=load();
+function load(){ try{ const d=JSON.parse(localStorage.getItem(LS)); if(d) return d; }catch(e){} return {start:todayStr(), done:{}, tasks:{}}; }
+function save(){ try{ localStorage.setItem(LS,JSON.stringify(DB)); }catch(e){} }
+function todayStr(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function daysBetween(a,b){ return Math.floor((new Date(b)-new Date(a))/86400000); }
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---- 8 週計畫：前 6 週跑主題(每週一~六各2題、週日複習)，7-8 週模考+複習 ---- */
+function buildPlan(){
+  const plan=[]; let ti=0;
+  for(let w=0; w<8; w++){
+    for(let d=0; d<7; d++){
+      const day={week:w+1, dow:d};
+      if(w<6){
+        if(d===6){ day.type='review'; }
+        else { day.type='study'; day.topics=TOPICS.slice(ti,ti+2).map(t=>t.id); ti+=Math.min(2,TOPICS.length-ti); }
+      } else {
+        day.type = (d===6)?'rest' : (d%2===0?'mock':'review');
+      }
+      plan.push(day);
+    }
+  }
+  return plan;
+}
+const PLAN=buildPlan();
+const topicById=id=>TOPICS.find(t=>t.id===id);
+
+/* ---- 今日任務 ---- */
+function currentDayIndex(){ const n=daysBetween(DB.start, todayStr()); return n; }
+function dailyTasks(dayIdx){
+  const p=PLAN[dayIdx]; const list=[];
+  if(!p){ return list; }
+  if(p.type==='study'){
+    (p.topics||[]).forEach(id=>{ const t=topicById(id); if(t) list.push({k:'read:'+id, t:'場景精讀　'+t.sc+'・'+t.title, d:'讀這份「多益解密」講義，把不熟的搭配詞/句型抄進閱讀神器標注。', tag:t.id, file:t.file}); });
+    list.push({k:'vocab', t:'單字　背今日場景商用字', d:'把講義重點字丟進 Lexicon 每日單字，做翻卡/填空鞏固。', tag:'單字', link:'https://elainechi-art.github.io/vocab/'});
+    list.push({k:'listen', t:'聽力　Part 1–4 精聽＋跟讀 20 分', d:'用官方題本音檔，聽完馬上 shadowing 跟讀。', tag:'聽力'});
+    list.push({k:'read57', t:'閱讀　Part 5–7 練習 20 分', d:'Part5 秒殺文法字彙；Part7 先看題目關鍵字再定位。', tag:'閱讀'});
+  } else if(p.type==='review'){
+    list.push({k:'review', t:'週複習　把本週場景主題重測一遍', d:'到心智圖把本週主題快速回想；不熟的重讀講義＋Lexicon 只測不熟的字。', tag:'複習'});
+    list.push({k:'vocab', t:'單字　複習本週新字', d:'Lexicon 篩「不熟/普通」複習測驗。', tag:'單字', link:'https://elainechi-art.github.io/vocab/'});
+  } else if(p.type==='mock'){
+    list.push({k:'mock', t:'全真模擬考　計時一整回', d:'聽 45 分＋讀 75 分，不超時、不空題。用官方 ETS 題本（版權自備）。', tag:'模考'});
+    list.push({k:'wrong', t:'錯題本　訂正 + 回補弱項場景', d:'每題寫「為什麼錯＋正確邏輯」，弱項場景回頭讀該章講義。', tag:'訂正'});
+  } else if(p.type==='rest'){
+    list.push({k:'rest', t:'彈性日　補進度或休息', d:'落後就補、超前就多做一回 Part7；也可以完全休息。', tag:'彈性'});
+  }
+  return list;
+}
+function renderToday(){
+  const dayIdx=currentDayIndex();
+  const dateKey=todayStr();
+  document.getElementById('startDate').value=DB.start;
+  const tl=document.getElementById('taskList');
+  if(dayIdx<0){ document.getElementById('dayTitle').textContent='還沒開始'; document.getElementById('dayDesc').textContent='開始日期在未來（'+DB.start+'）'; tl.innerHTML=''; ring(0); document.getElementById('streak').textContent=''; return; }
+  if(dayIdx>=PLAN.length){ document.getElementById('dayTitle').textContent='計畫完成 🎉'; document.getElementById('dayDesc').textContent='8 週跑完了！接下來就是持續模考保持手感。'; tl.innerHTML=''; ring(100); return; }
+  const p=PLAN[dayIdx]; const tasks=dailyTasks(dayIdx);
+  const typeName={study:'場景精讀日',review:'複習日',mock:'模擬考日',rest:'彈性/休息日'}[p.type]||'';
+  document.getElementById('dayTitle').textContent='Day '+(dayIdx+1)+'　·　第 '+p.week+' 週';
+  document.getElementById('dayDesc').textContent=typeName;
+  const checks=DB.tasks[dateKey]||{};
+  let doneN=0;
+  tl.innerHTML=tasks.map(t=>{
+    const done=!!checks[t.k]; if(done)doneN++;
+    return `<div class="task ${done?'done':''}">
+      <div class="chk" onclick="toggleTask('${t.k}','${t.tag||''}')">${done?'✓':''}</div>
+      <div class="body">
+        <div class="t">${esc(t.t)}${t.tag?`<span class="tag">${esc(t.tag)}</span>`:''}</div>
+        <div class="d">${esc(t.d)}${t.link?` <a href="${t.link}" target="_blank">開啟 →</a>`:''}</div>
+        ${t.file?`<div class="file">📄 ${esc(t.file)}</div>`:''}
+      </div></div>`;
+  }).join('') || '<div class="d" style="color:var(--mut);padding:10px 0">今天沒有排定任務。</div>';
+  ring(tasks.length? Math.round(doneN/tasks.length*100):0);
+  document.getElementById('streak').textContent='🔥 連續 '+streak()+' 天有完成';
+}
+function ring(pct){ const r=document.getElementById('dayRing'); r.style.setProperty('--p',pct); document.getElementById('ringPct').textContent=pct+'%'; }
+function toggleTask(k,tag){
+  const dk=todayStr(); DB.tasks[dk]=DB.tasks[dk]||{}; DB.tasks[dk][k]=!DB.tasks[dk][k];
+  // 場景精讀勾選 → 同步標記該主題已讀
+  if(k.indexOf('read:')===0){ const id=k.slice(5); DB.done[id]=DB.tasks[dk][k]?1:DB.done[id]; }
+  save(); renderToday(); renderStats(); renderMap();
+}
+function streak(){ let s=0; for(let i=0;;i++){ const d=new Date(); d.setDate(d.getDate()-i); const dk=todayStr(d); const c=DB.tasks[dk]; if(c&&Object.values(c).some(Boolean)) s++; else { if(i===0) continue; break; } } return s; }
+
+/* ---- 計畫總覽 ---- */
+function renderPlan(){
+  const host=document.getElementById('planList');
+  const weeks=[
+    ['第 1–2 週','購物・一般商務・旅遊・人事（Ch4–7）','打底四大高頻場景：訂單/交易、策略/行銷、交通/住宿、招募/績效。每天 2 主題＋單字＋聽讀。'],
+    ['第 3–4 週','辦公室・娛樂・房產・生產（Ch8–11）','行政/會議、媒體/活動、物業/物流、品管/生產。開始每 2 天穿插一小段計時 Part7。'],
+    ['第 5–6 週','用餐・技術・保健・財務・企業發展（Ch12–16）','跑完剩餘場景，弱項標記；單字量累積到全場景覆蓋。'],
+    ['第 7 週','全真模考 ×3＋弱項回補','隔天一回完整計時模考，錯題訂正、回讀弱場景講義。'],
+    ['第 8 週','衝刺模考＋保養手感','再 3 回模考＋Part5 秒殺特訓＋Part7 定位加速，穩定 990。'],
+  ];
+  host.innerHTML=weeks.map(w=>`<div class="wk"><h3>${w[0]}　<span style="color:var(--acc);font-weight:600">${esc(w[1])}</span></h3><div class="wsub">${esc(w[2])}</div></div>`).join('')
+   + `<div class="wsub" style="color:var(--mut);margin-top:6px">＊每天固定：Lexicon 單字、Part1–4 聽力跟讀、Part5–7 閱讀、複習昨日。週日彈性/複習。</div>`;
+}
+
+/* ---- 心智圖 ---- */
+function renderMap(){
+  const host=document.getElementById('mmList');
+  host.innerHTML=SCENARIOS.map(s=>{
+    const subs=s.subs.map((t,i)=>{ const id='Ch'+s.ch+'-'+(i+1); const done=!!DB.done[id];
+      return `<div class="mm-sub ${done?'done':''}"><div class="chk" onclick="toggleTopic('${id}',event)">${done?'✓':''}</div>
+        <div class="st">${esc(t)}</div><div class="ch">${id}</div></div>`; }).join('');
+    const dn=s.subs.filter((t,i)=>DB.done['Ch'+s.ch+'-'+(i+1)]).length;
+    return `<div class="mm-sc" data-ch="${s.ch}">
+      <div class="mm-hd" onclick="this.parentNode.classList.toggle('open')">
+        <span class="dot" style="background:${s.color}"></span>
+        <span class="nm">Ch${s.ch}　${esc(s.name)}場景</span>
+        <span class="cnt">${dn}/${s.subs.length}</span><span class="cv">▶</span>
+      </div>
+      <div class="mm-body">${subs}</div>
+    </div>`;
+  }).join('');
+}
+function toggleTopic(id,ev){ if(ev)ev.stopPropagation(); DB.done[id]=DB.done[id]?0:1; save(); renderMap(); renderStats(); renderToday(); }
+
+/* ---- 進度 ---- */
+function renderStats(){
+  const total=TOPICS.length; const done=TOPICS.filter(t=>DB.done[t.id]).length;
+  const dayIdx=currentDayIndex(); const dleft=Math.max(0,PLAN.length-Math.max(0,dayIdx));
+  document.getElementById('statGrid').innerHTML=`
+    <div class="stat"><div class="n">${Math.round(done/total*100)}%</div><div class="l">場景主題完成（${done}/${total}）</div></div>
+    <div class="stat"><div class="n">${Math.max(0,dayIdx+1<1?0:dayIdx+1)}</div><div class="l">目前第幾天 / 共 ${PLAN.length} 天</div></div>
+    <div class="stat"><div class="n">${streak()}</div><div class="l">連續完成天數 🔥</div></div>
+    <div class="stat"><div class="n">${dleft}</div><div class="l">距離計畫結束（天）</div></div>`;
+  document.getElementById('scProgress').innerHTML=SCENARIOS.map(s=>{
+    const dn=s.subs.filter((t,i)=>DB.done['Ch'+s.ch+'-'+(i+1)]).length; const pct=Math.round(dn/s.subs.length*100);
+    return `<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><span style="font-size:13.5px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${s.color};margin-right:6px"></span>${esc(s.name)}</span><span style="font-size:12px;color:var(--mut)">${dn}/${s.subs.length}</span></div><div class="barwrap"><div class="bar" style="width:${pct}%;background:${s.color}"></div></div></div>`;
+  }).join('');
+}
+
+/* ---- 講義清單 ---- */
+function renderFiles(){
+  document.getElementById('fileList').innerHTML=SCENARIOS.map(s=>
+    `<div style="margin-top:8px"><b style="color:var(--tx)">Ch${s.ch}・${esc(s.name)}</b><br>`+
+    s.subs.map((t,i)=>`Ch${s.ch}-${i+1} ${esc(s.name)}場景-${esc(t)}.pdf`).join('<br>')+`</div>`
+  ).join('');
+}
+
+/* ---- tabs ---- */
+function showTab(t){
+  ['today','plan','map','stats','method'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('hide',x!==t));
+  document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  try{ localStorage.setItem('toeic990Tab',t); }catch(e){}
+}
+document.getElementById('seg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) showTab(b.dataset.t); });
+document.getElementById('startDate').addEventListener('change',e=>{ DB.start=e.target.value||todayStr(); save(); renderToday(); renderStats(); });
+document.getElementById('btnToday').onclick=()=>{ DB.start=todayStr(); save(); renderToday(); renderStats(); };
+document.getElementById('mmExpand').onclick=()=>document.querySelectorAll('.mm-sc').forEach(x=>x.classList.add('open'));
+document.getElementById('mmCollapse').onclick=()=>document.querySelectorAll('.mm-sc').forEach(x=>x.classList.remove('open'));
+
+/* ---- init ---- */
+document.getElementById('ver').textContent=APP_VERSION;
+renderToday(); renderPlan(); renderMap(); renderStats(); renderFiles();
+try{ showTab(localStorage.getItem('toeic990Tab')||'today'); }catch(e){}
+</script>
+<script data-goatcounter="https://elainechi.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
