@@ -321,19 +321,18 @@ function lawTextOf(r){
 }
 function esc(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
 /* ⚡ 反射卡：把這題的 考點/規則/法條/陷阱 濃縮成「看到→0.5秒反射→法條→陷阱」*/
-function reflexHTML(r){
-  const p=r.p;
-  const trigger=(p.concept||"").replace(/§\s*[\d\-之的]+(Ⅰ|Ⅱ|Ⅲ|Ⅳ|[①-⑳])?/g,"").replace(/[／/、]+/g," · ").replace(/\s+/g," ").trim()||r.sub;
-  const reflex=(p.key||p.ans||"").trim();
+function reflexHTML(r,whyC){
+  const p=r.p, L=["A","B","C","D","E","F"];
+  const trigger=(p.concept||"").replace(/§\s*[\d\-之的]+(Ⅰ|Ⅱ|Ⅲ|Ⅳ|[①-⑳])?/g,"").replace(/[／/、]+/g," · ").replace(/\s+/g," ").trim()||r.sub||"這題";
+  const reflex=(p.key||p.ans||whyC||p.concept||("正解 "+L[r.q.ansIndex])).trim();
   const law=(p.law||"").trim();
   const trap=(p.trap||"").trim();
-  if(!reflex&&!law&&!trap)return "";
   let h=`<div class="reflex"><div class="rxh">⚡ 0.5 秒反射</div>`;
   h+=`<div class="rx"><span class="rxi">👀 看到</span><b>${esc(trigger)}</b></div>`;
-  if(reflex)h+=`<div class="rxa">↓</div><div class="rx"><span class="rxi">🧠 反射</span><span class="key">${esc(reflex)}</span></div>`;
+  h+=`<div class="rxa">↓</div><div class="rx"><span class="rxi">🧠 反射</span><span class="key">${esc(reflex)}</span></div>`;
   if(law)h+=`<div class="rxa">↓</div><div class="rx"><span class="rxi">📜 法條</span><span class="law">${esc(law)}</span></div>`;
   if(trap)h+=`<div class="rxa">↓</div><div class="rx warn"><span class="rxi">⚠️ 陷阱</span><span class="txt">${esc(trap)}</span></div>`;
-  return h+`</div>`;
+  return h+`</div>`;   // 每一題都會顯示反射卡（至少 看到→反射）
 }
 // 標色甲乙丙丁戊，讓情境角色好追蹤（對閱讀吃力的人幫助很大）
 function colorParties(s){return s.replace(/[甲乙丙丁戊己]/g,c=>`<span class="pty p-${c}">${c}</span>`);}
@@ -485,7 +484,7 @@ function answer(idx){
   const p=r.p,note=r.note,whyC=optWhy(r,ans),whyW=correct?"":optWhy(r,idx);
   const lawH=lawTextOf(r);
   let t=`<div class="teach"><div class="res ${correct?'ok':'no'}">${correct?"✅ 答對了！":"❌ 沒關係，這題記起來就賺到"}　正解：${L[ans]}</div>`;
-  t+=reflexHTML(r);   // ⚡ 反射卡放最上面：看到→反射→法條→陷阱
+  t+=reflexHTML(r,whyC);   // ⚡ 反射卡放最上面：看到→反射→法條→陷阱（每題都有）
   if(!correct&&whyW)t+=`<div class="blk"><span class="l">你選的 ${L[idx]} 為什麼錯</span>${esc(whyW)}</div>`;
   if(whyC)t+=`<div class="blk"><span class="l">✅ 正解 ${L[ans]} 為什麼對</span>${esc(whyC)}</div>`;
   if(p.ans)t+=`<div class="blk"><span class="l">✅ 正解說明</span><span class="key">${esc(p.ans)}</span></div>`;
@@ -539,6 +538,14 @@ try{
 try{renderCountdown();renderLaunch();renderWeek();renderCal();renderStreak();
   document.getElementById("monthWrap").addEventListener("toggle",renderCal);
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
+
+/* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
+const APP_VERSION="s2";
+async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
+  const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
+  const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
+  const u=new URL(location.href);u.searchParams.set("_v",v);location.replace(u.toString());}catch(e){}}
+checkUpdate();setInterval(checkUpdate,60000);
 </script>
 </body>
 </html>
