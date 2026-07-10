@@ -52,6 +52,15 @@
     box-shadow:0 8px 24px rgba(255,158,138,.28);transition:transform .12s}
   .startbtn:hover{transform:translateY(-2px)}
   .startbtn .s{display:block;font-size:12px;font-weight:700;opacity:.7;margin-bottom:3px}
+  /* 科目自由切換 */
+  .subttl{font-size:12.5px;color:var(--mut);font-weight:700;margin:16px 0 8px}
+  .subrow{display:flex;gap:7px;flex-wrap:wrap}
+  .subchip{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--mut);border-radius:20px;padding:7px 13px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:700;white-space:nowrap}
+  .subchip:hover{background:rgba(255,255,255,.1);color:#fff}
+  .subchip.on{border-color:var(--gold);color:var(--gold);background:rgba(255,216,107,.12)}
+  .subchip .sc{opacity:.6;font-size:11px;margin-left:5px;font-weight:600}
+  .ses-subs{display:flex;gap:7px;overflow-x:auto;padding:2px 16px 10px;-webkit-overflow-scrolling:touch;flex:none}
+  .ses-subs .subchip{padding:6px 12px;font-size:12.5px}
   .flow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
   .flow .step{font-size:12px;color:var(--mut);background:rgba(255,255,255,.04);border:1px solid var(--line);
     border-radius:20px;padding:5px 11px}
@@ -181,6 +190,8 @@
     <div class="pace" id="lPace"></div>
     <div class="flow" id="lFlow"></div>
     <button class="startbtn" id="startBtn"><span class="s">🤖 不用想，我一張一張帶你做</span><span id="startTxt">▶ 開始今天的跟讀</span></button>
+    <div class="subttl">🎛️ 或自己選一科開始（各科進度分開記，可隨時跳）</div>
+    <div class="subrow" id="subRow"></div>
   </div>
 
   <div class="card">
@@ -207,6 +218,7 @@
     <button class="x" id="sesMute" title="靜音／開聲">🔊</button>
     <div class="ses-cnt" id="sesCnt"></div>
   </div>
+  <div class="ses-subs" id="sesSubs"></div>
   <div class="ses-body" id="sesBody"></div>
 </div>
 
@@ -375,6 +387,7 @@ function renderLaunch(){
   const sb=document.getElementById("startBtn");
   if(ph.exam){sb.style.display="none";}else{sb.style.display="block";
     document.getElementById("startTxt").textContent=(done>0?"▶ 繼續今天的跟讀":"▶ 開始今天的跟讀")+`（${focus}）`;}
+  renderSubRow();
 }
 function renderWeek(){const wk=document.getElementById("week");wk.innerHTML="";const start=d0(new Date());
   for(let k=0;k<7;k++){const d=new Date(start.getTime()+k*DAY),ph=phaseOf(d),focus=cyc(d),isToday=k===0;
@@ -431,13 +444,33 @@ function buildSession(group){
   if(cards.filter(c=>c.type==="quiz").length<15){let need=15-cards.filter(c=>c.type==="quiz").length;for(let j=0;j<need&&j<rows.length;j++)cards.push({type:"quiz",r:rows[j]});}
   SES.cards=cards;SES.i=0;SES.correct=0;SES.newAns=0;SES.group=group;SES.answered=false;
 }
-function startSession(){
-  const focus=cyc(viewDate);
+function startSession(g){
+  const focus=(typeof g==="string")?g:cyc(viewDate);   // 按鈕傳的是事件→用當天循環；字串→指定科目
   buildSession(focus);
   document.getElementById("ses").classList.add("on");
   document.body.style.overflow="hidden";
+  renderSubs();
   renderCard();
 }
+// 跟讀中直接切換科目（先存目前這科進度，再換）
+function switchGroup(g){
+  if(!g||SES.group===g){return;}
+  setPos(SES.group,getPos(SES.group)+SES.newAns);
+  buildSession(g);
+  renderSubs();
+  renderCard();
+}
+// 科目鈕（首頁＋跟讀頁共用一套渲染）
+function subChipsHTML(cur){
+  return CYCLE.map(g=>{const tot=GLEN[g]||0,done=Math.min(getPos(g),tot);
+    return `<button class="subchip${g===cur?' on':''}" data-g="${g}">${g}<span class="sc">${done}/${tot}</span></button>`;}).join("");
+}
+function renderSubRow(){const el=document.getElementById("subRow");if(!el)return;
+  el.innerHTML=subChipsHTML(cyc(viewDate));
+  el.querySelectorAll(".subchip").forEach(b=>b.onclick=()=>startSession(b.dataset.g));}
+function renderSubs(){const el=document.getElementById("sesSubs");if(!el)return;
+  el.innerHTML=subChipsHTML(SES.group);
+  el.querySelectorAll(".subchip").forEach(b=>b.onclick=()=>switchGroup(b.dataset.g));}
 function closeSession(){
   stopSpeak();
   document.getElementById("ses").classList.remove("on");
@@ -516,7 +549,7 @@ function renderDone(){
       <a class="b-fish" href="farm.html">🐢 去餵魚獎勵自己</a>
       <button class="b-stop" id="dStop">今天先到這，休息一下</button>
     </div></div>`;
-  document.getElementById("dAgain").onclick=()=>{setPos(SES.group,getPos(SES.group)+SES.newAns);buildSession(cyc(viewDate));renderCard();};
+  document.getElementById("dAgain").onclick=()=>{setPos(SES.group,getPos(SES.group)+SES.newAns);buildSession(SES.group);renderSubs();renderCard();};
   document.getElementById("dStop").onclick=closeSession;
 }
 document.getElementById("startBtn").onclick=startSession;
@@ -540,7 +573,7 @@ try{renderCountdown();renderLaunch();renderWeek();renderCal();renderStreak();
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s2";
+const APP_VERSION="s3";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
