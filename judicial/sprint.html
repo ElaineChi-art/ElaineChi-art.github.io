@@ -132,6 +132,15 @@
   .teach .blk{margin:8px 0;font-size:13.5px;line-height:1.7}
   .teach .blk .l{display:block;font-size:11.5px;color:var(--mut);font-weight:700;margin-bottom:2px}
   .teach .law{color:#d9b25a}.teach .cpt{color:#bfe0ff}.teach .key{color:#9fe0b0}
+  /* ⚡ 0.5 秒反射卡（看到→反射→法條→陷阱）*/
+  .reflex{background:rgba(255,216,107,.07);border:1px solid rgba(255,216,107,.3);border-radius:14px;padding:12px 14px;margin:4px 0 12px}
+  .reflex .rxh{font-size:11.5px;font-weight:800;color:var(--gold);letter-spacing:1.5px;margin-bottom:9px}
+  .reflex .rx{font-size:14.5px;line-height:1.6;display:flex;gap:8px;align-items:flex-start}
+  .reflex .rxi{flex:none;font-size:12px;font-weight:800;color:var(--mut);min-width:58px;padding-top:2px}
+  .reflex .rx b{color:var(--gold);font-weight:800}
+  .reflex .rxa{color:var(--mut);font-size:12px;margin:3px 0 3px 22px;line-height:1}
+  .reflex .rx.warn .txt{color:var(--coral);font-weight:600}
+  .reflex .law{color:#d9b25a}.reflex .key{color:#9fe0b0;font-weight:600}
   .teach mark{background:rgba(255,216,107,.22);color:#ffe79c;border-radius:3px;padding:0 2px;font-weight:bold}
   .teach .audio{background:rgba(255,255,255,.08);border:1px solid var(--line);color:#9fd0ff;border-radius:20px;
     padding:5px 13px;font-size:12.5px;cursor:pointer;font-family:inherit;margin-top:4px}
@@ -311,6 +320,21 @@ function lawTextOf(r){
   return h;
 }
 function esc(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+/* ⚡ 反射卡：把這題的 考點/規則/法條/陷阱 濃縮成「看到→0.5秒反射→法條→陷阱」*/
+function reflexHTML(r){
+  const p=r.p;
+  const trigger=(p.concept||"").replace(/§\s*[\d\-之的]+(Ⅰ|Ⅱ|Ⅲ|Ⅳ|[①-⑳])?/g,"").replace(/[／/、]+/g," · ").replace(/\s+/g," ").trim()||r.sub;
+  const reflex=(p.key||p.ans||"").trim();
+  const law=(p.law||"").trim();
+  const trap=(p.trap||"").trim();
+  if(!reflex&&!law&&!trap)return "";
+  let h=`<div class="reflex"><div class="rxh">⚡ 0.5 秒反射</div>`;
+  h+=`<div class="rx"><span class="rxi">👀 看到</span><b>${esc(trigger)}</b></div>`;
+  if(reflex)h+=`<div class="rxa">↓</div><div class="rx"><span class="rxi">🧠 反射</span><span class="key">${esc(reflex)}</span></div>`;
+  if(law)h+=`<div class="rxa">↓</div><div class="rx"><span class="rxi">📜 法條</span><span class="law">${esc(law)}</span></div>`;
+  if(trap)h+=`<div class="rxa">↓</div><div class="rx warn"><span class="rxi">⚠️ 陷阱</span><span class="txt">${esc(trap)}</span></div>`;
+  return h+`</div>`;
+}
 // 標色甲乙丙丁戊，讓情境角色好追蹤（對閱讀吃力的人幫助很大）
 function colorParties(s){return s.replace(/[甲乙丙丁戊己]/g,c=>`<span class="pty p-${c}">${c}</span>`);}
 
@@ -461,6 +485,7 @@ function answer(idx){
   const p=r.p,note=r.note,whyC=optWhy(r,ans),whyW=correct?"":optWhy(r,idx);
   const lawH=lawTextOf(r);
   let t=`<div class="teach"><div class="res ${correct?'ok':'no'}">${correct?"✅ 答對了！":"❌ 沒關係，這題記起來就賺到"}　正解：${L[ans]}</div>`;
+  t+=reflexHTML(r);   // ⚡ 反射卡放最上面：看到→反射→法條→陷阱
   if(!correct&&whyW)t+=`<div class="blk"><span class="l">你選的 ${L[idx]} 為什麼錯</span>${esc(whyW)}</div>`;
   if(whyC)t+=`<div class="blk"><span class="l">✅ 正解 ${L[ans]} 為什麼對</span>${esc(whyC)}</div>`;
   if(p.ans)t+=`<div class="blk"><span class="l">✅ 正解說明</span><span class="key">${esc(p.ans)}</span></div>`;
