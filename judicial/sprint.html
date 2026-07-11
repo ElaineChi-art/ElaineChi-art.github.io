@@ -455,8 +455,7 @@ function startSession(g){
 // 跟讀中直接切換科目（先存目前這科進度，再換）
 function switchGroup(g){
   if(!g||SES.group===g){return;}
-  setPos(SES.group,getPos(SES.group)+SES.newAns);
-  buildSession(g);
+  buildSession(g);  // 進度已於每次作答即時儲存，切科不需再加
   renderSubs();
   renderCard();
 }
@@ -466,8 +465,20 @@ function subChipsHTML(cur){
     return `<button class="subchip${g===cur?' on':''}" data-g="${g}">${g}<span class="sc">${done}/${tot}</span></button>`;}).join("");
 }
 function renderSubRow(){const el=document.getElementById("subRow");if(!el)return;
-  el.innerHTML=subChipsHTML(cyc(viewDate));
-  el.querySelectorAll(".subchip").forEach(b=>b.onclick=()=>startSession(b.dataset.g));}
+  el.innerHTML=subChipsHTML(cyc(viewDate))+'<button class="subchip" id="fixPos" style="border-style:dashed;opacity:.85">✏️ 修正進度</button>';
+  el.querySelectorAll(".subchip[data-g]").forEach(b=>b.onclick=()=>startSession(b.dataset.g));
+  const fx=document.getElementById("fixPos");if(fx)fx.onclick=fixProgress;}
+function fixProgress(){
+  let s=prompt("要修正哪一科？直接輸入科名：\n"+CYCLE.join("／"),"刑法");
+  if(!s)return;s=s.trim();
+  const g=CYCLE.find(x=>x===s||x.indexOf(s)>=0);
+  if(!g){alert("找不到這一科，請照上面的字輸入");return;}
+  const tot=GLEN[g]||0,cur=Math.min(getPos(g),tot);
+  const v=prompt(g+"：你實際做到第幾題？（共 "+tot+" 題，現在記 "+cur+"）",String(cur));
+  if(v===null)return;
+  const n=Math.max(0,Math.min(tot,parseInt(v,10)||0));
+  setPos(g,n);renderSubRow();
+  alert(g+" 已更新為 "+n+"/"+tot+" ✅ 要再修別科就再點一次");}
 function renderSubs(){const el=document.getElementById("sesSubs");if(!el)return;
   el.innerHTML=subChipsHTML(SES.group);
   el.querySelectorAll(".subchip").forEach(b=>b.onclick=()=>switchGroup(b.dataset.g));}
@@ -475,8 +486,7 @@ function closeSession(){
   stopSpeak();
   document.getElementById("ses").classList.remove("on");
   document.body.style.overflow="";
-  // 存進度
-  setPos(SES.group,(getPos(SES.group)+SES.newAns));
+  // 進度已於每次作答即時儲存
   renderLaunch();renderWeek();renderCal();renderStreak();
 }
 function renderCard(){
@@ -509,7 +519,7 @@ function answer(idx){
   const card=SES.cards[SES.i],r=card.r,ans=r.q.ansIndex,L=["A","B","C","D","E","F"];
   const correct=idx===ans;
   if(correct){SES.correct++;if(card.type==="review")delWrong(r.k);}else{addWrong(r.k);}
-  if(card.type==="quiz")SES.newAns++;
+  if(card.type==="quiz"){SES.newAns++;setPos(SES.group,getPos(SES.group)+1);}  // 每答一題即時存進度，關分頁也不丟
   bumpToday();
   document.querySelectorAll(".opt").forEach(b=>{const i=+b.dataset.i;b.disabled=true;
     if(i===ans)b.classList.add("correct");else if(i===idx)b.classList.add("wrong");else b.classList.add("dim");});
@@ -549,7 +559,7 @@ function renderDone(){
       <a class="b-fish" href="farm.html">🐢 去餵魚獎勵自己</a>
       <button class="b-stop" id="dStop">今天先到這，休息一下</button>
     </div></div>`;
-  document.getElementById("dAgain").onclick=()=>{setPos(SES.group,getPos(SES.group)+SES.newAns);buildSession(SES.group);renderSubs();renderCard();};
+  document.getElementById("dAgain").onclick=()=>{buildSession(SES.group);renderSubs();renderCard();};
   document.getElementById("dStop").onclick=closeSession;
 }
 document.getElementById("startBtn").onclick=startSession;
