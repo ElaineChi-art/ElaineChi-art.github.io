@@ -468,24 +468,30 @@ function renderSubRow(){const el=document.getElementById("subRow");if(!el)return
   el.innerHTML=subChipsHTML(cyc(viewDate))+'<button class="subchip" id="fixPos" style="border-style:dashed;opacity:.85">🔄 從紀錄找回進度</button>';
   el.querySelectorAll(".subchip[data-g]").forEach(b=>b.onclick=()=>startSession(b.dataset.g));
   const fx=document.getElementById("fixPos");if(fx)fx.onclick=manualRecover;}
-// 從主複習作答紀錄(sjg_marks_v2)把各科做過的題數算回來、填進進度
-function recoverFromMarks(force){
+// 從你真正的作答紀錄還原各科進度（兩個來源取最大，只增不減）
+function recoverProgress(force){
   try{
-    if(!force && localStorage.getItem("sjg_pos_recovered")==="1")return null;
-    const marks=JSON.parse(localStorage.getItem("sjg_marks_v2")||"{}");
+    if(!force && localStorage.getItem("sjg_pos_recover_v2")==="1")return null;
     const rev={};Object.keys(GROUPS).forEach(g=>GROUPS[g].forEach(s=>rev[s]=g));
+    // A. 主複習標記過的題（每題都能對應科目，但只含你按過 ✅/🔁 的）
+    const marks=JSON.parse(localStorage.getItem("sjg_marks_v2")||"{}");
     const keySub={};Q.forEach(q=>{keySub[keyOf(q)]=rev[subOf(q)];});
-    const cnt={};
-    Object.keys(marks).forEach(k=>{if(!marks[k])return;const g=keySub[k];if(g)cnt[g]=(cnt[g]||0)+1;});
+    const byMark={};
+    Object.keys(marks).forEach(k=>{if(!marks[k])return;const g=keySub[k];if(g)byMark[g]=(byMark[g]||0)+1;});
+    // B. 每日作答紀錄 × 當天輪到的科目（每答一題就寫，最完整）
+    const lg=log(),byLog={};
+    Object.keys(lg).forEach(k=>{const n=(lg[k]&&lg[k].done)||0;if(n<=0)return;
+      const g=cyc(new Date(k+"T00:00:00"));if(g)byLog[g]=(byLog[g]||0)+n;});
     const pos=L("sjg_pos","{}"),changes=[];
-    CYCLE.forEach(g=>{const want=Math.min(cnt[g]||0,GLEN[g]||0),had=pos[g]||0;
+    CYCLE.forEach(g=>{const had=pos[g]||0;
+      const want=Math.min(Math.max(had,byMark[g]||0,byLog[g]||0),GLEN[g]||0);
       if(want>had){changes.push(g+"："+had+" → "+want);pos[g]=want;}});
-    S("sjg_pos",pos);localStorage.setItem("sjg_pos_recovered","1");
+    S("sjg_pos",pos);localStorage.setItem("sjg_pos_recover_v2","1");
     return changes;
   }catch(e){return null;}
 }
 function manualRecover(){
-  const ch=recoverFromMarks(true);renderSubRow();
+  const ch=recoverProgress(true);renderSubRow();
   if(ch===null){alert("讀取紀錄時出了狀況，截圖給機器人看 🙏");return;}
   if(ch.length===0){alert("已對照你的主複習紀錄，各科進度都已是最新、沒有可再補的了。\n\n若你確定做過卻沒算到，那些可能是在別的頁面(例如農場)或別的裝置做的。");return;}
   alert("✅ 已從你的紀錄自動找回：\n\n"+ch.join("\n"));}
@@ -588,7 +594,7 @@ try{
     if(n){ const o=log(); for(let k=0;k<n;k++){ const key=iso(new Date(d0(new Date()).getTime()-k*DAY));
       if(!o[key]||!(o[key].done>0)) o[key]={done:(o[key]&&o[key].done)||1}; } S("sjg_sprint_log",o); } }
 }catch(e){}
-try{recoverFromMarks(false);renderCountdown();renderLaunch();renderWeek();renderCal();renderStreak();
+try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderCal();renderStreak();
   document.getElementById("monthWrap").addEventListener("toggle",renderCal);
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
