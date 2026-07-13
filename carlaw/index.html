@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>車禍理賠與調解知識庫｜Car Accident Law</title>
+<meta name="description" content="台灣車禍損害賠償、保險理賠、調解與訴訟程序的系統化知識庫：求償項目、法條依據、程序比較、調解實戰與試算工具。">
+<style>
+  :root{
+    --bg:#f7f5f0; --card:#fff; --ink:#20242b; --muted:#6b7280; --line:#e6e2d8;
+    --brand:#8a4b12; --brand-soft:#f6e8d8; --gold:#b45309;
+    --ok:#15803d; --ok-soft:#e5f6ea; --warn:#b45309; --warn-soft:#fdf0dc; --risk:#b91c1c; --risk-soft:#fdeaea;
+    --blue:#1d4ed8; --blue-soft:#e8effd;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:"PingFang TC","Noto Sans TC",-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.8}
+  a{color:var(--brand)}
+  .hero{background:linear-gradient(135deg,#2b1d0e,#5a3410 60%,#8a4b12);color:#f5ead9;padding:52px 20px 44px;text-align:center}
+  .hero h1{font-size:1.9rem;letter-spacing:.08em}
+  .hero p{margin-top:10px;opacity:.85;font-size:.95rem;max-width:640px;margin-left:auto;margin-right:auto}
+  nav{position:sticky;top:0;background:rgba(247,245,240,.95);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:50;overflow-x:auto;white-space:nowrap;padding:0 12px}
+  nav a{display:inline-block;padding:12px 14px;text-decoration:none;font-size:.9rem;color:var(--ink);border-bottom:3px solid transparent}
+  nav a:hover{border-color:var(--gold);color:var(--brand)}
+  main{max-width:900px;margin:0 auto;padding:28px 16px 90px}
+  section{margin-bottom:44px}
+  h2{font-size:1.4rem;color:var(--brand);margin:26px 0 14px;padding-left:12px;border-left:5px solid var(--gold)}
+  h3{font-size:1.08rem;margin:20px 0 8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:12px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  table{width:100%;border-collapse:collapse;font-size:.88rem;margin:10px 0}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#f3efe6;white-space:nowrap}
+  .scroll{overflow-x:auto}
+  ul,ol{padding-left:1.4em}
+  li{margin:5px 0}
+  .tag{display:inline-block;padding:1px 9px;border-radius:99px;font-size:.75rem;font-weight:600}
+  .t-ok{background:var(--ok-soft);color:var(--ok)} .t-warn{background:var(--warn-soft);color:var(--warn)}
+  .t-risk{background:var(--risk-soft);color:var(--risk)} .t-blue{background:var(--blue-soft);color:var(--blue)}
+  .law{background:#f3efe6;border-left:4px solid var(--gold);padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0;font-size:.9rem}
+  .tip{background:var(--ok-soft);border-left:4px solid var(--ok);padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0;font-size:.92rem}
+  .warn{background:var(--risk-soft);border-left:4px solid var(--risk);padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0;font-size:.92rem}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:8px 0}
+  summary{cursor:pointer;font-weight:600}
+  summary:hover{color:var(--brand)}
+  .calc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .calc label{display:block;font-size:.85rem;color:var(--muted);margin-top:10px}
+  .calc input,.calc select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:1rem;margin-top:2px;background:#fcfbf8}
+  .calc .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+  .result{margin-top:14px;padding:14px;border-radius:10px;background:var(--blue-soft);font-size:1rem}
+  .result strong{font-size:1.25rem}
+  button{margin-top:14px;padding:10px 22px;background:var(--brand);color:#fff;border:none;border-radius:10px;font-size:1rem;cursor:pointer}
+  button:hover{background:#6d3a0d}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;padding:30px 16px;border-top:1px solid var(--line)}
+  .step{display:flex;gap:12px;margin:10px 0;align-items:flex-start}
+  .step .n{flex:0 0 30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🚗 車禍理賠與調解知識庫</h1>
+  <p>從事故現場到拿到賠償金：求償項目、法條依據、保險、程序選擇、調解實戰與試算工具，一頁看懂台灣車禍損害賠償。</p>
+</div>
+
+<nav>
+  <a href="#sop">事故SOP</a>
+  <a href="#claims">求償項目</a>
+  <a href="#insurance">保險</a>
+  <a href="#procedure">程序比較</a>
+  <a href="#criminal">刑事與附民</a>
+  <a href="#mediation">調解實戰</a>
+  <a href="#calc">試算工具</a>
+  <a href="#laws">法條速查</a>
+  <a href="#faq">FAQ</a>
+</nav>
+
+<main>
+
+<section id="sop">
+  <h2>一、事故發生後的黃金SOP</h2>
+  <div class="card">
+    <div class="step"><div class="n">1</div><div><strong>報警（110）並等警察到場</strong>——沒有報警就沒有「道路交通事故登記聯單」與「初步分析研判表」，之後責任歸屬會非常難證明。國道事故由國道公路警察局處理。</div></div>
+    <div class="step"><div class="n">2</div><div><strong>拍照存證</strong>——車損各角度、相對位置、煞車痕、散落物、對方車牌與載運狀況（超載、捆綁不良都拍下來）、現場全景。行車紀錄器檔案立刻備份兩份。</div></div>
+    <div class="step"><div class="n">3</div><div><strong>就醫並取得診斷證明書</strong>——當天就醫，主訴要完整（哪裡痛都要講）。之後身心症狀（失眠、恐慌、PTSD）也要就診留紀錄，慰撫金的證明全靠病歷。</div></div>
+    <div class="step"><div class="n">4</div><div><strong>30日後申請初步分析研判表</strong>——向處理警察機關申請；對肇責有爭議可再申請「車輛行車事故鑑定」（各區行車事故鑑定會）。</div></div>
+    <div class="step"><div class="n">5</div><div><strong>5日內通知自己的保險公司</strong>——強制險、車體險出險都有通知義務；修車前先讓保險公司定損。</div></div>
+    <div class="step"><div class="n">6</div><div><strong>保存所有單據</strong>——醫療收據、修車估價單、租車發票、計程車收據、薪資請假證明。求償是「單據戰」。</div></div>
+    <div class="step"><div class="n">7</div><div><strong>注意時效</strong>——侵權行為損害賠償請求權：知有損害及賠償義務人時起 <strong>2年</strong>（民法§197）；刑事告訴（過失傷害）：知悉犯人時起 <strong>6個月</strong>（刑訴§237）。</div></div>
+  </div>
+</section>
+
+<section id="claims">
+  <h2>二、可以求償什麼？（求償項目全表）</h2>
+  <div class="card scroll">
+    <table>
+      <tr><th>項目</th><th>法條依據</th><th>實務重點</th><th>證明文件</th></tr>
+      <tr><td><strong>車輛修復費用</strong></td><td>民法§184、§191-2、§196、§213、§215</td><td>零件費用要<strong>折舊</strong>（工資、烤漆不折舊）。實務常用平均法：自小客車耐用年數5年（營業用4年）</td><td>估價單、維修發票</td></tr>
+      <tr><td><strong>車輛全損</strong></td><td>民法§215</td><td>修復費用顯逾車輛價值時，以<strong>事故時市價－殘值</strong>計算。市價可用中古車行情、權威車訊佐證</td><td>估價單＋中古行情資料</td></tr>
+      <tr><td><strong>代步交通費／租車</strong></td><td>民法§193（增加生活上需要）</td><td>限「必要期間」（修復期間或購新車之合理期間）與合理費率，逾期部分常被剔除</td><td>租車合約、發票、就醫車資收據</td></tr>
+      <tr><td><strong>車內物品毀損</strong></td><td>民法§184、§196</td><td>手機、電腦等須扣折舊；要能證明「事故當下在車上且因事故毀損」</td><td>購買憑證＋毀損照片</td></tr>
+      <tr><td><strong>醫療費用</strong></td><td>民法§193</td><td>掛號、醫藥、檢查、診斷書費都可請求。健保給付部分由健保署代位（別重複請求），自費部分全額可求償</td><td>醫療收據、診斷證明</td></tr>
+      <tr><td><strong>薪資損失／勞動能力減損</strong></td><td>民法§193</td><td>不能工作期間之所得損失；請假（含特休）實務多認可請求。長期減損需鑑定</td><td>薪資單、扣繳憑單、請假紀錄、醫囑</td></tr>
+      <tr><td><strong>看護費用</strong></td><td>民法§193</td><td>親人看護亦可請求（實務肯認「應賠償相當看護費」），一般行情每日約2,000–2,400元</td><td>醫囑需看護證明</td></tr>
+      <tr><td><strong>精神慰撫金</strong></td><td>民法§195</td><td>限「身體、健康、名譽、自由等人格法益」受侵害；<strong>純車損原則上不能請求慰撫金</strong>。金額審酌雙方身分資力、加害程度、傷勢輕重</td><td>診斷證明（含身心科）、病歷</td></tr>
+      <tr><td><strong>喪葬費／扶養費／死亡慰撫金</strong></td><td>民法§192、§194</td><td>死亡案件由支出喪葬費之人、法定扶養權利人、父母子女配偶分別請求</td><td>單據、戶籍資料</td></tr>
+    </table>
+  </div>
+  <div class="warn"><strong>常被法院剔除的項目：</strong>與事故無關的油錢與過路費、超過必要期間的租車費、無單據的物品、折舊前的零件全額、漫天喊價的慰撫金。求償表開高可以，但每項要有依據，否則整體可信度下降。</div>
+  <h3>過失相抵與損益相抵</h3>
+  <div class="card">
+    <ul>
+      <li><strong>過失相抵（民法§217）</strong>：被害人與有過失者，法院得減輕或免除賠償。肇責比例依初判表／鑑定意見認定，例如 70:30 時求償額打七折。</li>
+      <li><strong>損益相抵（民法§216-1）</strong>：因同一原因事實受有利益者應扣除。<strong>強制險給付視為加害人賠償金額之一部分（強保§32）→要扣</strong>；自己買的商業保險（意外險等）是保費對價，<strong>不扣</strong>。</li>
+    </ul>
+  </div>
+</section>
+
+<section id="insurance">
+  <h2>三、保險理賠地圖</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>🛡 強制汽車責任保險</h3>
+      <ul>
+        <li>賠「對方車上的人＋車外第三人」的<strong>體傷／失能／死亡</strong>，不賠財損</li>
+        <li>傷害醫療給付每人上限 <strong>20萬</strong>；死亡定額 <strong>200萬</strong>；失能最高 200萬</li>
+        <li><strong>不論過失</strong>都可請求（受害人直接向對方保險公司請求）</li>
+        <li>肇事車輛無保險或肇逃 → 向<strong>特別補償基金</strong>請求</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>📋 第三人責任險（任意險）</h3>
+      <ul>
+        <li>超過強制險額度的體傷＋<strong>財損（車損）</strong>由此賠</li>
+        <li>對方是營業車（貨運、客運公司）通常有投保，調解時<strong>要求保險公司到場</strong>才有意義</li>
+        <li>慰撫金、車輛損失都在承保範圍內談</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🚙 自己的車體險</h3>
+      <ul>
+        <li>可先向自己保險公司出險修車，保險公司賠付後<strong>代位求償</strong>（保險法§53）向對方追償</li>
+        <li>注意：已由車體險理賠的部分，自己不能再向對方重複請求</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🏥 健保代位</h3>
+      <ul>
+        <li>車禍就醫健保有給付時，健保署會向強制險保險人代位（全民健康保險法§95）</li>
+        <li>被害人只能就<strong>自費部分</strong>求償，不能把健保支付的醫療費再要一次</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="procedure">
+  <h2>四、要走哪條路？程序比較表</h2>
+  <div class="card scroll">
+    <table>
+      <tr><th>途徑</th><th>費用</th><th>速度</th><th>效力</th><th>適合情境</th></tr>
+      <tr><td><strong>私下和解</strong></td><td>0</td><td>最快</td><td>民法§736和解契約，對方不履行仍要另行起訴</td><td>小額、對方有誠意、當場付清</td></tr>
+      <tr><td><strong>鄉鎮市調解委員會</strong></td><td>免費</td><td>快（1–2個月）</td><td>經法院核定後<strong>與確定判決同一效力</strong>，可強制執行</td><td>雙方都願意談、金額中小</td></tr>
+      <tr><td><strong>法院調解／移付調解</strong></td><td>（移付）免費</td><td>視法院</td><td>調解筆錄與確定判決同一效力（民訴§416）</td><td>訴訟中法官詢問是否調解時</td></tr>
+      <tr><td><strong>刑事告訴＋附帶民事訴訟</strong></td><td>附民<strong>免裁判費</strong></td><td>跟刑案走</td><td>判決＝執行名義</td><td>對方有過失傷害等刑責時的主流打法</td></tr>
+      <tr><td><strong>單獨民事訴訟</strong></td><td>裁判費約1.1%起</td><td>慢（半年–數年）</td><td>判決＝執行名義</td><td>純財損（無人受傷）、刑事不成立時</td></tr>
+      <tr><td><strong>支付命令</strong></td><td>500元</td><td>快</td><td>對方20日內異議即失效轉訴訟</td><td>金額明確、對方大概率不理會時（風險：一異議就回原點）</td></tr>
+    </table>
+  </div>
+  <div class="tip"><strong>純財損（沒有人受傷）注意：</strong>毀損無「過失毀損罪」，對方僅過失撞壞你的車<strong>不構成刑事犯罪</strong>，只能走民事／調解，別浪費時間提刑事告訴。</div>
+</section>
+
+<section id="criminal">
+  <h2>五、刑事程序＋附帶民事：被害人的槓桿</h2>
+  <div class="card">
+    <h3>流程</h3>
+    <p>車禍致人受傷 → 6個月內提<strong>過失傷害告訴</strong>（刑法§284，告訴乃論）→ 檢察官偵查（可能安排偵查中和解）→ 起訴 → 刑庭審理 → 判決。</p>
+    <h3>被害人的三個關鍵權利</h3>
+    <ul>
+      <li><strong>撤回告訴（刑訴§238）</strong>：第一審辯論終結前得撤回。撤回＝法院諭知不受理＝被告無罪責紀錄。這是談判上最大的籌碼——<strong>務必等錢到位才撤</strong>。</li>
+      <li><strong>刑事附帶民事訴訟（刑訴§487）</strong>：刑案起訴後可附帶提民事求償，<strong>免繳裁判費</strong>，事實認定直接沿用刑事卷證。</li>
+      <li><strong>量刑意見</strong>：審理中法官會問被害人意見；「被告尚未賠償」是實務上影響量刑與緩刑與否的重要因素。</li>
+    </ul>
+    <h3>附民的風險點</h3>
+    <ul>
+      <li>刑案若判<strong>無罪、免訴、不受理</strong>，附民原則上會被判決駁回；但原告可<strong>聲請移送民事庭</strong>續行（刑訴§503），此時才需補繳裁判費。</li>
+      <li>所以「先撤告再等付款」順序錯誤時，可能刑事不受理＋民事還要重新繳費開打——<strong>順序就是一切</strong>。</li>
+    </ul>
+    <h3>對被告的壓力點（了解對方，才知道你的籌碼）</h3>
+    <ul>
+      <li>有前科或<strong>緩刑中</strong>的被告：緩刑期內因過失更犯罪受有期徒刑宣告確定，<strong>得撤銷緩刑</strong>（刑法§75-1）→ 和解撤告對他是唯一安全出口。</li>
+      <li>職業駕駛：有罪判決影響工作、僱主連帶壓力（民法§188僱用人連帶責任）。</li>
+      <li>想拿<strong>緩刑／易科罰金</strong>的被告：「已與被害人和解」幾乎是標配條件。</li>
+    </ul>
+  </div>
+</section>
+
+<section id="mediation">
+  <h2>六、調解實戰手冊</h2>
+  <div class="card">
+    <h3>調解當天的流程長怎樣</h3>
+    <div class="step"><div class="n">1</div><div>報到 → 調解委員（或法官）先分別或一起聽雙方陳述</div></div>
+    <div class="step"><div class="n">2</div><div>你方陳述：事實經過（30秒）→ 責任依據（初判表）→ 損害明細（逐項有單據）→ 提出金額</div></div>
+    <div class="step"><div class="n">3</div><div>對方／保險公司回應出價 → 委員居中來回（常會分開個別談）</div></div>
+    <div class="step"><div class="n">4</div><div>達成合意 → <strong>逐字確認調解筆錄／調解書條款</strong> → 簽名</div></div>
+    <div class="step"><div class="n">5</div><div>不成立 → 記明不成立，回到原程序（訴訟續行），<strong>不影響你的任何權利</strong></div></div>
+    <h3>談判五原則</h3>
+    <ol>
+      <li><strong>先讓對方出價</strong>；你的開價要有單據支撐，錨定高但講得出道理。</li>
+      <li><strong>讓步遞減</strong>（例：讓15萬→10萬→5萬），且每次讓步都交換條件（一次付清、縮短期限）。</li>
+      <li><strong>對事不對人</strong>：把壓力導向保險公司與僱主（付得起的人），對司機個人保持客氣。</li>
+      <li><strong>隨時可以喊暫停</strong>討論，沒有「今天一定要成立」這回事；談不成你還有訴訟。</li>
+      <li><strong>一切以筆錄為準</strong>：口頭承諾沒有任何意義。</li>
+    </ol>
+    <h3>條款檢核清單（簽名前逐條看）</h3>
+    <ul>
+      <li>☐ 給付義務人完整（司機＋公司連帶；保險公司付款方式載明）</li>
+      <li>☐ 金額＋<strong>給付期限</strong>＋匯款帳戶寫進筆錄</li>
+      <li>☐ 分期附「一期未付視為全部到期」</li>
+      <li>☐ 撤回告訴寫「<strong>收受全部給付後</strong>○日內撤回」，不是「調解成立即撤回」</li>
+      <li>☐ 「拋棄其餘請求」範圍限於「本件事故」，且金額滿意才簽</li>
+      <li>☐ 已領強制險金額是否內含，寫清楚</li>
+    </ul>
+    <div class="warn"><strong>三大陷阱：</strong>①先撤告後付款 ②「回去簽核再通知」的無期限承諾 ③拿低額和解金卻拋棄全部請求。遇到任何一個，寧可調解不成立。</div>
+  </div>
+</section>
+
+<section id="calc">
+  <h2>七、試算工具</h2>
+  <div class="calc">
+    <h3>① 車損折舊試算（平均法）</h3>
+    <div class="row">
+      <div><label>零件費用（元）</label><input type="number" id="d-parts" value="100000"></div>
+      <div><label>工資／烤漆費用（元，不折舊）</label><input type="number" id="d-labor" value="30000"></div>
+      <div><label>車齡（年，未滿一年進位）</label><input type="number" id="d-age" value="3" step="0.5"></div>
+      <div><label>車種耐用年數</label><select id="d-life"><option value="5">自用小客車 5 年</option><option value="4">營業用車 4 年</option><option value="3">機車 3 年</option></select></div>
+    </div>
+    <button onclick="calcDep()">計算折舊後求償額</button>
+    <div class="result" id="d-out">—</div>
+    <p style="font-size:.8rem;color:var(--muted);margin-top:8px">平均法：每年折舊率＝1/(耐用年數＋1)。零件按已使用年數折舊，殘價率下限約1/(耐用年數+1)。實務亦有採定率遞減法者，結果略異。</p>
+  </div>
+  <div class="calc" style="margin-top:14px">
+    <h3>② 求償總額組合器</h3>
+    <div class="row">
+      <div><label>車損（修復費折舊後 或 市價−殘值）</label><input type="number" id="s-car" value="0"></div>
+      <div><label>代步交通費（必要期間）</label><input type="number" id="s-trans" value="0"></div>
+      <div><label>醫療費用（自費部分）</label><input type="number" id="s-med" value="0"></div>
+      <div><label>薪資損失</label><input type="number" id="s-wage" value="0"></div>
+      <div><label>看護費用</label><input type="number" id="s-care" value="0"></div>
+      <div><label>物品損失（折舊後）</label><input type="number" id="s-items" value="0"></div>
+      <div><label>精神慰撫金</label><input type="number" id="s-pain" value="0"></div>
+      <div><label>我方過失比例（%）</label><input type="number" id="s-fault" value="0" min="0" max="100"></div>
+      <div><label>已領強制險給付（要扣除）</label><input type="number" id="s-cali" value="0"></div>
+    </div>
+    <button onclick="calcSum()">計算合理請求額</button>
+    <div class="result" id="s-out">—</div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h3>③ 慰撫金行情感覺（實務判決常見區間，僅供參考）</h3>
+    <div class="scroll"><table>
+      <tr><th>傷勢類型</th><th>常見核定區間（每人）</th></tr>
+      <tr><td>輕微擦挫傷、頸部扭傷</td><td>1萬–8萬</td></tr>
+      <tr><td>撕裂傷（含顏面）、軟組織傷害＋短期身心影響</td><td>5萬–20萬</td></tr>
+      <tr><td>骨折、神經症狀、確診PTSD／憂鬱症持續治療</td><td>10萬–40萬</td></tr>
+      <tr><td>失能（依等級）</td><td>30萬–200萬+</td></tr>
+      <tr><td>死亡（每位請求權人）</td><td>80萬–250萬</td></tr>
+    </table></div>
+    <p style="font-size:.8rem;color:var(--muted)">法院審酌：傷勢程度、治療期間、雙方身分資力、加害過失情節（超載、酒駕、肇逃會加重）。診斷證明與病歷連續性是關鍵證據。</p>
+  </div>
+</section>
+
+<section id="laws">
+  <h2>八、法條速查</h2>
+  <details><summary>民法（侵權與損害賠償）</summary>
+    <div class="law">§184 Ⅰ前段：因故意或過失不法侵害他人權利者，負損害賠償責任。Ⅱ：違反保護他人之法律致生損害，推定有過失。</div>
+    <div class="law">§185：共同侵權連帶負責。§188 Ⅰ：受僱人執行職務不法侵害他人權利，僱用人連帶賠償。</div>
+    <div class="law">§191-2：動力車輛駕駛人加損害於他人，推定其有過失（舉證責任倒置，對被害人極有利）。</div>
+    <div class="law">§192：不法侵害致死→醫療費、喪葬費、扶養費。§193：傷害身體健康→喪失或減少勞動能力＋增加生活上之需要。§194／§195：慰撫金。</div>
+    <div class="law">§196：毀損他人之物→請求其物因毀損所減少之價額。§213／§215：回復原狀原則與金錢賠償。§216-1：損益相抵。§217：過失相抵。§197：時效2年／10年。</div>
+  </details>
+  <details><summary>強制汽車責任保險法</summary>
+    <div class="law">§7：因交通事故致體傷失能死亡，受害人得直接向保險人請求給付（不論加害人有無過失）。</div>
+    <div class="law">§27＋給付標準：傷害醫療每人上限20萬、失能最高200萬、死亡定額200萬。</div>
+    <div class="law">§32：保險給付視為加害人損害賠償金額之一部分，加害人受請求時得扣除之。</div>
+    <div class="law">§40：無保險或肇逃→向特別補償基金請求。</div>
+  </details>
+  <details><summary>刑法與刑事訴訟法</summary>
+    <div class="law">刑法§284：過失傷害。§287：須告訴乃論。§185-3：不能安全駕駛（酒駕）。§185-4：肇事逃逸。</div>
+    <div class="law">刑法§74：緩刑要件（得附條件如向被害人支付損害賠償）。§75、§75-1：撤銷緩刑事由（緩刑中再犯之風險）。</div>
+    <div class="law">刑訴§237：告訴乃論之罪，知悉犯人時起6個月內為之。§238：一審辯論終結前得撤回告訴。</div>
+    <div class="law">刑訴§487以下：附帶民事訴訟（免裁判費）。§503：刑事諭知無罪免訴不受理時，附民駁回，但得聲請移送民事庭。</div>
+  </details>
+  <details><summary>道路交通法規</summary>
+    <div class="law">道路交通安全規則§94：保持隨時可煞停之距離；注意車前狀況。（追撞案件最常引用）</div>
+    <div class="law">道路交通安全規則§77、§81：裝載貨物應捆紮牢固、不得超重超長。</div>
+    <div class="law">道路交通管理處罰條例§29-2：超載違規處罰。§62：肇事處理義務。</div>
+  </details>
+  <details><summary>調解相關</summary>
+    <div class="law">鄉鎮市調解條例§27：調解經法院核定後，與民事確定判決有同一之效力；告訴乃論刑事事件調解成立並經核定，視為撤回告訴。</div>
+    <div class="law">民事訴訟法§403：車禍損害賠償訴訟屬強制調解事件（起訴前應經法院調解）。§416：調解成立與確定判決同一效力。</div>
+  </details>
+</section>
+
+<section id="faq">
+  <h2>九、常見問題 FAQ</h2>
+  <details><summary>對方只撞壞我的車（沒人受傷），可以告他刑事嗎？</summary><p>不行。毀損罪不罰過失，純財損只能走民事求償或調解。這也是為什麼「有人受傷」的案件被害人談判地位高很多。</p></details>
+  <details><summary>調解成立後對方不付錢怎麼辦？</summary><p>法院調解筆錄／經法院核定之調解書與確定判決同一效力，可直接聲請<strong>強制執行</strong>（扣薪、扣存款、查封財產），不用重新起訴。所以條款裡的付款期限與帳戶務必寫清楚。</p></details>
+  <details><summary>我可以同時領強制險又向對方求償嗎？</summary><p>可以，但強制險給付視為加害人賠償的一部分（強保§32），求償時要扣除已領金額。自己另外買的意外險、醫療險則不必扣。</p></details>
+  <details><summary>修車廠估價單可以直接當求償金額嗎？</summary><p>估價單是起點，法院會就「零件」部分折舊（工資不折舊）。若修復費用超過車輛市價，改依「全損」計算：事故時市價－殘值。</p></details>
+  <details><summary>對方說「等保險公司核下來再給」，可以答應嗎？</summary><p>不要接受無期限承諾。調解條款要寫明確給付期限；保險公司內部流程是他們的事，不是你等待的理由。</p></details>
+  <details><summary>什麼時候撤回刑事告訴？</summary><p>永遠是「收到全部款項之後」。條款寫「聲請人於收受全部給付後○日內撤回告訴」。注意撤告只能在一審辯論終結前，且撤回後不得再告。</p></details>
+  <details><summary>初判表寫對方有肇因、我方無肇因，等於贏了嗎？</summary><p>初判表是重要參考但非最終認定；對方可申請行車事故鑑定翻盤。不過「無肇因＋行車紀錄器」的組合在調解與訴訟上已是非常有利的地位。</p></details>
+  <details><summary>慰撫金怎麼要才不會被打折太多？</summary><p>三件事：①每個症狀都要有就診紀錄與診斷證明（含身心科）②引用類似判決的核定金額當錨點 ③強調對方過失情節（超載、酒駕、高速）。空口喊痛沒有證據力。</p></details>
+</section>
+
+<footer>
+  本站內容為法律知識整理與學習筆記，非針對個案之法律意見；個案請洽律師或法律扶助基金會。<br>
+  Built by Elaine Chi ・ <a href="../index.html">回到作品集</a>
+</footer>
+</main>
+
+<script>
+function calcDep(){
+  const parts=+document.getElementById('d-parts').value||0;
+  const labor=+document.getElementById('d-labor').value||0;
+  const age=Math.ceil(+document.getElementById('d-age').value||0);
+  const life=+document.getElementById('d-life').value;
+  const rate=1/(life+1);
+  let remain=1-rate*Math.min(age,life);
+  const floor=1/(life+1);
+  if(remain<floor)remain=floor;
+  const dep=Math.round(parts*remain);
+  document.getElementById('d-out').innerHTML=
+    `零件折舊後：<strong>${dep.toLocaleString()}</strong> 元（殘存率 ${(remain*100).toFixed(1)}%）＋ 工資 ${labor.toLocaleString()} 元 ＝ 可求償 <strong>${(dep+labor).toLocaleString()}</strong> 元`;
+}
+function calcSum(){
+  const ids=['s-car','s-trans','s-med','s-wage','s-care','s-items','s-pain'];
+  let sum=0; ids.forEach(i=>sum+=(+document.getElementById(i).value||0));
+  const fault=(+document.getElementById('s-fault').value||0)/100;
+  const cali=+document.getElementById('s-cali').value||0;
+  const afterFault=sum*(1-fault);
+  const final=Math.max(0,Math.round(afterFault-cali));
+  document.getElementById('s-out').innerHTML=
+    `損害總額 ${sum.toLocaleString()} 元 × 對方責任 ${((1-fault)*100).toFixed(0)}% ＝ ${Math.round(afterFault).toLocaleString()} 元<br>− 已領強制險 ${cali.toLocaleString()} 元 ＝ 合理請求 <strong>${final.toLocaleString()}</strong> 元<br><span style="font-size:.85rem">談判建議：開價可上浮 20–30%，底線約此數之 80–85%。</span>`;
+}
+</script>
+</body>
+</html>
