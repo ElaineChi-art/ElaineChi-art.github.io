@@ -203,6 +203,8 @@
     <div class="pace" id="lPace"></div>
     <div class="flow" id="lFlow"></div>
     <button class="startbtn" id="startBtn"><span class="s">🤖 不用想，我一張一張帶你做</span><span id="startTxt">▶ 開始今天的跟讀</span></button>
+    <div class="subttl">🎯 每日目標（1 輪 ≈ 15 題）</div>
+    <div class="subrow" id="roundRow"></div>
     <div class="subttl">🎛️ 或自己選一科開始（各科進度分開記，可隨時跳）</div>
     <div class="subrow" id="subRow"></div>
   </div>
@@ -222,7 +224,8 @@
 
   <div class="card">
     <details id="posFix"><summary style="cursor:pointer;font-size:14px;font-weight:800;color:var(--mut);list-style:none">✏️ 補登各科進度（之前做過但沒算到的，補回來）</summary>
-      <div class="mini" style="text-align:left;margin:10px 0 4px">舊版關掉分頁進度會漏記（已修好）。把你「實際做到第幾題」填進去即可。</div>
+      <div class="mini" style="text-align:left;margin:10px 0 4px">記不得做幾題？先按下面「重新找回進度」——會用你的每日作答紀錄 × 當天輪到的科目自動反推。不夠準再手動改。</div>
+      <button class="hlp" id="posRecover" style="margin-bottom:10px">🔎 重新找回進度（自動反推）</button>
       <div id="posRows"></div>
       <button class="hlp" id="posSave" style="margin-top:10px">💾 儲存進度</button>
     </details>
@@ -386,6 +389,24 @@ function colorParties(s){return s.replace(/[甲乙丙丁戊己]/g,c=>`<span clas
 const MSGS=["早安。今天不用想全部，我一張一張帶你，你只要點就好。","你已經在別人放棄的路上多走一步了。","忘記很正常，答錯的我都幫你記著、之後回鍋。","分心了沒關係，回來點下一張就好。","一次一題，一天一點，考試那天你會謝謝現在。","你大學把每件事做滿，這次也是。老天有眼。","不用完美，今天比昨天多會一點就贏了。","做不下去時先餵一次魚，再回來一張。"];
 function todayMsg(){const di=Math.round((d0(new Date())-EPOCH)/DAY);return MSGS[((di%MSGS.length)+MSGS.length)%MSGS.length];}
 
+/* ===== 每日目標輪數（0=自動）＋ 掃完預估 ===== */
+function roundsSet(){return parseInt(localStorage.getItem("sjg_rounds")||"0")||0;}
+function renderRoundRow(){
+  const el=document.getElementById("roundRow");if(!el)return;
+  const cur=roundsSet();
+  const opts=[[0,"自動"],[4,"4輪·60題"],[5,"5輪·75題"],[6,"6輪·90題"],[7,"7輪·105題"]];
+  el.innerHTML=opts.map(([r,lab])=>`<button class="subchip${cur===r?" on":""}" data-r="${r}">${lab}</button>`).join("");
+  el.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{localStorage.setItem("sjg_rounds",b.dataset.r);renderLaunch();});
+}
+function finishETA(bs,target){
+  if(!target||bs.remaining<=0)return "";
+  const need=Math.ceil(bs.remaining/target);
+  const fin=new Date(d0(new Date()).getTime()+need*DAY);
+  const ok=fin<=d0(SL_EXAM);
+  return `📅 每天 <b>${target} 題</b> → 還要 <b>${need} 天</b>，預計 <b>${fin.getMonth()+1}/${fin.getDate()}</b> 掃完一輪 `+
+    (ok?`（<b>✅ 趕得上 8/1</b>）`:`（<span class="warn">⚠️ 來不及 8/1，請把每日輪數調高</span>）`)+`<br>`;
+}
+
 /* ===== 首頁渲染 ===== */
 let viewDate=new Date();
 function renderCountdown(){const sl=Math.max(0,daysTo(SL_EXAM)),mj=Math.max(0,daysTo(MJ_EXAM));
@@ -399,7 +420,10 @@ function renderLaunch(){
   document.getElementById("lTitle").textContent=(isToday?"今天":`${viewDate.getMonth()+1}/${viewDate.getDate()}`)+"　主攻："+(ph.exam?ph.name:focus);
   const pe=document.getElementById("lPhase");pe.textContent=ph.name;pe.style.background=ph.c+"33";pe.style.color=ph.c;
   const bs=bankStats();
-  const done=isToday?todayDone():0,target=ph.exam?0:Math.max(bs.perDay,20);
+  const done=isToday?todayDone():0;
+  const setR=roundsSet();                                   // 你自己設定的每日輪數（0=自動）
+  const target=ph.exam?0:(setR?setR*15:Math.max(bs.perDay,20));
+  renderRoundRow();
   document.getElementById("lBar").style.width=(ph.exam?100:Math.min(100,done/target*100))+"%";
   document.getElementById("lNum").textContent=ph.exam?"今天是考試日，深呼吸，你準備過了 💪":`今天目標 約 ${target} 題（${Math.ceil(target/18)} 輪）· 已完成 ${done} 題`;
   const pe2=document.getElementById("lPace");
@@ -410,6 +434,7 @@ function renderLaunch(){
       (bs.remaining<=0?`🎉 整份都掃過一輪了！接下來專心把<b>錯題</b>回鍋到熟就好。`:
         `要在 8/1 前掃完一輪，${bs.dToSL>5?`平均每天約 <b>${bs.perDay} 題（${bs.rounds} 輪）</b>`:`剩下時間<span class="warn">改為只複習錯題＋易錯點</span>`}。`)+
       `<br>${onTrack?"✅ 你今天已達標，超前的話更好！":`今天做滿 <b>${target} 題</b> 就跟得上。`}<br>`+
+      finishETA(bs,target)+
       `<span style="color:var(--mut)">💡 不用每題完美：掃過一次＋把<b>答錯的</b>做到熟＝會上的準備。</span>`;
   }
   document.getElementById("lSub").textContent=ph.exam?"帶齊准考證、身分證、文具、手錶。先寫會的，不留空。":
@@ -663,13 +688,18 @@ document.getElementById("ewPractice").onclick=()=>startWrongSession(everWrong())
 document.getElementById("ewClear").onclick=()=>{if(confirm("清空錯題本？（回鍋過的紀錄會全部刪除）")){S("sjg_everwrong",[]);renderEW();}};
 document.getElementById("posSave").onclick=savePosRows;
 document.getElementById("posFix").addEventListener("toggle",renderPosRows);
+document.getElementById("posRecover").onclick=()=>{
+  const ch=recoverProgress(true);   // force：忽略「已跑過」旗標，重新反推
+  renderPosRows();renderLaunch();renderWeek();renderCal();
+  alert(ch&&ch.length?("已從每日紀錄找回：\n"+ch.join("\n")):"每日紀錄裡沒有比目前更多的資料。\n（可能是舊版沒記到，請在下面手動填一個接近的數字）");
+};
 
 try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderCal();renderStreak();renderEW();renderPosRows();
   document.getElementById("monthWrap").addEventListener("toggle",renderCal);
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s4";
+const APP_VERSION="s5";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
