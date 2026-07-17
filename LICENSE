@@ -1,0 +1,43 @@
+Copyright © 2026 姬政妤 (Elaine Chi). All Rights Reserved.
+版權所有 © 2026 姬政妤 (Elaine Chi)。保留一切權利。
+
+================================================================
+ALL RIGHTS RESERVED — 未經授權，不得使用
+================================================================
+
+This repository and all of its contents — including but not limited to source
+code, designs, layouts, text, images, smart contracts, and any other materials
+(collectively, the "Work") — are the exclusive intellectual property of
+Elaine Chi (姬政妤).
+
+本專案及其一切內容（包含但不限於原始碼、設計、版面、文字、圖片、智慧合約及
+其他任何素材，合稱「本著作」）之著作權，均專屬於姬政妤 (Elaine Chi) 所有。
+
+You MAY:
+  - View this repository and the deployed websites for personal reference.
+  您可以：瀏覽本專案與已上線之網站作個人參考。
+
+You MAY NOT, without prior written permission from the author:
+  - Copy, reproduce, republish, or mirror the Work in whole or in part;
+  - Modify, adapt, translate, or create derivative works;
+  - Distribute, sell, sublicense, or use the Work for any commercial purpose;
+  - Remove or alter any copyright, authorship, or attribution notice.
+  未經作者事前書面授權，您不得：全部或部分複製、重製、再發布、鏡像；
+  修改、改作、翻譯、製作衍生著作；散布、販售、再授權或作任何商業用途；
+  移除或變更任何著作權、作者或出處聲明。
+
+Viewing this repository or its websites does NOT grant you any license or
+rights to the Work. All rights not expressly granted are reserved.
+瀏覽本專案或其網站，不代表授予您任何授權或權利。凡未明示授予之權利，均予保留。
+
+Unauthorized use constitutes copyright infringement and may be pursued under
+applicable law (including the Copyright Act of the Republic of China / Taiwan).
+未經授權之使用構成著作權侵害，作者得依相關法律（包含中華民國著作權法）追究。
+
+Authorship & provenance are verifiable via this repository's commit history and,
+for on-chain work, via the deploying wallet and verified contract on Etherscan.
+作者身分與創作先後，可經本專案之提交紀錄，及鏈上作品之部署錢包與 Etherscan
+已驗證合約查證。
+
+For licensing or permission requests, contact:
+授權或使用許可請洽：Elaine Chi — chengyuchi849@gmail.com

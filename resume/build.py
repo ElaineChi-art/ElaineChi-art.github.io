@@ -220,6 +220,7 @@ def build_html(d):
   <footer>
     <span class="en">Last updated: {today} · auto-generated from resume.json</span>
     <span class="zh">最近更新：{today} · 由 resume.json 自動生成</span><br>
+    © 2026 姬政妤 Elaine Chi · 保留所有權利 All Rights Reserved<br>
     <a href="../">← <span class="en">All projects</span><span class="zh">回作品總站</span></a>
   </footer>
 </div>
