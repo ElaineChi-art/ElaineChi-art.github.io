@@ -283,6 +283,7 @@
 <script src="notes.js"></script>
 <script src="diagrams.js"></script>
 <script src="laws.js"></script>
+<script src="sr-shangshi.js"></script>
 <script>
 /* ===== 防呆：任何錯誤直接顯示在畫面上，不要一片空白 ===== */
 window.addEventListener("error",function(e){
@@ -497,7 +498,18 @@ function renderStreak(){document.getElementById("streak").textContent=`🔥 連�
 function subjectRows(g){const subs=GROUPS[g]||[g];return ROWS.filter(r=>subs.includes(r.sub));}
 let srGroup=null, srItems=[], srSeq=false;
 // 某一段(50條)的朗讀文字
-function srSegText(start){return srItems.slice(start,start+50).map(([c,o],i)=>(start+i+1)+"、"+c.replace(/§.*/,"")+"。"+(o.key||"")).join("。");}
+function srSegText(start){return srItems.slice(start,start+50).join("。");}   // srItems 皆為朗讀字串
+// 我的筆記段落 → HTML（🚀分類/編號考點/🔑反射/⚠️地雷 各自上色，**粗體**變亮）
+function srMd(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<b style="color:#ffe79c">$1</b>');}
+function srLineHTML(p){
+  if(!p)return "";
+  if(/^🚀/.test(p))return `<div style="font-size:15px;font-weight:800;color:var(--teal);margin:16px 0 6px">${srMd(p)}</div>`;
+  if(/^💡/.test(p))return `<div style="font-size:13px;color:#ffeab0;background:rgba(255,216,107,.08);border-radius:10px;padding:9px 11px;margin:10px 0">${srMd(p)}</div>`;
+  if(/^\d+\./.test(p))return `<div class="sr"><b>${srMd(p)}</b></div>`;
+  if(/^🔑/.test(p))return `<div style="font-size:12px;color:var(--teal);font-weight:700;margin:6px 0 2px">${srMd(p)}</div>`;
+  if(/^⚠️/.test(p))return `<div style="font-size:12px;color:var(--coral);font-weight:700;margin:6px 0 2px">${srMd(p)}</div>`;
+  return `<div style="font-size:13.5px;line-height:1.6;color:var(--txt);margin:2px 0 2px 10px">${srMd(p)}</div>`;
+}
 // 從頭一段接一段念完（避免長句被截斷）
 function srSpeakSeq(start){
   if(!srSeq||!("speechSynthesis"in window)||start>=srItems.length){srSeq=false;return;}
@@ -513,25 +525,34 @@ function renderSpeed(g){
   const chips=document.getElementById("srChips");
   if(chips){chips.innerHTML=CYCLE.map(x=>`<button class="subchip${x===g?" on":""}" data-sr="${x}">${x}</button>`).join("");
     chips.querySelectorAll("[data-sr]").forEach(b=>b.onclick=()=>renderSpeed(b.dataset.sr));}
-  const map={};
-  subjectRows(g).forEach(r=>{const c=(r.p.concept||"").trim();if(!c)return;
-    if(!map[c])map[c]={n:0,key:"",trap:""};map[c].n++;
-    if(!map[c].key)map[c].key=(r.p.key||r.p.ans||"").trim();
-    if(!map[c].trap)map[c].trap=(r.p.trap||"").trim();});
-  const items=Object.entries(map).sort((a,b)=>b[1].n-a[1].n);
-  srItems=items;
-  const cnt=document.getElementById("srCnt");if(cnt)cnt.textContent=items.length+" 個高頻考點";
-  const segs=document.getElementById("srSegs");
-  if(segs){let sh="";for(let s=0;s<items.length;s+=50){const e=Math.min(s+50,items.length);
+  const cnt=document.getElementById("srCnt"),segs=document.getElementById("srSegs"),body=document.getElementById("srBody");
+  const OV=(g==="商事法"&&Array.isArray(window.SR_SHANGSHI)&&window.SR_SHANGSHI.length)?window.SR_SHANGSHI:null;
+  let html;
+  if(OV){                                   // ← 用你 Word 的筆記（原樣、非依題號）
+    srItems=OV;                             // 語音直接念每段
+    const topics=OV.filter(p=>/^\d+\./.test(p)||/^🚀/.test(p)).length;
+    if(cnt)cnt.textContent=topics+" 個考點 · 我的筆記";
+    html=OV.map(srLineHTML).join("");
+  }else{
+    const map={};
+    subjectRows(g).forEach(r=>{const c=(r.p.concept||"").trim();if(!c)return;
+      if(!map[c])map[c]={n:0,key:"",trap:""};map[c].n++;
+      if(!map[c].key)map[c].key=(r.p.key||r.p.ans||"").trim();
+      if(!map[c].trap)map[c].trap=(r.p.trap||"").trim();});
+    const items=Object.entries(map).sort((a,b)=>b[1].n-a[1].n);
+    srItems=items.map(([c,o],i)=>(i+1)+"、"+c.replace(/§.*/,"")+"。"+(o.key||""));   // 語音字串
+    if(cnt)cnt.textContent=items.length+" 個高頻考點";
+    html=items.length?items.map(([c,o],i)=>
+      `<div class="sr"><b>${i+1}. ${esc(c)}</b>${o.n>1?`<span class="n">×${o.n}</span>`:""}`+
+      (o.key?` <span class="k">🔑 ${esc(o.key)}</span>`:"")+
+      (o.trap?` <span class="t">⚠️ ${esc(o.trap)}</span>`:"")+`</div>`).join("")
+      :`<div class="mini" style="text-align:left">這科還沒有整理好的考點。</div>`;
+  }
+  if(segs){let sh="";for(let s=0;s<srItems.length;s+=50){const e=Math.min(s+50,srItems.length);
       sh+=`<button class="subchip" data-seg="${s}">🔊 ${s+1}–${e}</button>`;}
     segs.innerHTML=sh||`<span class="mini" style="margin:0">（無）</span>`;
     segs.querySelectorAll("[data-seg]").forEach(b=>b.onclick=()=>{stopSpeak();speak(srSegText(+b.dataset.seg));});}
-  const body=document.getElementById("srBody");if(!body)return;
-  body.innerHTML=items.length?items.map(([c,o],i)=>
-    `<div class="sr"><b>${i+1}. ${esc(c)}</b>${o.n>1?`<span class="n">×${o.n}</span>`:""}`+
-    (o.key?` <span class="k">🔑 ${esc(o.key)}</span>`:"")+
-    (o.trap?` <span class="t">⚠️ ${esc(o.trap)}</span>`:"")+`</div>`).join("")
-    :`<div class="mini" style="text-align:left">這科還沒有整理好的考點。</div>`;
+  if(body)body.innerHTML=html;
 }
 /* 📕 錯題本 */
 function renderEW(){
@@ -769,7 +790,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s8";
+const APP_VERSION="s9";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
