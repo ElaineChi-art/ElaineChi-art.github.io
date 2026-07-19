@@ -284,6 +284,7 @@
 <script src="diagrams.js"></script>
 <script src="laws.js"></script>
 <script src="sr-shangshi.js?v=2"></script>
+<script src="sr-guoji.js?v=1"></script>
 <script>
 /* ===== 防呆：任何錯誤直接顯示在畫面上，不要一片空白 ===== */
 window.addEventListener("error",function(e){
@@ -537,7 +538,9 @@ function renderSpeed(g){
   if(chips){chips.innerHTML=CYCLE.map(x=>`<button class="subchip${x===g?" on":""}" data-sr="${x}">${x}</button>`).join("");
     chips.querySelectorAll("[data-sr]").forEach(b=>b.onclick=()=>renderSpeed(b.dataset.sr));}
   const cnt=document.getElementById("srCnt"),segs=document.getElementById("srSegs"),body=document.getElementById("srBody");
-  const OV=(g==="商事法"&&Array.isArray(window.SR_SHANGSHI)&&window.SR_SHANGSHI.length)?window.SR_SHANGSHI:null;
+  let OV=null;                              // 我的 Word 筆記覆蓋（依科目）
+  if(g==="商事法"&&Array.isArray(window.SR_SHANGSHI)&&window.SR_SHANGSHI.length)OV=window.SR_SHANGSHI;
+  else if(g==="國際法+法學英文"&&Array.isArray(window.SR_GUOJI)&&window.SR_GUOJI.length)OV=window.SR_GUOJI;
   let html;
   if(OV){                                   // ← 用你 Word 的筆記（原樣、非依題號）
     srItems=groupTopics(OV);                 // 語音一段=一個考點（好唸）
@@ -802,7 +805,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s11";
+const APP_VERSION="s12";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
