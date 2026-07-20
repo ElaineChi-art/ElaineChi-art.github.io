@@ -285,6 +285,7 @@
 <script src="laws.js"></script>
 <script src="sr-shangshi.js?v=2"></script>
 <script src="sr-guoji.js?v=6"></script>
+<script src="sr-xingfa.js?v=1"></script>
 <script>
 /* ===== 防呆：任何錯誤直接顯示在畫面上，不要一片空白 ===== */
 window.addEventListener("error",function(e){
@@ -512,7 +513,7 @@ function groupTopics(paras){
   return blocks.map(b=>b.join("。").replace(/\*\*/g,""));
 }
 // 我的筆記段落 → HTML（🚀分類/編號考點/🔑反射/⚠️地雷 各自上色，**粗體**變亮）
-function srMd(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<b style="color:#ffe79c">$1</b>');}
+function srMd(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<b style="color:#ffe79c">$1</b>').replace(/\s*(📜|⚠️ ?考點地雷)/g,'<br>$1');}
 function srLineHTML(p){
   if(!p)return "";
   if(/^🚀/.test(p))return `<div style="font-size:15px;font-weight:800;color:var(--teal);margin:18px 0 4px;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:4px">${srMd(p)}</div>`;
@@ -561,6 +562,7 @@ function renderSpeed(g){
   let OV=null;                              // 我的 Word 筆記覆蓋（依科目）
   if(g==="商事法"&&Array.isArray(window.SR_SHANGSHI)&&window.SR_SHANGSHI.length)OV=window.SR_SHANGSHI;
   else if(g==="國際法+法學英文"&&Array.isArray(window.SR_GUOJI)&&window.SR_GUOJI.length)OV=window.SR_GUOJI;
+  else if(g==="刑法"&&Array.isArray(window.SR_XINGFA)&&window.SR_XINGFA.length)OV=window.SR_XINGFA;
   let html;
   if(OV){                                   // ← 用你 Word 的筆記（原樣、非依題號）
     srItems=groupTopics(OV);                 // 語音一段=一個考點（好唸）
@@ -828,7 +830,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s18";
+const APP_VERSION="s19";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
