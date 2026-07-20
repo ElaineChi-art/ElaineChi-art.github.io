@@ -839,16 +839,19 @@ function answer(idx){
   const gj=srReflexMatch(r,SES.group);   // 我的反射地圖(國際/刑法/商事)
   const tmap=(SES.group==="商事法")?parseTrap(r.p.trap):null;   // 商事：陷阱備援
   const ansWhy=tmap?(jsStripAns(r.p.ans)||r.p.key||""):"";
-  const optCorr=i=>{const ref=optReflex(gj,r.q.options[i]);return ref||(tmap?tmap[L[i]]:"")||"";};   // 優先用我的反射地圖那一行
+  const findWrong=/錯誤|不正確|為非|何者[^，。]{0,6}非|下列.{0,6}非/.test(r.q.stem)||/[（(]錯[）)]/.test(r.p.ans||"");   // 題目問「何者錯誤」
+  const shortRule=i=>{const l=optReflex(gj,r.q.options[i]);return l?l.split(/[。！？]/)[0].trim():"";};   // 只取反射地圖第一句(不整段貼)
+  const optCorr=i=>(i===ans)?(jsStripAns(r.p.ans)||r.p.key||shortRule(i)):((tmap&&tmap[L[i]])||shortRule(i));
   document.querySelectorAll(".opt").forEach(b=>{const i=+b.dataset.i;b.disabled=true;
     if(i===ans)b.classList.add("correct");else if(i===idx)b.classList.add("wrong");else b.classList.add("dim");
-    if(tmap){const d=optCorr(i);
-      const nt=(i===ans)?`<span class="oc ok">✓ 正解</span>${(d||ansWhy)?esc(d||ansWhy):""}`
-                        :`<span class="oc no">✗</span>${d?" "+esc(d):""}`;
+    if(tmap){const d=optCorr(i);let cls,badge;
+      if(i===ans){cls="ok";badge=findWrong?"✓ 正解（這句才是錯的）":"✓ 正解";}
+      else if(findWrong){cls="ok";badge="○ 正確敘述";}else{cls="no";badge="✗ 錯在這";}
+      const nt=`<span class="oc ${cls}">${badge}</span>${d?" "+esc(d):""}`;
       const sp=b.querySelectorAll("span");(sp[1]||b).insertAdjacentHTML("beforeend",`<div class="optnote">${nt}</div>`);}});
-  let optSpeak="";   // 🔊 唸每個選項＋它的訂正（用我的筆記）
+  let optSpeak="";   // 🔊 唸每個選項＋它的訂正（簡短判斷）
   if(tmap){r.q.options.forEach((o,i)=>{const d=optCorr(i);
-      const corr=(i===ans)?("這是正解。"+(d||ansWhy)):(d?("訂正，"+d):"這個不是答案");
+      const corr=(i===ans)?((findWrong?"這句才是錯的，正解。":"這是正解。")+(d||"")):(findWrong?("這是正確敘述。"+(d||"")):(d?("錯在，"+d):"這個不是答案"));
       optSpeak+=`選項${L[i]}，${o}。${corr}。`;});
     optSpeak=optSpeak.replace(/§/g,"第").replace(/[「」『』]/g,"");}
   // 教學
@@ -934,7 +937,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s37";
+const APP_VERSION="s38";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
