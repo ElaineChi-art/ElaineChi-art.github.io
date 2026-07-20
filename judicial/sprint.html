@@ -426,7 +426,7 @@ function hlKey(s){return s
   .replace(/(不得|無須|毋須|視為|推定|準用|不適用|善意|惡意|連帶責任|連帶|無效|得撤銷|撤銷|對抗|優先|至遲|屆滿|逾期|超過|不以.{0,8}為必要)/g,'<mark class="k4">$1</mark>');}
 function markStem(r){return colorParties(hlKey(esc(r.q.stem)));}
 function normL(c){const i="ＡＢＣＤ".indexOf(c);return i>=0?"ABCD"[i]:c;}
-function jsStripAns(s){return (s||"").replace(/^答案[A-DＡ-Ｄ][（(][^）)]*[）)]?\s*：?|^答案[A-DＡ-Ｄ]\s*：?/,"").trim();}
+function jsStripAns(s){return (s||"").replace(/^答案[A-DＡ-Ｄ][^：:]*[：:]\s*/,"").trim();}
 // 把 ❌ 陷阱依 A/B/C/D 拆到各選項
 function parseTrap(trap){const m={};if(!trap)return m;
   trap.replace(/[，,。]?\s*皆(對|錯|有誤|正確|為[^，。]*)。?\s*$/,"").split(/[、；;]/).forEach(seg=>{
@@ -879,7 +879,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s30";
+const APP_VERSION="s31";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
