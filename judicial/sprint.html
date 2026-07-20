@@ -156,6 +156,13 @@
   .opt.wrong{background:rgba(255,143,143,.14);border-color:var(--no)}
   .opt.wrong .lt{color:var(--no)}
   .opt.dim{opacity:.5}
+  .opt .optnote{display:block;width:100%;margin-top:6px;font-size:12.5px;line-height:1.55;color:var(--mut);font-weight:500}
+  .opt .oc{font-weight:800;margin-right:4px}
+  .opt .oc.ok{color:var(--ok)} .opt .oc.no{color:var(--no)}
+  mark.k1{background:rgba(255,216,107,.30);color:inherit;border-radius:3px;padding:0 1px}
+  mark.k2{background:none;color:var(--teal);font-weight:700}
+  mark.k3{background:rgba(159,224,168,.28);color:inherit;border-radius:3px;padding:0 1px}
+  mark.k4{background:rgba(255,138,138,.30);color:inherit;border-radius:3px;padding:0 1px;font-weight:700}
   .opt:disabled{cursor:default}
   .teach{background:rgba(127,224,207,.07);border:1px solid rgba(127,224,207,.25);border-radius:16px;padding:15px 16px;margin-top:6px;animation:slidein .25s}
   @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -411,6 +418,22 @@ function reflexHTML(r,whyC){
 }
 // 標色甲乙丙丁戊，讓情境角色好追蹤（對閱讀吃力的人幫助很大）
 function colorParties(s){return s.replace(/[甲乙丙丁戊己]/g,c=>`<span class="pty p-${c}">${c}</span>`);}
+// 題幹關鍵字句高亮：「」引號 / §法條 / 數字期間 / 關鍵動詞(不得·視為·善意…)
+function hlKey(s){return s
+  .replace(/(「[^」]*」|『[^』]*』)/g,'<mark class="k1">$1</mark>')
+  .replace(/(§\s*\d+(?:-\d+)?)/g,'<mark class="k2">$1</mark>')
+  .replace(/(\d+(?:日|個月|年|%|萬元|萬|成|分之[一二三四五六七八九十百\d]+))/g,'<mark class="k3">$1</mark>')
+  .replace(/(不得|無須|毋須|視為|推定|準用|不適用|善意|惡意|連帶責任|連帶|無效|得撤銷|撤銷|對抗|優先|至遲|屆滿|逾期|超過|不以.{0,8}為必要)/g,'<mark class="k4">$1</mark>');}
+function markStem(r){return colorParties(hlKey(esc(r.q.stem)));}
+function normL(c){const i="ＡＢＣＤ".indexOf(c);return i>=0?"ABCD"[i]:c;}
+function jsStripAns(s){return (s||"").replace(/^答案[A-DＡ-Ｄ][（(][^）)]*[）)]?\s*：?|^答案[A-DＡ-Ｄ]\s*：?/,"").trim();}
+// 把 ❌ 陷阱依 A/B/C/D 拆到各選項
+function parseTrap(trap){const m={};if(!trap)return m;
+  trap.replace(/[，,。]?\s*皆(對|錯|有誤|正確|為[^，。]*)。?\s*$/,"").split(/[、；;]/).forEach(seg=>{
+    seg=seg.trim();const mm=seg.match(/^([A-DＡ-Ｄ](?:[／/][A-DＡ-Ｄ])*)/);if(!mm)return;
+    const ls=mm[1].split(/[／/]/).map(normL);let txt=seg.slice(mm[1].length).replace(/^之/,"").trim();
+    if(txt)ls.forEach(L=>{m[L]=(m[L]?m[L]+"；":"")+txt;});});
+  return m;}
 
 /* ===== 機器人語句 ===== */
 const MSGS=["早安。今天不用想全部，我一張一張帶你，你只要點就好。","你已經在別人放棄的路上多走一步了。","忘記很正常，答錯的我都幫你記著、之後回鍋。","分心了沒關係，回來點下一張就好。","一次一題，一天一點，考試那天你會謝謝現在。","你大學把每件事做滿，這次也是。老天有眼。","不用完美，今天比昨天多會一點就贏了。","做不下去時先餵一次魚，再回來一張。"];
@@ -749,7 +772,7 @@ function renderCard(){
   const rl=(SES.i%5===0)?`<div class="rline"><span class="rf">🤖</span><span class="rt">${todayMsg()}</span></div>`:"";
   let h=rl+`<div class="qtag ${card.type==="review"?"rev":""}">${card.type==="review"?"🔁 回鍋（上次答錯）":"🧠 第 "+(SES.i+1)+" 題"}</div>
     <div class="qmeta">${r.q.year}年 ${r.sub} 第${r.q.num}題　·　讀不懂沒關係，看不太懂就先猜，重點在解答</div>
-    <div class="stem">${colorParties(esc(r.q.stem))}</div>
+    <div class="stem">${SES.group==="商事法"?markStem(r):colorParties(esc(r.q.stem))}</div>
     <div class="qhelp"><button class="hlp" id="readStem">🔊 唸題目</button><button class="hlp" id="readOpts">🔊 唸四個選項</button><button class="hlp" id="hintBtn">🔑 看不懂？先看這題在考什麼</button></div>
     <div class="hint" id="hintBox"></div>
     <div id="opts">`;
@@ -771,8 +794,13 @@ function answer(idx){
   if(correct){SES.correct++;if(card.type==="review")delWrong(r.k);}else{addWrong(r.k);addEverWrong(r.k);}   // 答錯→回鍋佇列＋永久錯題本
   if(card.type==="quiz"){SES.newAns++;setPos(SES.group,getPos(SES.group)+1);}  // 每答一題即時存進度，關分頁也不丟
   bumpToday();
+  const tmap=(SES.group==="商事法")?parseTrap(r.p.trap):null;   // 商事：把陷阱拆到各選項訂正
+  const ansWhy=tmap?(jsStripAns(r.p.ans)||r.p.key||""):"";
   document.querySelectorAll(".opt").forEach(b=>{const i=+b.dataset.i;b.disabled=true;
-    if(i===ans)b.classList.add("correct");else if(i===idx)b.classList.add("wrong");else b.classList.add("dim");});
+    if(i===ans)b.classList.add("correct");else if(i===idx)b.classList.add("wrong");else b.classList.add("dim");
+    if(tmap){const nt=(i===ans)?`<span class="oc ok">✓ 正解</span>${ansWhy?esc(ansWhy):""}`
+                              :`<span class="oc no">✗</span>${tmap[L[i]]?" "+esc(tmap[L[i]]):""}`;
+      const sp=b.querySelectorAll("span");(sp[1]||b).insertAdjacentHTML("beforeend",`<div class="optnote">${nt}</div>`);}});
   // 教學
   const p=r.p,note=r.note,whyC=optWhy(r,ans),whyW=correct?"":optWhy(r,idx);
   const lawH=lawTextOf(r);
@@ -851,7 +879,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s29";
+const APP_VERSION="s30";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
