@@ -541,6 +541,7 @@ function srTopicsOf(a){const T=[];let c=null;(a||[]).forEach(p=>{
   else if(c)c.body.push(p);});return T;}
 const GJ_TOPICS=srTopicsOf(window.SR_GUOJI);   // 國際+法學英文
 const SX_TOPICS=srTopicsOf(window.SR_XINGFA);  // 刑法
+const SS_TOPICS=srTopicsOf(window.SR_SHANGSHI);// 商事法
 function srArts(s){const r=new Set();((s||"").match(/§\s*\d+(?:-\d+)?/g)||[]).forEach(a=>r.add(a.replace(/\s/g,"")));return r;}
 const GJ_STOP=new Set(["the","and","law","legal","for"]);
 function gjEn(s){return new Set((s.toLowerCase().match(/[a-z]{3,}/g)||[]).filter(w=>!GJ_STOP.has(w)));}
@@ -554,7 +555,10 @@ function sxScore(c,t){return gjJac(gjCn(c),gjCn(t))+0.6*gjJac(srArts(c),srArts(t
 function sxMatch(r){const q=(r.p.concept||"")+" "+(r.p.law||"");let best=null,bs=0;
   SX_TOPICS.forEach(t=>{const s=sxScore(q,t.title);if(s>bs){bs=s;best=t;}});
   return bs>=0.16?best:null;}
-function srReflexMatch(r,g){return g==="國際法+法學英文"?gjMatch(r):g==="刑法"?sxMatch(r):null;}
+function ssMatch(r){const q=(r.p.concept||"")+" "+(r.p.law||"");let best=null,bs=0;
+  SS_TOPICS.forEach(t=>{const s=sxScore(q,t.title);if(s>bs){bs=s;best=t;}});
+  return bs>=0.16?best:null;}
+function srReflexMatch(r,g){return g==="國際法+法學英文"?gjMatch(r):g==="刑法"?sxMatch(r):g==="商事法"?ssMatch(r):null;}
 function gjVoice(t){return [t.title,...t.body].join("。").replace(/\*\*/g,"").replace(/§/g,"第").replace(/[「」『』]/g,"");}
 function gjBlockHTML(t){const inner=[t.title,...t.body].map(srLineHTML).join("");
   return `<div class="blk"><span class="l">📎 我的反射地圖解析</span>`
@@ -847,7 +851,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s27";
+const APP_VERSION="s28";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
