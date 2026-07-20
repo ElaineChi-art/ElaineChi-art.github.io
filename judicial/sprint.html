@@ -535,11 +535,13 @@ function srLineHTML(p){
   return `<div style="font-size:13.5px;line-height:1.6;color:var(--txt);margin:2px 0 2px 10px">${srMd(p)}</div>`;
 }
 /* ===== 國際+法學英文：把我的反射地圖接到 MC 題目解析（僅這組） ===== */
-function gjParse(){const T=[];let c=null;(window.SR_GUOJI||[]).forEach(p=>{
+function srTopicsOf(a){const T=[];let c=null;(a||[]).forEach(p=>{
   if(/^🚀/.test(p)||/^📂/.test(p)){c=null;return;}
   if(/^\d+\./.test(p)){c={title:p,body:[]};T.push(c);}
   else if(c)c.body.push(p);});return T;}
-const GJ_TOPICS=gjParse();
+const GJ_TOPICS=srTopicsOf(window.SR_GUOJI);   // 國際+法學英文
+const SX_TOPICS=srTopicsOf(window.SR_XINGFA);  // 刑法
+function srArts(s){const r=new Set();((s||"").match(/§\s*\d+(?:-\d+)?/g)||[]).forEach(a=>r.add(a.replace(/\s/g,"")));return r;}
 const GJ_STOP=new Set(["the","and","law","legal","for"]);
 function gjEn(s){return new Set((s.toLowerCase().match(/[a-z]{3,}/g)||[]).filter(w=>!GJ_STOP.has(w)));}
 function gjCn(s){s=s.replace(/法學英文/g,"").replace(/[^一-鿿]/g,"");const r=new Set();for(let i=0;i<s.length-1;i++)r.add(s.slice(i,i+2));return r;}
@@ -548,6 +550,11 @@ function gjScore(c,t){return Math.max(gjJac(gjEn(c),gjEn(t)),gjJac(gjCn(c),gjCn(
 function gjMatch(r){const q=(r.p.concept||"");let best=null,bs=0;
   GJ_TOPICS.forEach(t=>{const s=gjScore(q,t.title);if(s>bs){bs=s;best=t;}});
   return bs>=0.16?best:null;}
+function sxScore(c,t){return gjJac(gjCn(c),gjCn(t))+0.6*gjJac(srArts(c),srArts(t));}   // 刑法：中文雙字 + §法條交集
+function sxMatch(r){const q=(r.p.concept||"")+" "+(r.p.law||"");let best=null,bs=0;
+  SX_TOPICS.forEach(t=>{const s=sxScore(q,t.title);if(s>bs){bs=s;best=t;}});
+  return bs>=0.16?best:null;}
+function srReflexMatch(r,g){return g==="國際法+法學英文"?gjMatch(r):g==="刑法"?sxMatch(r):null;}
 function gjVoice(t){return [t.title,...t.body].join("。").replace(/\*\*/g,"").replace(/§/g,"第").replace(/[「」『』]/g,"");}
 function gjBlockHTML(t){const inner=[t.title,...t.body].map(srLineHTML).join("");
   return `<div class="blk"><span class="l">📎 我的反射地圖解析</span>`
@@ -774,7 +781,7 @@ function answer(idx){
   if(p.key)t+=`<div class="blk"><span class="l">🔑 核心規則</span><span class="key">${esc(p.key)}</span></div>`;
   if(p.trap)t+=`<div class="blk"><span class="l">⚠️ 易混淆（其他選項的陷阱）</span>${esc(p.trap)}</div>`;
   if(lawH)t+=`<div class="blk"><span class="l">📜 法條原文</span>${lawH}</div>`;
-  const gj=(SES.group==="國際法+法學英文")?gjMatch(r):null;   // 只有國際+法學英文才接反射地圖
+  const gj=srReflexMatch(r,SES.group);   // 國際+法學英文、刑法：接上我的反射地圖解析
   if(gj)t+=gjBlockHTML(gj);
   t+=`<button class="audio" id="teachAudio">🔊 再唸一次</button></div>
       <button class="nextbtn" id="nextBtn">下一張 →</button>`;
@@ -840,7 +847,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s20";
+const APP_VERSION="s21";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
