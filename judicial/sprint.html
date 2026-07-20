@@ -512,6 +512,16 @@ function groupTopics(paras){
   });
   return blocks.map(b=>b.join("。").replace(/\*\*/g,""));
 }
+// 語音一格＝一題（題號與畫面一致）：🚀大類/📂小類標題併進其後第一題開頭一起念
+function groupByTopic(paras){
+  const units=[];let pend=[];
+  paras.forEach(p=>{
+    if(/^🚀/.test(p)||/^📂/.test(p)){pend.push(p.replace(/^🚀\s*|^📂\s*/,""));return;}
+    if(/^\d+\./.test(p)){units.push((pend.length?pend.join("。")+"。":"")+p);pend=[];}
+    else if(units.length){units[units.length-1]+="。"+p;}
+  });
+  return units.map(u=>u.replace(/\*\*/g,""));
+}
 // 我的筆記段落 → HTML（🚀分類/編號考點/🔑反射/⚠️地雷 各自上色，**粗體**變亮）
 function srMd(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<b style="color:#ffe79c">$1</b>').replace(/\s*(📜|⚠️ ?考點地雷)/g,'<br>$1');}
 function srLineHTML(p){
@@ -565,9 +575,9 @@ function renderSpeed(g){
   else if(g==="刑法"&&Array.isArray(window.SR_XINGFA)&&window.SR_XINGFA.length)OV=window.SR_XINGFA;
   let html;
   if(OV){                                   // ← 用你 Word 的筆記（原樣、非依題號）
-    srItems=groupTopics(OV);                 // 語音一段=一個考點（好唸）
-    srStep=8;                                // 每段語音念 8 個考點
-    if(cnt)cnt.textContent=srItems.length+" 段 · 我的筆記（一段一段念）";
+    srItems=groupByTopic(OV);                // 語音一格=一題（題號與畫面一致）
+    srStep=8;                                // 每段語音念 8 題
+    if(cnt)cnt.textContent=srItems.length+" 題 · 我的筆記（分段序號＝題號）";
     html=OV.map(srLineHTML).join("");
   }else{
     const map={};
@@ -586,7 +596,7 @@ function renderSpeed(g){
       :`<div class="mini" style="text-align:left">這科還沒有整理好的考點。</div>`;
   }
   if(segs){let sh="";for(let s=0;s<srItems.length;s+=srStep){const e=Math.min(s+srStep,srItems.length);
-      sh+=`<button class="subchip" data-seg="${s}">🔊 ${s+1}–${e}</button>`;}
+      sh+=`<button class="subchip" data-seg="${s}">🔊 ${OV?"題":""}${s+1}–${e}</button>`;}
     segs.innerHTML=sh||`<span class="mini" style="margin:0">（無）</span>`;
     segs.querySelectorAll("[data-seg]").forEach(b=>b.onclick=()=>{stopSpeak();speak(srSegText(+b.dataset.seg));});}
   if(body)body.innerHTML=html;
@@ -830,7 +840,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s19";
+const APP_VERSION="s20";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
