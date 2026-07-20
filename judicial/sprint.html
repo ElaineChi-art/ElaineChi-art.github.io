@@ -459,17 +459,23 @@ function examNotes(t){if(!t)return "";const rows=[];
       if(y)rows.push(`<div class="exn"><span class="exk">看到「${esc(mx[1])}」</span><span class="exa">→ ${esc(y)}</span></div>`);}});
   return rows.length?`<div class="blk"><span class="l">✍️ 考場筆記：看到 → 就這樣畫</span>${rows.join("")}</div>`:"";}
 // 直接在題幹上做筆記：題幹出現的關鍵詞就地加「〔→反射〕」手寫註記
-function markStemAnno(r){const t=ssMatch(r);const lines=t?noteLines(t):[];
+function annoSegs(r){const t=ssMatch(r);const lines=t?noteLines(t):[];
   const segs=(r.q.stem.match(/[^。，；、：？！]*[。，；、：？！]?/g)||[]).filter(x=>x);
-  const used={};let cnt=0,out="";
-  segs.forEach(seg=>{let html=hlKey(esc(seg));
-    const core=seg.replace(/[\s，。、；：]/g,"");
+  const used={};let cnt=0;const out=[];
+  segs.forEach(seg=>{let y="";const core=seg.replace(/[\s，。、；：]/g,"");
     if(lines.length&&cnt<4&&core.length>=5){let best="",bs=0;
       lines.forEach(l=>{const v=srSim(seg,l);if(v>bs){bs=v;best=l;}});
-      const y=best.replace(/\*\*/g,"").replace(/^看見\s*/,"").split(/📜|⚠️/)[0].replace(/^。|。\s*$/,"").trim();
-      if(bs>=0.13&&y&&!used[y]){used[y]=1;cnt++;html+='<span class="anno">〔→ '+esc(y)+'〕</span>';}}
-    out+=html;});
-  return colorParties(out);}
+      const yy=best.replace(/\*\*/g,"").replace(/^看見\s*/,"").split(/📜|⚠️/)[0].replace(/^。|。\s*$/,"").trim();
+      if(bs>=0.13&&yy&&!used[yy]){used[yy]=1;cnt++;y=yy;}}
+    out.push({seg,y});});
+  return out;}
+function markStemAnno(r){let out="";annoSegs(r).forEach(o=>{out+=hlKey(esc(o.seg));if(o.y)out+='<span class="anno">〔→ '+esc(o.y)+'〕</span>';});return colorParties(out);}
+function stemNoteVoice(r){let v="";annoSegs(r).forEach(o=>{v+=o.seg;if(o.y)v+="。筆記，"+o.y+"。";});return v.replace(/§/g,"第").replace(/[「」『』]/g,"");}
+function speakSeq(arr){if(!("speechSynthesis"in window))return;speechSynthesis.cancel();
+  const list=arr.filter(x=>x&&x.trim());let i=0;
+  const nx=()=>{if(i>=list.length)return;const u=new SpeechSynthesisUtterance(list[i]);u.lang="zh-TW";
+    const rt=localStorage.getItem("sjg_rate");u.rate=rt?(parseFloat(rt)||1):1;const v=pickVoice();if(v)u.voice=v;
+    u.onend=()=>{i++;nx();};speechSynthesis.speak(u);};nx();}
 
 /* ===== 機器人語句 ===== */
 const MSGS=["早安。今天不用想全部，我一張一張帶你，你只要點就好。","你已經在別人放棄的路上多走一步了。","忘記很正常，答錯的我都幫你記著、之後回鍋。","分心了沒關係，回來點下一張就好。","一次一題，一天一點，考試那天你會謝謝現在。","你大學把每件事做滿，這次也是。老天有眼。","不用完美，今天比昨天多會一點就贏了。","做不下去時先餵一次魚，再回來一張。"];
@@ -865,7 +871,10 @@ function answer(idx){
   if(SES.group==="商事法"){const se=document.querySelector(".stem");if(se)se.innerHTML=markStemAnno(r);}   // 答完直接在題目上做筆記
   // 自動朗讀（可靜音）
   const spk=((correct?"答對了。":"這題答案是"+L[ans]+"。")+(p.concept||"")+"。"+(p.key||whyC||p.ans||"")).replace(/§/g,"第").replace(/[「」『』]/g,"");
-  if(!muted())speak(spk);
+  if(!muted()){
+    if(SES.group==="商事法")speakSeq([stemNoteVoice(r),optSpeak]);   // 商事：自動念 題目＋題目筆記 → 選項＋訂正
+    else speak(spk);
+  }
   document.getElementById("teachAudio").onclick=()=>speak(((p.concept||"")+"。"+(p.key||p.ans||"")+"。"+(whyC||"")+"。"+(p.trap?"要分清楚："+p.trap:"")).replace(/§/g,"第").replace(/[「」『』]/g,""));
   if(gj){const gab=document.getElementById("gjAudio");if(gab)gab.onclick=()=>{stopSpeak();speak(gjVoice(gj));};}   // 語音另外按：直接念這題的反射地圖解析
   if(tmap){const ob=document.getElementById("optAudio");if(ob)ob.onclick=()=>{stopSpeak();speak(optSpeak);};}   // 唸選項＋訂正
@@ -925,7 +934,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s36";
+const APP_VERSION="s37";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
