@@ -810,6 +810,7 @@ function answer(idx){
   const lawH=lawTextOf(r);
   const gj=srReflexMatch(r,SES.group);   // 國際+法學英文、刑法、商事法：我的反射地圖解析
   let t=`<div class="teach"><div class="res ${correct?'ok':'no'}">${correct?"✅ 答對了！":"❌ 沒關係，這題記起來就賺到"}　正解：${L[ans]}</div>`;
+  if(tmap)t+=`<button class="audio" id="optAudio" style="margin:2px 0 8px">🔊 唸選項＋訂正</button>`;   // 放解析最上方
   if(gj)t+=gjBlockHTML(gj);   // 📎 反射地圖放解析最上方
   t+=reflexHTML(r,whyC);   // ⚡ 反射卡：看到→反射→法條→陷阱（每題都有）
   if(!correct&&whyW)t+=`<div class="blk"><span class="l">你選的 ${L[idx]} 為什麼錯</span>${esc(whyW)}</div>`;
@@ -819,7 +820,6 @@ function answer(idx){
   if(p.key)t+=`<div class="blk"><span class="l">🔑 核心規則</span><span class="key">${esc(p.key)}</span></div>`;
   if(p.trap)t+=`<div class="blk"><span class="l">⚠️ 易混淆（其他選項的陷阱）</span>${esc(p.trap)}</div>`;
   if(lawH)t+=`<div class="blk"><span class="l">📜 法條原文</span>${lawH}</div>`;
-  if(tmap)t+=`<button class="audio" id="optAudio">🔊 唸選項＋訂正</button>`;
   t+=`<button class="audio" id="teachAudio">🔊 再唸一次</button></div>
       <button class="nextbtn" id="nextBtn">下一張 →</button>`;
   document.getElementById("teach").innerHTML=t;
@@ -885,7 +885,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s32";
+const APP_VERSION="s33";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
