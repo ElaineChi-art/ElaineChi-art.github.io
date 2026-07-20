@@ -283,7 +283,7 @@
 <script src="notes.js"></script>
 <script src="diagrams.js"></script>
 <script src="laws.js"></script>
-<script src="sr-shangshi.js?v=4"></script>
+<script src="sr-shangshi.js?v=5"></script>
 <script src="sr-guoji.js?v=6"></script>
 <script src="sr-xingfa.js?v=1"></script>
 <script>
@@ -847,7 +847,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s23";
+const APP_VERSION="s24";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
