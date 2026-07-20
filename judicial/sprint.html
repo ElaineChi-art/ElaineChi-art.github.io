@@ -424,7 +424,10 @@ function hlKey(s){return s
   .replace(/(§\s*\d+(?:-\d+)?)/g,'<mark class="k2">$1</mark>')
   .replace(/(\d+(?:日|個月|年|%|萬元|萬|成|分之[一二三四五六七八九十百\d]+))/g,'<mark class="k3">$1</mark>')
   .replace(/(不得|無須|毋須|視為|推定|準用|不適用|善意|惡意|連帶責任|連帶|無效|得撤銷|撤銷|對抗|優先|至遲|屆滿|逾期|超過|不以.{0,8}為必要)/g,'<mark class="k4">$1</mark>');}
-function markStem(r){return colorParties(hlKey(esc(r.q.stem)));}
+function markStem(r){let s=esc(r.q.stem);const t=ssMatch(r);
+  if(t)noteTrig(t).forEach(tp=>{const e=esc(tp);if(e.length>=3&&s.indexOf(e)>=0)s=s.split(e).join(""+e+"");});   // 先標記我筆記的關鍵詞
+  s=hlKey(s).split("").join('<mark class="k1">').split("").join("</mark>");
+  return colorParties(s);}
 function normL(c){const i="ＡＢＣＤ".indexOf(c);return i>=0?"ABCD"[i]:c;}
 function jsStripAns(s){return (s||"").replace(/^答案[A-DＡ-Ｄ][^：:]*[：:]\s*/,"").trim();}
 // 把 ❌ 陷阱依 A/B/C/D 拆到各選項
@@ -434,6 +437,15 @@ function parseTrap(trap){const m={};if(!trap)return m;
     const ls=mm[1].split(/[／/]/).map(normL);let txt=seg.slice(mm[1].length).replace(/^之/,"").trim();
     if(txt)ls.forEach(L=>{m[L]=(m[L]?m[L]+"；":"")+txt;});});
   return m;}
+// 用我的反射地圖：每個選項找最相關的一行當詳細訂正
+function srSim(a,b){return gjJac(gjCn(a),gjCn(b));}
+function noteLines(t){return (t&&t.body?t.body:[]).filter(l=>{const x=l.trim();
+  return x.length>6 && !/^🔑[^：:]*[：:]$/.test(x) && !/^⚠️[^：:]*[：:]$/.test(x) && !/^📜/.test(x);});}
+function optReflex(t,opt){if(!t)return "";let best="",bs=0;
+  noteLines(t).forEach(l=>{const s=srSim(opt,l);if(s>bs){bs=s;best=l;}});
+  return bs>=0.07?best.replace(/\*\*/g,"").replace(/^看見\s*/,"").trim():"";}
+function noteTrig(t){const a=[];(t&&t.body?t.body:[]).forEach(l=>{
+  const m=l.match(/[「『]([^」』]{2,})[」』]/g);if(m)m.forEach(x=>a.push(x.replace(/[「『」』]/g,"")));});return a;}
 
 /* ===== 機器人語句 ===== */
 const MSGS=["早安。今天不用想全部，我一張一張帶你，你只要點就好。","你已經在別人放棄的路上多走一步了。","忘記很正常，答錯的我都幫你記著、之後回鍋。","分心了沒關係，回來點下一張就好。","一次一題，一天一點，考試那天你會謝謝現在。","你大學把每件事做滿，這次也是。老天有眼。","不用完美，今天比昨天多會一點就贏了。","做不下去時先餵一次魚，再回來一張。"];
@@ -794,21 +806,24 @@ function answer(idx){
   if(correct){SES.correct++;if(card.type==="review")delWrong(r.k);}else{addWrong(r.k);addEverWrong(r.k);}   // 答錯→回鍋佇列＋永久錯題本
   if(card.type==="quiz"){SES.newAns++;setPos(SES.group,getPos(SES.group)+1);}  // 每答一題即時存進度，關分頁也不丟
   bumpToday();
-  const tmap=(SES.group==="商事法")?parseTrap(r.p.trap):null;   // 商事：把陷阱拆到各選項訂正
+  const gj=srReflexMatch(r,SES.group);   // 我的反射地圖(國際/刑法/商事)
+  const tmap=(SES.group==="商事法")?parseTrap(r.p.trap):null;   // 商事：陷阱備援
   const ansWhy=tmap?(jsStripAns(r.p.ans)||r.p.key||""):"";
+  const optCorr=i=>{const ref=optReflex(gj,r.q.options[i]);return ref||(tmap?tmap[L[i]]:"")||"";};   // 優先用我的反射地圖那一行
   document.querySelectorAll(".opt").forEach(b=>{const i=+b.dataset.i;b.disabled=true;
     if(i===ans)b.classList.add("correct");else if(i===idx)b.classList.add("wrong");else b.classList.add("dim");
-    if(tmap){const nt=(i===ans)?`<span class="oc ok">✓ 正解</span>${ansWhy?esc(ansWhy):""}`
-                              :`<span class="oc no">✗</span>${tmap[L[i]]?" "+esc(tmap[L[i]]):""}`;
+    if(tmap){const d=optCorr(i);
+      const nt=(i===ans)?`<span class="oc ok">✓ 正解</span>${(d||ansWhy)?esc(d||ansWhy):""}`
+                        :`<span class="oc no">✗</span>${d?" "+esc(d):""}`;
       const sp=b.querySelectorAll("span");(sp[1]||b).insertAdjacentHTML("beforeend",`<div class="optnote">${nt}</div>`);}});
-  let optSpeak="";   // 🔊 唸每個選項＋它的訂正
-  if(tmap){r.q.options.forEach((o,i)=>{const corr=(i===ans)?("這是正解。"+ansWhy):(tmap[L[i]]?("訂正，"+tmap[L[i]]):"這個不是答案");
+  let optSpeak="";   // 🔊 唸每個選項＋它的訂正（用我的筆記）
+  if(tmap){r.q.options.forEach((o,i)=>{const d=optCorr(i);
+      const corr=(i===ans)?("這是正解。"+(d||ansWhy)):(d?("訂正，"+d):"這個不是答案");
       optSpeak+=`選項${L[i]}，${o}。${corr}。`;});
     optSpeak=optSpeak.replace(/§/g,"第").replace(/[「」『』]/g,"");}
   // 教學
   const p=r.p,note=r.note,whyC=optWhy(r,ans),whyW=correct?"":optWhy(r,idx);
   const lawH=lawTextOf(r);
-  const gj=srReflexMatch(r,SES.group);   // 國際+法學英文、刑法、商事法：我的反射地圖解析
   let t=`<div class="teach"><div class="res ${correct?'ok':'no'}">${correct?"✅ 答對了！":"❌ 沒關係，這題記起來就賺到"}　正解：${L[ans]}</div>`;
   if(tmap)t+=`<button class="audio" id="optAudio" style="margin:2px 0 8px">🔊 唸選項＋訂正</button>`;   // 放解析最上方
   if(gj)t+=gjBlockHTML(gj);   // 📎 反射地圖放解析最上方
@@ -885,7 +900,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s33";
+const APP_VERSION="s34";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
