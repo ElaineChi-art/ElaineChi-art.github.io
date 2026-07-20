@@ -163,6 +163,9 @@
   mark.k2{background:none;color:var(--teal);font-weight:700}
   mark.k3{background:rgba(159,224,168,.28);color:inherit;border-radius:3px;padding:0 1px}
   mark.k4{background:rgba(255,138,138,.30);color:inherit;border-radius:3px;padding:0 1px;font-weight:700}
+  .exn{display:flex;gap:7px;margin:4px 0;font-size:13px;line-height:1.55}
+  .exn .exk{flex:none;color:#ffe79c;font-weight:700}
+  .exn .exa{color:var(--txt)}
   .opt:disabled{cursor:default}
   .teach{background:rgba(127,224,207,.07);border:1px solid rgba(127,224,207,.25);border-radius:16px;padding:15px 16px;margin-top:6px;animation:slidein .25s}
   @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -446,6 +449,13 @@ function optReflex(t,opt){if(!t)return "";let best="",bs=0;
   return bs>=0.07?best.replace(/\*\*/g,"").replace(/^看見\s*/,"").trim():"";}
 function noteTrig(t){const a=[];(t&&t.body?t.body:[]).forEach(l=>{
   const m=l.match(/[「『]([^」』]{2,})[」』]/g);if(m)m.forEach(x=>a.push(x.replace(/[「『」』]/g,"")));});return a;}
+// ✍️ 考場筆記：把「看見『X』→反射 Y」整理成一條條畫重點
+function examNotes(t){if(!t)return "";const rows=[];
+  (t.body||[]).forEach(l=>{if(!/反射/.test(l))return;
+    const mx=l.match(/[「『]([^」』]+)[」』]/),my=l.match(/反射\s*[→\->]+\s*(.+)/);
+    if(mx&&my){const y=my[1].replace(/\*\*/g,"").split(/📜|⚠️/)[0].replace(/^。|。\s*$/,"").trim();
+      if(y)rows.push(`<div class="exn"><span class="exk">看到「${esc(mx[1])}」</span><span class="exa">→ ${esc(y)}</span></div>`);}});
+  return rows.length?`<div class="blk"><span class="l">✍️ 考場筆記：看到 → 就這樣畫</span>${rows.join("")}</div>`:"";}
 
 /* ===== 機器人語句 ===== */
 const MSGS=["早安。今天不用想全部，我一張一張帶你，你只要點就好。","你已經在別人放棄的路上多走一步了。","忘記很正常，答錯的我都幫你記著、之後回鍋。","分心了沒關係，回來點下一張就好。","一次一題，一天一點，考試那天你會謝謝現在。","你大學把每件事做滿，這次也是。老天有眼。","不用完美，今天比昨天多會一點就贏了。","做不下去時先餵一次魚，再回來一張。"];
@@ -826,6 +836,7 @@ function answer(idx){
   const lawH=lawTextOf(r);
   let t=`<div class="teach"><div class="res ${correct?'ok':'no'}">${correct?"✅ 答對了！":"❌ 沒關係，這題記起來就賺到"}　正解：${L[ans]}</div>`;
   if(tmap)t+=`<button class="audio" id="optAudio" style="margin:2px 0 8px">🔊 唸選項＋訂正</button>`;   // 放解析最上方
+  if(SES.group==="商事法"&&gj)t+=examNotes(gj);   // ✍️ 考場筆記：看到→就這樣畫
   if(gj)t+=gjBlockHTML(gj);   // 📎 反射地圖放解析最上方
   t+=reflexHTML(r,whyC);   // ⚡ 反射卡：看到→反射→法條→陷阱（每題都有）
   if(!correct&&whyW)t+=`<div class="blk"><span class="l">你選的 ${L[idx]} 為什麼錯</span>${esc(whyW)}</div>`;
@@ -900,7 +911,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s34";
+const APP_VERSION="s35";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
