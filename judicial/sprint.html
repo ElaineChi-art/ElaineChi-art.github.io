@@ -430,7 +430,7 @@ function hlKey(s){return s
   .replace(/(§\s*\d+(?:-\d+)?)/g,'<mark class="k2">$1</mark>')
   .replace(/(\d+(?:日|個月|年|%|萬元|萬|成|分之[一二三四五六七八九十百\d]+))/g,'<mark class="k3">$1</mark>')
   .replace(/(不得|無須|毋須|視為|推定|準用|不適用|善意|惡意|連帶責任|連帶|無效|得撤銷|撤銷|對抗|優先|至遲|屆滿|逾期|超過|不以.{0,8}為必要)/g,'<mark class="k4">$1</mark>');}
-function markStem(r){let s=esc(r.q.stem);const t=ssMatch(r);
+function markStem(r){let s=esc(r.q.stem);const t=srReflexMatch(r,SES.group);
   if(t)noteTrig(t).forEach(tp=>{const e=esc(tp);if(e.length>=3&&s.indexOf(e)>=0)s=s.split(e).join(""+e+"");});   // 先標記我筆記的關鍵詞
   s=hlKey(s).split("").join('<mark class="k1">').split("").join("</mark>");
   return colorParties(s);}
@@ -460,7 +460,7 @@ function examNotes(t){if(!t)return "";const rows=[];
       if(y)rows.push(`<div class="exn"><span class="exk">看到「${esc(mx[1])}」</span><span class="exa">→ ${esc(y)}</span></div>`);}});
   return rows.length?`<div class="blk"><span class="l">✍️ 考場筆記：看到 → 就這樣畫</span>${rows.join("")}</div>`:"";}
 // 直接在題幹上做筆記：題幹出現的關鍵詞就地加「〔→反射〕」手寫註記
-function annoSegs(r){const t=ssMatch(r);const lines=t?noteLines(t):[];
+function annoSegs(r){const t=srReflexMatch(r,SES.group);const lines=t?noteLines(t):[];
   const segs=(r.q.stem.match(/[^。，；、：？！]*[。，；、：？！]?/g)||[]).filter(x=>x);
   const used={};let cnt=0;const out=[];
   segs.forEach(seg=>{let y="";const core=seg.replace(/[\s，。、；：]/g,"");
@@ -628,6 +628,7 @@ function ssMatch(r){const q=(r.p.concept||"")+" "+(r.p.law||"");let best=null,bs
   SS_TOPICS.forEach(t=>{const s=sxScore(q,t.title);if(s>bs){bs=s;best=t;}});
   return bs>=0.16?best:null;}
 function srReflexMatch(r,g){return g==="國際法+法學英文"?gjMatch(r):g==="刑法"?sxMatch(r):g==="商事法"?ssMatch(r):null;}
+function isRG(g){return g==="商事法"||g==="刑法"||g==="國際法+法學英文";}   // 有反射地圖整套功能的科
 function gjVoice(t){return [t.title,...t.body].join("。").replace(/\*\*/g,"").replace(/§/g,"第").replace(/[「」『』]/g,"");}
 function gjBlockHTML(t){const inner=[t.title,...t.body].map(srLineHTML).join("");
   return `<div class="blk" id="gjblk"><span class="l">📎 我的反射地圖解析</span>`
@@ -818,7 +819,7 @@ function renderCard(){
   const rl=(SES.i%5===0)?`<div class="rline"><span class="rf">🤖</span><span class="rt">${todayMsg()}</span></div>`:"";
   let h=rl+`<div class="qtag ${card.type==="review"?"rev":""}">${card.type==="review"?"🔁 回鍋（上次答錯）":"🧠 第 "+(SES.i+1)+" 題"}</div>
     <div class="qmeta">${r.q.year}年 ${r.sub} 第${r.q.num}題　·　讀不懂沒關係，看不太懂就先猜，重點在解答</div>
-    <div class="stem">${SES.group==="商事法"?markStem(r):colorParties(esc(r.q.stem))}</div>
+    <div class="stem">${isRG(SES.group)?markStem(r):colorParties(esc(r.q.stem))}</div>
     <div class="qhelp"><button class="hlp" id="readStem">🔊 唸題目</button><button class="hlp" id="readOpts">🔊 唸四個選項</button><button class="hlp" id="hintBtn">🔑 看不懂？先看這題在考什麼</button></div>
     <div class="hint" id="hintBox"></div>
     <div id="opts">`;
@@ -841,7 +842,7 @@ function answer(idx){
   if(card.type==="quiz"){SES.newAns++;setPos(SES.group,getPos(SES.group)+1);}  // 每答一題即時存進度，關分頁也不丟
   bumpToday();
   const gj=srReflexMatch(r,SES.group);   // 我的反射地圖(國際/刑法/商事)
-  const tmap=(SES.group==="商事法")?parseTrap(r.p.trap):null;   // 商事：陷阱備援
+  const tmap=isRG(SES.group)?parseTrap(r.p.trap):null;   // 反射科：陷阱備援
   const ansWhy=tmap?(jsStripAns(r.p.ans)||r.p.key||""):"";
   const findWrong=/錯誤|不正確|為非|何者[^，。]{0,6}非|下列.{0,6}非/.test(r.q.stem)||/[（(]錯[）)]/.test(r.p.ans||"");   // 題目問「何者錯誤」
   const shortRule=i=>{const l=optReflex(gj,r.q.options[i]);return l?l.split(/[。！？]/)[0].trim():"";};   // 只取反射地圖第一句(不整段貼)
@@ -875,11 +876,11 @@ function answer(idx){
   t+=`<button class="audio" id="teachAudio">🔊 再唸一次</button></div>
       <button class="nextbtn" id="nextBtn">下一張 →</button>`;
   document.getElementById("teach").innerHTML=t;
-  if(SES.group==="商事法"){const se=document.querySelector(".stem");if(se)se.innerHTML=markStemAnno(r);}   // 答完直接在題目上做筆記
+  if(isRG(SES.group)){const se=document.querySelector(".stem");if(se)se.innerHTML=markStemAnno(r);}   // 答完直接在題目上做筆記
   // 自動朗讀（可靜音）
   const spk=((correct?"答對了。":"這題答案是"+L[ans]+"。")+(p.concept||"")+"。"+(p.key||whyC||p.ans||"")).replace(/§/g,"第").replace(/[「」『』]/g,"");
   if(!muted()){
-    if(SES.group==="商事法")speakSeq([   // 商事：先念我的筆記→題目＋題目筆記→選項＋訂正
+    if(isRG(SES.group))speakSeq([   // 反射科：先念我的筆記→題目＋題目筆記→選項＋訂正
         {text:gj?gjVoice(gj):"",before:()=>srScroll("#gjblk","start")},   // 我的整理對齊上方看得到
         {text:stemNoteVoice(r),before:()=>srScroll(".stem","start")},     // 捲到題目(選項也一起看得到)
         {text:optSpeak}                                                    // 念選項不再捲
@@ -945,7 +946,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s40";
+const APP_VERSION="s41";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
