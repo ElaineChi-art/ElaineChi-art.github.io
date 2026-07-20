@@ -168,6 +168,7 @@
   .exn .exa{color:var(--txt)}
   .annophrase{border-bottom:2px solid var(--coral);padding-bottom:1px;font-weight:700}
   .anno{color:var(--coral);font-size:.82em;font-weight:600;margin:0 1px}
+  #gjblk{scroll-margin-top:54px} .stem{scroll-margin-top:54px}
   .opt:disabled{cursor:default}
   .teach{background:rgba(127,224,207,.07);border:1px solid rgba(127,224,207,.25);border-radius:16px;padding:15px 16px;margin-top:6px;animation:slidein .25s}
   @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -878,11 +879,11 @@ function answer(idx){
   // 自動朗讀（可靜音）
   const spk=((correct?"答對了。":"這題答案是"+L[ans]+"。")+(p.concept||"")+"。"+(p.key||whyC||p.ans||"")).replace(/§/g,"第").replace(/[「」『』]/g,"");
   if(!muted()){
-    if(SES.group==="商事法")speakSeq([   // 商事：先念我的筆記→題目＋題目筆記→選項＋訂正，螢幕跟著捲
-        {text:gj?gjVoice(gj):"",before:()=>srScroll("#gjblk","center")},
-        {text:stemNoteVoice(r),before:()=>srScroll(".stem","start")},
-        {text:optSpeak,before:()=>srScroll("#opts","start")}
-      ],()=>srScroll("#nextBtn","center"));   // 唸完捲到最下面，可按下一題
+    if(SES.group==="商事法")speakSeq([   // 商事：先念我的筆記→題目＋題目筆記→選項＋訂正
+        {text:gj?gjVoice(gj):"",before:()=>srScroll("#gjblk","start")},   // 我的整理對齊上方看得到
+        {text:stemNoteVoice(r),before:()=>srScroll(".stem","start")},     // 捲到題目(選項也一起看得到)
+        {text:optSpeak}                                                    // 念選項不再捲
+      ],()=>srScroll("#nextBtn","center"));   // 全部唸完才捲到下一張
     else speak(spk);
   }
   document.getElementById("teachAudio").onclick=()=>speak(((p.concept||"")+"。"+(p.key||p.ans||"")+"。"+(whyC||"")+"。"+(p.trap?"要分清楚："+p.trap:"")).replace(/§/g,"第").replace(/[「」『』]/g,""));
@@ -944,7 +945,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s39";
+const APP_VERSION="s40";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
