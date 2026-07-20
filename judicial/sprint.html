@@ -471,9 +471,12 @@ function annoSegs(r){const t=ssMatch(r);const lines=t?noteLines(t):[];
   return out;}
 function markStemAnno(r){let out="";annoSegs(r).forEach(o=>{out+=hlKey(esc(o.seg));if(o.y)out+='<span class="anno">〔→ '+esc(o.y)+'〕</span>';});return colorParties(out);}
 function stemNoteVoice(r){let v="";annoSegs(r).forEach(o=>{v+=o.seg;if(o.y)v+="。筆記，"+o.y+"。";});return v.replace(/§/g,"第").replace(/[「」『』]/g,"");}
-function speakSeq(arr){if(!("speechSynthesis"in window))return;speechSynthesis.cancel();
-  const list=arr.filter(x=>x&&x.trim());let i=0;
-  const nx=()=>{if(i>=list.length)return;const u=new SpeechSynthesisUtterance(list[i]);u.lang="zh-TW";
+function srScroll(sel,block){const el=document.querySelector(sel);if(el)el.scrollIntoView({behavior:"smooth",block:block||"start"});}
+function speakSeq(items,onDone){if(!("speechSynthesis"in window))return;speechSynthesis.cancel();
+  const list=items.filter(x=>x&&x.text&&x.text.trim());let i=0;
+  const nx=()=>{if(i>=list.length){if(onDone)onDone();return;}
+    const it=list[i];if(it.before)it.before();
+    const u=new SpeechSynthesisUtterance(it.text);u.lang="zh-TW";
     const rt=localStorage.getItem("sjg_rate");u.rate=rt?(parseFloat(rt)||1):1;const v=pickVoice();if(v)u.voice=v;
     u.onend=()=>{i++;nx();};speechSynthesis.speak(u);};nx();}
 
@@ -626,7 +629,7 @@ function ssMatch(r){const q=(r.p.concept||"")+" "+(r.p.law||"");let best=null,bs
 function srReflexMatch(r,g){return g==="國際法+法學英文"?gjMatch(r):g==="刑法"?sxMatch(r):g==="商事法"?ssMatch(r):null;}
 function gjVoice(t){return [t.title,...t.body].join("。").replace(/\*\*/g,"").replace(/§/g,"第").replace(/[「」『』]/g,"");}
 function gjBlockHTML(t){const inner=[t.title,...t.body].map(srLineHTML).join("");
-  return `<div class="blk"><span class="l">📎 我的反射地圖解析</span>`
+  return `<div class="blk" id="gjblk"><span class="l">📎 我的反射地圖解析</span>`
     +`<div style="background:rgba(159,224,168,.06);border:1px solid rgba(159,224,168,.25);border-radius:12px;padding:10px 12px;margin-top:6px">${inner}</div>`
     +`<button class="audio" id="gjAudio" style="margin-top:8px">🔊 念這題解析</button></div>`;}
 // 從頭一段接一段念完（避免長句被截斷）
@@ -875,7 +878,11 @@ function answer(idx){
   // 自動朗讀（可靜音）
   const spk=((correct?"答對了。":"這題答案是"+L[ans]+"。")+(p.concept||"")+"。"+(p.key||whyC||p.ans||"")).replace(/§/g,"第").replace(/[「」『』]/g,"");
   if(!muted()){
-    if(SES.group==="商事法")speakSeq([stemNoteVoice(r),optSpeak]);   // 商事：自動念 題目＋題目筆記 → 選項＋訂正
+    if(SES.group==="商事法")speakSeq([   // 商事：先念我的筆記→題目＋題目筆記→選項＋訂正，螢幕跟著捲
+        {text:gj?gjVoice(gj):"",before:()=>srScroll("#gjblk","center")},
+        {text:stemNoteVoice(r),before:()=>srScroll(".stem","start")},
+        {text:optSpeak,before:()=>srScroll("#opts","start")}
+      ],()=>srScroll("#nextBtn","center"));   // 唸完捲到最下面，可按下一題
     else speak(spk);
   }
   document.getElementById("teachAudio").onclick=()=>speak(((p.concept||"")+"。"+(p.key||p.ans||"")+"。"+(whyC||"")+"。"+(p.trap?"要分清楚："+p.trap:"")).replace(/§/g,"第").replace(/[「」『』]/g,""));
@@ -937,7 +944,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s38";
+const APP_VERSION="s39";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
