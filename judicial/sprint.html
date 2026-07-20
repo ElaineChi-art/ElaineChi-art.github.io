@@ -801,6 +801,10 @@ function answer(idx){
     if(tmap){const nt=(i===ans)?`<span class="oc ok">✓ 正解</span>${ansWhy?esc(ansWhy):""}`
                               :`<span class="oc no">✗</span>${tmap[L[i]]?" "+esc(tmap[L[i]]):""}`;
       const sp=b.querySelectorAll("span");(sp[1]||b).insertAdjacentHTML("beforeend",`<div class="optnote">${nt}</div>`);}});
+  let optSpeak="";   // 🔊 唸每個選項＋它的訂正
+  if(tmap){r.q.options.forEach((o,i)=>{const corr=(i===ans)?("這是正解。"+ansWhy):(tmap[L[i]]?("訂正，"+tmap[L[i]]):"這個不是答案");
+      optSpeak+=`選項${L[i]}，${o}。${corr}。`;});
+    optSpeak=optSpeak.replace(/§/g,"第").replace(/[「」『』]/g,"");}
   // 教學
   const p=r.p,note=r.note,whyC=optWhy(r,ans),whyW=correct?"":optWhy(r,idx);
   const lawH=lawTextOf(r);
@@ -815,6 +819,7 @@ function answer(idx){
   if(p.key)t+=`<div class="blk"><span class="l">🔑 核心規則</span><span class="key">${esc(p.key)}</span></div>`;
   if(p.trap)t+=`<div class="blk"><span class="l">⚠️ 易混淆（其他選項的陷阱）</span>${esc(p.trap)}</div>`;
   if(lawH)t+=`<div class="blk"><span class="l">📜 法條原文</span>${lawH}</div>`;
+  if(tmap)t+=`<button class="audio" id="optAudio">🔊 唸選項＋訂正</button>`;
   t+=`<button class="audio" id="teachAudio">🔊 再唸一次</button></div>
       <button class="nextbtn" id="nextBtn">下一張 →</button>`;
   document.getElementById("teach").innerHTML=t;
@@ -823,6 +828,7 @@ function answer(idx){
   if(!muted())speak(spk);
   document.getElementById("teachAudio").onclick=()=>speak(((p.concept||"")+"。"+(p.key||p.ans||"")+"。"+(whyC||"")+"。"+(p.trap?"要分清楚："+p.trap:"")).replace(/§/g,"第").replace(/[「」『』]/g,""));
   if(gj){const gab=document.getElementById("gjAudio");if(gab)gab.onclick=()=>{stopSpeak();speak(gjVoice(gj));};}   // 語音另外按：直接念這題的反射地圖解析
+  if(tmap){const ob=document.getElementById("optAudio");if(ob)ob.onclick=()=>{stopSpeak();speak(optSpeak);};}   // 唸選項＋訂正
   const nb=document.getElementById("nextBtn");nb.onclick=next;nb.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 function next(){stopSpeak();SES.i++;renderCard();}
@@ -879,7 +885,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s31";
+const APP_VERSION="s32";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
