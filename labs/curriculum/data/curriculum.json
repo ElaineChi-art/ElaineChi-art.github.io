@@ -1,7 +1,7 @@
 {
   "note": "技能實驗室・每日課程。順序依 2026-07 的104人力銀行AI人才趨勢報告排序：流程自動化(+233%)、NLP(+147%)、預測分析(+168%)、機器學習演算法(+64%)為成長最快硬技能；企業期待工具=ChatGPT/PyTorch/Gemini。目標公司=台灣大型企業金融科技(國泰/玉山/台灣大哥大/91APP)+國際遠端全端職缺。每篇=學會這個主題到能在面試講清楚，累積夠了再挑出來做成 labs/data/topics.json 裡的真專案(status:live)。act 對應教學模組(M1..M9)，category 對應 labs/data/topics.json 的分類 id，方便之後串連。",
   "lessons": [
-    {"id":1,"act":"M1","category":"ai","topic":"新手村｜系統操作講解","t":"從零建置一套能跑深度學習的開發環境：Python/GPU/Colab三種路線怎麼選","status":"todo"},
+    {"id":1,"act":"M1","category":"ai","topic":"新手村｜系統操作講解","t":"從零建置一套能跑深度學習的開發環境：Python/GPU/Colab三種路線怎麼選","status":"done 2026-07-22"},
     {"id":2,"act":"M1","category":"ai","topic":"深度學習概要","t":"深度學習到底在學什麼：從線性迴歸到神經網路的認知跳躍","status":"todo"},
     {"id":3,"act":"M1","category":"ai","topic":"Transformer模型","t":"Transformer為什麼贏了：自注意力機制如何取代RNN成為現代AI的地基","status":"todo"},
     {"id":4,"act":"M1","category":"ai","topic":"LLM大型語言模型","t":"大型語言模型的能力邊界：它真的「理解」還是很會「猜下一個字」","status":"todo","ref":"OpenAI/Anthropic 官方模型說明文件"},

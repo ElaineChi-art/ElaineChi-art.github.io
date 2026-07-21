@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-21",
+  "updated": "2026-07-22",
   "lessons": [
     {
       "id": 1,
@@ -7,10 +7,10 @@
       "category": "ai",
       "topic": "新手村｜系統操作講解",
       "title": "從零建置一套能跑深度學習的開發環境：Python/GPU/Colab三種路線怎麼選",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-07-22",
+      "url": "posts/daily/2026-07-22.html",
+      "slides": 1
     },
     {
       "id": 2,

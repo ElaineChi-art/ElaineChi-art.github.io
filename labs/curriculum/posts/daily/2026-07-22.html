@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>從零建置一套能跑深度學習的開發環境：Python/GPU/Colab三種路線怎麼選｜技能實驗室・每日課程</title>
+<meta name="description" content="要跑深度學習，環境有三條路：本機純Python、本機GPU、雲端Colab。這篇拆解三者的差別、代價與選擇順序，讓你在面試被問到時能講清楚。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-07-22</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・人工智慧核心概念</div>
+  <h1>從零建置一套能跑深度學習的開發環境：Python／GPU／Colab 三種路線怎麼選</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-07-22</span>
+    <span>約 6 分鐘</span>
+    <span>對應真專案主題：新手村｜系統操作講解</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>要跑深度學習，環境有三條路：本機純 Python 最單純但沒 GPU 就慢、本機裝 GPU 最快最自由但安裝最痛、雲端 Colab 零安裝馬上有免費 GPU 但會斷線。新手先用 Colab 把流程跑通，等到要反覆訓練、或資料不能外流，再考慮本機 GPU。選哪條的關鍵是「你現在卡在哪」，不是「哪個最強」。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-1-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260722" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260722" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260722)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260722)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M1 · 人工智慧核心概念  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">跑深度學習的開發環境：<tspan fill="#4D9FFF">三條路線怎麼選？</tspan></text>
+
+      <!-- 路線一：本機純 Python -->
+      <rect x="64" y="140" width="360" height="392" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <rect x="64" y="140" width="360" height="5" rx="2.5" fill="url(#topbarD20260722)"/>
+      <text x="88" y="182" font-size="20" font-weight="800" fill="#4D9FFF">■ 路線一　本機純 Python</text>
+      <text x="88" y="222" font-size="17" fill="#8FA1C0">適合誰</text>
+      <text x="88" y="248" font-size="17" fill="#C7D2E4">先把語法、流程跑通；</text>
+      <text x="88" y="272" font-size="17" fill="#C7D2E4">學小模型、做小實驗。</text>
+      <text x="88" y="316" font-size="17" fill="#8FA1C0">裝什麼</text>
+      <text x="88" y="342" font-size="17" fill="#C7D2E4">Python ＋ venv ＋ pip，</text>
+      <text x="88" y="366" font-size="17" fill="#C7D2E4">再 pip install 框架。</text>
+      <text x="88" y="410" font-size="17" fill="#8FA1C0">代價</text>
+      <text x="88" y="436" font-size="17" fill="#C7D2E4">沒有 GPU，大模型會</text>
+      <text x="88" y="460" font-size="17" fill="#C7D2E4">慢到不能用。</text>
+      <text x="88" y="510" font-size="16" font-weight="700" fill="#7E8CA8">→ 起步最單純，天花板最低。</text>
+
+      <!-- 路線二：本機 + GPU -->
+      <rect x="460" y="140" width="360" height="392" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <rect x="460" y="140" width="360" height="5" rx="2.5" fill="url(#topbarD20260722)"/>
+      <text x="484" y="182" font-size="20" font-weight="800" fill="#F2A33C">■ 路線二　本機 ＋ GPU</text>
+      <text x="484" y="222" font-size="17" fill="#8FA1C0">適合誰</text>
+      <text x="484" y="248" font-size="17" fill="#C7D2E4">要反覆訓練、資料不能</text>
+      <text x="484" y="272" font-size="17" fill="#C7D2E4">外流、想完全掌控。</text>
+      <text x="484" y="316" font-size="17" fill="#8FA1C0">裝什麼</text>
+      <text x="484" y="342" font-size="17" fill="#C7D2E4">顯卡驅動 ＋ CUDA ＋</text>
+      <text x="484" y="366" font-size="17" fill="#C7D2E4">對應版本的 PyTorch。</text>
+      <text x="484" y="410" font-size="17" fill="#8FA1C0">代價</text>
+      <text x="484" y="436" font-size="17" fill="#C7D2E4">安裝最痛、硬體貴，</text>
+      <text x="484" y="460" font-size="17" fill="#C7D2E4">三者版本要對得起來。</text>
+      <text x="484" y="510" font-size="16" font-weight="700" fill="#7E8CA8">→ 最快最自由，也最容易卡。</text>
+
+      <!-- 路線三：雲端 Colab -->
+      <rect x="856" y="140" width="360" height="392" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="856" y="140" width="360" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="880" y="182" font-size="20" font-weight="800" fill="#35C08E">■ 路線三　雲端 Colab</text>
+      <text x="880" y="222" font-size="17" fill="#8FA1C0">適合誰</text>
+      <text x="880" y="248" font-size="17" fill="#C7D2E4">零安裝、想馬上有免費</text>
+      <text x="880" y="272" font-size="17" fill="#C7D2E4">GPU；新手第一站。</text>
+      <text x="880" y="316" font-size="17" fill="#8FA1C0">裝什麼</text>
+      <text x="880" y="342" font-size="17" fill="#C7D2E4">開瀏覽器就好，</text>
+      <text x="880" y="366" font-size="17" fill="#C7D2E4">框架雲端已備好。</text>
+      <text x="880" y="410" font-size="17" fill="#8FA1C0">代價</text>
+      <text x="880" y="436" font-size="17" fill="#C7D2E4">連線會斷、免費額度</text>
+      <text x="880" y="460" font-size="17" fill="#C7D2E4">有限，成果記得存 Drive。</text>
+      <text x="880" y="510" font-size="16" font-weight="700" fill="#7E8CA8">→ 上手最快，長期不是家。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：選環境不是選最強的，是選「能讓我今天就開始動手」的那條路。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">先用 Colab 驗證可行、再視需求切本機 GPU——先降風險、後投成本，跟做評估的思路一樣。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+
+  <div class="script-panel" id="sp-1-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-07-22-1.mp3"></audio>
+    <p>這張圖在講的是，要跑深度學習，開發環境其實只有三條路，差別只在那三層——Python、框架、還有運算資源——到底裝在哪裡。路線一是本機純 Python，最單純，適合先把語法和流程跑通，但沒有 GPU，大模型會慢到不能用。路線二是本機加上 GPU，速度最快、資料也不外流，代價是安裝最痛，CUDA、驅動、框架的版本都要對得起來。路線三是雲端 Colab，開個瀏覽器就有免費 GPU，零安裝，缺點是連線會斷、免費額度有限。所以我的建議很簡單：新手先用 Colab 把東西跑起來，等到要反覆訓練、或資料不能外流，再回頭處理本機 GPU。選的關鍵永遠是你現在卡在哪，不是哪個聽起來最強。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>所謂「開發環境」，就是一套能讓深度學習程式真的跑起來的軟硬體組合。它至少疊了三層：Python 直譯器（實際執行程式碼的引擎）、深度學習框架（PyTorch 或 TensorFlow，把底層數學運算包成好用的函式）、以及最底下的運算資源（CPU 或 GPU）。三條路線的差別，其實只差在「這三層裝在哪裡、由誰負責」。本機路線是三層都在自己電腦；Colab 路線是三層都在 Google 的雲端主機，你只透過瀏覽器下指令。搞懂這件事，你就不會把「選環境」想得太玄——你只是在決定這三層放哪。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>環境選錯，會讓你連「開始學」都卡住。深度學習跟一般寫程式最大的不同，是它非常吃 GPU（一種原本用來畫圖形、很擅長同時做大量平行運算的晶片）。同一個模型，用 CPU 訓練可能要好幾小時，換 GPU 可能幾分鐘就跑完——這是量級上的差距，不是快一點而已。104 人力銀行《AI 人才趨勢報告》也強調，企業期待求職者能實際操作 PyTorch 這類工具、打通完整的應用情境，而不是只看過投影片。你得先有一個能反覆實驗的環境，才談得上累積這種手感。環境是所有後續學習的地基，地基歪了，後面每一步都在跟工具打架，而不是在學真正的東西。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到真實情境會更具體。假設我進到玉山或 91APP 的資料團隊，被指派「先把這個模型在本地重現一次」。我不會一開始就在自己筆電硬裝 CUDA，因為那最容易卡上三天還跑不動。我會先在 Colab 把程式跑通、確認邏輯對，這是最快拿到「它能動」訊號的方式。等到要正式反覆訓練、或資料涉及客戶個資不能上傳雲端，我才切到公司配的 GPU 機器；這時安裝痛歸痛，但目標明確、而且身邊有人可以問。對我這種法律金融跨域背景的人來說，這個判斷順序本身就是能拿出來講的東西：先用低成本方式驗證可行性，再投入昂貴資源——這跟做法遵或風險評估的思路是同一套。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最常見的誤區，是以為「裝了 GPU 版的框架，就等於程式在用 GPU」。實際上，PyTorch 裝錯版本、或 CUDA 跟顯卡驅動對不上時，程式往往會安靜地退回用 CPU 跑——它不會報錯，你只會覺得「怎麼這麼慢」。所以裝完環境第一件事，永遠是印出 <code>torch.cuda.is_available()</code> 確認 GPU 真的被抓到（回傳 <code>True</code> 才算數）。另一個容易被追問的點是 Colab 的免費額度：它不是無限的，長時間閒置或跑太久會被斷線回收，所以重要的訓練一定要把模型存到 Google Drive，不然辛苦幾小時、一斷全沒。</p>
+
+  <p>選環境不是選最強的那個，是選「能讓你今天就開始動手、明天不會被工具卡死」的那個。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「你平常都怎麼建深度學習的開發環境？」</span>
+        <span class="hint">👉 這題其實在問：你是真的動手做過，還是只看過教學？</span>
+        <span class="a">她可以怎麼答：我會看情境。快速驗證想法或學新東西，我直接用 Colab，零安裝又有免費 GPU；要反覆訓練、或資料不能外流，才在本機裝對應版本的 PyTorch 配 GPU。我習慣裝完先跑 <code>torch.cuda.is_available()</code> 確認 GPU 有被抓到，再開始正式做。</span>
+      </li>
+      <li>
+        <span class="q">「為什麼深度學習要用 GPU？CPU 不行嗎？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂底層為什麼快，還是只會照抄指令。</span>
+        <span class="a">她可以怎麼答：CPU 也能跑，只是慢。神經網路的核心是大量矩陣運算，這些運算彼此獨立、可以同時做；GPU 剛好有成千上萬個核心，就是擅長這種平行運算。所以同一個模型，GPU 常常比 CPU 快一個數量級以上。</span>
+      </li>
+      <li>
+        <span class="q">「Colab 跟本機環境，你會怎麼選？」</span>
+        <span class="hint">👉 這題其實在問：你會不會權衡取捨，而不是背一個標準答案。</span>
+        <span class="a">她可以怎麼答：我的順序是先用 Colab 把流程跑通、確認邏輯對，因為它最快拿到「能動」的訊號、又不用裝環境。等到要正式訓練、或資料涉及個資不能上雲，再切到本機 GPU。原則是先驗證可行性，再投入成本。</span>
+      </li>
+      <li>
+        <span class="q">「環境裝好之後，你怎麼確認 GPU 真的有在用？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道「裝了不等於有用到」這個坑。</span>
+        <span class="a">她可以怎麼答：我會先在 Python 裡跑 <code>torch.cuda.is_available()</code>，回傳 <code>True</code> 才代表框架有抓到 GPU；也可以用 <code>nvidia-smi</code> 看訓練時卡有沒有在動。因為版本對不上時程式會安靜地退回 CPU、不報錯，只是很慢，所以這個確認我一定會做。</span>
+      </li>
+      <li>
+        <span class="q">「你自己在本機從頭裝過 CUDA 環境嗎？」</span>
+        <span class="hint">👉 這題其實在問：你的實戰深度到哪，坦白比唬爛加分。</span>
+        <span class="a">她可以怎麼答（誠實的答法）：老實說我目前多半用 Colab，本機從零裝 CUDA 配驅動的完整經驗還不多。但我清楚主要的坑在版本對應——CUDA、顯卡驅動、框架三者要相容，我會照官方對應表一步步裝，裝完用 <code>torch.cuda.is_available()</code> 跟 <code>nvidia-smi</code> 驗證，遇到問題再從版本相容性查起。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>
