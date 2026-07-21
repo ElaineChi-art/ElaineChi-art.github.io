@@ -629,6 +629,7 @@ function ssMatch(r){const q=(r.p.concept||"")+" "+(r.p.law||"");let best=null,bs
   return bs>=0.16?best:null;}
 function srReflexMatch(r,g){return g==="國際法+法學英文"?gjMatch(r):g==="刑法"?sxMatch(r):g==="商事法"?ssMatch(r):null;}
 function isRG(g){return g==="商事法"||g==="刑法"||g==="國際法+法學英文";}   // 有反射地圖整套功能的科
+function isHL(g){return isRG(g)||g==="民法";}   // 題幹高亮＋選項訂正（民法用現有筆記，無反射地圖）
 function gjVoice(t){return [t.title,...t.body].join("。").replace(/\*\*/g,"").replace(/§/g,"第").replace(/[「」『』]/g,"");}
 function gjBlockHTML(t){const inner=[t.title,...t.body].map(srLineHTML).join("");
   return `<div class="blk" id="gjblk"><span class="l">📎 我的反射地圖解析</span>`
@@ -819,7 +820,7 @@ function renderCard(){
   const rl=(SES.i%5===0)?`<div class="rline"><span class="rf">🤖</span><span class="rt">${todayMsg()}</span></div>`:"";
   let h=rl+`<div class="qtag ${card.type==="review"?"rev":""}">${card.type==="review"?"🔁 回鍋（上次答錯）":"🧠 第 "+(SES.i+1)+" 題"}</div>
     <div class="qmeta">${r.q.year}年 ${r.sub} 第${r.q.num}題　·　讀不懂沒關係，看不太懂就先猜，重點在解答</div>
-    <div class="stem">${isRG(SES.group)?markStem(r):colorParties(esc(r.q.stem))}</div>
+    <div class="stem">${isHL(SES.group)?markStem(r):colorParties(esc(r.q.stem))}</div>
     <div class="qhelp"><button class="hlp" id="readStem">🔊 唸題目</button><button class="hlp" id="readOpts">🔊 唸四個選項</button><button class="hlp" id="hintBtn">🔑 看不懂？先看這題在考什麼</button></div>
     <div class="hint" id="hintBox"></div>
     <div id="opts">`;
@@ -842,7 +843,7 @@ function answer(idx){
   if(card.type==="quiz"){SES.newAns++;setPos(SES.group,getPos(SES.group)+1);}  // 每答一題即時存進度，關分頁也不丟
   bumpToday();
   const gj=srReflexMatch(r,SES.group);   // 我的反射地圖(國際/刑法/商事)
-  const tmap=isRG(SES.group)?parseTrap(r.p.trap):null;   // 反射科：陷阱備援
+  const tmap=isHL(SES.group)?parseTrap(r.p.trap):null;   // 選項訂正（含民法用現有筆記）
   const ansWhy=tmap?(jsStripAns(r.p.ans)||r.p.key||""):"";
   const findWrong=/錯誤|不正確|為非|何者[^，。]{0,6}非|下列.{0,6}非/.test(r.q.stem)||/[（(]錯[）)]/.test(r.p.ans||"");   // 題目問「何者錯誤」
   const shortRule=i=>{const l=optReflex(gj,r.q.options[i]);return l?l.split(/[。！？]/)[0].trim():"";};   // 只取反射地圖第一句(不整段貼)
@@ -946,7 +947,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s41";
+const APP_VERSION="s42";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
