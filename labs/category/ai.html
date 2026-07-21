@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人工智慧 AI — 技能實驗室 — Elaine Chi</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+     background:linear-gradient(160deg,#14161c,#26262f);color:#e8e6e0;line-height:1.7;min-height:100vh}
+a{color:inherit}
+.topnav{display:flex;gap:6px;background:#0b0d12;padding:10px 20px;border-bottom:1px solid #262b36;
+        position:sticky;top:0;z-index:50;overflow-x:auto}
+.topnav a{color:#9aa4b2;text-decoration:none;font-size:14px;font-weight:600;padding:7px 16px;border-radius:8px;white-space:nowrap}
+.topnav a:hover{background:#161922;color:#e6e6e6}
+.topnav a.active{background:#1f2e3a;color:#7fb5ff}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px 60px}
+
+.crumb{padding:18px 0 0;font-size:13px;color:#8a8576}
+.crumb a{color:#7fb5ff;text-decoration:none}
+.hero{margin-top:18px;border:1px solid #33405255;border-radius:18px;padding:34px 30px;
+      background:linear-gradient(135deg,#0e0f14,#1c1e26);position:relative}
+.hero .badge{position:absolute;top:18px;right:22px;background:var(--c);color:#fff;font-size:12px;
+             font-weight:700;padding:5px 14px;border-radius:20px}
+.hero .ic{font-size:44px}
+.hero h1{font-size:30px;margin-top:8px}
+.hero .su{color:#b9b3a3;margin-top:6px;font-size:15px}
+section{margin-top:38px}
+h2{font-size:20px;color:#f0d68a;border-left:4px solid var(--c);padding-left:12px;margin-bottom:16px}
+.intro{color:#d8d4ca;font-size:15px;max-width:760px}
+.pill{display:inline-block;margin-top:6px;font-size:13px;font-weight:600;color:#fff;background:var(--c);
+      border-radius:20px;padding:6px 16px}
+.progline{margin-top:14px;font-size:13px;color:#9aa4b2}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:20px}
+.topic{display:block;border-radius:16px;padding:22px;text-decoration:none;transition:.18s}
+.topic.live{background:#fffdf7;color:#26262b;box-shadow:0 8px 22px rgba(0,0,0,.3);cursor:pointer}
+.topic.live:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(0,0,0,.45)}
+.topic.planned{background:#1c1e26;color:#8a8f9c;border:1px dashed #33405270;cursor:pointer}
+.topic .ti{font-size:16.5px;font-weight:bold}
+.topic.live .ti{color:#26262b}
+.topic .tg{font-size:13px;margin-top:8px;color:#777}
+.topic.planned .tg{color:#6b7280}
+.topic .badge2{display:inline-block;margin-top:14px;font-size:12px;border-radius:14px;padding:3px 11px}
+.topic.live .badge2{background:var(--c);color:#fff;font-weight:700}
+.topic.planned .badge2{background:#2a2f3a;color:#9aa4b2}
+</style>
+</head>
+<body>
+<nav class="topnav"><a class="" href="./">🧪 技能實驗室首頁</a><a class="" href="../">🏠 學習中心</a><a class="" href="../resume/">👤 我的履歷</a></nav>
+<div class="wrap">
+
+  <div class="crumb"><a href="../index.html">🧪 技能實驗室</a> / 人工智慧 AI</div>
+  <div class="hero" style="--c:#7b54d6">
+    <span class="badge">0/9 已上線</span>
+    <div class="ic">🤖</div>
+    <h1>人工智慧 AI</h1>
+    <div class="su">深度學習模型，從概念到動手實作</div>
+  </div>
+
+  <section>
+    <h2 style="--c:#7b54d6">介紹</h2>
+    <p class="intro">從新手村的環境設定開始，一路走過 CNN、RNN、Transformer 到 LLM 與生成式模型。每個主題最終會有一個真的能互動的小型 demo，而不是投影片。</p>
+  </section>
+
+  <section>
+    <h2 style="--c:#7b54d6">包含項目</h2>
+    <span class="pill" style="--c:#7b54d6">全部分類</span>
+    <div class="progline">📋 清單 · 共 9 個主題，0 個已上線</div>
+    <div class="grid">
+    <a class="topic planned" onclick="comingSoon(event,'新手村｜系統操作講解')">
+      <div class="ti">新手村｜系統操作講解</div>
+      <div class="tg">之後會放上一個真的能點進去玩的小專案</div>
+      <span class="badge2">🔒 規劃中</span>
+    </a>
+    <a class="topic planned" onclick="comingSoon(event,'深度學習概要')">
+      <div class="ti">深度學習概要</div>
+      <div class="tg">之後會放上一個真的能點進去玩的小專案</div>
+      <span class="badge2">🔒 規劃中</span>
+    </a>
+    <a class="topic planned" onclick="comingSoon(event,'CNN卷積神經網路')">
+      <div class="ti">CNN卷積神經網路</div>
+      <div class="tg">之後會放上一個真的能點進去玩的小專案</div>
+      <span class="badge2">🔒 規劃中</span>
+    </a>
+    <a class="topic planned" onclick="comingSoon(event,'Transfer Learning遷移學習')">
+      <div class="ti">Transfer Learning遷移學習</div>
+      <div class="tg">之後會放上一個真的能點進去玩的小專案</div>
+      <span class="badge2">🔒 規劃中</span>
+    </a>
+    <a class="topic planned" onclick="comingSoon(event,'RNN循環神經網路')">
+      <div class="ti">RNN循環神經網路</div>
+      <div class="tg">之後會放上一個真的能點進去玩的小專案</div>
+      <span class="badge2">🔒 規劃中</span>
+    </a>
+    <a class="topic planned" onclick="comingSoon(event,'Transformer模型')">
+      <div class="ti">Transformer模型</div>
+      <div class="tg">之後會放上一個真的能點進去玩的小專案</div>
+      <span class="badge2">🔒 規劃中</span>
+    </a>
+    <a class="topic planned" onclick="comingSoon(event,'LLM大型語言模型')">
+      <div class="ti">LLM大型語言模型</div>
+      <div class="tg">之後會放上一個真的能點進去玩的小專案</div>
+      <span class="badge2">🔒 規劃中</span>
+    </a>
+    <a class="topic planned" onclick="comingSoon(event,'GAN生成對抗網路')">
+      <div class="ti">GAN生成對抗網路</div>
+      <div class="tg">之後會放上一個真的能點進去玩的小專案</div>
+      <span class="badge2">🔒 規劃中</span>
+    </a>
+    <a class="topic planned" onclick="comingSoon(event,'Stable Diffusion技術')">
+      <div class="ti">Stable Diffusion技術</div>
+      <div class="tg">之後會放上一個真的能點進去玩的小專案</div>
+      <span class="badge2">🔒 規劃中</span>
+    </a>
+    </div>
+  </section>
+
+  <footer>© 2026 姬政妤 Elaine Chi</footer>
+  <script>
+    function comingSoon(e,name){
+      e.preventDefault();
+      alert('「'+name+'」還在製作中。\n之後會做成一個真的可以互動、商業等級的專案 demo，不只是介紹頁。');
+    }
+  </script>
+
+</div>
+<script data-goatcounter="https://elainechi.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

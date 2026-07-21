@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>技能實驗室 · Skill Lab — Elaine Chi</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+     background:linear-gradient(160deg,#14161c,#26262f);color:#e8e6e0;line-height:1.7;min-height:100vh}
+a{color:inherit}
+.topnav{display:flex;gap:6px;background:#0b0d12;padding:10px 20px;border-bottom:1px solid #262b36;
+        position:sticky;top:0;z-index:50;overflow-x:auto}
+.topnav a{color:#9aa4b2;text-decoration:none;font-size:14px;font-weight:600;padding:7px 16px;border-radius:8px;white-space:nowrap}
+.topnav a:hover{background:#161922;color:#e6e6e6}
+.topnav a.active{background:#1f2e3a;color:#7fb5ff}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px 60px}
+
+header{padding:44px 0 30px;text-align:center}
+h1{font-size:36px;letter-spacing:1px}
+.tagline{color:#b9b3a3;font-size:16px;max-width:640px;margin:12px auto 0}
+.stats{display:inline-flex;gap:10px;margin-top:20px;align-items:center;font-size:14px;color:#f0d68a;
+       background:#20263180;border:1px solid #33405255;border-radius:20px;padding:7px 18px}
+.bar{width:140px;height:8px;background:#2a2f3a;border-radius:6px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,#7fb5ff,#f0d68a)}
+.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;margin-top:38px}
+a.catcard{display:block;background:#fffdf7;color:#26262b;text-decoration:none;border-radius:20px;
+          padding:26px 24px;box-shadow:0 10px 26px rgba(0,0,0,.25);transition:.18s;border-top:6px solid var(--c)}
+a.catcard:hover{transform:translateY(-5px);box-shadow:0 16px 34px rgba(0,0,0,.35)}
+.catcard .ic{font-size:40px;margin-bottom:10px}
+.catcard .ti{font-size:20px;font-weight:bold;margin-bottom:6px}
+.catcard .su{font-size:13.5px;color:#666;line-height:1.6;margin-bottom:14px}
+.catcard .prog{font-size:12.5px;color:#888;display:flex;align-items:center;gap:8px}
+.catcard .pbar{flex:1;height:6px;background:#eee5d0;border-radius:4px;overflow:hidden}
+.catcard .pbar-fill{height:100%;background:var(--c)}
+footer{margin-top:56px;text-align:center;color:#8a8576;font-size:13px}
+footer a{color:#8a8576}
+</style>
+</head>
+<body>
+<nav class="topnav"><a class="active" href="./">🧪 技能實驗室首頁</a><a class="" href="../">🏠 學習中心</a><a class="" href="../resume/">👤 我的履歷</a></nav>
+<div class="wrap">
+
+  <header>
+    <h1>技能實驗室 <span style="color:#7fb5ff;font-size:22px">· Skill Lab</span></h1>
+    <div class="tagline">每個主題，最終都會是一個真的可以點進去玩的專案，不只是名詞清單。</div>
+    <div class="stats">🚀 全站進度 <b>0/80</b> 已上線<div class="bar"><div class="bar-fill" style="width:0%"></div></div></div>
+  </header>
+  <div class="cats">
+    <a class="catcard" style="--c:#7b54d6" href="category/ai.html">
+      <div class="ic">🤖</div>
+      <div class="ti">人工智慧 AI</div>
+      <div class="su">深度學習模型，從概念到動手實作</div>
+      <div class="prog"><span>0/9</span><div class="pbar"><div class="pbar-fill" style="width:0%"></div></div></div>
+    </a>
+    <a class="catcard" style="--c:#2f9e6a" href="category/python.html">
+      <div class="ic">🐍</div>
+      <div class="ti">Python 開發與網路爬蟲</div>
+      <div class="su">從基礎語法到進階套件與自動化爬蟲</div>
+      <div class="prog"><span>0/6</span><div class="pbar"><div class="pbar-fill" style="width:0%"></div></div></div>
+    </a>
+    <a class="catcard" style="--c:#2f6fb0" href="category/ml.html">
+      <div class="ic">📊</div>
+      <div class="ti">機器學習 Machine Learning</div>
+      <div class="su">分類、迴歸、分群到樹狀與時間序列</div>
+      <div class="prog"><span>0/11</span><div class="pbar"><div class="pbar-fill" style="width:0%"></div></div></div>
+    </a>
+    <a class="catcard" style="--c:#b0538f" href="category/dl-apps.html">
+      <div class="ic">🧪</div>
+      <div class="ti">深度學習應用實戰</div>
+      <div class="su">把模型做成真的能用的東西</div>
+      <div class="prog"><span>0/6</span><div class="pbar"><div class="pbar-fill" style="width:0%"></div></div></div>
+    </a>
+    <a class="catcard" style="--c:#c8852a" href="category/quant.html">
+      <div class="ic">💹</div>
+      <div class="ti">量化交易 Quant Trading</div>
+      <div class="su">從爬蟲到自動化交易程式</div>
+      <div class="prog"><span>0/5</span><div class="pbar"><div class="pbar-fill" style="width:0%"></div></div></div>
+    </a>
+    <a class="catcard" style="--c:#5b8def" href="category/frontend.html">
+      <div class="ic">🎨</div>
+      <div class="ti">前端開發 Frontend</div>
+      <div class="su">HTML/CSS/JS 到 Vue、React</div>
+      <div class="prog"><span>0/14</span><div class="pbar"><div class="pbar-fill" style="width:0%"></div></div></div>
+    </a>
+    <a class="catcard" style="--c:#6a4fb8" href="category/genai.html">
+      <div class="ic">🧠</div>
+      <div class="ti">生成式 AI 應用開發</div>
+      <div class="su">ChatGPT／OpenAI API／LangChain</div>
+      <div class="prog"><span>0/4</span><div class="pbar"><div class="pbar-fill" style="width:0%"></div></div></div>
+    </a>
+    <a class="catcard" style="--c:#1f9e8f" href="category/backend.html">
+      <div class="ic">⚙️</div>
+      <div class="ti">後端與資料庫 Backend &amp; DB</div>
+      <div class="su">API、資料庫、安全性到部署</div>
+      <div class="prog"><span>0/14</span><div class="pbar"><div class="pbar-fill" style="width:0%"></div></div></div>
+    </a>
+    <a class="catcard" style="--c:#d67a2e" href="category/marketing.html">
+      <div class="ic">📣</div>
+      <div class="ti">數位行銷 Marketing</div>
+      <div class="su">從轉化到廣告投放與數據追蹤</div>
+      <div class="prog"><span>0/8</span><div class="pbar"><div class="pbar-fill" style="width:0%"></div></div></div>
+    </a>
+    <a class="catcard" style="--c:#a8894a" href="category/business.html">
+      <div class="ic">💼</div>
+      <div class="ti">商業與數據分析</div>
+      <div class="su">產品定位到數據分析學程</div>
+      <div class="prog"><span>0/3</span><div class="pbar"><div class="pbar-fill" style="width:0%"></div></div></div>
+    </a>
+  </div>
+  <footer>
+    © 2026 姬政妤 Elaine Chi · 本站與履歷的「精選作品」互補：履歷放最亮的幾個作品，這裡是完整技能地圖，逐一補上可互動的實例。<br>
+    <a href="mailto:chengyuchi849@gmail.com">✉️ chengyuchi849@gmail.com</a> · <a href="https://github.com/ElaineChi-art" target="_blank">💻 GitHub</a>
+  </footer>
+
+</div>
+<script data-goatcounter="https://elainechi.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
