@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 認證任務清單｜技能實驗室</title>
+<meta name="description" content="5個留下來的免費證照，拆成每天20-40分鐘可以做完的小任務，打勾記錄進度。">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#10131a; --panel:#161b24; --panel2:#1d2430; --line:#2a3140;
+    --tx:#e7ecf3; --mut:#8b97a8; --acc:#7fb5ff; --acc2:#5b8def;
+    --green:#3ec97a; --gold:#e0c060;
+    --grad:linear-gradient(135deg,#3a6ea5,#7c5cff);
+  }
+  body{font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+       background:var(--bg);color:var(--tx);min-height:100vh;font-size:16px;line-height:1.6}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(1100px 560px at 75% -8%,rgba(70,100,180,.14),transparent 60%),
+               radial-gradient(900px 520px at -5% 105%,rgba(130,70,160,.11),transparent 60%);}
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;
+    padding:10px 18px;background:rgba(11,13,18,.82);
+    -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+  .topbar .brand{font-weight:800;font-size:16px;letter-spacing:.5px}
+  .topbar a{color:#9aa4b2;text-decoration:none;font-size:13.5px;font-weight:600;padding:6px 13px;border-radius:8px;white-space:nowrap}
+  .topbar a:hover{background:#161922;color:#e6e6e6}
+  .topbar .sp{margin-left:auto}
+  .wrap{max-width:900px;margin:0 auto;padding:26px 18px 90px}
+  h1{font-size:24px;margin-bottom:4px}
+  .sub{color:var(--mut);font-size:14px;margin-bottom:20px}
+
+  .note{background:#3a3220;border:1px solid #5a4f2a;border-radius:12px;padding:14px 16px;font-size:13.5px;
+    color:#e8dcb0;margin-bottom:22px}
+  .note b{color:var(--gold)}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:10px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px 16px}
+  .stat b{font-size:26px;color:var(--acc);display:block;font-variant-numeric:tabular-nums}
+  .stat span{font-size:13px;color:var(--mut)}
+  .pbar{height:9px;background:var(--panel2);border-radius:99px;overflow:hidden;margin:16px 0 26px;border:1px solid var(--line)}
+  .pbar i{display:block;height:100%;background:var(--grad);border-radius:99px;transition:width .6s}
+
+  .cert{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+  .cert-h{display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+  .cert-h .tag{background:var(--grad);color:#fff;font-weight:800;font-size:12px;border-radius:8px;padding:3px 10px}
+  .cert-h .name{font-weight:700;font-size:15.5px}
+  .cert-h .cnt{margin-left:auto;font-size:12.5px;color:var(--mut);font-variant-numeric:tabular-nums}
+  .cert-h a{font-size:12px;color:var(--acc);text-decoration:none;border:1px solid var(--line);border-radius:14px;padding:3px 10px}
+  .cert-sub{font-size:12.5px;color:var(--mut);margin-bottom:10px}
+  .task{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;background:var(--panel2);margin-bottom:6px}
+  .task input{margin-top:3px;width:16px;height:16px;flex-shrink:0;accent-color:var(--acc2)}
+  .task label{flex:1;font-size:13.5px}
+  .task .t{color:var(--tx)}
+  .task .m{color:var(--mut);font-size:12px;margin-left:6px}
+  .task.done label .t{color:var(--mut);text-decoration:line-through}
+
+  footer{margin-top:24px;font-size:12.5px;color:var(--mut);text-align:center}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="brand">📋 認證任務清單</span>
+  <a href="./index.html">🧪 技能實驗室</a>
+  <a href="./progress.html">📚 每日課程</a>
+  <span class="sp"></span>
+  <a href="../../index.html">🏠 學習中心</a>
+</div>
+
+<div class="wrap">
+<h1>5個留下來的免費證照</h1>
+<div class="sub">從20個候選裡篩過一輪，拆成每天20-40分鐘的小任務。打勾會存在這台電腦的瀏覽器裡，換裝置不會同步。</div>
+
+<div class="note">⚠️ <b>這些是真的第三方課程</b>——要你自己登入各平台、自己看、自己做，才會是真的你的證書。這份清單只負責幫你排好順序跟拆好份量，「做」還是要你自己來。建議<b>9月口試結束後</b>才開始，現在特考期不用碰。</div>
+
+<div class="stats" id="stats"></div>
+<div class="pbar"><i id="pfill" style="width:0%"></i></div>
+
+<div id="board"></div>
+
+<footer>最後更新：2026-07-22・跟「2026下半年戰略地圖」的9-10月排程對齊</footer>
+</div>
+
+<script>
+const CERTS = [
+  {
+    id: "kaggle", name: "① Kaggle：Intro to Machine Learning", time: "共約3小時",
+    url: "https://www.kaggle.com/learn/intro-to-machine-learning",
+    tasks: [
+      ["How Models Work + Basic Data Exploration", "25分"],
+      ["Your First Machine Learning Model", "20分"],
+      ["Model Validation", "20分"],
+      ["Underfitting and Overfitting", "20分"],
+      ["Random Forests", "20分"],
+      ["Machine Learning Competitions（送出一次成績）", "30分"],
+    ]
+  },
+  {
+    id: "anthropic", name: "② Anthropic Academy：Building with the Claude API", time: "依課程,建議2-3天分次",
+    url: "https://anthropic.skilljar.com/",
+    tasks: [
+      ["Claude Platform 101（平台基礎導覽）", "30-40分"],
+      ["Building with the Claude API — 前半（API基礎、訊息格式）", "40分"],
+      ["Building with the Claude API — 後半（進階功能、實作練習）", "40分"],
+      ["（進階可選）Introduction to Model Context Protocol", "40分"],
+    ]
+  },
+  {
+    id: "huggingface", name: "③ Hugging Face NLP Course", time: "拆進每日課程節奏,約10月分次做完",
+    url: "https://huggingface.co/learn/nlp-course",
+    tasks: [
+      ["Chapter 1：Transformer models 概念", "40分"],
+      ["Chapter 2：Using Transformers（實際跑模型）", "50分"],
+      ["Chapter 3：Fine-tuning 基礎", "50分"],
+      ["Chapter 4起：依興趣挑1-2章深入（非必須全部做完）", "彈性"],
+    ]
+  },
+  {
+    id: "gov", name: "④ 經濟部產業AI人才完訓證書", time: "依選修課程,約4-8小時",
+    url: "https://www.twcsi.org.tw/News.aspx?ID=1386&pg=1&key=&d=11850",
+    tasks: [
+      ["註冊帳號＋選修「AI基礎與產業應用」", "2-3小時"],
+      ["選修「生成式AI原理與應用」", "2-3小時"],
+      ["完訓測驗＋下載證書", "30分"],
+    ]
+  },
+  {
+    id: "freecodecamp", name: "⑤ freeCodeCamp：Machine Learning with Python（優先度最低）", time: "數十小時,11-12月有餘裕才做",
+    url: "https://www.freecodecamp.org/learn/machine-learning-with-python",
+    tasks: [
+      ["課程影片＋練習（TensorFlow基礎）", "分次進行"],
+      ["5個必交專案之一：Rock Paper Scissors", "數小時"],
+      ["5個必交專案之二：Cat and Dog Image Classifier", "數小時"],
+      ["5個必交專案之三：Book Recommendation Engine", "數小時"],
+      ["5個必交專案之四：Linear Regression Health Costs Calculator", "數小時"],
+      ["5個必交專案之五：Neural Network SMS Text Classifier", "數小時"],
+    ]
+  },
+];
+
+const KEY = "labs_certs_progress_v1";
+function loadState(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch{ return {}; } }
+function saveState(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
+let state = loadState();
+
+function render(){
+  let totalAll=0, doneAll=0;
+  const html = CERTS.map(c=>{
+    const done = c.tasks.filter((_,i)=>state[c.id+"_"+i]).length;
+    totalAll += c.tasks.length; doneAll += done;
+    const taskHtml = c.tasks.map((t,i)=>{
+      const key = c.id+"_"+i;
+      const checked = !!state[key];
+      return `<div class="task ${checked?'done':''}">
+        <input type="checkbox" id="${key}" ${checked?'checked':''} data-key="${key}">
+        <label for="${key}"><span class="t">${t[0]}</span><span class="m">（約${t[1]}）</span></label>
+      </div>`;
+    }).join("");
+    return `<div class="cert">
+      <div class="cert-h"><span class="tag">${c.time}</span><span class="name">${c.name}</span>
+        <span class="cnt">${done}/${c.tasks.length}</span>
+        <a href="${c.url}" target="_blank">前往課程 ↗</a></div>
+      ${taskHtml}
+    </div>`;
+  }).join("");
+  document.getElementById("board").innerHTML = html;
+
+  const pct = totalAll ? Math.round(doneAll/totalAll*100) : 0;
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><b>${doneAll}<span style="font-size:15px;color:var(--mut)"> / ${totalAll}</span></b><span>已完成小任務</span></div>
+    <div class="stat"><b>${pct}%</b><span>整體進度</span></div>
+    <div class="stat"><b>5</b><span>張證照在排隊</span></div>`;
+  document.getElementById("pfill").style.width = pct+"%";
+
+  document.querySelectorAll('.task input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', e=>{
+      state[e.target.dataset.key] = e.target.checked;
+      saveState(state);
+      render();
+    });
+  });
+}
+render();
+</script>
+</body>
+</html>
