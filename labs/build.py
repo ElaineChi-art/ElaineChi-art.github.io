@@ -47,6 +47,14 @@ h1{font-size:36px;letter-spacing:1px}
        background:#20263180;border:1px solid #33405255;border-radius:20px;padding:7px 18px}
 .bar{width:140px;height:8px;background:#2a2f3a;border-radius:6px;overflow:hidden}
 .bar-fill{height:100%;background:linear-gradient(90deg,#7fb5ff,#f0d68a)}
+.daily-banner{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:30px;padding:18px 22px;
+  border-radius:16px;border:1px solid #33405255;background:linear-gradient(135deg,#1b2030,#13161d 70%);
+  text-decoration:none;color:inherit;transition:.18s}
+.daily-banner:hover{border-color:#5b8def;transform:translateY(-2px)}
+.daily-banner .ic{font-size:30px}
+.daily-banner .tx b{color:#f0d68a;font-size:15.5px}
+.daily-banner .tx div{color:#9aa4b2;font-size:13px;margin-top:3px}
+.daily-banner .go{margin-left:auto;color:#7fb5ff;font-size:13px;font-weight:700;white-space:nowrap}
 .cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;margin-top:38px}
 a.catcard{display:block;background:#fffdf7;color:#26262b;text-decoration:none;border-radius:20px;
           padding:26px 24px;box-shadow:0 10px 26px rgba(0,0,0,.25);transition:.18s;border-top:6px solid var(--c)}
@@ -92,11 +100,13 @@ h2{font-size:20px;color:#f0d68a;border-left:4px solid var(--c);padding-left:12px
 """
 
 
-def page_shell(title: str, extra_css: str, body: str, active_href: str = "") -> str:
+def page_shell(title: str, extra_css: str, body: str, active_href: str = "", base: str = "") -> str:
+    # base = 從當前頁面回到 labs/ 根目錄的相對路徑前綴（"" = 已在根目錄，"../" = 在 category/ 底下）
     nav_links = [
-        ("./", "🧪 技能實驗室首頁"),
-        ("../", "🏠 學習中心"),
-        ("../resume/", "👤 我的履歷"),
+        (base + "index.html", "🧪 技能實驗室首頁"),
+        (base + "curriculum/progress.html", "📚 每日課程進度"),
+        (base + "../index.html", "🏠 學習中心"),
+        (base + "../resume/", "👤 我的履歷"),
     ]
     nav_html = "".join(
         f'<a class="{"active" if href == active_href else ""}" href="{href}">{label}</a>'
@@ -145,6 +155,11 @@ def build_index():
     <div class="tagline">{html.escape(SITE['subtitle'])}</div>
     <div class="stats">🚀 全站進度 <b>{live}/{total}</b> 已上線<div class="bar"><div class="bar-fill" style="width:{pct}%"></div></div></div>
   </header>
+  <a class="daily-banner" href="curriculum/progress.html">
+    <div class="ic">📚</div>
+    <div class="tx"><b>每日課程進度</b><div>依 104 人力銀行 AI 人才趨勢報告排序，每天自動產出一課（含投影片＋語音講解），學到能在面試講清楚為止</div></div>
+    <div class="go">查看進度 →</div>
+  </a>
   <div class="cats">{''.join(cards)}
   </div>
   <footer>
@@ -153,7 +168,7 @@ def build_index():
   </footer>
 """
     (ROOT / "index.html").write_text(
-        page_shell(f"{SITE['title']} · {SITE['title_en']} — Elaine Chi", HOME_EXTRA_CSS, body, "./"),
+        page_shell(f"{SITE['title']} · {SITE['title_en']} — Elaine Chi", HOME_EXTRA_CSS, body, "index.html", base=""),
         encoding="utf-8",
     )
 
@@ -215,7 +230,7 @@ def build_category(c):
   </script>
 """
     (ROOT / "category" / f"{c['id']}.html").write_text(
-        page_shell(f"{c['title']} — {SITE['title']} — Elaine Chi", CATEGORY_EXTRA_CSS, body, ""),
+        page_shell(f"{c['title']} — {SITE['title']} — Elaine Chi", CATEGORY_EXTRA_CSS, body, "", base="../"),
         encoding="utf-8",
     )
 

@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111C2E"/>
+      <stop offset="1" stop-color="#0A101C"/>
+    </linearGradient>
+    <linearGradient id="topbar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2E6BFF"/>
+      <stop offset="1" stop-color="#6FBBFF"/>
+    </linearGradient>
+    <marker id="arrN" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#7E8CA8"/></marker>
+    <marker id="arrB" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+    <marker id="arrG" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#35C08E"/></marker>
+  </defs>
+
+  <!-- 底：深藍夜空漸層＋頂端亮藍條 -->
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect width="1280" height="6" fill="url(#topbar)"/>
+
+  <!-- 麵包屑＋標題（左側藍色豎條） -->
+  <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">PART C・方向一：授權制度  ›  SLIDE C-1</text>
+  <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+  <text x="90" y="98" font-size="38" font-weight="900" fill="#F5F8FF">一首歌的錢，<tspan fill="#4D9FFF">怎麼流到創作者手上？</tspan></text>
+
+  <!-- ===== 左欄講解卡 ===== -->
+  <rect x="64" y="140" width="304" height="188" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+  <text x="86" y="176" font-size="18" font-weight="800" fill="#4D9FFF">■ 為什麼一首歌有兩條軌？</text>
+  <text x="86" y="206" font-size="17" fill="#C7D2E4">著作權法把「詞曲」（音樂著作）</text>
+  <text x="86" y="230" font-size="17" fill="#C7D2E4">和「這一次錄音」（錄音著作）當成</text>
+  <text x="86" y="254" font-size="17" fill="#C7D2E4">兩個獨立的著作：權利人不同、</text>
+  <text x="86" y="278" font-size="17" fill="#C7D2E4">授權要分別談（著作權法§5）。</text>
+  <text x="86" y="308" font-size="16" font-weight="700" fill="#7E8CA8">→ 發行音樂NFT，兩軌都要授權。</text>
+
+  <rect x="64" y="352" width="304" height="196" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+  <rect x="64" y="352" width="304" height="5" rx="2.5" fill="url(#topbar)"/>
+  <text x="86" y="390" font-size="18" font-weight="800" fill="#F2A33C">■ 痛點在哪？</text>
+  <text x="86" y="420" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">1. 慢</tspan>：結算週期以「半年」計。</text>
+  <text x="86" y="446" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">2. 黑箱</tspan>：只拿到一張總表，</text>
+  <text x="86" y="470" font-size="17" fill="#C7D2E4">　 無法驗算每一筆怎麼算出來。</text>
+  <text x="86" y="494" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">3. 層層抽成</tspan>：每過一手扣一次。</text>
+  <text x="86" y="524" font-size="16" font-weight="700" fill="#7E8CA8">→ 音樂NFT的承諾，打在這三點上。</text>
+
+  <!-- ===== 中央金流圖 ===== -->
+  <!-- 串流平台 -->
+  <rect x="412" y="300" width="186" height="96" rx="12" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+  <text x="505" y="336" font-size="19" font-weight="800" fill="#F5F8FF" text-anchor="middle">串流平台</text>
+  <text x="505" y="360" font-size="16" fill="#8FA1C0" text-anchor="middle">Spotify／KKBOX</text>
+  <text x="505" y="380" font-size="15" fill="#7E8CA8" text-anchor="middle">聽眾付的每一塊錢從這裡出發</text>
+
+  <!-- 分流 -->
+  <line x1="598" y1="330" x2="672" y2="240" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrB)"/>
+  <line x1="598" y1="366" x2="672" y2="460" stroke="#35C08E" stroke-width="2.5" marker-end="url(#arrG)"/>
+  <text x="626" y="348" font-size="15" fill="#7E8CA8">拆成兩軌</text>
+
+  <!-- 上軌：錄音著作 -->
+  <rect x="680" y="150" width="216" height="96" rx="12" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+  <text x="788" y="184" font-size="18" font-weight="800" fill="#4D9FFF" text-anchor="middle">錄音著作軌</text>
+  <text x="788" y="208" font-size="16" fill="#C7D2E4" text-anchor="middle">唱片公司／發行商</text>
+  <text x="788" y="228" font-size="15" fill="#7E8CA8" text-anchor="middle">約占大宗，先進公司帳</text>
+  <line x1="896" y1="198" x2="982" y2="198" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrB)"/>
+  <rect x="990" y="150" width="196" height="96" rx="12" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+  <text x="1088" y="186" font-size="17" font-weight="800" fill="#F5F8FF" text-anchor="middle">歌手・樂手</text>
+  <text x="1088" y="210" font-size="15" fill="#7E8CA8" text-anchor="middle">依唱片約拆分</text>
+  <text x="1088" y="229" font-size="15" fill="#7E8CA8" text-anchor="middle">（常有預付款要先扣回）</text>
+
+  <!-- 時間軸 -->
+  <rect x="680" y="316" width="506" height="36" rx="18" fill="rgba(242,163,60,.12)" stroke="#F2A33C" stroke-width="1.5"/>
+  <text x="933" y="340" font-size="17" font-weight="800" fill="#F2A33C" text-anchor="middle">⏱ 從播放到入帳：半年至一年・層層抽成・創作者無從核帳</text>
+
+  <!-- 下軌：音樂著作 -->
+  <rect x="680" y="422" width="216" height="96" rx="12" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+  <text x="788" y="456" font-size="18" font-weight="800" fill="#35C08E" text-anchor="middle">音樂著作軌（詞曲）</text>
+  <text x="788" y="480" font-size="16" fill="#C7D2E4" text-anchor="middle">集管團體 MÜST</text>
+  <text x="788" y="500" font-size="15" fill="#7E8CA8" text-anchor="middle">概括授權・公告費率・再分配</text>
+  <line x1="896" y1="470" x2="982" y2="470" stroke="#35C08E" stroke-width="2.5" marker-end="url(#arrG)"/>
+  <rect x="990" y="422" width="196" height="96" rx="12" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+  <text x="1088" y="458" font-size="17" font-weight="800" fill="#F5F8FF" text-anchor="middle">作詞人・作曲人</text>
+  <text x="1088" y="482" font-size="15" fill="#7E8CA8" text-anchor="middle">經版權公司或集管</text>
+  <text x="1088" y="501" font-size="15" fill="#7E8CA8" text-anchor="middle">分配入帳</text>
+
+  <!-- 圖的提醒句 -->
+  <text x="799" y="558" font-size="16" fill="#7E8CA8" text-anchor="middle">每一個箭頭背後都是一份契約：唱片約・詞曲約・集管概括授權——拿掉契約，箭頭就斷。</text>
+
+  <!-- ===== 底部金句（與論文的連結） ===== -->
+  <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+  <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+  <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">與論文的連結：程式碼能取代的是「算錢」，取代不了的是「授權」。</text>
+  <text x="96" y="654" font-size="16" fill="#8FA1C0">之後每一講都在問：智慧合約想接管這張圖的哪一段？——授權（能不能用）／分潤（錢怎麼分）／證據（帳怎麼查），三層次模型的原點。</text>
+
+  <!-- 引註＋頁碼 -->
+  <text x="64" y="704" font-size="14.5" fill="#55668A">本圖由作者參考 IFPI Global Music Report 之版稅金流說明與 MÜST 社團法人中華音樂著作權協會官網授權說明（https://www.must.org.tw）改繪；金流比例為示意（最後瀏覽日：2026-07-12）。</text>
+  <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">C-1</text>
+</svg>
