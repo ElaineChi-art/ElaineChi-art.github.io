@@ -2,6 +2,8 @@
 
 【先確定今天的日期】作者在台灣，網站也是給台灣讀者看的，所以「今天」要用台灣時間認定，不是伺服器的 UTC 時間。第一步先執行 `TZ=Asia/Taipei date +%F` 取得日期字串（格式 YYYY-MM-DD），下文所有 {{DATE}} 都代表這個值，之後的每一步都要用這個實際日期字串，不要留著字面上的「{{DATE}}」三個字。目的：作者要在 2026 年底前拿到國際遠端全端職缺、與台灣大型企業/金融科技（國泰、玉山、台灣大哥大、91APP 等）的面試機會。她的策略是「每天用 AI 自動學一點，學到能在面試現場親口講清楚」，而不是囤一堆她自己講不出來的東西——這點是最高原則，任何時候寫作深度與內容都要服務這個目的。
 
+【最高原則：今天一定要成功發布一篇】寧可內容簡單一點、沒有語音，也要在合理時間內（目標15分鐘內）完成 git push。任何單一步驟卡住超過3分鐘或反覆失敗，就簡化或跳過那個部分，繼續往下走完流程，絕對不要為了做到完美而導致今天整篇都沒發布。
+
 【第零步：防重複】若 labs/curriculum/posts/daily/{{DATE}}.html 已存在，直接結束、什麼都不要動。
 
 【第一步：選題】讀 labs/curriculum/data/curriculum.json，取 lessons 陣列中第一個 status 為 "todo" 的課程。完成發布後把該筆 status 改為 "done {{DATE}}" 存回。每天恰好一課、絕不重複已 done 的課程。⚠️ 如果所有課程都已經是 done，不要自己編新題目——改為在 labs/curriculum/data/curriculum.json 開頭的 "note" 欄位後加一行 "queue_empty_since": "{{DATE}}"，然後結束，等作者本人補充新課程。
@@ -26,15 +28,16 @@
 
 【投影片（每篇必備一張，即 today 的 slide）】風格範本＝labs/curriculum/scripts/slide-style-template.svg（「林士涵專討簡報」風格，作者的品味基準），動筆前先讀這個檔案、完全照抄其視覺語言：深藍夜空漸層底＋頂端亮藍漸層條；左上麵包屑小字（格式「{act} · {ACTS[act]} › SLIDE N」，act/模組名稱取自 curriculum.json 的 act 欄位，M1=人工智慧核心概念 M2=生成式AI應用開發 M3=深度學習應用實戰 M4=前端開發 M5=後端與資料庫 M6=量化交易 M7=機器學習核心 M8=Python與爬蟲 M9=深度學習模型延伸 M10=行銷與商業）；標題左側藍色圓角豎條＋白色粗體；內容用圓角卡片（深底、淺框）；底部滿版金句框寫「面試講法：一句話主張」。⚠️ 所有顏色 inline 寫死、不依賴外部 class；<defs> 的 gradient id 加上日期後綴（把 {{DATE}} 的連字號拿掉當後綴，例如日期是 2026-07-22 就用 gradD20260722）避免撞名；viewBox="0 0 1280 720"；字級下限：卡片小標≥18、內文≥16、輔助字≥15、頁碼≥14，放不下就刪句子不准縮字級。若該課程有 "ref" 欄位（有具體數據可畫），加第二張「實證投影片」（橫向長條圖或簡單結構圖），標清楚數據來源與年份，麵包屑用「SLIDE 1-數據」。圖片存放於文章內聯 SVG（不要輸出成外部檔案）。
 
-【簡報講解語音（每張投影片必備）】投影片 <figure> 內於 <svg> 之前加：<button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-{{lesson_id}}-N').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>（N 為投影片序號，1、2…）。<figure> 結束後緊接：
+【簡報講解語音（有做出來才加，語音失敗就完全跳過這一整段，不要留半成品的按鈕）】如果語音合成（見下方步驟）成功，投影片 <figure> 內於 <svg> 之前加：<button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-{{lesson_id}}-N').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>（N 為投影片序號，1、2…）。<figure> 結束後緊接：
 <div class="script-panel" id="sp-{{lesson_id}}-N">
   <div class="lbl">SLIDE N 簡報講解</div>
   <audio controls preload="none" src="../../assets/script-{{DATE}}-N.mp3"></audio>
   <p>...（200–260字逐段講解這張投影片，文風與正文一致的工程師白話技術詮釋，可自然地說「這張圖在講的是……」）</p>
 </div>
-語音合成：把上面這段純文字（去標籤、去 HTML 實體）存成暫存 txt，執行
-`edge-tts --voice zh-TW-HsiaoChenNeural --rate="-4%" --file <暫存txt> --write-media labs/curriculum/assets/script-{{DATE}}-N.mp3`
-確認檔案產生且非 0 bytes 才寫入 <audio src>；若 edge-tts 指令不存在，先 `pip install edge-tts`（或 `pip install --user edge-tts`）再重試；若最終仍失敗，該張投影片就不要放 audio 標籤，不可以連結到不存在的檔案，但文章其餘部分照常發布。
+語音合成（⚠️ 這步是加分項不是必需品，整套流程最多在這步花 3 分鐘，超過就放棄）：把上面這段純文字（去標籤、去 HTML 實體）存成暫存 txt，用帶 timeout 的方式各嘗試一次即可，不要重試或除錯太久：
+1. `pip install --quiet edge-tts`（設 timeout 60 秒，失敗就直接跳過語音、繼續往下做，不要再嘗試別的安裝方式）
+2. 若安裝成功，執行一次 `edge-tts --voice zh-TW-HsiaoChenNeural --rate="-4%" --file <暫存txt> --write-media labs/curriculum/assets/script-{{DATE}}-N.mp3`（設 timeout 60 秒）
+3. 確認檔案產生且非 0 bytes 才寫入 <audio src>；只要中間任何一步失敗、逾時、或不確定怎麼繼續，就整段放棄語音（不寫 script-btn、script-panel、audio 標籤），但文章其餘部分（正文＋投影片＋面試官Q&A）照常完整發布，不可以因為語音卡住而讓整篇文章沒發布出去。
 
 【面試官可能怎麼問（每篇文末必備）】正文最後加 <div class="oralq"><b>🎤 面試官可能怎麼問</b><ol>...</ol></div>，3–5 題這個主題最可能被追問的問題，每題三行：
 1. <span class="q">「面試官原話」</span>
