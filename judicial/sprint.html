@@ -169,6 +169,8 @@
   .annophrase{border-bottom:2px solid var(--coral);padding-bottom:1px;font-weight:700}
   .anno{color:var(--coral);font-size:.82em;font-weight:600;margin:0 1px}
   #gjblk{scroll-margin-top:54px} .stem{scroll-margin-top:54px}
+  .starbtn{flex:none;background:none;border:none;font-size:20px;line-height:1;color:#6b6f76;cursor:pointer;padding:2px 4px}
+  .starbtn.on{color:#ffd86b}
   .opt:disabled{cursor:default}
   .teach{background:rgba(127,224,207,.07);border:1px solid rgba(127,224,207,.25);border-radius:16px;padding:15px 16px;margin-top:6px;animation:slidein .25s}
   @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -394,6 +396,10 @@ function delWrong(k){S("sjg_wrong",wrongSet().filter(x=>x!==k));}
 /* 🟢🟡 熟悉度：最近答對=熟(k) / 答錯=不熟(w) */
 function famGet(){return L("sjg_fam","{}");}
 function famSet(k,v){const o=famGet();o[k]=v;S("sjg_fam",o);}
+/* ⭐ 星星：自己標記要複習/測驗的題（依題 key，跨速讀與機器人共用） */
+function starGet(){return L("sjg_star","[]");}
+function starHas(k){return starGet().includes(k);}
+function starToggle(k){const a=starGet(),i=a.indexOf(k);if(i<0)a.push(k);else a.splice(i,1);S("sjg_star",a);return i<0;}
 function streak(){const o=log();let s=0;for(let k=0;k<400;k++){const key=iso(new Date(d0(new Date()).getTime()-k*DAY));const dn=(o[key]||{done:0}).done;if(k===0){if(dn>0)s++;continue;}if(dn>0)s++;else break;}return s;}
 
 /* ===== 語音 ===== */
@@ -668,11 +674,11 @@ function renderSpeed(g){
     // 反射地圖上方也放「挑一區測驗」（熟悉度用題庫作答記錄）
     const rows=groupRows(g),pos=getPos(g),ew=new Set(everWrong()),fm=famGet(),B={n:[],w:[],k:[]};
     rows.forEach((r,i)=>{const st=fm[r.k]||(ew.has(r.k)?"w":(i<pos?"k":"n"));B[st].push(r);});
-    const F=srFilter||"all";
-    const flt=[["all","全部"],["n","🔴未測"],["w","🟡不熟"],["k","🟢已熟"]].map(c=>`<button class="subchip${c[0]===F?" on":""}" data-flt="${c[0]}">${c[1]}${c[0]==="all"?"":"（"+B[c[0]].length+"）"}</button>`).join("");
-    srTestRows=(F==="all")?rows:B[F];
+    const starRows=rows.filter(r=>starHas(r.k)),F=srFilter||"all";
+    const flt=[["all","全部"],["n","🔴未測"],["w","🟡不熟"],["k","🟢已熟"],["s","⭐星星"]].map(c=>`<button class="subchip${c[0]===F?" on":""}" data-flt="${c[0]}">${c[1]}${c[0]==="all"?"":"（"+(c[0]==="s"?starRows.length:B[c[0]].length)+"）"}</button>`).join("");
+    srTestRows=(F==="s")?starRows:(F==="all")?rows:B[F];
     const nch=[10,20,30,50,0].map(nn=>`<button class="subchip${nn===srTestN?" on":""}" data-testn="${nn}">${nn===0?"全部":nn+"題"}</button>`).join("");
-    const takeN=(srTestN>0)?Math.min(srTestN,srTestRows.length):srTestRows.length,fLbl={all:"這科",n:"未測",w:"不熟",k:"已熟"}[F];
+    const takeN=(srTestN>0)?Math.min(srTestN,srTestRows.length):srTestRows.length,fLbl={all:"這科",n:"未測",w:"不熟",k:"已熟",s:"星星"}[F];
     html=`<div style="background:rgba(127,224,160,.06);border:1px solid rgba(127,224,160,.25);border-radius:12px;padding:10px 12px;margin-bottom:12px">`
       +`<div style="font-size:12px;font-weight:800;color:var(--teal);margin-bottom:6px">🎯 挑一區測驗（未測 ${B.n.length}・不熟 ${B.w.length}・熟 ${B.k.length}）</div>`
       +`<div class="subrow" style="margin:0 0 6px">${flt}</div><div class="subrow" style="margin:0 0 6px">${nch}</div>`
@@ -683,22 +689,28 @@ function renderSpeed(g){
     rows.forEach((r,i)=>{const st=fm[r.k]||(ew.has(r.k)?"w":(i<pos?"k":"n"));B[st].push(r);});
     const mnOf=r=>((r.p.key||r.p.ans||r.p.concept||"").split(/[。！]/)[0].replace(/^答案[A-DＡ-Ｄ][^：:]*[：:]\s*/,"").trim());
     const F=srFilter||"all";
-    const flt=[["all","全部"],["n","🔴未測"],["w","🟡不熟"],["k","🟢已熟"]].map(c=>
-      `<button class="subchip${c[0]===F?" on":""}" data-flt="${c[0]}">${c[1]}${c[0]==="all"?"":"（"+B[c[0]].length+"）"}</button>`).join("");
-    srTestRows=(F==="all")?rows:B[F];         // 目前這區要測驗的題目
+    const starRows=rows.filter(r=>starHas(r.k));
+    const flt=[["all","全部"],["n","🔴未測"],["w","🟡不熟"],["k","🟢已熟"],["s","⭐星星"]].map(c=>
+      `<button class="subchip${c[0]===F?" on":""}" data-flt="${c[0]}">${c[1]}${c[0]==="all"?"":"（"+(c[0]==="s"?starRows.length:B[c[0]].length)+"）"}</button>`).join("");
+    srTestRows=(F==="s")?starRows:(F==="all")?rows:B[F];   // 目前這區要測驗的題目
     const nch=[10,20,30,50,0].map(nn=>`<button class="subchip${nn===srTestN?" on":""}" data-testn="${nn}">${nn===0?"全部":nn+"題"}</button>`).join("");
     const takeN=(srTestN>0)?Math.min(srTestN,srTestRows.length):srTestRows.length;
-    const fLbl={all:"這科",n:"未測",w:"不熟",k:"已熟"}[F];
+    const fLbl={all:"這科",n:"未測",w:"不熟",k:"已熟",s:"星星"}[F];
     const testCtl=`<div class="subrow" style="margin:0 0 6px">${nch}</div>`
       +`<button class="subchip" id="srTestBtn" style="border-style:solid;background:rgba(127,224,160,.15);border-color:var(--ok);color:var(--ok);font-weight:800">▶ 測驗${fLbl} ${takeN} 題</button>`;
+    const starBtn=k=>`<button class="starbtn${starHas(k)?" on":""}" data-star="${k}">${starHas(k)?"★":"☆"}</button>`;
+    const rowHTML=r=>{const mn=mnOf(r);srItems.push((r.p.concept||"").replace(/§.*/,"")+"。"+mn);
+      return `<div class="sr" style="display:flex;align-items:flex-start;gap:8px"><div style="flex:1"><b>${esc(r.p.concept)}</b><div style="font-size:13px;color:#ffeab0;margin-top:2px">💡 ${esc(mn)}</div></div>${starBtn(r.k)}</div>`;};
     srItems=[];let hh=`<div class="subrow" style="margin:0 0 8px">${flt}</div>${testCtl}`;
-    [["n","🔴 尚未測驗"],["w","🟡 測過還不熟"],["k","🟢 已熟"]].forEach(sec=>{
+    if(F==="s"){
+      hh+=`<div style="font-size:14px;font-weight:800;color:#ffd86b;margin:14px 0 6px;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:4px">⭐ 我的星星（${starRows.length}）</div>`;
+      hh+=starRows.length?starRows.map(rowHTML).join(""):`<div class="mini" style="text-align:left">還沒有星星。點各題右邊的 ☆ 收藏。</div>`;
+    }else [["n","🔴 尚未測驗"],["w","🟡 測過還不熟"],["k","🟢 已熟"]].forEach(sec=>{
       if(F!=="all"&&F!==sec[0])return;
       const list=B[sec[0]];
       hh+=`<div style="font-size:14px;font-weight:800;color:var(--teal);margin:14px 0 6px;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:4px">${sec[1]}（${list.length}）</div>`;
       if(!list.length){hh+=`<div class="mini" style="text-align:left">（無）</div>`;return;}
-      list.forEach(r=>{const mn=mnOf(r);srItems.push((r.p.concept||"").replace(/§.*/,"")+"。"+mn);
-        hh+=`<div class="sr"><b>${esc(r.p.concept)}</b><div style="font-size:13px;color:#ffeab0;margin-top:2px">💡 ${esc(mn)}</div></div>`;});
+      hh+=list.map(rowHTML).join("");
     });
     srStep=50;
     if(cnt)cnt.textContent=`未測 ${B.n.length}・不熟 ${B.w.length}・熟 ${B.k.length}`;
@@ -715,7 +727,8 @@ function renderSpeed(g){
   if(body)body.innerHTML=html;
   if(body){body.querySelectorAll("[data-flt]").forEach(b=>b.onclick=()=>{srFilter=b.dataset.flt;renderSpeed(g);});   // 熟悉度篩選切換
     body.querySelectorAll("[data-testn]").forEach(b=>b.onclick=()=>{srTestN=+b.dataset.testn;renderSpeed(g);});     // 題數
-    const tb=body.querySelector("#srTestBtn");if(tb)tb.onclick=()=>startBucketSession(g,srTestRows,srTestN);}       // ▶ 直接測驗這區
+    const tb=body.querySelector("#srTestBtn");if(tb)tb.onclick=()=>startBucketSession(g,srTestRows,srTestN);       // ▶ 直接測驗這區
+    body.querySelectorAll("[data-star]").forEach(b=>b.onclick=e=>{e.stopPropagation();const on=starToggle(b.dataset.star);b.textContent=on?"★":"☆";b.classList.toggle("on",on);});}   // ⭐ 收藏切換（就地）
 }
 /* 📕 錯題本 */
 function renderEW(){
@@ -868,13 +881,14 @@ function renderCard(){
   let h=rl+`<div class="qtag ${card.type==="review"?"rev":""}">${card.type==="review"?"🔁 回鍋（上次答錯）":"🧠 第 "+(SES.i+1)+" 題"}</div>
     <div class="qmeta">${r.q.year}年 ${r.sub} 第${r.q.num}題　·　讀不懂沒關係，看不太懂就先猜，重點在解答</div>
     <div class="stem">${isHL(SES.group)?markStem(r):colorParties(esc(r.q.stem))}</div>
-    <div class="qhelp"><button class="hlp" id="readStem">🔊 唸題目</button><button class="hlp" id="readOpts">🔊 唸四個選項</button><button class="hlp" id="hintBtn">🔑 看不懂？先看這題在考什麼</button></div>
+    <div class="qhelp"><button class="hlp" id="readStem">🔊 唸題目</button><button class="hlp" id="readOpts">🔊 唸四個選項</button><button class="hlp" id="starBtn">${starHas(r.k)?"★ 已收藏":"☆ 收藏"}</button><button class="hlp" id="hintBtn">🔑 看不懂？先看這題在考什麼</button></div>
     <div class="hint" id="hintBox"></div>
     <div id="opts">`;
   r.q.options.forEach((o,i)=>{h+=`<button class="opt" data-i="${i}"><span class="lt">${L[i]}</span><span>${colorParties(esc(o))}</span></button>`;});
   h+=`</div><div id="teach"></div>`;
   body.innerHTML=h;body.scrollTop=0;
   body.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+  {const sb=document.getElementById("starBtn");if(sb)sb.onclick=()=>{const on=starToggle(r.k);sb.textContent=on?"★ 已收藏":"☆ 收藏";};}   // ⭐ 收藏這題
   document.getElementById("readStem").onclick=()=>speak(r.q.stem);
   document.getElementById("readOpts").onclick=()=>speak(r.q.options.map((o,i)=>L[i]+"、"+o).join("。"));   // 唸四個選項 A、…B、…
   document.getElementById("hintBtn").onclick=()=>{const hb=document.getElementById("hintBox");
@@ -996,7 +1010,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s48";
+const APP_VERSION="s49";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
