@@ -629,7 +629,7 @@ function ssMatch(r){const q=(r.p.concept||"")+" "+(r.p.law||"");let best=null,bs
   return bs>=0.16?best:null;}
 function srReflexMatch(r,g){return g==="國際法+法學英文"?gjMatch(r):g==="刑法"?sxMatch(r):g==="商事法"?ssMatch(r):null;}
 function isRG(g){return g==="商事法"||g==="刑法"||g==="國際法+法學英文";}   // 有反射地圖整套功能的科
-function isHL(g){return isRG(g)||g==="民法";}   // 題幹高亮＋選項訂正（民法用現有筆記，無反射地圖）
+function isHL(g){return isRG(g)||g==="民法"||g==="刑訴";}   // 題幹高亮＋選項訂正（民法/刑訴用現有筆記，無反射地圖）
 function gjVoice(t){return [t.title,...t.body].join("。").replace(/\*\*/g,"").replace(/§/g,"第").replace(/[「」『』]/g,"");}
 function gjBlockHTML(t){const inner=[t.title,...t.body].map(srLineHTML).join("");
   return `<div class="blk" id="gjblk"><span class="l">📎 我的反射地圖解析</span>`
@@ -881,12 +881,13 @@ function answer(idx){
   // 自動朗讀（可靜音）
   const spk=((correct?"答對了。":"這題答案是"+L[ans]+"。")+(p.concept||"")+"。"+(p.key||whyC||p.ans||"")).replace(/§/g,"第").replace(/[「」『』]/g,"");
   if(!muted()){
-    if(isRG(SES.group))speakSeq([   // 反射科：先念我的筆記→題目＋題目筆記→選項＋訂正
-        {text:gj?gjVoice(gj):"",before:()=>srScroll("#gjblk","start")},   // 我的整理對齊上方看得到
-        {text:stemNoteVoice(r),before:()=>srScroll(".stem","start")},     // 捲到題目(選項也一起看得到)
-        {text:optSpeak}                                                    // 念選項不再捲
-      ],()=>srScroll("#nextBtn","center"));   // 全部唸完才捲到下一張
-    else speak(spk);
+    if(isHL(SES.group)){
+      const seq=[];
+      if(isRG(SES.group)&&gj)seq.push({text:gjVoice(gj),before:()=>srScroll("#gjblk","start")});   // 三科：先念我的反射筆記
+      seq.push({text:stemNoteVoice(r),before:()=>srScroll(".stem","start")});   // 停在題幹(選項一起看得到)
+      seq.push({text:optSpeak});                                                 // 念選項＋訂正，停留不捲
+      speakSeq(seq,()=>srScroll("#nextBtn","center"));                           // 全部唸完才往下到下一題
+    } else speak(spk);
   }
   document.getElementById("teachAudio").onclick=()=>speak(((p.concept||"")+"。"+(p.key||p.ans||"")+"。"+(whyC||"")+"。"+(p.trap?"要分清楚："+p.trap:"")).replace(/§/g,"第").replace(/[「」『』]/g,""));
   if(gj){const gab=document.getElementById("gjAudio");if(gab)gab.onclick=()=>{stopSpeak();speak(gjVoice(gj));};}   // 語音另外按：直接念這題的反射地圖解析
@@ -947,7 +948,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s42";
+const APP_VERSION="s43";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
