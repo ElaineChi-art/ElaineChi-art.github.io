@@ -298,6 +298,7 @@
 <script src="laws.js"></script>
 <script src="sr-shangshi.js?v=6"></script>
 <script src="sr-guoji.js?v=6"></script>
+<script src="sr-tips.js?v=1"></script>
 <script src="sr-xingfa.js?v=1"></script>
 <script>
 /* ===== 防呆：任何錯誤直接顯示在畫面上，不要一片空白 ===== */
@@ -681,6 +682,10 @@ function renderSpeed(g){
       sh+=`<button class="subchip" data-seg="${s}">🔊 ${OV?"題":""}${s+1}–${e}</button>`;}
     segs.innerHTML=sh||`<span class="mini" style="margin:0">（無）</span>`;
     segs.querySelectorAll("[data-seg]").forEach(b=>b.onclick=()=>{stopSpeak();speak(srSegText(+b.dataset.seg));});}
+  if(window.SR_TIPS&&SR_TIPS[g]&&SR_TIPS[g].length){   // 💡 一句話記法（置頂，可持續增加）
+    const tips=SR_TIPS[g].map(x=>`<div style="font-size:13.5px;line-height:1.6;color:#ffeab0;margin:3px 0">💡 ${srMd(x)}</div>`).join("");
+    html=`<div style="background:rgba(255,216,107,.08);border:1px solid rgba(255,216,107,.25);border-radius:12px;padding:10px 12px;margin-bottom:12px"><div style="font-size:12px;font-weight:800;color:#ffe79c;margin-bottom:4px">💡 一句話記法</div>${tips}</div>`+html;
+  }
   if(body)body.innerHTML=html;
 }
 /* 📕 錯題本 */
@@ -948,7 +953,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s43";
+const APP_VERSION="s44";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
