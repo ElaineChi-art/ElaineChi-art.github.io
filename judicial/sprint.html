@@ -665,6 +665,18 @@ function renderSpeed(g){
     srStep=8;                                // 每段語音念 8 題
     if(cnt)cnt.textContent=srItems.length+" 題 · 我的筆記（分段序號＝題號）";
     html=OV.map(srLineHTML).join("");
+    // 反射地圖上方也放「挑一區測驗」（熟悉度用題庫作答記錄）
+    const rows=groupRows(g),pos=getPos(g),ew=new Set(everWrong()),fm=famGet(),B={n:[],w:[],k:[]};
+    rows.forEach((r,i)=>{const st=fm[r.k]||(ew.has(r.k)?"w":(i<pos?"k":"n"));B[st].push(r);});
+    const F=srFilter||"all";
+    const flt=[["all","全部"],["n","🔴未測"],["w","🟡不熟"],["k","🟢已熟"]].map(c=>`<button class="subchip${c[0]===F?" on":""}" data-flt="${c[0]}">${c[1]}${c[0]==="all"?"":"（"+B[c[0]].length+"）"}</button>`).join("");
+    srTestRows=(F==="all")?rows:B[F];
+    const nch=[10,20,30,50,0].map(nn=>`<button class="subchip${nn===srTestN?" on":""}" data-testn="${nn}">${nn===0?"全部":nn+"題"}</button>`).join("");
+    const takeN=(srTestN>0)?Math.min(srTestN,srTestRows.length):srTestRows.length,fLbl={all:"這科",n:"未測",w:"不熟",k:"已熟"}[F];
+    html=`<div style="background:rgba(127,224,160,.06);border:1px solid rgba(127,224,160,.25);border-radius:12px;padding:10px 12px;margin-bottom:12px">`
+      +`<div style="font-size:12px;font-weight:800;color:var(--teal);margin-bottom:6px">🎯 挑一區測驗（未測 ${B.n.length}・不熟 ${B.w.length}・熟 ${B.k.length}）</div>`
+      +`<div class="subrow" style="margin:0 0 6px">${flt}</div><div class="subrow" style="margin:0 0 6px">${nch}</div>`
+      +`<button class="subchip" id="srTestBtn" style="border-style:solid;background:rgba(127,224,160,.15);border-color:var(--ok);color:var(--ok);font-weight:800">▶ 測驗${fLbl} ${takeN} 題</button></div>`+html;
   }else{                                     // 自動科：依熟悉度分三區＋每題一句話記法＋可直接測驗
     const rows=groupRows(g),pos=getPos(g),ew=new Set(everWrong()),fm=famGet();
     const B={n:[],w:[],k:[]};                 // 未測 / 測過不熟 / 已熟
@@ -984,7 +996,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s47";
+const APP_VERSION="s48";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
