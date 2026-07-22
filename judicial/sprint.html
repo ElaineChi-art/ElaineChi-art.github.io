@@ -568,7 +568,7 @@ function renderCal(){const cal=document.getElementById("cal");if(!cal)return;
 function renderStreak(){document.getElementById("streak").textContent=`🔥 連續 ${streak()} 天`;}
 /* 📖 考場速讀：某科高頻考點→核心規則→陷阱（依題數排序，高頻在前） */
 function subjectRows(g){const subs=GROUPS[g]||[g];return ROWS.filter(r=>subs.includes(r.sub));}
-let srGroup=null, srItems=[], srSeq=false;
+let srGroup=null, srItems=[], srSeq=false, srFilter="all";
 // 某一段(50條)的朗讀文字
 let srStep=50;   // 每一段語音包含幾個單位
 function srSegText(start){return srItems.slice(start,start+srStep).join("。");}   // srItems 皆為朗讀字串
@@ -667,8 +667,12 @@ function renderSpeed(g){
     const B={n:[],w:[],k:[]};                 // 未測 / 測過不熟 / 已熟
     rows.forEach((r,i)=>{const st=ew.has(r.k)?"w":(i<pos?"k":"n");B[st].push(r);});
     const mnOf=r=>((r.p.key||r.p.ans||r.p.concept||"").split(/[。！]/)[0].replace(/^答案[A-DＡ-Ｄ][^：:]*[：:]\s*/,"").trim());
-    srItems=[];let hh="";
+    const F=srFilter||"all";
+    const flt=[["all","全部"],["n","🔴未測"],["w","🟡不熟"],["k","🟢已熟"]].map(c=>
+      `<button class="subchip${c[0]===F?" on":""}" data-flt="${c[0]}">${c[1]}${c[0]==="all"?"":"（"+B[c[0]].length+"）"}</button>`).join("");
+    srItems=[];let hh=`<div class="subrow" style="margin:0 0 10px">${flt}</div>`;
     [["n","🔴 尚未測驗"],["w","🟡 測過還不熟"],["k","🟢 已熟"]].forEach(sec=>{
+      if(F!=="all"&&F!==sec[0])return;
       const list=B[sec[0]];
       hh+=`<div style="font-size:14px;font-weight:800;color:var(--teal);margin:14px 0 6px;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:4px">${sec[1]}（${list.length}）</div>`;
       if(!list.length){hh+=`<div class="mini" style="text-align:left">（無）</div>`;return;}
@@ -703,6 +707,7 @@ function renderSpeed(g){
     html=`<div style="background:rgba(255,216,107,.08);border:1px solid rgba(255,216,107,.25);border-radius:12px;padding:10px 12px;margin-bottom:12px"><div style="font-size:12px;font-weight:800;color:#ffe79c;margin-bottom:4px">💡 一句話記法</div>${tips}</div>`+html;
   }
   if(body)body.innerHTML=html;
+  if(body)body.querySelectorAll("[data-flt]").forEach(b=>b.onclick=()=>{srFilter=b.dataset.flt;renderSpeed(g);});   // 熟悉度篩選切換
 }
 /* 📕 錯題本 */
 function renderEW(){
@@ -969,7 +974,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s45";
+const APP_VERSION="s46";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
