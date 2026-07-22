@@ -391,6 +391,9 @@ function addWrong(k){const a=wrongSet();if(!a.includes(k)){a.push(k);S("sjg_wron
 function everWrong(){return L("sjg_everwrong","[]");}
 function addEverWrong(k){const a=everWrong();if(!a.includes(k)){a.push(k);S("sjg_everwrong",a);}}
 function delWrong(k){S("sjg_wrong",wrongSet().filter(x=>x!==k));}
+/* 🟢🟡 熟悉度：最近答對=熟(k) / 答錯=不熟(w) */
+function famGet(){return L("sjg_fam","{}");}
+function famSet(k,v){const o=famGet();o[k]=v;S("sjg_fam",o);}
 function streak(){const o=log();let s=0;for(let k=0;k<400;k++){const key=iso(new Date(d0(new Date()).getTime()-k*DAY));const dn=(o[key]||{done:0}).done;if(k===0){if(dn>0)s++;continue;}if(dn>0)s++;else break;}return s;}
 
 /* ===== 語音 ===== */
@@ -568,7 +571,7 @@ function renderCal(){const cal=document.getElementById("cal");if(!cal)return;
 function renderStreak(){document.getElementById("streak").textContent=`🔥 連續 ${streak()} 天`;}
 /* 📖 考場速讀：某科高頻考點→核心規則→陷阱（依題數排序，高頻在前） */
 function subjectRows(g){const subs=GROUPS[g]||[g];return ROWS.filter(r=>subs.includes(r.sub));}
-let srGroup=null, srItems=[], srSeq=false, srFilter="all";
+let srGroup=null, srItems=[], srSeq=false, srFilter="all", srTestRows=[];
 // 某一段(50條)的朗讀文字
 let srStep=50;   // 每一段語音包含幾個單位
 function srSegText(start){return srItems.slice(start,start+srStep).join("。");}   // srItems 皆為朗讀字串
@@ -662,15 +665,21 @@ function renderSpeed(g){
     srStep=8;                                // 每段語音念 8 題
     if(cnt)cnt.textContent=srItems.length+" 題 · 我的筆記（分段序號＝題號）";
     html=OV.map(srLineHTML).join("");
-  }else if(g==="刑訴"){                       // 刑訴：依熟悉度分三區＋每題一句話記法
-    const rows=groupRows(g),pos=getPos(g),ew=new Set(everWrong());
+  }else{                                     // 自動科：依熟悉度分三區＋每題一句話記法＋可直接測驗
+    const rows=groupRows(g),pos=getPos(g),ew=new Set(everWrong()),fm=famGet();
     const B={n:[],w:[],k:[]};                 // 未測 / 測過不熟 / 已熟
-    rows.forEach((r,i)=>{const st=ew.has(r.k)?"w":(i<pos?"k":"n");B[st].push(r);});
+    rows.forEach((r,i)=>{const st=fm[r.k]||(ew.has(r.k)?"w":(i<pos?"k":"n"));B[st].push(r);});
     const mnOf=r=>((r.p.key||r.p.ans||r.p.concept||"").split(/[。！]/)[0].replace(/^答案[A-DＡ-Ｄ][^：:]*[：:]\s*/,"").trim());
     const F=srFilter||"all";
     const flt=[["all","全部"],["n","🔴未測"],["w","🟡不熟"],["k","🟢已熟"]].map(c=>
       `<button class="subchip${c[0]===F?" on":""}" data-flt="${c[0]}">${c[1]}${c[0]==="all"?"":"（"+B[c[0]].length+"）"}</button>`).join("");
-    srItems=[];let hh=`<div class="subrow" style="margin:0 0 10px">${flt}</div>`;
+    srTestRows=(F==="all")?rows:B[F];         // 目前這區要測驗的題目
+    const nch=[10,20,30,50,0].map(nn=>`<button class="subchip${nn===srTestN?" on":""}" data-testn="${nn}">${nn===0?"全部":nn+"題"}</button>`).join("");
+    const takeN=(srTestN>0)?Math.min(srTestN,srTestRows.length):srTestRows.length;
+    const fLbl={all:"這科",n:"未測",w:"不熟",k:"已熟"}[F];
+    const testCtl=`<div class="subrow" style="margin:0 0 6px">${nch}</div>`
+      +`<button class="subchip" id="srTestBtn" style="border-style:solid;background:rgba(127,224,160,.15);border-color:var(--ok);color:var(--ok);font-weight:800">▶ 測驗${fLbl} ${takeN} 題</button>`;
+    srItems=[];let hh=`<div class="subrow" style="margin:0 0 8px">${flt}</div>${testCtl}`;
     [["n","🔴 尚未測驗"],["w","🟡 測過還不熟"],["k","🟢 已熟"]].forEach(sec=>{
       if(F!=="all"&&F!==sec[0])return;
       const list=B[sec[0]];
@@ -682,21 +691,6 @@ function renderSpeed(g){
     srStep=50;
     if(cnt)cnt.textContent=`未測 ${B.n.length}・不熟 ${B.w.length}・熟 ${B.k.length}`;
     html=hh;
-  }else{
-    const map={};
-    subjectRows(g).forEach(r=>{const c=(r.p.concept||"").trim();if(!c)return;
-      if(!map[c])map[c]={n:0,key:"",trap:""};map[c].n++;
-      if(!map[c].key)map[c].key=(r.p.key||r.p.ans||"").trim();
-      if(!map[c].trap)map[c].trap=(r.p.trap||"").trim();});
-    const items=Object.entries(map).sort((a,b)=>b[1].n-a[1].n);
-    srItems=items.map(([c,o],i)=>(i+1)+"、"+c.replace(/§.*/,"")+"。"+(o.key||""));   // 語音字串
-    srStep=50;
-    if(cnt)cnt.textContent=items.length+" 個高頻考點";
-    html=items.length?items.map(([c,o],i)=>
-      `<div class="sr"><b>${i+1}. ${esc(c)}</b>${o.n>1?`<span class="n">×${o.n}</span>`:""}`+
-      (o.key?` <span class="k">🔑 ${esc(o.key)}</span>`:"")+
-      (o.trap?` <span class="t">⚠️ ${esc(o.trap)}</span>`:"")+`</div>`).join("")
-      :`<div class="mini" style="text-align:left">這科還沒有整理好的考點。</div>`;
   }
   if(segs){let sh="";for(let s=0;s<srItems.length;s+=srStep){const e=Math.min(s+srStep,srItems.length);
       sh+=`<button class="subchip" data-seg="${s}">🔊 ${OV?"題":""}${s+1}–${e}</button>`;}
@@ -707,7 +701,9 @@ function renderSpeed(g){
     html=`<div style="background:rgba(255,216,107,.08);border:1px solid rgba(255,216,107,.25);border-radius:12px;padding:10px 12px;margin-bottom:12px"><div style="font-size:12px;font-weight:800;color:#ffe79c;margin-bottom:4px">💡 一句話記法</div>${tips}</div>`+html;
   }
   if(body)body.innerHTML=html;
-  if(body)body.querySelectorAll("[data-flt]").forEach(b=>b.onclick=()=>{srFilter=b.dataset.flt;renderSpeed(g);});   // 熟悉度篩選切換
+  if(body){body.querySelectorAll("[data-flt]").forEach(b=>b.onclick=()=>{srFilter=b.dataset.flt;renderSpeed(g);});   // 熟悉度篩選切換
+    body.querySelectorAll("[data-testn]").forEach(b=>b.onclick=()=>{srTestN=+b.dataset.testn;renderSpeed(g);});     // 題數
+    const tb=body.querySelector("#srTestBtn");if(tb)tb.onclick=()=>startBucketSession(g,srTestRows,srTestN);}       // ▶ 直接測驗這區
 }
 /* 📕 錯題本 */
 function renderEW(){
@@ -771,7 +767,7 @@ function buildSession(group){
   for(let j=0;j<15 && (start+j)<rows.length;j++)cards.push({type:"quiz",r:rows[start+j]});
   // 若到底了，從頭補
   if(cards.filter(c=>c.type==="quiz").length<15){let need=15-cards.filter(c=>c.type==="quiz").length;for(let j=0;j<need&&j<rows.length;j++)cards.push({type:"quiz",r:rows[j]});}
-  SES.cards=cards;SES.i=0;SES.correct=0;SES.newAns=0;SES.group=group;SES.answered=false;
+  SES.cards=cards;SES.i=0;SES.correct=0;SES.newAns=0;SES.group=group;SES.answered=false;SES.custom=false;
 }
 function startSession(g){
   srSeq=false;   // 進跟讀就停掉速讀朗讀
@@ -781,6 +777,19 @@ function startSession(g){
   document.body.style.overflow="hidden";
   renderSubs();
   renderCard();
+}
+// 從速讀某一區（熟/不熟/未測）直接出題，自選題數
+let srTestN=20;
+function startBucketSession(g,rows,n){
+  if(!rows||!rows.length){alert("這一區沒有題目可以測驗。");return;}
+  srSeq=false;stopSpeak();
+  const pool=rows.slice();
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=pool[i];pool[i]=pool[j];pool[j]=t;}
+  const take=(n&&n>0)?Math.min(n,pool.length):pool.length;
+  SES.cards=pool.slice(0,take).map(r=>({type:"quiz",r}));
+  SES.i=0;SES.correct=0;SES.newAns=0;SES.group=g;SES.answered=false;SES.custom=true;
+  document.getElementById("ses").classList.add("on");document.body.style.overflow="hidden";
+  renderSubs();renderCard();
 }
 // 跟讀中直接切換科目（先存目前這科進度，再換）
 function switchGroup(g){
@@ -866,7 +875,8 @@ function answer(idx){
   const card=SES.cards[SES.i],r=card.r,ans=r.q.ansIndex,L=["A","B","C","D","E","F"];
   const correct=idx===ans;
   if(correct){SES.correct++;if(card.type==="review")delWrong(r.k);}else{addWrong(r.k);addEverWrong(r.k);}   // 答錯→回鍋佇列＋永久錯題本
-  if(card.type==="quiz"){SES.newAns++;setPos(SES.group,getPos(SES.group)+1);}  // 每答一題即時存進度，關分頁也不丟
+  famSet(r.k,correct?"k":"w");   // 熟悉度：答對→熟、答錯→不熟（速讀三區依此自動歸類）
+  if(card.type==="quiz"&&!SES.custom){SES.newAns++;setPos(SES.group,getPos(SES.group)+1);}  // 每答一題即時存進度（自選測驗不動循序進度）
   bumpToday();
   const gj=srReflexMatch(r,SES.group);   // 我的反射地圖(國際/刑法/商事)
   const tmap=isHL(SES.group)?parseTrap(r.p.trap):null;   // 選項訂正（含民法用現有筆記）
@@ -974,7 +984,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s46";
+const APP_VERSION="s47";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
