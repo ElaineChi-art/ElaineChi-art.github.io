@@ -662,6 +662,22 @@ function renderSpeed(g){
     srStep=8;                                // 每段語音念 8 題
     if(cnt)cnt.textContent=srItems.length+" 題 · 我的筆記（分段序號＝題號）";
     html=OV.map(srLineHTML).join("");
+  }else if(g==="刑訴"){                       // 刑訴：依熟悉度分三區＋每題一句話記法
+    const rows=groupRows(g),pos=getPos(g),ew=new Set(everWrong());
+    const B={n:[],w:[],k:[]};                 // 未測 / 測過不熟 / 已熟
+    rows.forEach((r,i)=>{const st=ew.has(r.k)?"w":(i<pos?"k":"n");B[st].push(r);});
+    const mnOf=r=>((r.p.key||r.p.ans||r.p.concept||"").split(/[。！]/)[0].replace(/^答案[A-DＡ-Ｄ][^：:]*[：:]\s*/,"").trim());
+    srItems=[];let hh="";
+    [["n","🔴 尚未測驗"],["w","🟡 測過還不熟"],["k","🟢 已熟"]].forEach(sec=>{
+      const list=B[sec[0]];
+      hh+=`<div style="font-size:14px;font-weight:800;color:var(--teal);margin:14px 0 6px;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:4px">${sec[1]}（${list.length}）</div>`;
+      if(!list.length){hh+=`<div class="mini" style="text-align:left">（無）</div>`;return;}
+      list.forEach(r=>{const mn=mnOf(r);srItems.push((r.p.concept||"").replace(/§.*/,"")+"。"+mn);
+        hh+=`<div class="sr"><b>${esc(r.p.concept)}</b><div style="font-size:13px;color:#ffeab0;margin-top:2px">💡 ${esc(mn)}</div></div>`;});
+    });
+    srStep=50;
+    if(cnt)cnt.textContent=`未測 ${B.n.length}・不熟 ${B.w.length}・熟 ${B.k.length}`;
+    html=hh;
   }else{
     const map={};
     subjectRows(g).forEach(r=>{const c=(r.p.concept||"").trim();if(!c)return;
@@ -953,7 +969,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s44";
+const APP_VERSION="s45";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
