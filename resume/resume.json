@@ -1,6 +1,5 @@
 {
   "_note": "履歷單一資料來源（中英雙語）。改完跑 build.py 就會同步網站與各平台文案。定位：法律科技 × 金融/虛擬資產法遵 × 會寫 AI/區塊鏈。project 用問題→做法→影響格式，usage 放真實使用數據（空則不顯示）。",
-
   "profile": {
     "name": "Elaine Chi",
     "photo": "img/photo.png",
@@ -19,8 +18,18 @@
     "location": "Taiwan · 開放遠端與海外機會 / Open to remote & overseas",
     "open_to_work": true,
     "target_roles": {
-      "en": ["Full-Stack Developer", "Blockchain / Smart-Contract Developer", "Web3 / dApp Developer", "LegalTech / FinTech"],
-      "zh": ["全端工程師", "區塊鏈／智慧合約工程師", "Web3／dApp 工程師", "法律科技／金融科技"]
+      "en": [
+        "Full-Stack Developer",
+        "Blockchain / Smart-Contract Developer",
+        "Web3 / dApp Developer",
+        "LegalTech / FinTech"
+      ],
+      "zh": [
+        "全端工程師",
+        "區塊鏈／智慧合約工程師",
+        "Web3／dApp 工程師",
+        "法律科技／金融科技"
+      ]
     },
     "email": "chengyuchi849@gmail.com",
     "phone": "",
@@ -28,129 +37,443 @@
     "website": "https://elainechi-art.github.io/",
     "linkedin": "https://www.linkedin.com/in/elaine-chi-3384a441b"
   },
-
   "summary": {
     "en": "Most people who understand financial law can't build software. Most engineers don't understand financial regulation. I do both.\n\nI'm a Technology Law LL.M. candidate at NYCU (a top national university in Taiwan), specializing in financial crime, FinTech and virtual-asset (Web3) compliance. I've interned at the Financial Crimes Division of the Taipei District Court and the Financial Ombudsman Institution, and worked as a research assistant on white-collar crime and financial supervision.\n\nBut I don't just write legal memos — I ship. I've independently built and launched 6+ live web products (directing AI tools end to end), including a music-royalty smart contract I designed, tested and deployed to Ethereum with a wallet-connected dApp, and a financial dashboard combining market data with news sentiment.\n\nI'm looking for developer roles — full-stack, Web3 / smart-contract, or AI-focused product work — where my law & finance background is a rare edge. Remote or international welcome.\n\nLet's talk → chengyuchi849@gmail.com",
     "zh": "懂金融法規的人，通常不會寫程式；會寫程式的人，通常不懂金融法規。我，兩個都會。\n\n我是陽明交通大學科技法律研究所碩士生，專攻金融犯罪、金融科技與虛擬資產（Web3）法遵。曾在台北地方法院金融重罪專庭（重金庭）、金融消費者評議中心實習，並擔任白領犯罪與金融監理的研究助理。\n\n但我不只是寫法律報告——我做得出來。我獨立做出並上線了 6+ 個網頁產品（從頭到尾主導、用 AI 工具協作完成），包括我親手設計、測試並部署到 Ethereum 的音樂版稅智慧合約（含可連錢包的 dApp），以及結合行情與新聞情緒的金融儀表板。\n\n我在找工程師職位——全端、Web3／智慧合約、或 AI 相關產品開發——而我的法律與金融背景會是別人沒有的優勢。遠端或海外尤佳。\n\n聊聊 → chengyuchi849@gmail.com"
   },
-
   "skills": [
-    { "cat": {"en": "Frontend / Full-Stack Web", "zh": "前端 / 全端網頁"},
-      "items": ["JavaScript / HTML / CSS", "互動式網頁與 3D 視覺化", "資料視覺化", "響應式 RWD", "API 整合", "GitHub Pages 部署", "中英雙語與語音 (TTS) 介面"] },
-    { "cat": {"en": "AI-Native Building", "zh": "AI 協作開發"},
-      "items": ["Claude Code / AI 工具主導開發", "Python", "大型語言模型 (LLM) 應用", "生成式 AI", "自動資料聚合"] },
-    { "cat": {"en": "Domain Edge · Law & Finance", "zh": "領域優勢 · 法律金融"},
-      "items": ["金融刑事法 / 白領犯罪", "金融監理 / 法令遵循", "智慧財產權 / 著作權", "虛擬資產法規"] },
-    { "cat": {"en": "Blockchain / Web3", "zh": "區塊鏈 / Web3"},
-      "items": ["Solidity 智慧合約", "Foundry 測試 / 部署", "ethers.js dApp", "EVM / opcode", "部署並驗證於測試網", "虛擬資產法規"] }
+    {
+      "cat": {
+        "en": "Frontend / Full-Stack Web",
+        "zh": "前端 / 全端網頁"
+      },
+      "items": [
+        "JavaScript / HTML / CSS",
+        "互動式網頁與 3D 視覺化",
+        "資料視覺化",
+        "響應式 RWD",
+        "API 整合",
+        "GitHub Pages 部署",
+        "中英雙語與語音 (TTS) 介面"
+      ]
+    },
+    {
+      "cat": {
+        "en": "AI-Native Building",
+        "zh": "AI 協作開發"
+      },
+      "items": [
+        "Claude Code / AI 工具主導開發",
+        "Python",
+        "大型語言模型 (LLM) 應用",
+        "生成式 AI",
+        "自動資料聚合"
+      ]
+    },
+    {
+      "cat": {
+        "en": "Domain Edge · Law & Finance",
+        "zh": "領域優勢 · 法律金融"
+      },
+      "items": [
+        "金融刑事法 / 白領犯罪",
+        "金融監理 / 法令遵循",
+        "智慧財產權 / 著作權",
+        "虛擬資產法規"
+      ]
+    },
+    {
+      "cat": {
+        "en": "Blockchain / Web3",
+        "zh": "區塊鏈 / Web3"
+      },
+      "items": [
+        "Solidity 智慧合約",
+        "Foundry 測試 / 部署",
+        "ethers.js dApp",
+        "EVM / opcode",
+        "部署並驗證於測試網",
+        "虛擬資產法規"
+      ]
+    }
   ],
-
   "experience": [
     {
       "org": "台灣台北地方法院 · 金融重罪專庭（重金庭）",
-      "role": {"en": "Judicial Intern — Financial Crimes Division", "zh": "實習生"},
+      "role": {
+        "en": "Judicial Intern — Financial Crimes Division",
+        "zh": "實習生"
+      },
       "period": "2026",
-      "desc": {"en": "Interned at the court division handling major financial-crime cases; observed financial-crime adjudication and case handling first-hand.", "zh": "於審理重大金融犯罪案件的專庭實習，實地接觸金融刑事審判流程與案件實務。"}
+      "desc": {
+        "en": "Interned at the court division handling major financial-crime cases; observed financial-crime adjudication and case handling first-hand.",
+        "zh": "於審理重大金融犯罪案件的專庭實習，實地接觸金融刑事審判流程與案件實務。"
+      }
     },
     {
       "org": "陽明交大科法所 · 白領犯罪 / 金融刑法研究",
-      "role": {"en": "Research Assistant", "zh": "研究助理"},
+      "role": {
+        "en": "Research Assistant",
+        "zh": "研究助理"
+      },
       "period": "碩士期間 / During master's",
-      "desc": {"en": "Researched overseas anti-corruption (FCPA), financial supervision policy, loan fraud, mis-selling, trade-secret management, non-compete, and defense rights at the investigation stage; produced research briefings.", "zh": "研究海外反貪腐法(FCPA)、金融監理政策、金融詐貸、金融業不當銷售、營業秘密管理、國際競業禁止、偵查階段辯護權等金融刑事議題，並製作研究簡報。"}
+      "desc": {
+        "en": "Researched overseas anti-corruption (FCPA), financial supervision policy, loan fraud, mis-selling, trade-secret management, non-compete, and defense rights at the investigation stage; produced research briefings.",
+        "zh": "研究海外反貪腐法(FCPA)、金融監理政策、金融詐貸、金融業不當銷售、營業秘密管理、國際競業禁止、偵查階段辯護權等金融刑事議題，並製作研究簡報。"
+      }
     },
     {
       "org": "金融消費者評議中心",
-      "role": {"en": "Intern", "zh": "實習生"},
+      "role": {
+        "en": "Intern",
+        "zh": "實習生"
+      },
       "period": "碩士期間 / During master's",
-      "desc": {"en": "Hands-on with financial-consumer dispute resolution and ombudsman practice.", "zh": "參與金融消費爭議評議實務。"}
+      "desc": {
+        "en": "Hands-on with financial-consumer dispute resolution and ombudsman practice.",
+        "zh": "參與金融消費爭議評議實務。"
+      }
     },
     {
       "org": "陽明交大科法所",
-      "role": {"en": "Teaching Assistant", "zh": "教學助教"},
+      "role": {
+        "en": "Teaching Assistant",
+        "zh": "教學助教"
+      },
       "period": "碩士期間 / During master's",
-      "desc": {"en": "TA for Copyright Law Seminar, Litigation Drafting, and Financial Law & Supervision.", "zh": "擔任著作權法專題、訴訟撰寫、金融法治與監理課程教學助教。"}
+      "desc": {
+        "en": "TA for Copyright Law Seminar, Litigation Drafting, and Financial Law & Supervision.",
+        "zh": "擔任著作權法專題、訴訟撰寫、金融法治與監理課程教學助教。"
+      }
     },
     {
       "org": "華岡法律服務中心",
-      "role": {"en": "Legal Consultation Executive Secretary", "zh": "法律諮詢執行秘書"},
+      "role": {
+        "en": "Legal Consultation Executive Secretary",
+        "zh": "法律諮詢執行秘書"
+      },
       "period": "大學期間 / During undergrad",
-      "desc": {"en": "Coordinated legal-consultation services; also delivered criminal-law legal-literacy outreach.", "zh": "統籌法律諮詢服務，並參與向陽公益基金會法治教育出隊之刑事法教育。"}
+      "desc": {
+        "en": "Coordinated legal-consultation services; also delivered criminal-law legal-literacy outreach.",
+        "zh": "統籌法律諮詢服務，並參與向陽公益基金會法治教育出隊之刑事法教育。"
+      }
     }
   ],
-
   "education": [
     {
       "school": "國立陽明交通大學 National Yang Ming Chiao Tung University (NYCU)",
-      "degree": {"en": "LL.M. Candidate, Institute of Technology Law (Law Group) — Thesis: legal integration of smart contracts with the Virtual Asset Service Act & music NFTs. GPA ~3.7. Notable: LLM Applications (A), Litigation Drafting (A+), White-Collar & Economic Criminal Law (A), Generative AI, Legal Tech & Informatics.", "zh": "科技法律研究所（法律組）碩士（在學）— 碩論：智慧合約之法制整合與智慧財產權保障，以虛擬資產服務法與音樂 NFT 為中心。GPA 約 3.7。亮點課程：大型語言模型應用與實作(A)、訴訟實務書狀撰寫(A+)、白領犯罪與經濟刑法(A)、生成式 AI、法律科技與法律資訊學。"},
+      "degree": {
+        "en": "LL.M. Candidate, Institute of Technology Law (Law Group) — Thesis: legal integration of smart contracts with the Virtual Asset Service Act & music NFTs. GPA ~3.7. Notable: LLM Applications (A), Litigation Drafting (A+), White-Collar & Economic Criminal Law (A), Generative AI, Legal Tech & Informatics.",
+        "zh": "科技法律研究所（法律組）碩士（在學）— 碩論：智慧合約之法制整合與智慧財產權保障，以虛擬資產服務法與音樂 NFT 為中心。GPA 約 3.7。亮點課程：大型語言模型應用與實作(A)、訴訟實務書狀撰寫(A+)、白領犯罪與經濟刑法(A)、生成式 AI、法律科技與法律資訊學。"
+      },
       "period": "在學 / In progress"
     }
   ],
-
   "projects": [
     {
-      "name": {"en": "RoyaltySplit — Music Royalty dApp", "zh": "RoyaltySplit — 音樂版稅 dApp"},
-      "role": {"en": "Solo — smart contract + full dApp", "zh": "獨立 — 智慧合約 + 完整 dApp"},
+      "name": {
+        "en": "Scam Flow Lab — Fraud & AML Explainer",
+        "zh": "詐騙金流實驗室 · 打詐法遵地圖"
+      },
+      "role": {
+        "en": "Solo — research + design + build",
+        "zh": "獨立 — 法規研究 + 設計 + 開發"
+      },
+      "url": "https://elainechi-art.github.io/scamlab/",
+      "problem": {
+        "en": "Taiwan loses NT$50B+ a year to fraud, and its anti-fraud law stack (AML Act, Fraud Crime Hazard Prevention Act, new Virtual Asset Service Act) is scattered across statutes no one reads end-to-end.",
+        "zh": "台灣一年詐欺財損逾 500 億，但打詐法制（洗防法、詐欺犯罪危害防制條例、虛擬資產服務法）散落各處，沒有人把「錢怎麼跑、誰該攔、依哪條法」一次講清楚。"
+      },
+      "approach": {
+        "en": "Mapped the fraud industry chain (6 roles with criminal exposure), the 7-hop money trail from victim's wire to offshore USDT, and pinned every compliance checkpoint (teller care calls, watch-listed accounts, SAR/CTR, VASP registration, travel rule) to its legal basis. Built as an interactive single-page explainer: clickable flow diagram, red-flag checklists for bank / VASP / individual, and an 8-question compliance judgment quiz.",
+        "zh": "拆解詐騙產業鏈六種分工與對應刑責、贓款從被害人匯款到境外 USDT 的七站路徑，並把每個法遵攔截點（臨櫃關懷、警示帳戶、SAR/CTR、VASP 登記、travel rule）對回法源。做成互動式單頁：可點擊金流解剖圖、銀行／VASP／個人三視角紅旗清單、八題法遵情境測驗。"
+      },
+      "impact": {
+        "en": "A working demo of legal-tech craft: turning a fragmented regulatory landscape into an interface a bank teller, a VASP analyst, or a retiree can actually use.",
+        "zh": "法律科技實作展示：把破碎的監管地圖變成行員、VASP 分析師、一般人都能直接使用的介面。"
+      },
+      "metrics": [
+        {
+          "en": "7-hop interactive money-flow anatomy",
+          "zh": "七站互動金流解剖"
+        },
+        {
+          "en": "18 red flags × 3 gatekeeper views",
+          "zh": "18 項紅旗 × 3 種守門人視角"
+        },
+        {
+          "en": "AML Act · Anti-Fraud Act · VASP Act mapping",
+          "zh": "洗防法 · 打詐條例 · 虛擬資產服務法對照"
+        }
+      ],
+      "stack": [
+        "法規研究",
+        "AML/CFT",
+        "HTML/CSS/JS",
+        "Interactive Explainer"
+      ],
+      "usage": ""
+    },
+    {
+      "name": {
+        "en": "RoyaltySplit — Music Royalty dApp",
+        "zh": "RoyaltySplit — 音樂版稅 dApp"
+      },
+      "role": {
+        "en": "Solo — smart contract + full dApp",
+        "zh": "獨立 — 智慧合約 + 完整 dApp"
+      },
       "url": "https://elainechi-art.github.io/royalty-dapp/",
-      "problem": {"en": "Music royalty splits are opaque and manual — no transparent, automatic way to pay everyone their share.", "zh": "音樂版稅分潤黑箱又手動，沒有透明、自動把錢分給每個人的方式。"},
-      "approach": {"en": "Designed, tested (Foundry) and deployed a configurable royalty smart contract to Ethereum Sepolia — auto-splits any payment by share, with on-chain events, running totals and owner controls (add payee / change ratio). Built a wallet-connected dApp (ethers.js) with a live split chart and on-chain transaction history; verified the contract source on-chain.", "zh": "用 Foundry 設計、測試並部署一個可設定的版稅智慧合約到 Ethereum Sepolia — 付款自動按比例分帳，含鏈上事件、累計統計與擁有者權限（加人／改比例）。打造可連錢包的前端 dApp（ethers.js），含即時分潤圖與鏈上交易紀錄；合約原始碼已鏈上驗證。"},
-      "impact": {"en": "A fully working, publicly verifiable dApp — anyone can connect a wallet, pay, and watch royalties split on-chain in real time. Contract + tests + frontend, end to end.", "zh": "一個完整可運作、公開可驗證的 dApp — 任何人都能連錢包付款、即時看版稅在鏈上自動分帳。合約 + 測試 + 前端，一手包辦。"},
-      "metrics": [{"en": "Deployed & verified on Sepolia", "zh": "Sepolia 部署並驗證"}, {"en": "Wallet connect + live tx history", "zh": "連錢包 + 即時交易紀錄"}, {"en": "Solidity · Foundry · ethers.js", "zh": "Solidity · Foundry · ethers.js"}],
-      "stack": ["Solidity", "Foundry", "ethers.js", "Smart Contracts", "Web3"],
+      "problem": {
+        "en": "Music royalty splits are opaque and manual — no transparent, automatic way to pay everyone their share.",
+        "zh": "音樂版稅分潤黑箱又手動，沒有透明、自動把錢分給每個人的方式。"
+      },
+      "approach": {
+        "en": "Designed, tested (Foundry) and deployed a configurable royalty smart contract to Ethereum Sepolia — auto-splits any payment by share, with on-chain events, running totals and owner controls (add payee / change ratio). Built a wallet-connected dApp (ethers.js) with a live split chart and on-chain transaction history; verified the contract source on-chain.",
+        "zh": "用 Foundry 設計、測試並部署一個可設定的版稅智慧合約到 Ethereum Sepolia — 付款自動按比例分帳，含鏈上事件、累計統計與擁有者權限（加人／改比例）。打造可連錢包的前端 dApp（ethers.js），含即時分潤圖與鏈上交易紀錄；合約原始碼已鏈上驗證。"
+      },
+      "impact": {
+        "en": "A fully working, publicly verifiable dApp — anyone can connect a wallet, pay, and watch royalties split on-chain in real time. Contract + tests + frontend, end to end.",
+        "zh": "一個完整可運作、公開可驗證的 dApp — 任何人都能連錢包付款、即時看版稅在鏈上自動分帳。合約 + 測試 + 前端，一手包辦。"
+      },
+      "metrics": [
+        {
+          "en": "Deployed & verified on Sepolia",
+          "zh": "Sepolia 部署並驗證"
+        },
+        {
+          "en": "Wallet connect + live tx history",
+          "zh": "連錢包 + 即時交易紀錄"
+        },
+        {
+          "en": "Solidity · Foundry · ethers.js",
+          "zh": "Solidity · Foundry · ethers.js"
+        }
+      ],
+      "stack": [
+        "Solidity",
+        "Foundry",
+        "ethers.js",
+        "Smart Contracts",
+        "Web3"
+      ],
       "usage": ""
     },
     {
-      "name": {"en": "Music Royalty OS — Smart-Contract Visualization", "zh": "音樂版稅 OS · 智慧合約視覺化"},
-      "role": {"en": "Solo build (AI-assisted) · ties to my LL.M. thesis", "zh": "獨立製作（AI 協作）· 呼應碩論主題"},
+      "name": {
+        "en": "Music Royalty OS — Smart-Contract Visualization",
+        "zh": "音樂版稅 OS · 智慧合約視覺化"
+      },
+      "role": {
+        "en": "Solo build (AI-assisted) · ties to my LL.M. thesis",
+        "zh": "獨立製作（AI 協作）· 呼應碩論主題"
+      },
       "url": "https://elainechi-art.github.io/music-os/ecosystem.html",
-      "problem": {"en": "Music royalty splits via smart contracts are opaque — stakeholders can't see how money actually flows on-chain.", "zh": "音樂版稅用智慧合約分配時黑箱，各方看不到錢實際在鏈上怎麼流動。"},
-      "approach": {"en": "Built an interactive 3D visualization that walks step-by-step through how smart-contract royalty splits move through EVM storage, plus a single-track lifecycle simulation.", "zh": "打造互動式 3D 視覺化，一步步呈現智慧合約版稅分配如何流經 EVM storage，並模擬單曲完整生命週期。"},
-      "impact": {"en": "Turns an invisible on-chain process into something six stakeholder roles can understand — a visual companion to my thesis on smart-contract law & music NFTs.", "zh": "把看不見的鏈上流程變成六種角色都看得懂的體驗，是碩論（智慧合約×音樂NFT）的視覺化延伸。"},
-      "metrics": [{"en": "Step-by-step EVM walkthrough", "zh": "逐步呈現 EVM 流程"}, {"en": "6 stakeholder roles", "zh": "6 種角色視角"}, {"en": "EN / ZH voice", "zh": "中英語音"}],
-      "stack": ["JavaScript", "3D visualization", "Smart-contract concepts", "虛擬資產法"],
+      "problem": {
+        "en": "Music royalty splits via smart contracts are opaque — stakeholders can't see how money actually flows on-chain.",
+        "zh": "音樂版稅用智慧合約分配時黑箱，各方看不到錢實際在鏈上怎麼流動。"
+      },
+      "approach": {
+        "en": "Built an interactive 3D visualization that walks step-by-step through how smart-contract royalty splits move through EVM storage, plus a single-track lifecycle simulation.",
+        "zh": "打造互動式 3D 視覺化，一步步呈現智慧合約版稅分配如何流經 EVM storage，並模擬單曲完整生命週期。"
+      },
+      "impact": {
+        "en": "Turns an invisible on-chain process into something six stakeholder roles can understand — a visual companion to my thesis on smart-contract law & music NFTs.",
+        "zh": "把看不見的鏈上流程變成六種角色都看得懂的體驗，是碩論（智慧合約×音樂NFT）的視覺化延伸。"
+      },
+      "metrics": [
+        {
+          "en": "Step-by-step EVM walkthrough",
+          "zh": "逐步呈現 EVM 流程"
+        },
+        {
+          "en": "6 stakeholder roles",
+          "zh": "6 種角色視角"
+        },
+        {
+          "en": "EN / ZH voice",
+          "zh": "中英語音"
+        }
+      ],
+      "stack": [
+        "JavaScript",
+        "3D visualization",
+        "Smart-contract concepts",
+        "虛擬資產法"
+      ],
       "usage": ""
     },
     {
-      "name": {"en": "Taiwan Stock AI Dashboard", "zh": "台股 AI 儀表板"},
-      "role": {"en": "Solo engineering", "zh": "獨立開發"},
+      "name": {
+        "en": "Taiwan Stock AI Dashboard",
+        "zh": "台股 AI 儀表板"
+      },
+      "role": {
+        "en": "Solo engineering",
+        "zh": "獨立開發"
+      },
       "url": "https://elainechi-art.github.io/taiwan-stock-dashboard/",
-      "problem": {"en": "Retail investors juggle price charts and news separately, with no daily forward view.", "zh": "散戶看盤與看新聞是分開的，缺少每日的前瞻預測。"},
-      "approach": {"en": "Combined LSTM time-series forecasting with news-sentiment analysis across Taiwan, US and crypto markets in one live dashboard.", "zh": "把 LSTM 時序預測與新聞情緒分析結合，涵蓋台股、美股、加密貨幣，整合成單一即時儀表板。"},
-      "impact": {"en": "Auto-updates every trading day with zero manual work, giving a one-glance forward signal across three markets.", "zh": "每個交易日全自動更新、零人工，三大市場的前瞻訊號一眼掌握。"},
-      "metrics": [{"en": "3 markets", "zh": "3 大市場"}, {"en": "Auto-updates daily", "zh": "每日自動更新"}, {"en": "LSTM + sentiment", "zh": "LSTM + 情緒分析"}],
-      "stack": ["Python", "LSTM", "Sentiment Analysis", "Automation"],
+      "problem": {
+        "en": "Retail investors juggle price charts and news separately, with no daily forward view.",
+        "zh": "散戶看盤與看新聞是分開的，缺少每日的前瞻預測。"
+      },
+      "approach": {
+        "en": "Combined LSTM time-series forecasting with news-sentiment analysis across Taiwan, US and crypto markets in one live dashboard.",
+        "zh": "把 LSTM 時序預測與新聞情緒分析結合，涵蓋台股、美股、加密貨幣，整合成單一即時儀表板。"
+      },
+      "impact": {
+        "en": "Auto-updates every trading day with zero manual work, giving a one-glance forward signal across three markets.",
+        "zh": "每個交易日全自動更新、零人工，三大市場的前瞻訊號一眼掌握。"
+      },
+      "metrics": [
+        {
+          "en": "3 markets",
+          "zh": "3 大市場"
+        },
+        {
+          "en": "Auto-updates daily",
+          "zh": "每日自動更新"
+        },
+        {
+          "en": "LSTM + sentiment",
+          "zh": "LSTM + 情緒分析"
+        }
+      ],
+      "stack": [
+        "Python",
+        "LSTM",
+        "Sentiment Analysis",
+        "Automation"
+      ],
       "usage": ""
     },
     {
-      "name": {"en": "Research Radar — Law & Finance Intelligence", "zh": "研究雷達 · 法律金融情報"},
-      "role": {"en": "Solo engineering", "zh": "獨立開發"},
+      "name": {
+        "en": "Research Radar — Law & Finance Intelligence",
+        "zh": "研究雷達 · 法律金融情報"
+      },
+      "role": {
+        "en": "Solo engineering",
+        "zh": "獨立開發"
+      },
       "url": "https://elainechi-art.github.io/research-radar/",
-      "problem": {"en": "Staying current across IP, blockchain, AI and financial-crime research means checking many sources daily.", "zh": "要同時追蹤智財、區塊鏈、AI、金融犯罪的最新研究，得每天翻很多來源。"},
-      "approach": {"en": "Auto-aggregates news, papers and full-text court judgments across four research fields, daily.", "zh": "每日自動聚合四大領域的新聞、論文與判決全文。"},
-      "impact": {"en": "One daily feed replaces manual multi-source monitoring — built for my own legal research.", "zh": "一個每日情報流取代人工多來源監看，為自己的法律研究而做。"},
-      "metrics": [{"en": "4 research fields", "zh": "4 大領域"}, {"en": "Daily auto-aggregation", "zh": "每日自動聚合"}, {"en": "News + papers + judgments", "zh": "新聞+論文+判決"}],
-      "stack": ["Python", "Automation", "Data aggregation"],
+      "problem": {
+        "en": "Staying current across IP, blockchain, AI and financial-crime research means checking many sources daily.",
+        "zh": "要同時追蹤智財、區塊鏈、AI、金融犯罪的最新研究，得每天翻很多來源。"
+      },
+      "approach": {
+        "en": "Auto-aggregates news, papers and full-text court judgments across four research fields, daily.",
+        "zh": "每日自動聚合四大領域的新聞、論文與判決全文。"
+      },
+      "impact": {
+        "en": "One daily feed replaces manual multi-source monitoring — built for my own legal research.",
+        "zh": "一個每日情報流取代人工多來源監看，為自己的法律研究而做。"
+      },
+      "metrics": [
+        {
+          "en": "4 research fields",
+          "zh": "4 大領域"
+        },
+        {
+          "en": "Daily auto-aggregation",
+          "zh": "每日自動聚合"
+        },
+        {
+          "en": "News + papers + judgments",
+          "zh": "新聞+論文+判決"
+        }
+      ],
+      "stack": [
+        "Python",
+        "Automation",
+        "Data aggregation"
+      ],
       "usage": ""
     },
     {
-      "name": {"en": "Judicial Exam Prep Platform", "zh": "司法官・律師複習平台"},
-      "role": {"en": "Solo design & engineering", "zh": "獨立設計與開發"},
+      "name": {
+        "en": "Judicial Exam Prep Platform",
+        "zh": "司法官・律師複習平台"
+      },
+      "role": {
+        "en": "Solo design & engineering",
+        "zh": "獨立設計與開發"
+      },
       "url": "https://elainechi-art.github.io/judicial/",
-      "problem": {"en": "Bar/judicial candidates drown in scattered past papers with no structured, testable way to review.", "zh": "考生被散落各處的歷屆考題淹沒，缺乏有結構、可自測的複習方式。"},
-      "approach": {"en": "Structured 1,800 official exam questions across 4 domains and 6 years by exam-day session, with mask-answer self-testing and TTS read-aloud.", "zh": "把 1,800 題官方考題依考試當天節次結構化，涵蓋 4 大領域 6 年，支援遮答案自測與語音念題。"},
-      "impact": {"en": "One organized, self-quizzing hub replaces dozens of loose PDFs.", "zh": "一個有條理、能自測的入口，取代幾十份零散 PDF。"},
-      "metrics": [{"en": "1,800 official questions", "zh": "1,800 題官方考題"}, {"en": "4 domains · 6 years", "zh": "4 領域・6 年"}, {"en": "Self-test + TTS", "zh": "自測 + 語音"}],
-      "stack": ["JavaScript", "Data structuring", "TTS"],
+      "problem": {
+        "en": "Bar/judicial candidates drown in scattered past papers with no structured, testable way to review.",
+        "zh": "考生被散落各處的歷屆考題淹沒，缺乏有結構、可自測的複習方式。"
+      },
+      "approach": {
+        "en": "Structured 1,800 official exam questions across 4 domains and 6 years by exam-day session, with mask-answer self-testing and TTS read-aloud.",
+        "zh": "把 1,800 題官方考題依考試當天節次結構化，涵蓋 4 大領域 6 年，支援遮答案自測與語音念題。"
+      },
+      "impact": {
+        "en": "One organized, self-quizzing hub replaces dozens of loose PDFs.",
+        "zh": "一個有條理、能自測的入口，取代幾十份零散 PDF。"
+      },
+      "metrics": [
+        {
+          "en": "1,800 official questions",
+          "zh": "1,800 題官方考題"
+        },
+        {
+          "en": "4 domains · 6 years",
+          "zh": "4 領域・6 年"
+        },
+        {
+          "en": "Self-test + TTS",
+          "zh": "自測 + 語音"
+        }
+      ],
+      "stack": [
+        "JavaScript",
+        "Data structuring",
+        "TTS"
+      ],
       "usage": ""
     },
     {
-      "name": {"en": "Daily English Vocabulary Builder", "zh": "每日英文單字庫"},
-      "role": {"en": "Solo design & engineering", "zh": "獨立設計與開發"},
+      "name": {
+        "en": "Daily English Vocabulary Builder",
+        "zh": "每日英文單字庫"
+      },
+      "role": {
+        "en": "Solo design & engineering",
+        "zh": "獨立設計與開發"
+      },
       "url": "https://elainechi-art.github.io/vocab/",
-      "problem": {"en": "Vocabulary apps are either paid or don't tie learning to spaced testing.", "zh": "背單字工具不是要付費，就是沒把學習和間隔測驗連起來。"},
-      "approach": {"en": "Integrated free dictionary + translation APIs to auto-generate pronunciation, examples, translation and grammar, with flashcard / fill-in / spelling quizzes.", "zh": "整合免費字典＋翻譯 API 自動產生發音、例句、翻譯與文法，搭配翻卡／填空／拼字三種測驗。"},
-      "impact": {"en": "A fully free daily learning loop with self-scoring and weak-word review.", "zh": "完全免費的每日學習循環，含學習評分與弱點單字複習。"},
-      "metrics": [{"en": "3 quiz modes", "zh": "3 種測驗"}, {"en": "Free dictionary + translation API", "zh": "免費字典＋翻譯 API"}, {"en": "TTS pronunciation", "zh": "語音發音"}],
-      "stack": ["JavaScript", "API integration", "TTS"],
+      "problem": {
+        "en": "Vocabulary apps are either paid or don't tie learning to spaced testing.",
+        "zh": "背單字工具不是要付費，就是沒把學習和間隔測驗連起來。"
+      },
+      "approach": {
+        "en": "Integrated free dictionary + translation APIs to auto-generate pronunciation, examples, translation and grammar, with flashcard / fill-in / spelling quizzes.",
+        "zh": "整合免費字典＋翻譯 API 自動產生發音、例句、翻譯與文法，搭配翻卡／填空／拼字三種測驗。"
+      },
+      "impact": {
+        "en": "A fully free daily learning loop with self-scoring and weak-word review.",
+        "zh": "完全免費的每日學習循環，含學習評分與弱點單字複習。"
+      },
+      "metrics": [
+        {
+          "en": "3 quiz modes",
+          "zh": "3 種測驗"
+        },
+        {
+          "en": "Free dictionary + translation API",
+          "zh": "免費字典＋翻譯 API"
+        },
+        {
+          "en": "TTS pronunciation",
+          "zh": "語音發音"
+        }
+      ],
+      "stack": [
+        "JavaScript",
+        "API integration",
+        "TTS"
+      ],
       "usage": ""
     }
   ]

@@ -22,6 +22,11 @@ Core Skills
   Blockchain / Web3: Solidity 智慧合約, Foundry 測試 / 部署, ethers.js dApp, EVM / opcode, 部署並驗證於測試網, 虛擬資產法規
 
 Selected Work
+• Scam Flow Lab — Fraud & AML Explainer  [7-hop interactive money-flow anatomy · 18 red flags × 3 gatekeeper views · AML Act · Anti-Fraud Act · VASP Act mapping]
+  Problem: Taiwan loses NT$50B+ a year to fraud, and its anti-fraud law stack (AML Act, Fraud Crime Hazard Prevention Act, new Virtual Asset Service Act) is scattered across statutes no one reads end-to-end.
+  Approach: Mapped the fraud industry chain (6 roles with criminal exposure), the 7-hop money trail from victim's wire to offshore USDT, and pinned every compliance checkpoint (teller care calls, watch-listed accounts, SAR/CTR, VASP registration, travel rule) to its legal basis. Built as an interactive single-page explainer: clickable flow diagram, red-flag checklists for bank / VASP / individual, and an 8-question compliance judgment quiz.
+  Impact: A working demo of legal-tech craft: turning a fragmented regulatory landscape into an interface a bank teller, a VASP analyst, or a retiree can actually use.
+  https://elainechi-art.github.io/scamlab/
 • RoyaltySplit — Music Royalty dApp  [Deployed & verified on Sepolia · Wallet connect + live tx history · Solidity · Foundry · ethers.js]
   Problem: Music royalty splits are opaque and manual — no transparent, automatic way to pay everyone their share.
   Approach: Designed, tested (Foundry) and deployed a configurable royalty smart contract to Ethereum Sepolia — auto-splits any payment by share, with on-chain events, running totals and owner controls (add payee / change ratio). Built a wallet-connected dApp (ethers.js) with a live split chart and on-chain transaction history; verified the contract source on-chain.

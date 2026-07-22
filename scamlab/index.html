@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>詐騙金流實驗室 · Scam Flow Lab</title>
+<meta name="description" content="從詐騙產業鏈、殺豬盤話術到贓款金流與法遵攔截點：一頁看懂台灣打詐法制怎麼運作。">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg1:#14161c; --bg2:#26262f;
+  --surface:#1a1a19; --card:#1f232c; --card2:#181c24;
+  --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+  --hairline:rgba(255,255,255,.10); --grid:#2c2c2a;
+  --accent:#7fb5ff; --gold:#f0d68a;
+  --seg-bank:#3987e5;   /* 銀行/法幣段 */
+  --seg-cash:#d95926;   /* 現金/車手段 */
+  --seg-crypto:#9085e9; /* 加密段 */
+  --seg-abroad:#e66767; /* 境外收尾 */
+  --status-critical:#d03b3b; --status-good:#0ca30c; --status-warning:#fab219;
+}
+body{font-family:"Inter","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  background:linear-gradient(160deg,var(--bg1),var(--bg2));color:var(--ink);
+  line-height:1.75;min-height:100vh}
+a{color:inherit}
+.topnav{display:flex;gap:6px;background:#0b0d12;padding:10px 20px;border-bottom:1px solid #262b36;
+  position:sticky;top:0;z-index:50;overflow-x:auto}
+.topnav a{color:#9aa4b2;text-decoration:none;font-size:14px;font-weight:600;padding:7px 16px;border-radius:8px;white-space:nowrap}
+.topnav a:hover{background:#161922;color:#e6e6e6}
+.topnav a.active{background:#1f2e3a;color:var(--accent)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px 70px}
+
+header.hero{padding:48px 0 8px;text-align:center}
+.hero h1{font-size:34px;letter-spacing:2px}
+.hero .en{color:var(--muted);font-size:14px;letter-spacing:4px;text-transform:uppercase;margin-top:4px}
+.hero .tagline{color:var(--ink2);font-size:16px;max-width:660px;margin:14px auto 0}
+.hero .tagline b{color:var(--gold);font-weight:600}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:30px 0 6px}
+.tile{background:var(--card);border:1px solid var(--hairline);border-radius:14px;padding:18px 20px;text-align:center}
+.tile .v{font-size:30px;font-weight:700;color:var(--ink)}
+.tile .k{font-size:13px;color:var(--ink2);margin-top:4px}
+.tile .s{font-size:11px;color:var(--muted);margin-top:2px}
+.src{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+
+section{margin-top:56px}
+h2{font-size:22px;letter-spacing:1px;display:flex;align-items:center;gap:10px}
+h2 .no{color:var(--gold);font-size:14px;letter-spacing:2px}
+.lead{color:var(--ink2);font-size:15px;margin:10px 0 22px;max-width:760px}
+
+/* 產業鏈卡片 */
+.chain{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.role{background:var(--card);border:1px solid var(--hairline);border-radius:14px;padding:18px 20px}
+.role h3{font-size:16px;display:flex;align-items:center;gap:8px}
+.role .law{display:inline-block;font-size:12px;color:var(--accent);background:#1f2e3a;border-radius:6px;padding:1px 8px;margin:8px 6px 0 0}
+.role p{font-size:14px;color:var(--ink2);margin-top:8px}
+
+/* 殺豬盤時間軸 */
+.stages{position:relative;margin-left:10px;padding-left:26px;border-left:2px solid var(--grid)}
+.stage{position:relative;padding:2px 0 26px}
+.stage::before{content:"";position:absolute;left:-34px;top:8px;width:14px;height:14px;border-radius:50%;
+  background:var(--bg1);border:3px solid var(--gold)}
+.stage h3{font-size:16px}
+.stage h3 .n{color:var(--gold);margin-right:8px;font-size:13px}
+.stage p{font-size:14px;color:var(--ink2);margin-top:4px;max-width:720px}
+.stage .stop{font-size:13px;color:var(--ink2);background:var(--card2);border:1px solid var(--hairline);
+  border-left:3px solid var(--status-good);border-radius:8px;padding:8px 12px;margin-top:8px;max-width:720px}
+.stage .stop b{color:var(--ink)}
+
+/* 金流圖 */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:0 0 14px;font-size:13px;color:var(--ink2)}
+.legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.flowscroll{overflow-x:auto;padding:6px 2px 14px}
+.flow{display:flex;align-items:stretch;gap:0;min-width:900px}
+.fnode{flex:1;min-width:110px;background:var(--card);border:1px solid var(--hairline);border-top:4px solid var(--muted);
+  border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;transition:transform .12s, background .12s}
+.fnode:hover{transform:translateY(-3px);background:#242936}
+.fnode.sel{background:#242936;outline:2px solid var(--accent)}
+.fnode .ic{font-size:22px}
+.fnode .t{font-size:14px;font-weight:700;margin-top:4px}
+.fnode .d{font-size:11.5px;color:var(--muted);margin-top:2px}
+.farrow{display:flex;align-items:center;color:var(--muted);font-size:18px;padding:0 4px;user-select:none}
+.fdetail{background:var(--card2);border:1px solid var(--hairline);border-radius:14px;padding:20px 22px;margin-top:14px}
+.fdetail h3{font-size:17px;display:flex;align-items:center;gap:8px}
+.fdetail h3 .chip{font-size:12px;border-radius:6px;padding:1px 10px;color:var(--ink)}
+.fdetail .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:14px}
+.fdetail .box{background:var(--card);border:1px solid var(--hairline);border-radius:10px;padding:12px 14px}
+.fdetail .box h4{font-size:13px;color:var(--gold);letter-spacing:1px;margin-bottom:6px}
+.fdetail .box p, .fdetail .box li{font-size:14px;color:var(--ink2)}
+.fdetail .box ul{padding-left:18px}
+.fdetail .flag{color:var(--status-critical);font-weight:700;margin-right:4px}
+.hint{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 法遵對照表 */
+.tablewrap{overflow-x:auto;border:1px solid var(--hairline);border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:760px;background:var(--card2)}
+th,td{padding:12px 14px;font-size:14px;text-align:left;border-bottom:1px solid var(--grid);vertical-align:top}
+th{color:var(--gold);font-size:13px;letter-spacing:1px;white-space:nowrap;background:var(--card)}
+td{color:var(--ink2)}
+td b{color:var(--ink)}
+td .law{font-size:12.5px;color:var(--accent)}
+tr:last-child td{border-bottom:none}
+
+/* 紅旗 checklist */
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tabs button{background:var(--card);color:var(--ink2);border:1px solid var(--hairline);border-radius:20px;
+  padding:7px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.tabs button.on{background:#1f2e3a;color:var(--accent);border-color:#33405288}
+.flags{display:none;flex-direction:column;gap:8px}
+.flags.on{display:flex}
+.flag-item{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--hairline);
+  border-radius:10px;padding:11px 14px;cursor:pointer;font-size:14px;color:var(--ink2)}
+.flag-item input{margin-top:5px;accent-color:var(--accent)}
+.flag-item.done{opacity:.55;text-decoration:line-through}
+.flagcount{font-size:13px;color:var(--muted);margin-top:10px}
+
+/* 測驗 */
+.quiz{background:var(--card2);border:1px solid var(--hairline);border-radius:14px;padding:22px}
+.quiz .qno{font-size:13px;color:var(--muted);letter-spacing:1px}
+.quiz .qtext{font-size:16px;font-weight:600;margin:8px 0 16px}
+.quiz .opts{display:flex;flex-direction:column;gap:8px}
+.quiz .opts button{text-align:left;background:var(--card);color:var(--ink2);border:1px solid var(--hairline);
+  border-radius:10px;padding:11px 14px;font-size:14px;cursor:pointer;font-family:inherit;line-height:1.6}
+.quiz .opts button:hover{background:#242936}
+.quiz .opts button.correct{border-color:var(--status-good);color:var(--ink);background:#12240f}
+.quiz .opts button.wrong{border-color:var(--status-critical);color:var(--ink);background:#2a1414}
+.quiz .expl{display:none;margin-top:14px;font-size:14px;color:var(--ink2);background:var(--card);
+  border:1px solid var(--hairline);border-left:3px solid var(--gold);border-radius:8px;padding:12px 14px}
+.quiz .expl b{color:var(--ink)}
+.quiz .nav{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.quiz .nav button{background:#1f2e3a;color:var(--accent);border:none;border-radius:8px;padding:8px 20px;
+  font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.quiz .nav button:disabled{opacity:.35;cursor:default}
+.quiz .score{font-size:14px;color:var(--gold)}
+.quiz .result{display:none;text-align:center;padding:10px 0}
+.quiz .result .big{font-size:34px;font-weight:700;color:var(--gold)}
+.quiz .result p{color:var(--ink2);font-size:15px;margin-top:6px}
+
+/* footer */
+footer{margin-top:70px;border-top:1px solid var(--grid);padding-top:22px;font-size:13px;color:var(--muted)}
+footer a{color:var(--accent);text-decoration:none}
+footer .refs{margin-top:6px}
+@media (max-width:640px){
+  .hero h1{font-size:26px}
+  .fdetail .grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="https://elainechi-art.github.io/">🏠 主站</a>
+  <a class="active" href="./">🔬 詐騙金流實驗室</a>
+  <a href="https://elainechi-art.github.io/carlaw/">🚗 車禍法律</a>
+  <a href="https://elainechi-art.github.io/labs/">🧪 技能實驗室</a>
+  <a href="https://elainechi-art.github.io/resume/">📄 履歷</a>
+</nav>
+
+<div class="wrap">
+
+<header class="hero">
+  <h1>詐騙金流實驗室</h1>
+  <div class="en">Scam Flow Lab</div>
+  <p class="tagline">詐騙不是一個人騙一個人，是一條<b>產業鏈</b>。這一頁把詐騙集團的分工、話術節奏、贓款路徑攤開來，並在每一站標出<b>法遵攔截點</b>：誰有義務踩剎車、依據哪一條法律。</p>
+  <div class="tiles">
+    <div class="tile"><div class="v">500 億+</div><div class="k">台灣全年詐欺財損（新臺幣）</div><div class="s">2024 年警政署 165 統計</div></div>
+    <div class="tile"><div class="v">假投資</div><div class="k">財損占比最大宗的詐騙類型</div><div class="s">殺豬盤為典型手法</div></div>
+    <div class="tile"><div class="v">USDT</div><div class="k">贓款出海最常用的載具</div><div class="s">多走 TRC-20（波場）鏈</div></div>
+  </div>
+  <div class="src">統計數據為公開報導之概數，僅供理解量級；即時數據請見 <a href="https://165dashboard.tw/" style="color:var(--accent)">165 打詐儀表板</a>。</div>
+</header>
+
+<section id="chain">
+  <h2><span class="no">01</span>詐騙產業鏈：六種分工，六種刑責</h2>
+  <p class="lead">現代詐騙集團是公司化經營：有出資的、打電話的、收帳戶的、領錢的、洗錢的、換幣的。法律對每個角色都有對應的罪名——包含很多自以為只是「打工」的人。</p>
+  <div class="chain">
+    <div class="role"><h3>💼 金主／集團核心</h3><p>出資、建置機房與園區、指揮分工、抽走大部分利潤。往往藏在多層公司與境外架構後面。</p><span class="law">刑法 §339-4 加重詐欺</span><span class="law">組織犯罪防制條例 §3</span></div>
+    <div class="role"><h3>🎧 話務手（機房）</h3><p>照「劇本」行騙：一線搭訕建立關係、二線扮專家帶投資、三線扮客服處理出金。很多話務手本身是被騙去園區的求職者。</p><span class="law">刑法 §339-4</span><span class="law">人口販運防制法（被迫勞動）</span></div>
+    <div class="role"><h3>📇 收簿手／帳戶販子</h3><p>收購、租借存摺與網銀帳密，把「乾淨帳戶」變成贓款的第一站。賣自己帳戶的人也直接入罪。</p><span class="law">洗錢防制法（無正當理由收集／提供帳戶罪）</span></div>
+    <div class="role"><h3>🏃 車手</h3><p>拿人頭卡去 ATM 提款、假冒公務員面交收款。整條鏈上最容易被抓的角色，實務多論以加重詐欺共同正犯併洗錢罪。</p><span class="law">刑法 §339-4</span><span class="law">洗錢防制法</span></div>
+    <div class="role"><h3>💧 水房</h3><p>洗錢中樞：把贓款在數十個帳戶間快速拆分、跳轉、聚合，切斷金流與被害人的關聯。</p><span class="law">洗錢防制法（一般＋特殊洗錢罪）</span></div>
+    <div class="role"><h3>🪙 幣商／OTC 換匯</h3><p>金流出海的閘門：收現金或轉帳、交付 USDT。未完成洗防登記就經營虛擬資產業務，本身就是犯罪。</p><span class="law">洗錢防制法 §6（VASP 登記）</span><span class="law">虛擬資產服務法（2026 三讀，許可制）</span></div>
+  </div>
+</section>
+
+<section id="pig">
+  <h2><span class="no">02</span>殺豬盤六階段：話術的時間表</h2>
+  <p class="lead">「殺豬盤」＝把被害人當豬養肥再殺。它可怕的地方是節奏——每一步都在為下一步鋪路。每個階段其實都有攔截機會。</p>
+  <div class="stages">
+    <div class="stage"><h3><span class="n">STAGE 1</span>建立人設</h3><p>盜用照片包裝成成功人士：外派工程師、軍醫、投資顧問。社群帳號有完整生活痕跡，經得起初步搜尋。</p><div class="stop"><b>攔截點：</b>反向搜圖、視訊驗證。拒絕視訊＝紅旗。</div></div>
+    <div class="stage"><h3><span class="n">STAGE 2</span>廣撒魚餌</h3><p>交友軟體、「不小心加錯好友」、社團私訊。話術是量產的：同一份劇本同時對幾百人使用。</p><div class="stop"><b>攔截點：</b>平台端異常帳號偵測；個人端對「完美陌生人」保持懷疑。</div></div>
+    <div class="stage"><h3><span class="n">STAGE 3</span>養豬</h3><p>數週到數月的日常關心：早安晚安、感情鋪陳，並「順便」展示投資獲利截圖。這個階段完全不提錢。</p><div class="stop"><b>攔截點：</b>從未見面卻快速進入親密關係＋話題持續飄向投資＝典型組合。</div></div>
+    <div class="stage"><h3><span class="n">STAGE 4</span>試水溫</h3><p>帶進假投資平台，小額投入、真的可以出金——這筆「誘餌出金」是整場騙局最重要的信任工程。</p><div class="stop"><b>攔截點：</b>「小額能出金」不代表平台是真的；查金管會核准名單與 165 通報平台清單。</div></div>
+    <div class="stage"><h3><span class="n">STAGE 5</span>收割</h3><p>誘導加碼：獨家內線、限時額度、開槓桿，甚至勸借貸、抵押房產。想出金時開始出現「稅金」「保證金」「帳戶凍結需解鎖費」。</p><div class="stop"><b>攔截點：</b>出金要先繳錢＝100% 詐騙。銀行臨櫃關懷提問在這一站最有機會攔下大額匯款。</div></div>
+    <div class="stage"><h3><span class="n">STAGE 6</span>殺豬</h3><p>平台關閉、帳號刪除、人間蒸發。金流此時已經走完下方整條路徑，多數已換成 USDT 出海。</p><div class="stop"><b>攔截點：</b>立刻撥 165 啟動通報與圈存——越早通報，錢留在國內帳戶的機率越高。</div></div>
+  </div>
+</section>
+
+<section id="flow">
+  <h2><span class="no">03</span>金流解剖：贓款的七站旅程</h2>
+  <p class="lead">點每一站，看該站「發生什麼事、誰有義務攔截、依據哪條法律、紅旗長什麼樣」。這條路徑就是銀行與 VASP 法遵每天在對抗的東西。</p>
+  <div class="legend">
+    <span><span class="sw" style="background:var(--seg-bank)"></span>銀行／法幣段</span>
+    <span><span class="sw" style="background:var(--seg-cash)"></span>現金段</span>
+    <span><span class="sw" style="background:var(--seg-crypto)"></span>加密段</span>
+    <span><span class="sw" style="background:var(--seg-abroad)"></span>境外收尾</span>
+  </div>
+  <div class="flowscroll"><div class="flow" id="flowNodes"></div></div>
+  <div class="fdetail" id="flowDetail"></div>
+  <p class="hint">💡 攔截的殘酷現實：法幣段（前三站）是機率最高的地方；一旦進入加密段，就從「凍結」變成「追蹤」；到了境外段，勝負取決於跨國司法互助的速度——而金流永遠比公文快。</p>
+</section>
+
+<section id="law">
+  <h2><span class="no">04</span>法遵攔截對照表：誰的義務、哪一條法</h2>
+  <p class="lead">台灣打詐法制在 2023–2026 年密集升級：洗防法大修、打詐專法上路、虛擬資產專法三讀。這張表是整套制度的骨架。</p>
+  <div class="tablewrap">
+  <table>
+    <tr><th>守門人</th><th>義務／權限</th><th>法源</th></tr>
+    <tr><td><b>銀行（臨櫃）</b></td><td>對可疑匯款「關懷提問」、勸阻、通報警方；攔阻高風險交易</td><td class="law">詐欺犯罪危害防制條例（2024，金融防詐措施）</td></tr>
+    <tr><td><b>銀行（帳戶端）</b></td><td>警示帳戶通報與凍結、圈存、延遲入帳／延後提領</td><td class="law">存款帳戶及其疑似不法或顯屬異常交易管理辦法；詐欺犯罪危害防制條例</td></tr>
+    <tr><td><b>銀行／VASP</b></td><td>疑似洗錢交易申報（SAR）；達新臺幣 50 萬之通貨交易申報（CTR）</td><td class="law">洗錢防制法及其授權辦法</td></tr>
+    <tr><td><b>VASP（幣商／交易所）</b></td><td>完成洗錢防制登記始得營業（未登記＝刑責）；未來採許可制</td><td class="law">洗錢防制法 §6（2024 修正）；虛擬資產服務法（2026/6/30 三讀）</td></tr>
+    <tr><td><b>VASP（轉帳端）</b></td><td>Travel Rule：達一定門檻（約新臺幣 3 萬）之虛擬資產移轉，須傳遞匯出／受款雙方資訊</td><td class="law">虛擬通貨平台及交易業務事業防制洗錢辦法</td></tr>
+    <tr><td><b>電信／數位平台</b></td><td>可疑門號管理、詐騙廣告下架、境外來電警示</td><td class="law">詐欺犯罪危害防制條例（電信＋數位經濟防詐專章）</td></tr>
+    <tr><td><b>一般人</b></td><td>賣、租、借帳戶或帳號給他人＝犯罪，不是「被利用的受害者」而已</td><td class="law">洗錢防制法（無正當理由提供帳戶／帳號罪）</td></tr>
+  </table>
+  </div>
+</section>
+
+<section id="redflags">
+  <h2><span class="no">05</span>紅旗指標自檢清單</h2>
+  <p class="lead">法遵實務的日常就是認紅旗。三種視角：銀行端、VASP 端、個人端。</p>
+  <div class="tabs" id="flagTabs">
+    <button class="on" data-t="bank">🏦 銀行端</button>
+    <button data-t="vasp">🪙 VASP 端</button>
+    <button data-t="me">🙋 個人端</button>
+  </div>
+  <div class="flags on" data-p="bank"></div>
+  <div class="flags" data-p="vasp"></div>
+  <div class="flags" data-p="me"></div>
+  <div class="flagcount" id="flagCount"></div>
+</section>
+
+<section id="quiz">
+  <h2><span class="no">06</span>法遵判斷測驗</h2>
+  <p class="lead">八題情境題，測你能不能站在守門人的位置做出正確判斷。</p>
+  <div class="quiz" id="quizBox">
+    <div id="quizBody"></div>
+    <div class="result" id="quizResult"></div>
+    <div class="nav">
+      <span class="score" id="quizScore"></span>
+      <button id="quizNext" disabled>下一題 →</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>⚠️ 本頁為法律科技作品集之教育性整理，非法律意見；條文內容與門檻請以<a href="https://law.moj.gov.tw/" target="_blank">全國法規資料庫</a>公布之現行條文為準。</p>
+  <p class="refs">延伸閱讀：《東南亞詐騙園區內幕》（Ivan Franceschini、李玲、Mark Bo）· <a href="https://165dashboard.tw/" target="_blank">165 打詐儀表板</a> · <a href="https://elainechi-art.github.io/carlaw/">車禍法律知識庫</a></p>
+  <p style="margin-top:10px">Scam Flow Lab · 詐騙金流實驗室 — <a href="https://elainechi-art.github.io/resume/">Elaine Chi</a> 法律科技 × 金融法遵作品</p>
+</footer>
+
+</div>
+
+<script>
+/* ---------- 金流七站 ---------- */
+const SEG = {
+  bank:   {name:'銀行／法幣段', color:'var(--seg-bank)'},
+  cash:   {name:'現金段',       color:'var(--seg-cash)'},
+  crypto: {name:'加密段',       color:'var(--seg-crypto)'},
+  abroad: {name:'境外收尾',     color:'var(--seg-abroad)'}
+};
+const FLOW = [
+ {ic:'😢', t:'被害人匯款', d:'錢離開口袋', seg:'bank',
+  what:'被害人依指示把錢匯進「投資平台」指定帳戶——其實是人頭帳戶。多為網銀轉帳或臨櫃大額匯款。',
+  stop:['銀行臨櫃「關懷提問」與攔阻（高齡＋大額＋講電話＝最高風險組合）','約定轉帳與非約轉限額本身就是防線','匯出後立刻撥 165 → 啟動通報圈存，越快越有機會把錢留住'],
+  laws:['詐欺犯罪危害防制條例：金融機構防詐措施','銀行內部作業規範（臨櫃關懷、通報警方）'],
+  flags:['邊講電話邊操作匯款','臨櫃神情緊張、說詞反覆','高齡客戶突然要解定存匯往陌生帳戶']},
+ {ic:'🪪', t:'一層人頭帳戶', d:'贓款第一站', seg:'bank',
+  what:'收簿手收來的帳戶。錢通常只停留幾分鐘到幾小時，立刻被拆往下一層。',
+  stop:['遭通報即列「警示帳戶」：全行凍結、匯入款退回','銀行交易監控系統（AML）偵測快進快出模式'],
+  laws:['存款帳戶及其疑似不法或顯屬異常交易管理辦法','洗錢防制法：提供帳戶罪（賣帳戶的人）'],
+  flags:['久未往來帳戶突然大量進出','入帳後數分鐘內分散轉出、餘額歸零','同一裝置／IP 操作多個不同人帳戶']},
+ {ic:'💧', t:'水房分層', d:'多層跳轉洗白', seg:'bank',
+  what:'贓款在二層、三層帳戶間快速拆分再聚合（smurfing），目的：讓每一筆都小到不起眼、讓來源查不回去。',
+  stop:['SAR 疑似洗錢申報：模式異常即申報，不必等確定','聯防機制：跨行即時通報，順藤凍結下游帳戶'],
+  laws:['洗錢防制法：特殊洗錢罪（規避查核而分散交易）','金融機構防制洗錢辦法：交易監控義務'],
+  flags:['多筆略低於申報門檻的交易（結構化拆分）','深夜密集轉帳','資金快進快出、帳戶像中繼站不像個人']},
+ {ic:'🏃', t:'車手提現', d:'變成現金', seg:'cash',
+  what:'車手持人頭卡在多台 ATM 連續提領，或假冒檢警面交收現。現金一旦離開體系，銀行端就再也看不到。',
+  stop:['ATM 單日提領限額壓縮出款速度','ATM 人臉辨識與行為偵測（戴全罩安全帽、連續跨行提領）','這是整條鏈最常落網的一站——警方蹲點的重心'],
+  laws:['刑法 §339-4 加重詐欺（共同正犯）','洗錢防制法'],
+  flags:['一人多卡連續提領','固定路線掃多台 ATM','取款後立即面交給上游']},
+ {ic:'🪙', t:'幣商 OTC 換 U', d:'現金 → USDT', seg:'crypto',
+  what:'現金交給地下幣商，換成 USDT（多為 TRC-20）。這一步把「有國界、可凍結」的法幣，變成「無國界、只能追蹤」的加密資產。',
+  stop:['VASP 必須完成洗防登記＋做 KYC，否則本身就是刑事犯罪','大額現金換幣、說不出資金來源 → 應拒絕交易並申報'],
+  laws:['洗錢防制法 §6：未登記經營虛擬資產業務之刑責','虛擬資產服務法（2026 三讀）：改採許可制、強化客戶審查'],
+  flags:['堅持現金面交、拒絕留下身分紀錄','金額與客戶身分明顯不相稱','要求直接打到第三人指定錢包']},
+ {ic:'⛓️', t:'鏈上跳轉', d:'錢包間洗牌', seg:'crypto',
+  what:'USDT 在數十個錢包間跳轉、分散、聚合，有時經過混幣或換鏈。但區塊鏈是公開帳本——每一步其實都留下永久紀錄。',
+  stop:['鏈上分析（Chainalysis 類工具）可標記贓款地址、畫出資金圖譜','Travel Rule：達門檻的移轉須傳遞雙方資訊','發行商（Tether）可配合執法凍結特定地址的 USDT'],
+  laws:['虛擬通貨平台洗防辦法：Travel Rule 與申報義務','洗錢防制法'],
+  flags:['新錢包立即收大額後快速分散','資金流向已被標記的高風險地址','刻意經過混幣服務']},
+ {ic:'🏰', t:'境外交易所／園區金庫', d:'落袋', seg:'abroad',
+  what:'贓款進入境外交易所變現，或直接成為園區集團的營運資金。到這一站，能不能追回取決於跨國合作。',
+  stop:['國際刑警＋司法互助（MLAT）請求凍結','對配合的境外交易所發出止付與調取請求','國際制裁：美國 OFAC 已多次制裁園區集團與其金流網絡'],
+  laws:['國際刑事司法互助法','洗錢防制法：跨境合作條款'],
+  flags:['收款集中於特定境外交易所帳戶','與已被制裁實體關聯的地址','—— 以及一個殘酷事實：公文速度永遠追不上鏈上轉帳']}
+];
+
+const flowNodes = document.getElementById('flowNodes');
+const flowDetail = document.getElementById('flowDetail');
+FLOW.forEach((n,i)=>{
+  const el=document.createElement('div');
+  el.className='fnode'; el.style.borderTopColor=SEG[n.seg].color;
+  el.innerHTML=`<div class="ic">${n.ic}</div><div class="t">${i+1}. ${n.t}</div><div class="d">${n.d}</div>`;
+  el.onclick=()=>selectNode(i);
+  flowNodes.appendChild(el);
+  if(i<FLOW.length-1){const a=document.createElement('div');a.className='farrow';a.textContent='→';flowNodes.appendChild(a);}
+});
+function selectNode(i){
+  document.querySelectorAll('.fnode').forEach((e,j)=>e.classList.toggle('sel', j===i));
+  const n=FLOW[i];
+  flowDetail.innerHTML=`
+   <h3>${n.ic} 第 ${i+1} 站：${n.t}<span class="chip" style="background:${SEG[n.seg].color}22;border:1px solid ${SEG[n.seg].color};">${SEG[n.seg].name}</span></h3>
+   <p style="color:var(--ink2);font-size:14.5px;margin-top:10px">${n.what}</p>
+   <div class="grid">
+     <div class="box"><h4>🛑 攔截點與義務</h4><ul>${n.stop.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+     <div class="box"><h4>📖 法源</h4><ul>${n.laws.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+     <div class="box"><h4>🚩 紅旗長這樣</h4><ul>${n.flags.map(s=>`<li><span class="flag">▲</span>${s}</li>`).join('')}</ul></div>
+   </div>`;
+}
+selectNode(0);
+
+/* ---------- 紅旗清單 ---------- */
+const FLAGS = {
+ bank:['久未往來的帳戶突然出現密集、快進快出的資金','客戶臨櫃匯款時一直在講電話、或不斷看手機指示','高齡客戶突然解定存／保單，要匯給「網路認識的人」','多筆金額刻意低於通貨申報門檻（結構化拆分）','入帳後數分鐘內即分散轉出、餘額趨近於零','同一 IP／裝置登入多個無關聯客戶的網銀'],
+ vasp:['客戶堅持現金面交換 USDT、拒絕完成 KYC','交易金額與客戶年齡、職業、財力顯不相稱','要求把幣直接轉到第三人指定的錢包地址','資金流向已遭標記的高風險或受制裁地址','新註冊帳戶立即進行大額出金','說不清楚資金來源，或說法前後矛盾'],
+ me:['網路認識、從未視訊見面，卻快速進入親密關係','對方主動展示投資獲利，說可以「帶你賺」','投資平台 App 不在官方商店，要用連結安裝','小額出金成功後，被鼓勵大幅加碼、甚至借貸','想出金時被要求先繳稅金／保證金／解凍費','有人出錢向你租、買銀行帳戶或門號──這是叫你犯罪']
+};
+const tabs=document.getElementById('flagTabs');
+tabs.querySelectorAll('button').forEach(b=>{
+  b.onclick=()=>{
+    tabs.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    document.querySelectorAll('.flags').forEach(p=>p.classList.toggle('on',p.dataset.p===b.dataset.t));
+  };
+});
+Object.entries(FLAGS).forEach(([k,list])=>{
+  const panel=document.querySelector(`.flags[data-p="${k}"]`);
+  list.forEach(txt=>{
+    const l=document.createElement('label');
+    l.className='flag-item';
+    l.innerHTML=`<input type="checkbox"><span>🚩 ${txt}</span>`;
+    l.querySelector('input').onchange=e=>{l.classList.toggle('done',e.target.checked);countFlags();};
+    panel.appendChild(l);
+  });
+});
+function countFlags(){
+  const total=document.querySelectorAll('.flag-item').length;
+  const done=document.querySelectorAll('.flag-item.done').length;
+  document.getElementById('flagCount').textContent=`已檢視 ${done} / ${total} 項紅旗`;
+}
+countFlags();
+
+/* ---------- 測驗 ---------- */
+const QUIZ = [
+ {q:'臨櫃客戶（68 歲）要解定存匯 80 萬給「網路認識的投資老師」，過程中不斷接聽電話。身為行員，最正確的作法是？',
+  o:['客戶有權處分財產，照辦即可','進行關懷提問、暫緩交易，必要時通報警方到場關懷','直接拒絕交易並列警示帳戶','請客戶改用網銀操作以節省臨櫃時間'],
+  a:1, e:'<b>詐欺犯罪危害防制條例</b>賦予金融機構對疑似受詐交易「關懷提問、暫緩、通報」的防詐措施。高齡＋大額＋通話中是最典型的高風險組合；直接列警示帳戶則須符合通報要件，不是行員第一步。'},
+ {q:'某帳戶久未使用，今天突然湧入 12 筆小額轉帳，並在 10 分鐘內全數轉出到 5 個不同帳戶。這最可能是什麼？',
+  o:['正常的電商收款日常','一層人頭帳戶／水房中繼站，應觸發交易監控與 SAR 申報','客戶在做定期定額投資','薪轉帳戶發薪日'],
+  a:1, e:'「快進快出、餘額歸零、多對多分散」是人頭帳戶的教科書特徵。AML 交易監控應產生警示，經分析後進行<b>疑似洗錢交易申報（SAR）</b>——申報看的是「合理懷疑」，不需要等到確定是犯罪。'},
+ {q:'有人在網路上向你「租」銀行帳戶，月租 3 萬，聲稱只是公司節稅用。你把帳戶借出去，法律上的後果是？',
+  o:['帳戶是我的財產，出租是契約自由','最多被列警示戶，沒有刑責','可能成立洗錢防制法的提供帳戶罪，本身就是犯罪','只要不知情就完全沒有任何責任'],
+  a:2, e:'2023 年洗防法修正後，<b>無正當理由收集或提供帳戶、帳號</b>即可成罪，不必證明你參與詐騙。實務上「租帳戶給陌生人」幾乎不可能被認定有正當理由。'},
+ {q:'客戶想用 200 萬現金向你（幣商）購買 USDT，拒絕提供身分資料，並要求把幣打到「朋友」的錢包。你該？',
+  o:['現金交易最實在，完成交易','拒絕交易；若已是登記 VASP，評估進行申報','打折促成交易留住大客戶','請他改天分次來買，每次金額小一點'],
+  a:1, e:'三面紅旗齊發：大額現金＋拒絕 KYC＋第三人錢包。登記過的 VASP 有<b>客戶審查與申報義務</b>；教客戶拆單規避門檻更是協助<b>特殊洗錢罪</b>的結構化交易。'},
+ {q:'求職廣告：「柬埔寨客服，月薪 10 萬，供機票住宿，無經驗可，護照公司代保管」。最關鍵的紅旗是哪一個？',
+  o:['月薪太高','地點在柬埔寨','「護照公司代保管」——這是人口販運控制手段','供機票住宿太大方'],
+  a:2, e:'高薪、海外、供機票都可能有正當版本，但<b>收走護照</b>是控制人身自由的手段，直接對應<b>人口販運防制法</b>的剝削指標。詐騙園區的「員工」很多就是這樣去的。'},
+ {q:'朋友說：「這個投資平台我測試過，投 1 萬真的能領回來，是真的！」就殺豬盤流程而言，這代表？',
+  o:['能出金就代表平台合法','這正是 STAGE 4「試水溫」的誘餌出金，是信任工程的一部分','平台至少有一半是真的','出過金的平台不會被 165 列警示'],
+  a:1, e:'誘餌出金是殺豬盤<b>刻意設計的成本</b>：先讓你領回小錢，才騙得到你的大錢。判斷平台真偽要看有沒有金管會核准、有沒有被 165 通報，而不是「能不能出金」。'},
+ {q:'贓款已被換成 USDT 並轉出。下列敘述何者正確？',
+  o:['進了區塊鏈就完全無法追蹤','區塊鏈是公開帳本，鏈上分析可追蹤資金圖譜，發行商也可能凍結地址','只有駭客才看得到鏈上紀錄','轉成 USDT 後金流自動合法化'],
+  a:1, e:'加密段的特性是「難凍結、可追蹤」：每筆轉帳都是<b>永久公開紀錄</b>，鏈上分析工具可標記贓款地址；Tether 也曾多次配合執法凍結地址。真正的斷點在「出金變現」那一刻。'},
+ {q:'被害人剛匯出 50 萬就發現被騙。第一時間最能提高把錢追回機率的動作是？',
+  o:['先蒐集完整證據，一週內去地檢署按鈴申告','立刻撥 165／報警，啟動通報讓銀行圈存攔阻','在社群發文警告大家','私訊詐騙集團要求退款'],
+  a:1, e:'錢在一層帳戶通常只停留<b>幾分鐘到幾小時</b>。165 通報會啟動銀行端的警示與<b>圈存</b>機制，是唯一跑得過水房的管道；證據可以之後補，金流不等人。'}
+];
+let qi=0, qScore=0, answered=false;
+const qBody=document.getElementById('quizBody'), qNext=document.getElementById('quizNext'),
+      qScoreEl=document.getElementById('quizScore'), qResult=document.getElementById('quizResult');
+function renderQ(){
+  answered=false; qNext.disabled=true;
+  qNext.textContent = qi===QUIZ.length-1 ? '看結果 🏁' : '下一題 →';
+  const q=QUIZ[qi];
+  qBody.innerHTML=`<div class="qno">QUESTION ${qi+1} / ${QUIZ.length}</div>
+    <div class="qtext">${q.q}</div>
+    <div class="opts">${q.o.map((o,j)=>`<button data-j="${j}">${'ABCD'[j]}. ${o}</button>`).join('')}</div>
+    <div class="expl" id="expl">${q.e}</div>`;
+  qBody.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>answer(+b.dataset.j,b));
+  qScoreEl.textContent=`得分 ${qScore} / ${QUIZ.length}`;
+}
+function answer(j,btn){
+  if(answered) return; answered=true;
+  const q=QUIZ[qi];
+  qBody.querySelectorAll('.opts button').forEach((b,k)=>{
+    if(k===q.a) b.classList.add('correct');
+    else if(b===btn) b.classList.add('wrong');
+    b.style.cursor='default';
+  });
+  if(j===q.a) qScore++;
+  document.getElementById('expl').style.display='block';
+  qScoreEl.textContent=`得分 ${qScore} / ${QUIZ.length}`;
+  qNext.disabled=false;
+}
+qNext.onclick=()=>{
+  if(qi<QUIZ.length-1){qi++;renderQ();}
+  else{
+    qBody.style.display='none'; qNext.style.display='none';
+    const pct=qScore/QUIZ.length;
+    const msg = pct===1 ? '滿分！你已經具備第一線法遵的判斷直覺 💪'
+      : pct>=0.75 ? '很強！再把錯的那幾題法源記起來就完整了'
+      : pct>=0.5 ? '及格邊緣——建議把 03 金流解剖每一站再點一遍'
+      : '先別急，從 01 產業鏈重新走一遍，紅旗會越來越眼熟';
+    qResult.style.display='block';
+    qResult.innerHTML=`<div class="big">${qScore} / ${QUIZ.length}</div><p>${msg}</p>
+      <p style="margin-top:14px"><button onclick="location.reload()" style="background:#1f2e3a;color:var(--accent);border:none;border-radius:8px;padding:9px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">再測一次</button></p>`;
+  }
+};
+renderQ();
+</script>
+<script data-goatcounter="https://elainechi.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
