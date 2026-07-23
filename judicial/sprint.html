@@ -639,7 +639,7 @@ function ssMatch(r){const q=(r.p.concept||"")+" "+(r.p.law||"");let best=null,bs
   return bs>=0.16?best:null;}
 function srReflexMatch(r,g){return g==="國際法+法學英文"?gjMatch(r):g==="刑法"?sxMatch(r):g==="商事法"?ssMatch(r):null;}
 function isRG(g){return g==="商事法"||g==="刑法"||g==="國際法+法學英文";}   // 有反射地圖整套功能的科
-function isHL(g){return isRG(g)||g==="民法"||g==="刑訴";}   // 題幹高亮＋選項訂正（民法/刑訴用現有筆記，無反射地圖）
+function isHL(g){return isRG(g)||g==="民法"||g==="刑訴"||g==="行政法";}   // 題幹高亮＋選項訂正（民法/刑訴/行政法用現有筆記，無反射地圖）
 function gjVoice(t){return [t.title,...t.body].join("。").replace(/\*\*/g,"").replace(/§/g,"第").replace(/[「」『』]/g,"");}
 function gjBlockHTML(t){const inner=[t.title,...t.body].map(srLineHTML).join("");
   return `<div class="blk" id="gjblk"><span class="l">📎 我的反射地圖解析</span>`
@@ -1010,7 +1010,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s49";
+const APP_VERSION="s50";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
