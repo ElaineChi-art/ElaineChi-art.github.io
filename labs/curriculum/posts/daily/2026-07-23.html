@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>深度學習到底在學什麼：從線性迴歸到神經網路的認知跳躍｜技能實驗室・每日課程</title>
+<meta name="description" content="神經網路的學習循環，其實跟線性迴歸是同一套：猜一次、算錯多少、往減少誤差的方向調。真正的跳躍只有兩件事——加上非線性、把層數疊深。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-07-23</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・人工智慧核心概念</div>
+  <h1>深度學習到底在學什麼：從線性迴歸到神經網路的認知跳躍</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-07-23</span>
+    <span>約 6 分鐘</span>
+    <span>對應真專案主題：深度學習概要</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>深度學習學的不是規則，是參數。它的學習循環跟高中就學過的線性迴歸一模一樣：先猜一組答案、算出錯了多少、再往「錯得比較少」的方向微調，重複幾萬次。從線性迴歸走到神經網路，只多了兩件事——每層之後加一個非線性的啟動函數，然後把這種層疊深。搞懂這兩件事，你就知道那些看起來很玄的模型，底下都是同一台機器。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-2-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260723" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260723" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260723" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260723)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260723)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M1 · 人工智慧核心概念  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">深度學習到底在學什麼？<tspan fill="#4D9FFF">從一條直線開始</tspan></text>
+
+      <!-- 起點：線性迴歸 -->
+      <rect x="64" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <rect x="64" y="140" width="336" height="5" rx="2.5" fill="url(#topbarD20260723)"/>
+      <text x="88" y="184" font-size="20" font-weight="800" fill="#4D9FFF">■ 起點　線性迴歸</text>
+      <text x="88" y="224" font-size="17" fill="#8FA1C0">在做什麼</text>
+      <text x="88" y="250" font-size="17" fill="#C7D2E4">先猜一條直線，</text>
+      <text x="88" y="274" font-size="17" fill="#C7D2E4">用 w 和 b 兩個參數描述。</text>
+      <text x="88" y="318" font-size="17" fill="#8FA1C0">怎麼變好</text>
+      <text x="88" y="344" font-size="17" fill="#C7D2E4">拿預測值跟真實答案比，</text>
+      <text x="88" y="368" font-size="17" fill="#C7D2E4">算出誤差；再往誤差</text>
+      <text x="88" y="392" font-size="17" fill="#C7D2E4">變小的方向微調 w、b。</text>
+      <text x="88" y="436" font-size="17" fill="#8FA1C0">重點</text>
+      <text x="88" y="462" font-size="17" fill="#C7D2E4">猜 → 算錯多少 → 調，</text>
+      <text x="88" y="486" font-size="17" fill="#C7D2E4">這個循環就是全部。</text>
+      <text x="88" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 深度學習沒換過這套。</text>
+
+      <line x1="404" y1="340" x2="466" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260723)"/>
+
+      <!-- 跳躍：非線性 -->
+      <rect x="472" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="472" y="140" width="336" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="496" y="184" font-size="20" font-weight="800" fill="#F2A33C">■ 跳躍　加上非線性</text>
+      <text x="496" y="224" font-size="17" fill="#8FA1C0">卡在哪</text>
+      <text x="496" y="250" font-size="17" fill="#C7D2E4">直線疊直線，</text>
+      <text x="496" y="274" font-size="17" fill="#C7D2E4">結果還是一條直線。</text>
+      <text x="496" y="318" font-size="17" fill="#8FA1C0">怎麼解</text>
+      <text x="496" y="344" font-size="17" fill="#C7D2E4">每層算完之後套一個</text>
+      <text x="496" y="368" font-size="17" fill="#C7D2E4">啟動函數。例如 ReLU：</text>
+      <text x="496" y="392" font-size="17" fill="#C7D2E4">負的變 0、正的原樣過。</text>
+      <text x="496" y="436" font-size="17" fill="#8FA1C0">重點</text>
+      <text x="496" y="462" font-size="17" fill="#C7D2E4">模型從此能彎、能折，</text>
+      <text x="496" y="486" font-size="17" fill="#C7D2E4">才描述得了複雜關係。</text>
+      <text x="496" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 少了它，疊幾層都白疊。</text>
+
+      <line x1="812" y1="340" x2="874" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260723)"/>
+
+      <!-- 結果：神經網路 -->
+      <rect x="880" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="880" y="140" width="336" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="904" y="184" font-size="20" font-weight="800" fill="#35C08E">■ 結果　神經網路</text>
+      <text x="904" y="224" font-size="17" fill="#8FA1C0">長什麼樣</text>
+      <text x="904" y="250" font-size="17" fill="#C7D2E4">很多這樣的單元，</text>
+      <text x="904" y="274" font-size="17" fill="#C7D2E4">一層一層疊起來。</text>
+      <text x="904" y="318" font-size="17" fill="#8FA1C0">誰學什麼</text>
+      <text x="904" y="344" font-size="17" fill="#C7D2E4">前面幾層自己找出</text>
+      <text x="904" y="368" font-size="17" fill="#C7D2E4">基本特徵；後面幾層</text>
+      <text x="904" y="392" font-size="17" fill="#C7D2E4">把特徵組合成判斷。</text>
+      <text x="904" y="436" font-size="17" fill="#8FA1C0">重點</text>
+      <text x="904" y="462" font-size="17" fill="#C7D2E4">特徵是它自己長出來的，</text>
+      <text x="904" y="486" font-size="17" fill="#C7D2E4">不是人一條條寫死的。</text>
+      <text x="904" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 學的是參數，不是規則。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：深度學習學的不是規則，是參數——你給它題目跟答案，它自己把權重調到能答對。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">從線性迴歸到神經網路，只多了兩件事：加上非線性、把層數疊深。「猜 → 算錯多少 → 調」的循環從沒變過。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+
+  <div class="script-panel" id="sp-2-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-07-23-1.mp3"></audio>
+    <p>這張圖在講的是，從線性迴歸走到神經網路，中間到底跨過了哪一道坎。左邊是線性迴歸：你先畫一條直線，用預測值跟真實答案的差距算出誤差，再一點一點調整斜率跟截距，讓誤差變小。這套「猜一次、算錯多少、往減少錯誤的方向調」的循環，就是所有深度學習的本體，從頭到尾沒有變過。中間這格是關鍵的跳躍：直線再怎麼疊還是直線，所以每一層之後要加一個非線性的啟動函數，模型才有能力去彎、去折，描述複雜的關係。右邊是神經網路：很多層這樣的單元疊起來，前面幾層自己學會抓基本特徵，後面幾層再把特徵組合成判斷。所以深度學習學的不是規則，是參數。你給它題目跟答案，它自己把權重調到能答對。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>深度學習就是「讓機器自己把一堆數字調到能答對」的過程，那堆數字叫參數。最小的起點是線性迴歸（用一條直線去描述兩件事之間的關係）：房子坪數乘上一個權重 w、加上一個截距 b，得到預測價格。一開始 w 和 b 是隨便給的，預測當然很爛。於是你算出「預測值跟真實答案差多少」，這個差距叫損失（把錯誤程度濃縮成一個數字的公式），再把 w 和 b 往「讓損失變小」的方向挪一點點。挪的方向怎麼決定？看斜率——這就是梯度下降（沿著誤差下降最陡的方向走一小步）。重複幾萬次，直線就貼上資料了。</p>
+  <p>神經網路只是把這台機器複製很多份、疊起來。一個神經元做的事情跟線性迴歸一模一樣：把輸入乘上權重、加總、加偏置。差別在於，算完之後它會再過一道啟動函數（一個刻意做成不是直線的小函數，例如 ReLU：負數變 0、正數原樣通過）。然後這一層的輸出，變成下一層的輸入。所謂「深度」，指的就是層數多，沒有更神祕的意思。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎的是「不用人寫規則」這件事帶來的解放。傳統做法要工程師想好判斷條件——判斷一筆刷卡是不是盜刷，你得自己列出「金額大於多少」「境外」「深夜」這些規則，一條條寫、一條條維護，遇到新手法就漏接。深度學習把這件事反過來：你只給它幾十萬筆「這筆是盜刷／這筆不是」的歷史資料，它自己去調出一組權重，讓判斷結果盡量對。工程師的工作從「想規則」變成「準備資料、設計目標、驗證結果」。</p>
+  <p>這也是為什麼「打通完整應用情境」比零散學單一技能重要。104 人力銀行《AI 人才趨勢報告》就建議求職者要培養端到端的應用能力，而不是只認得幾個名詞。以這一課來說，光知道「神經網路會自己學特徵」在面試裡是零分；能講出「資料怎麼標、損失函數選什麼、訓練完怎麼確認它不是只會背答案」才是一條完整的線。非線性這件事看起來只是數學細節，但它正是「為什麼疊深有用」的唯一理由——這種一句話能戳到底的理解，才是可以被追問的知識。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到金融場景，這套機器最典型的樣子就是風險評分模型。假設我在國泰或玉山的數據團隊，任務是「幫每一筆線上交易算一個盜刷風險分數」。輸入是這筆交易的特徵：金額、時間、裝置、與這個帳戶過去行為的差距；輸出是 0 到 1 的一個分數；訓練資料是過去半年被確認的盜刷案件。模型要學的，就是那組能把盜刷和正常交易分開的權重。</p>
+  <p>對我這種法律金融跨域背景的人來說，真正能加分的其實在模型之外。金融業的模型不是準就好，還要能對監理機關和法遵單位解釋。所以我會很在意兩件事：一是門檻怎麼定——分數 0.8 以上就擋交易，會擋掉多少正常客戶？這是業務決策，不是模型決定的。二是特徵能不能用——如果模型偷偷靠著某些跟性別、地區高度相關的欄位在做判斷，那在公平性和個資合規上都是問題。看得懂模型在學什麼，我才有辦法問出這些問題，這正好是我的背景和技術的交界處。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易答錯的地方，是以為「層數疊多一點，模型自然就變強」。如果你把啟動函數拿掉，疊一百層線性層，數學上會塌回成一層——因為線性函數的組合仍然是線性函數。也就是說，非線性不是效能優化的選項，而是「深度有沒有意義」的前提。這題很常被拿來確認你是真懂還是背的，因為死背的人講得出「有啟動函數」，卻講不出「沒有它會怎樣」。</p>
+  <p>另一個誤區，是把「訓練誤差降下來」當成模型做得好。模型完全可以靠記住訓練資料把誤差壓到很低，換一批沒看過的資料就崩掉，這叫過擬合（把雜訊也當成規律學進去）。所以真正的判準永遠是「沒看過的資料上表現如何」，這也是為什麼一定要切出驗證集。至於「梯度下降會不會走到一半卡住」這類追問，我目前是理解原理層次：實務上會用調整學習率、換優化器這些手段處理，但我還沒有親手訓練到需要跟它搏鬥的規模，這部分我會誠實說明。</p>
+
+  <p>深度學習沒有在學規則，它在學參數——你給它題目跟答案，它自己把旋鈕轉到能答對為止。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「你可以用白話解釋一下，神經網路到底在學什麼嗎？」</span>
+        <span class="hint">👉 這題其實在問：你是真的理解，還是只會複述名詞。</span>
+        <span class="a">她可以怎麼答：它在學一組參數，也就是權重。流程跟線性迴歸一樣：先隨便猜一組，算出預測跟正確答案差多少（損失），再往讓損失變小的方向微調，重複幾萬次。神經網路只是把這個單元疊很多層，而且每層之後加一個非線性的啟動函數。所以它學到的不是人寫的規則，是一組能讓答案盡量對的數字。</span>
+      </li>
+      <li>
+        <span class="q">「為什麼一定要有啟動函數？拿掉會怎樣？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂「疊深」為什麼有用，這是分辨真懂假懂的關鍵題。</span>
+        <span class="a">她可以怎麼答：拿掉的話，整個網路會塌回成一層。因為線性函數疊線性函數還是線性函數，疊一百層跟一層的表達能力一樣。啟動函數的作用就是引入非線性，讓模型能彎、能折，才描述得了複雜的關係。所以它不是優化選項，是「深度有沒有意義」的前提。</span>
+      </li>
+      <li>
+        <span class="q">「線性迴歸跟深度學習差在哪？」</span>
+        <span class="hint">👉 這題其實在問：你能不能把新東西接回你已經懂的舊東西。</span>
+        <span class="a">她可以怎麼答：核心循環完全一樣，都是猜、算誤差、調參數。差別只有兩點：一是每層之後加了非線性的啟動函數，二是層數疊深了。多出來的能力是自動抽特徵——線性迴歸的特徵要人先想好餵給它，神經網路是前面幾層自己找出基本特徵、後面幾層再組合成判斷。</span>
+      </li>
+      <li>
+        <span class="q">「訓練誤差很低，代表模型好嗎？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道過擬合這個坑。</span>
+        <span class="a">她可以怎麼答：不代表。模型可能只是把訓練資料背起來了，這叫過擬合，換一批沒看過的資料就會崩掉。所以我會切出驗證集，看它在沒看過的資料上表現如何，那才是真正的判準。如果訓練誤差一直降、驗證誤差卻開始上升，那就是過擬合的訊號。</span>
+      </li>
+      <li>
+        <span class="q">「你自己訓練過模型嗎？遇到不收斂會怎麼處理？」</span>
+        <span class="hint">👉 這題其實在問：你的實戰深度到哪，坦白比硬掰加分。</span>
+        <span class="a">她可以怎麼答（誠實的答法）：老實說我目前訓練過的都是課程等級的小模型，還沒碰過大規模不收斂的狀況。但我知道要先分清楚是資料問題還是訓練設定問題——先確認資料標得對、有沒有做正規化，再檢查學習率是不是太大導致誤差震盪。我會從最便宜的檢查開始，一次只動一個變因，這樣才知道是什麼有效。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-07-22.html"><span class="dir">上一課</span>← 從零建置深度學習開發環境</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-22",
+  "updated": "2026-07-23",
   "lessons": [
     {
       "id": 1,
@@ -18,10 +18,10 @@
       "category": "ai",
       "topic": "深度學習概要",
       "title": "深度學習到底在學什麼：從線性迴歸到神經網路的認知跳躍",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-07-23",
+      "url": "posts/daily/2026-07-23.html",
+      "slides": 1
     },
     {
       "id": 3,

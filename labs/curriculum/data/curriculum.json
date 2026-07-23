@@ -1,40 +1,289 @@
 {
   "note": "技能實驗室・每日課程。順序依 2026-07 的104人力銀行AI人才趨勢報告排序：流程自動化(+233%)、NLP(+147%)、預測分析(+168%)、機器學習演算法(+64%)為成長最快硬技能；企業期待工具=ChatGPT/PyTorch/Gemini。目標公司=台灣大型企業金融科技(國泰/玉山/台灣大哥大/91APP)+國際遠端全端職缺。每篇=學會這個主題到能在面試講清楚，累積夠了再挑出來做成 labs/data/topics.json 裡的真專案(status:live)。act 對應教學模組(M1..M9)，category 對應 labs/data/topics.json 的分類 id，方便之後串連。",
   "lessons": [
-    {"id":1,"act":"M1","category":"ai","topic":"新手村｜系統操作講解","t":"從零建置一套能跑深度學習的開發環境：Python/GPU/Colab三種路線怎麼選","status":"done 2026-07-22"},
-    {"id":2,"act":"M1","category":"ai","topic":"深度學習概要","t":"深度學習到底在學什麼：從線性迴歸到神經網路的認知跳躍","status":"todo"},
-    {"id":3,"act":"M1","category":"ai","topic":"Transformer模型","t":"Transformer為什麼贏了：自注意力機制如何取代RNN成為現代AI的地基","status":"todo"},
-    {"id":4,"act":"M1","category":"ai","topic":"LLM大型語言模型","t":"大型語言模型的能力邊界：它真的「理解」還是很會「猜下一個字」","status":"todo","ref":"OpenAI/Anthropic 官方模型說明文件"},
-    {"id":5,"act":"M2","category":"genai","topic":"ChatGPT 介紹與實作","t":"Prompt Engineering不是玄學：拆解一個好prompt的五個必要元素","status":"todo"},
-    {"id":6,"act":"M2","category":"genai","topic":"ChatGPT API串接及實作","t":"從Playground到生產環境：ChatGPT API串接的第一個真實應用","status":"todo"},
-    {"id":7,"act":"M2","category":"genai","topic":"OpenAI API 開發與實務（python）","t":"function calling與結構化輸出：讓LLM乖乖回傳你要的JSON","status":"todo"},
-    {"id":8,"act":"M2","category":"genai","topic":"整合 LangChain 與 OpenAI 打造自己的 ChatGPT","t":"RAG是什麼：用LangChain讓ChatGPT讀懂你自己的文件","status":"todo"},
-    {"id":9,"act":"M3","category":"dl-apps","topic":"智慧客服","t":"智慧客服系統的產品拆解：意圖辨識、對話狀態、何時該轉真人","status":"todo","ref":"104人力銀行AI人才趨勢報告：NLP需求5年成長147%"},
-    {"id":10,"act":"M3","category":"dl-apps","topic":"AI 高效自動化應用","t":"流程自動化的真實案例：把一個重複性工作交給AI的完整拆解","status":"todo","ref":"104人力銀行AI人才趨勢報告：流程自動化需求5年成長233%，是成長最快硬技能"},
-    {"id":11,"act":"M3","category":"dl-apps","topic":"圖片分類與物件偵測","t":"CNN在真實場景怎麼用：從分類到偵測的產品差異","status":"todo"},
-    {"id":12,"act":"M4","category":"frontend","topic":"JavaScript 進階觀念與應用","t":"非同步JavaScript：Promise/async-await到底在解決什麼問題","status":"todo"},
-    {"id":13,"act":"M4","category":"frontend","topic":"Vue.js 基礎知識","t":"為什麼要用框架：Vue的響應式系統怎麼讓畫面自己更新","status":"todo"},
-    {"id":14,"act":"M4","category":"frontend","topic":"React 資料串接與應用","t":"React的資料流向：從useState到跟後端API溝通的完整路徑","status":"todo"},
-    {"id":15,"act":"M4","category":"frontend","topic":"網頁切版概念與響應式應用","t":"響應式設計不是縮小畫面：斷點設計的實務決策","status":"todo"},
-    {"id":16,"act":"M4","category":"frontend","topic":"CSS動畫實作","t":"讓介面感覺「活著」：CSS transition/animation的分寸拿捏","status":"todo"},
-    {"id":17,"act":"M5","category":"backend","topic":"Python：後端框架與 API 開發","t":"RESTful API設計的第一課：資源、動詞與狀態碼怎麼對應真實需求","status":"todo"},
-    {"id":18,"act":"M5","category":"backend","topic":"資料庫架構規劃","t":"設計一張資料表之前要先想清楚的三件事：正規化、索引、未來擴充","status":"todo"},
-    {"id":19,"act":"M5","category":"backend","topic":"初探 SQL","t":"SQL不只是查資料：一個JOIN背後的效能代價","status":"todo"},
-    {"id":20,"act":"M5","category":"backend","topic":"Python：網站安全與權限認證","t":"為什麼密碼不能直接存：雜湊、鹽值與權限認證的最低防線","status":"todo"},
-    {"id":21,"act":"M5","category":"backend","topic":"CI/CD 與部署","t":"從git push到上線：CI/CD管線省下的是哪一種風險","status":"todo"},
-    {"id":22,"act":"M6","category":"quant","topic":"爬蟲入門學程","t":"量化交易的第一步：把散落的市場資料變成一張乾淨的表","status":"todo"},
-    {"id":23,"act":"M6","category":"quant","topic":"自動化交易程式入門","t":"回測不是預測：一個交易策略要先騙過歷史資料才能上場","status":"todo"},
-    {"id":24,"act":"M6","category":"quant","topic":"自動化交易進階實戰學程","t":"策略活不過實盤的常見原因：過度擬合與交易成本被忽略","status":"todo"},
-    {"id":25,"act":"M6","category":"quant","topic":"專案實作：量化金融","t":"把法遵背景變優勢：量化交易系統裡監理與風控該長在哪裡","status":"todo"},
-    {"id":26,"act":"M7","category":"ml","topic":"機器學習概念","t":"監督式與非監督式的分界：機器學習問題的第一個分類判斷","status":"todo"},
-    {"id":27,"act":"M7","category":"ml","topic":"分類與辨識概念與實作","t":"準確率會騙人：不平衡資料集下該看哪些指標","status":"todo"},
-    {"id":28,"act":"M7","category":"ml","topic":"時間序列概念與實作","t":"時間序列預測的陷阱：為什麼不能隨便切訓練/測試集","status":"todo","ref":"104人力銀行AI人才趨勢報告：預測分析需求5年成長168%"},
-    {"id":29,"act":"M7","category":"ml","topic":"樹狀演算法概念與實作","t":"決策樹到隨機森林：為什麼「一堆爛模型」投票會變準","status":"todo"},
-    {"id":30,"act":"M8","category":"python","topic":"Python 進階套件","t":"pandas的資料處理心法：一行程式碼背後的向量化思維","status":"todo"},
-    {"id":31,"act":"M8","category":"python","topic":"網路爬蟲與實作應用","t":"合法爬蟲的邊界：robots.txt、頻率限制與資料使用的紅線","status":"todo"},
-    {"id":32,"act":"M9","category":"dl-apps","topic":"深度學習方法介紹","t":"CNN/RNN/Transformer選型指南：資料型態決定架構","status":"todo"},
-    {"id":33,"act":"M9","category":"ai","topic":"GAN生成對抗網路","t":"生成對抗網路的博弈邏輯：兩個網路互相打假球互相變強","status":"todo"},
-    {"id":34,"act":"M10","category":"marketing","topic":"網站數據分析基礎","t":"工程師該懂的數據分析：把GoatCounter數字變成產品決策","status":"todo"},
-    {"id":35,"act":"M10","category":"business","topic":"產品需求探索與定位","t":"寫程式之前先想清楚：一個功能該不該做的判斷框架","status":"todo"}
+    {
+      "id": 1,
+      "act": "M1",
+      "category": "ai",
+      "topic": "新手村｜系統操作講解",
+      "t": "從零建置一套能跑深度學習的開發環境：Python/GPU/Colab三種路線怎麼選",
+      "status": "done 2026-07-22"
+    },
+    {
+      "id": 2,
+      "act": "M1",
+      "category": "ai",
+      "topic": "深度學習概要",
+      "t": "深度學習到底在學什麼：從線性迴歸到神經網路的認知跳躍",
+      "status": "done 2026-07-23"
+    },
+    {
+      "id": 3,
+      "act": "M1",
+      "category": "ai",
+      "topic": "Transformer模型",
+      "t": "Transformer為什麼贏了：自注意力機制如何取代RNN成為現代AI的地基",
+      "status": "todo"
+    },
+    {
+      "id": 4,
+      "act": "M1",
+      "category": "ai",
+      "topic": "LLM大型語言模型",
+      "t": "大型語言模型的能力邊界：它真的「理解」還是很會「猜下一個字」",
+      "status": "todo",
+      "ref": "OpenAI/Anthropic 官方模型說明文件"
+    },
+    {
+      "id": 5,
+      "act": "M2",
+      "category": "genai",
+      "topic": "ChatGPT 介紹與實作",
+      "t": "Prompt Engineering不是玄學：拆解一個好prompt的五個必要元素",
+      "status": "todo"
+    },
+    {
+      "id": 6,
+      "act": "M2",
+      "category": "genai",
+      "topic": "ChatGPT API串接及實作",
+      "t": "從Playground到生產環境：ChatGPT API串接的第一個真實應用",
+      "status": "todo"
+    },
+    {
+      "id": 7,
+      "act": "M2",
+      "category": "genai",
+      "topic": "OpenAI API 開發與實務（python）",
+      "t": "function calling與結構化輸出：讓LLM乖乖回傳你要的JSON",
+      "status": "todo"
+    },
+    {
+      "id": 8,
+      "act": "M2",
+      "category": "genai",
+      "topic": "整合 LangChain 與 OpenAI 打造自己的 ChatGPT",
+      "t": "RAG是什麼：用LangChain讓ChatGPT讀懂你自己的文件",
+      "status": "todo"
+    },
+    {
+      "id": 9,
+      "act": "M3",
+      "category": "dl-apps",
+      "topic": "智慧客服",
+      "t": "智慧客服系統的產品拆解：意圖辨識、對話狀態、何時該轉真人",
+      "status": "todo",
+      "ref": "104人力銀行AI人才趨勢報告：NLP需求5年成長147%"
+    },
+    {
+      "id": 10,
+      "act": "M3",
+      "category": "dl-apps",
+      "topic": "AI 高效自動化應用",
+      "t": "流程自動化的真實案例：把一個重複性工作交給AI的完整拆解",
+      "status": "todo",
+      "ref": "104人力銀行AI人才趨勢報告：流程自動化需求5年成長233%，是成長最快硬技能"
+    },
+    {
+      "id": 11,
+      "act": "M3",
+      "category": "dl-apps",
+      "topic": "圖片分類與物件偵測",
+      "t": "CNN在真實場景怎麼用：從分類到偵測的產品差異",
+      "status": "todo"
+    },
+    {
+      "id": 12,
+      "act": "M4",
+      "category": "frontend",
+      "topic": "JavaScript 進階觀念與應用",
+      "t": "非同步JavaScript：Promise/async-await到底在解決什麼問題",
+      "status": "todo"
+    },
+    {
+      "id": 13,
+      "act": "M4",
+      "category": "frontend",
+      "topic": "Vue.js 基礎知識",
+      "t": "為什麼要用框架：Vue的響應式系統怎麼讓畫面自己更新",
+      "status": "todo"
+    },
+    {
+      "id": 14,
+      "act": "M4",
+      "category": "frontend",
+      "topic": "React 資料串接與應用",
+      "t": "React的資料流向：從useState到跟後端API溝通的完整路徑",
+      "status": "todo"
+    },
+    {
+      "id": 15,
+      "act": "M4",
+      "category": "frontend",
+      "topic": "網頁切版概念與響應式應用",
+      "t": "響應式設計不是縮小畫面：斷點設計的實務決策",
+      "status": "todo"
+    },
+    {
+      "id": 16,
+      "act": "M4",
+      "category": "frontend",
+      "topic": "CSS動畫實作",
+      "t": "讓介面感覺「活著」：CSS transition/animation的分寸拿捏",
+      "status": "todo"
+    },
+    {
+      "id": 17,
+      "act": "M5",
+      "category": "backend",
+      "topic": "Python：後端框架與 API 開發",
+      "t": "RESTful API設計的第一課：資源、動詞與狀態碼怎麼對應真實需求",
+      "status": "todo"
+    },
+    {
+      "id": 18,
+      "act": "M5",
+      "category": "backend",
+      "topic": "資料庫架構規劃",
+      "t": "設計一張資料表之前要先想清楚的三件事：正規化、索引、未來擴充",
+      "status": "todo"
+    },
+    {
+      "id": 19,
+      "act": "M5",
+      "category": "backend",
+      "topic": "初探 SQL",
+      "t": "SQL不只是查資料：一個JOIN背後的效能代價",
+      "status": "todo"
+    },
+    {
+      "id": 20,
+      "act": "M5",
+      "category": "backend",
+      "topic": "Python：網站安全與權限認證",
+      "t": "為什麼密碼不能直接存：雜湊、鹽值與權限認證的最低防線",
+      "status": "todo"
+    },
+    {
+      "id": 21,
+      "act": "M5",
+      "category": "backend",
+      "topic": "CI/CD 與部署",
+      "t": "從git push到上線：CI/CD管線省下的是哪一種風險",
+      "status": "todo"
+    },
+    {
+      "id": 22,
+      "act": "M6",
+      "category": "quant",
+      "topic": "爬蟲入門學程",
+      "t": "量化交易的第一步：把散落的市場資料變成一張乾淨的表",
+      "status": "todo"
+    },
+    {
+      "id": 23,
+      "act": "M6",
+      "category": "quant",
+      "topic": "自動化交易程式入門",
+      "t": "回測不是預測：一個交易策略要先騙過歷史資料才能上場",
+      "status": "todo"
+    },
+    {
+      "id": 24,
+      "act": "M6",
+      "category": "quant",
+      "topic": "自動化交易進階實戰學程",
+      "t": "策略活不過實盤的常見原因：過度擬合與交易成本被忽略",
+      "status": "todo"
+    },
+    {
+      "id": 25,
+      "act": "M6",
+      "category": "quant",
+      "topic": "專案實作：量化金融",
+      "t": "把法遵背景變優勢：量化交易系統裡監理與風控該長在哪裡",
+      "status": "todo"
+    },
+    {
+      "id": 26,
+      "act": "M7",
+      "category": "ml",
+      "topic": "機器學習概念",
+      "t": "監督式與非監督式的分界：機器學習問題的第一個分類判斷",
+      "status": "todo"
+    },
+    {
+      "id": 27,
+      "act": "M7",
+      "category": "ml",
+      "topic": "分類與辨識概念與實作",
+      "t": "準確率會騙人：不平衡資料集下該看哪些指標",
+      "status": "todo"
+    },
+    {
+      "id": 28,
+      "act": "M7",
+      "category": "ml",
+      "topic": "時間序列概念與實作",
+      "t": "時間序列預測的陷阱：為什麼不能隨便切訓練/測試集",
+      "status": "todo",
+      "ref": "104人力銀行AI人才趨勢報告：預測分析需求5年成長168%"
+    },
+    {
+      "id": 29,
+      "act": "M7",
+      "category": "ml",
+      "topic": "樹狀演算法概念與實作",
+      "t": "決策樹到隨機森林：為什麼「一堆爛模型」投票會變準",
+      "status": "todo"
+    },
+    {
+      "id": 30,
+      "act": "M8",
+      "category": "python",
+      "topic": "Python 進階套件",
+      "t": "pandas的資料處理心法：一行程式碼背後的向量化思維",
+      "status": "todo"
+    },
+    {
+      "id": 31,
+      "act": "M8",
+      "category": "python",
+      "topic": "網路爬蟲與實作應用",
+      "t": "合法爬蟲的邊界：robots.txt、頻率限制與資料使用的紅線",
+      "status": "todo"
+    },
+    {
+      "id": 32,
+      "act": "M9",
+      "category": "dl-apps",
+      "topic": "深度學習方法介紹",
+      "t": "CNN/RNN/Transformer選型指南：資料型態決定架構",
+      "status": "todo"
+    },
+    {
+      "id": 33,
+      "act": "M9",
+      "category": "ai",
+      "topic": "GAN生成對抗網路",
+      "t": "生成對抗網路的博弈邏輯：兩個網路互相打假球互相變強",
+      "status": "todo"
+    },
+    {
+      "id": 34,
+      "act": "M10",
+      "category": "marketing",
+      "topic": "網站數據分析基礎",
+      "t": "工程師該懂的數據分析：把GoatCounter數字變成產品決策",
+      "status": "todo"
+    },
+    {
+      "id": 35,
+      "act": "M10",
+      "category": "business",
+      "topic": "產品需求探索與定位",
+      "t": "寫程式之前先想清楚：一個功能該不該做的判斷框架",
+      "status": "todo"
+    }
   ]
 }
