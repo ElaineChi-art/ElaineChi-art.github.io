@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>詐騙金流實驗室 · Scam Flow Lab</title>
-<meta name="description" content="從詐騙產業鏈、殺豬盤話術到贓款金流與法遵攔截點：一頁看懂台灣打詐法制怎麼運作。">
+<meta name="description" content="從詐騙產業鏈、園區組織架構、求職紅旗到贓款金流、幕後金主與法遵攔截點：一頁看懂東南亞詐騙園區怎麼運作、台灣打詐法制怎麼接招。">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -33,29 +33,39 @@ a{color:inherit}
 header.hero{padding:48px 0 8px;text-align:center}
 .hero h1{font-size:34px;letter-spacing:2px}
 .hero .en{color:var(--muted);font-size:14px;letter-spacing:4px;text-transform:uppercase;margin-top:4px}
-.hero .tagline{color:var(--ink2);font-size:16px;max-width:660px;margin:14px auto 0}
+.hero .tagline{color:var(--ink2);font-size:16px;max-width:680px;margin:14px auto 0}
 .hero .tagline b{color:var(--gold);font-weight:600}
 
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:30px 0 6px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:30px 0 6px}
 .tile{background:var(--card);border:1px solid var(--hairline);border-radius:14px;padding:18px 20px;text-align:center}
-.tile .v{font-size:30px;font-weight:700;color:var(--ink)}
+.tile .v{font-size:28px;font-weight:700;color:var(--ink)}
 .tile .k{font-size:13px;color:var(--ink2);margin-top:4px}
 .tile .s{font-size:11px;color:var(--muted);margin-top:2px}
 .src{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+
+.jumpnav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:26px}
+.jumpnav a{font-size:12.5px;color:var(--ink2);background:var(--card);border:1px solid var(--hairline);
+  border-radius:20px;padding:6px 14px;text-decoration:none}
+.jumpnav a:hover{color:var(--accent);border-color:#33405288}
 
 section{margin-top:56px}
 h2{font-size:22px;letter-spacing:1px;display:flex;align-items:center;gap:10px}
 h2 .no{color:var(--gold);font-size:14px;letter-spacing:2px}
 .lead{color:var(--ink2);font-size:15px;margin:10px 0 22px;max-width:760px}
 
-/* 產業鏈卡片 */
+/* 產業鏈 / 幕後金主 卡片共用 */
 .chain{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
 .role{background:var(--card);border:1px solid var(--hairline);border-radius:14px;padding:18px 20px}
 .role h3{font-size:16px;display:flex;align-items:center;gap:8px}
-.role .law{display:inline-block;font-size:12px;color:var(--accent);background:#1f2e3a;border-radius:6px;padding:1px 8px;margin:8px 6px 0 0}
+.role .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
 .role p{font-size:14px;color:var(--ink2);margin-top:8px}
+.tag{display:inline-block;font-size:12px;border-radius:6px;padding:1px 8px;margin:8px 6px 0 0}
+.tag.law{color:var(--accent);background:#1f2e3a}
+.tag.critical{color:#ff9a9a;background:#2a1414;border:1px solid rgba(208,59,59,.4)}
+.tag.warning{color:#ffd27a;background:#2a2214;border:1px solid rgba(250,178,25,.4)}
+.tag.watch{color:#8adf7a;background:#12240f;border:1px solid rgba(12,163,12,.4)}
 
-/* 殺豬盤時間軸 */
+/* 時間軸／脫逃路徑 共用 */
 .stages{position:relative;margin-left:10px;padding-left:26px;border-left:2px solid var(--grid)}
 .stage{position:relative;padding:2px 0 26px}
 .stage::before{content:"";position:absolute;left:-34px;top:8px;width:14px;height:14px;border-radius:50%;
@@ -65,9 +75,26 @@ h2 .no{color:var(--gold);font-size:14px;letter-spacing:2px}
 .stage p{font-size:14px;color:var(--ink2);margin-top:4px;max-width:720px}
 .stage .stop{font-size:13px;color:var(--ink2);background:var(--card2);border:1px solid var(--hairline);
   border-left:3px solid var(--status-good);border-radius:8px;padding:8px 12px;margin-top:8px;max-width:720px}
+.stage .stop.warn{border-left-color:var(--status-critical)}
 .stage .stop b{color:var(--ink)}
 
-/* 金流圖 */
+/* 組織架構：人力金字塔長條圖 */
+.orgbars{display:flex;flex-direction:column;gap:14px;margin-top:8px;max-width:720px}
+.orgbar-row{display:grid;grid-template-columns:170px 1fr 46px;gap:12px;align-items:center}
+.orgbar-label{font-size:13px;color:var(--ink2)}
+.orgbar-label b{color:var(--ink);display:block;font-size:14px}
+.orgbar-track{background:var(--card2);border:1px solid var(--hairline);border-radius:6px;height:18px;overflow:hidden}
+.orgbar-fill{height:100%;background:linear-gradient(90deg,var(--seg-bank),var(--accent));border-radius:5px 0 0 5px}
+.orgbar-val{font-size:13.5px;font-weight:700;color:var(--ink);text-align:right}
+.orgnote{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* 小型流程圖（部門/三階段/金流指令鏈）*/
+.miniflow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}
+.mnode{background:var(--card);border:1px solid var(--hairline);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--ink2);text-align:center;min-width:110px}
+.mnode b{color:var(--ink);display:block;font-size:13.5px;margin-bottom:2px}
+.marrow{color:var(--muted);font-size:16px;padding:0 2px}
+
+/* 金流圖（贓款七站）*/
 .legend{display:flex;gap:16px;flex-wrap:wrap;margin:0 0 14px;font-size:13px;color:var(--ink2)}
 .legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 .flowscroll{overflow-x:auto;padding:6px 2px 14px}
@@ -143,6 +170,7 @@ footer .refs{margin-top:6px}
 @media (max-width:640px){
   .hero h1{font-size:26px}
   .fdetail .grid{grid-template-columns:1fr}
+  .orgbar-row{grid-template-columns:110px 1fr 38px;gap:8px}
 }
 </style>
 </head>
@@ -160,30 +188,76 @@ footer .refs{margin-top:6px}
 <header class="hero">
   <h1>詐騙金流實驗室</h1>
   <div class="en">Scam Flow Lab</div>
-  <p class="tagline">詐騙不是一個人騙一個人，是一條<b>產業鏈</b>。這一頁把詐騙集團的分工、話術節奏、贓款路徑攤開來，並在每一站標出<b>法遵攔截點</b>：誰有義務踩剎車、依據哪一條法律。</p>
+  <p class="tagline">詐騙不是一個人騙一個人，是一條有部門、有 KPI、有政治保護傘的<b>跨國產業鏈</b>。這一頁把它的組織架構、話術節奏、贓款路徑、幕後金主攤開來，並在每一站標出<b>法遵攔截點</b>：誰有義務踩剎車、依據哪一條法律。</p>
   <div class="tiles">
     <div class="tile"><div class="v">500 億+</div><div class="k">台灣全年詐欺財損（新臺幣）</div><div class="s">2024 年警政署 165 統計</div></div>
-    <div class="tile"><div class="v">假投資</div><div class="k">財損占比最大宗的詐騙類型</div><div class="s">殺豬盤為典型手法</div></div>
+    <div class="tile"><div class="v">22 萬+</div><div class="k">受困緬甸／柬埔寨詐騙園區人力</div><div class="s">OHCHR 估計，緬甸 12 萬＋柬埔寨 10 萬</div></div>
     <div class="tile"><div class="v">USDT</div><div class="k">贓款出海最常用的載具</div><div class="s">多走 TRC-20（波場）鏈</div></div>
+    <div class="tile"><div class="v">八成</div><div class="k">受害者是被熟人誘騙入行，而非陌生人</div><div class="s">62 名華裔倖存者調查（Franceschini 等，2024）</div></div>
   </div>
-  <div class="src">統計數據為公開報導之概數，僅供理解量級；即時數據請見 <a href="https://165dashboard.tw/" style="color:var(--accent)">165 打詐儀表板</a>。</div>
+  <div class="src">統計數據為公開報導與研究之概數，僅供理解量級；即時數據請見 <a href="https://165dashboard.tw/" style="color:var(--accent)">165 打詐儀表板</a>。</div>
+  <nav class="jumpnav">
+    <a href="#chain">01 產業鏈</a><a href="#org">02 組織架構</a><a href="#pig">03 殺豬盤</a>
+    <a href="#jobflags">04 求職紅旗</a><a href="#flow">05 金流解剖</a><a href="#bosses">06 幕後金主</a>
+    <a href="#escape">07 脫逃代價</a><a href="#law">08 法遵對照</a><a href="#redflags">09 紅旗清單</a><a href="#quiz">10 測驗</a>
+  </nav>
 </header>
 
 <section id="chain">
   <h2><span class="no">01</span>詐騙產業鏈：六種分工，六種刑責</h2>
   <p class="lead">現代詐騙集團是公司化經營：有出資的、打電話的、收帳戶的、領錢的、洗錢的、換幣的。法律對每個角色都有對應的罪名——包含很多自以為只是「打工」的人。</p>
   <div class="chain">
-    <div class="role"><h3>💼 金主／集團核心</h3><p>出資、建置機房與園區、指揮分工、抽走大部分利潤。往往藏在多層公司與境外架構後面。</p><span class="law">刑法 §339-4 加重詐欺</span><span class="law">組織犯罪防制條例 §3</span></div>
-    <div class="role"><h3>🎧 話務手（機房）</h3><p>照「劇本」行騙：一線搭訕建立關係、二線扮專家帶投資、三線扮客服處理出金。很多話務手本身是被騙去園區的求職者。</p><span class="law">刑法 §339-4</span><span class="law">人口販運防制法（被迫勞動）</span></div>
-    <div class="role"><h3>📇 收簿手／帳戶販子</h3><p>收購、租借存摺與網銀帳密，把「乾淨帳戶」變成贓款的第一站。賣自己帳戶的人也直接入罪。</p><span class="law">洗錢防制法（無正當理由收集／提供帳戶罪）</span></div>
-    <div class="role"><h3>🏃 車手</h3><p>拿人頭卡去 ATM 提款、假冒公務員面交收款。整條鏈上最容易被抓的角色，實務多論以加重詐欺共同正犯併洗錢罪。</p><span class="law">刑法 §339-4</span><span class="law">洗錢防制法</span></div>
-    <div class="role"><h3>💧 水房</h3><p>洗錢中樞：把贓款在數十個帳戶間快速拆分、跳轉、聚合，切斷金流與被害人的關聯。</p><span class="law">洗錢防制法（一般＋特殊洗錢罪）</span></div>
-    <div class="role"><h3>🪙 幣商／OTC 換匯</h3><p>金流出海的閘門：收現金或轉帳、交付 USDT。未完成洗防登記就經營虛擬資產業務，本身就是犯罪。</p><span class="law">洗錢防制法 §6（VASP 登記）</span><span class="law">虛擬資產服務法（2026 三讀，許可制）</span></div>
+    <div class="role"><h3>💼 金主／集團核心</h3><p>出資、建置機房與園區、指揮分工、抽走大部分利潤。往往藏在多層公司與境外架構後面，並與當地仕紳、政治人物結盟以取得保護傘。</p><span class="tag law">刑法 §339-4 加重詐欺</span><span class="tag law">組織犯罪防制條例 §3</span></div>
+    <div class="role"><h3>🎧 話務手（機房）</h3><p>照「劇本」行騙：一線搭訕建立關係、二線扮專家帶投資、三線扮客服處理出金。很多話務手本身是被騙去園區、遭強迫勞動的求職者。</p><span class="tag law">刑法 §339-4</span><span class="tag law">人口販運防制法（被迫勞動）</span></div>
+    <div class="role"><h3>📇 收簿手／帳戶販子</h3><p>收購、租借存摺與網銀帳密，把「乾淨帳戶」變成贓款的第一站。賣自己帳戶的人也直接入罪——即使自認只是缺錢賺快錢。</p><span class="tag law">洗錢防制法（無正當理由收集／提供帳戶罪）</span></div>
+    <div class="role"><h3>🏃 車手</h3><p>拿人頭卡去 ATM 提款、假冒公務員面交收款。整條鏈上最容易被抓的角色，實務多論以加重詐欺共同正犯併洗錢罪。</p><span class="tag law">刑法 §339-4</span><span class="tag law">洗錢防制法</span></div>
+    <div class="role"><h3>💧 水房</h3><p>洗錢中樞：把贓款在數十個帳戶間快速拆分、跳轉、聚合，切斷金流與被害人的關聯。</p><span class="tag law">洗錢防制法（一般＋特殊洗錢罪）</span></div>
+    <div class="role"><h3>🪙 幣商／OTC 換匯</h3><p>金流出海的閘門：收現金或轉帳、交付 USDT。未完成洗防登記就經營虛擬資產業務，本身就是犯罪。</p><span class="tag law">洗錢防制法 §6（VASP 登記）</span><span class="tag law">虛擬資產服務法（2026 三讀，許可制）</span></div>
   </div>
 </section>
 
+<section id="org">
+  <h2><span class="no">02</span>一間詐騙公司怎麼運作：組織架構解剖</h2>
+  <p class="lead">詐騙集團不是烏合之眾，是一間有部門、有績效目標、有懲罰制度的「網投公司」。以下資料取自一名 2022 年在緬甸苗瓦迪某詐騙公司工作過的受訪者親述，是目前公開文獻中少見的內部組織實錄。</p>
+
+  <h3 style="font-size:15px;color:var(--ink2);margin-top:6px">三大部門分工</h3>
+  <div class="miniflow">
+    <div class="mnode"><b>👥 人資部</b>徵才廣告・離職合約・追討欠款</div>
+    <div class="mnode"><b>📞 詐騙部</b>話務執行・天推地推・業績目標</div>
+    <div class="mnode"><b>🏗️ 後勤部</b>房產經理・食堂俱樂部・IT 支援</div>
+  </div>
+
+  <h3 style="font-size:15px;color:var(--ink2);margin-top:30px">人力金字塔（單一詐騙部門實例，共 294 人）</h3>
+  <div class="orgbars">
+    <div class="orgbar-row"><div class="orgbar-label"><b>狗莊</b>監督部門運作</div><div class="orgbar-track"><div class="orgbar-fill" style="width:6%"></div></div><div class="orgbar-val">1</div></div>
+    <div class="orgbar-row"><div class="orgbar-label"><b>主管</b>管理組長・追蹤大客戶</div><div class="orgbar-track"><div class="orgbar-fill" style="width:22%"></div></div><div class="orgbar-val">11</div></div>
+    <div class="orgbar-row"><div class="orgbar-label"><b>組長</b>訓練新人・追組員業績</div><div class="orgbar-track"><div class="orgbar-fill" style="width:42%"></div></div><div class="orgbar-val">38</div></div>
+    <div class="orgbar-row"><div class="orgbar-label"><b>狗推／菠菜</b>第一線接觸目標</div><div class="orgbar-track"><div class="orgbar-fill" style="width:100%"></div></div><div class="orgbar-val">244</div></div>
+  </div>
+  <p class="orgnote">長條寬度以平方根比例繪製以利閱讀，實際人數以右側數字為準。整條金字塔對應本章開頭「一樓超市餐廳、二樓大空間、三至五樓依國家分區、五樓以上宿舍」的空間配置。</p>
+
+  <h3 style="font-size:15px;color:var(--ink2);margin-top:30px">從下餌到殺魚：詐騙部三階段作業</h3>
+  <div class="miniflow">
+    <div class="mnode"><b>① 下餌</b>大量發送簡訊／「養微信」等待咬餌</div><div class="marrow">→</div>
+    <div class="mnode"><b>② 網魚</b>鎖定回應者，取得個資、建立信任</div><div class="marrow">→</div>
+    <div class="mnode"><b>③ 殺魚</b>執行詐騙，榨取金錢直到目標無法再付</div>
+  </div>
+
+  <h3 style="font-size:15px;color:var(--ink2);margin-top:30px">誘騙投資的金流指令鏈</h3>
+  <div class="miniflow">
+    <div class="mnode"><b>詐騙業者</b>投資教學</div><div class="marrow">→</div>
+    <div class="mnode"><b>目標</b>答應投資</div><div class="marrow">→</div>
+    <div class="mnode"><b>詐騙業者</b>告知上鉤</div><div class="marrow">→</div>
+    <div class="mnode"><b>通道</b>傳匯款資訊</div><div class="marrow">→</div>
+    <div class="mnode"><b>車隊</b>取得匯款資訊</div><div class="marrow">→</div>
+    <div class="mnode"><b>通道</b>回報</div><div class="marrow">→</div>
+    <div class="mnode"><b>詐騙業者</b>結案</div>
+  </div>
+  <p class="hint">💡「通道」是負責把匯款資訊往下游傳遞的 Telegram 中介角色，「車隊」是實際取得匯款/銀行資訊的一方——這正是第 05 節金流地圖「人頭帳戶」與「水房」在集團內部的真實代號。</p>
+</section>
+
 <section id="pig">
-  <h2><span class="no">02</span>殺豬盤六階段：話術的時間表</h2>
+  <h2><span class="no">03</span>殺豬盤六階段：話術的時間表</h2>
   <p class="lead">「殺豬盤」＝把被害人當豬養肥再殺。它可怕的地方是節奏——每一步都在為下一步鋪路。每個階段其實都有攔截機會。</p>
   <div class="stages">
     <div class="stage"><h3><span class="n">STAGE 1</span>建立人設</h3><p>盜用照片包裝成成功人士：外派工程師、軍醫、投資顧問。社群帳號有完整生活痕跡，經得起初步搜尋。</p><div class="stop"><b>攔截點：</b>反向搜圖、視訊驗證。拒絕視訊＝紅旗。</div></div>
@@ -195,8 +269,23 @@ footer .refs{margin-top:6px}
   </div>
 </section>
 
+<section id="jobflags">
+  <h2><span class="no">04</span>求職紅旗：這份 Offer 是工作還是陷阱</h2>
+  <p class="lead">詐騙園區裡多數「員工」不是被綁架上車，而是自己拿著機票登機——因為徵才流程做得跟真公司一模一樣：刊登在主流求職網站、正式視訊面試、聘僱信一應俱全。以下六項危險信號來自反人口販運組織「希望枝子」（Branches of Hope），逐一勾選看看你會不會中招。</p>
+  <div class="flags on" style="display:flex" id="jobFlagList"></div>
+  <div class="flagcount" id="jobFlagCount"></div>
+
+  <h3 style="font-size:15px;color:var(--ink2);margin-top:34px">三個「我以為自己不會被騙」的真實案例</h3>
+  <div class="chain" style="margin-top:12px">
+    <div class="role"><h3>🎓 中國科學院博士</h3><p>應徵「新加坡科學院公司」職缺，反覆查證文件、要求視訊面試，流程一路合法合理，落地後才發現被送往緬甸苗瓦迪園區，靠「博士」身分曝光引發輿論才被降價贖回。</p></div>
+    <div class="role"><h3>🇹🇼 台灣「代購」誘拐案（2022/12）</h3><p>臉書貼文「找人到泰國代購佛具」，「朋友」曼谷接機後直送緬甸園區，4 個月後家屬付近 1 萬美元贖回；新北＋桃園同案查獲 58 人被誘騙囚禁強迫犯罪，現場並查獲 3 具遭虐死屍體。</p></div>
+    <div class="role"><h3>💼 威廉的杜拜行銷經理夢</h3><p>在「58 同城」網站看到熟悉領域的行銷職缺，線上面試流程順暢、順利「錄取」，落地才發現車子直奔沙漠，遭持槍威脅逼繳 4 萬美元「贖身費」才能離開。</p></div>
+  </div>
+  <p class="hint">💡 這些案例的共同點：受害者事前都做過反詐騙功課，流程也確實模仿了正規公司的每一個步驟。判斷紅旗不能只看「單一項目合不合理」，而要看「有沒有兩項以上危險信號同時出現」。</p>
+</section>
+
 <section id="flow">
-  <h2><span class="no">03</span>金流解剖：贓款的七站旅程</h2>
+  <h2><span class="no">05</span>金流解剖：贓款的七站旅程</h2>
   <p class="lead">點每一站，看該站「發生什麼事、誰有義務攔截、依據哪條法律、紅旗長什麼樣」。這條路徑就是銀行與 VASP 法遵每天在對抗的東西。</p>
   <div class="legend">
     <span><span class="sw" style="background:var(--seg-bank)"></span>銀行／法幣段</span>
@@ -209,8 +298,38 @@ footer .refs{margin-top:6px}
   <p class="hint">💡 攔截的殘酷現實：法幣段（前三站）是機率最高的地方；一旦進入加密段，就從「凍結」變成「追蹤」；到了境外段，勝負取決於跨國司法互助的速度——而金流永遠比公文快。</p>
 </section>
 
+<section id="bosses">
+  <h2><span class="no">06</span>幕後金主與制裁地圖</h2>
+  <p class="lead">被抓的多是最底層的話務員與車手；真正的園區金主、地主、政治保護傘，很多人至今逍遙法外，甚至持續在地方政壇活躍。以下是東南亞詐騙產業的六個關鍵幕後角色。</p>
+  <div class="chain">
+    <div class="role"><h3>🇰🇭 佘智江</h3><div class="sub">亞太新城／KK 園區・金水詐騙園區</div><p>湖南出生，2017 年取得柬埔寨公民身分並改用柬埔寨名字，先在菲律賓賭場致富，再把版圖擴大到柬埔寨。</p><span class="tag critical">🔴 2023 泰國遭捕，拒絕引渡回中國，仍羈押中</span></div>
+    <div class="role"><h3>🇭🇰 周焯華（崩牙駒）</h3><div class="sub">東美詐騙園區・柬埔寨</div><p>香港三合會 14K 澳門分會前老大，2022 出獄後高調重出江湖，原規劃啤酒、加密貨幣事業，後演變為惡名昭彰的詐騙園區。</p><span class="tag critical">🔴 2021 再遭逮捕，判處 18 年有期徒刑</span></div>
+    <div class="role"><h3>🇰🇭 李永法 Ly Yong Phat</h3><div class="sub">菩薩省／奧多棉吉園區・柬埔寨</div><p>柬埔寨大亨，名下多處園區被查涉入詐騙產業。</p><span class="tag warning">🟠 已遭美國制裁，2024 卻成為柬埔寨人民黨中央委員會永久委員</span></div>
+    <div class="role"><h3>🇰🇭 正恆集團「長灣」計畫</h3><div class="sub">戈公・柬埔寨</div><p>房地產開發商，其戈公「長灣」計畫是多起國際救援行動的地點，救援對象是被拘禁、強迫從事詐騙的人。</p><span class="tag warning">🟠 2023 遭英國制裁「助長並從詐騙受害者身上獲利」；公司否認犯罪，稱只是收租房東</span></div>
+    <div class="role"><h3>🇱🇦 趙偉</h3><div class="sub">金三角經濟特區 GTSEZ・寮國</div><p>黑龍江出身賭業大亨，從澳門、緬北輾轉到寮國金三角，高調支持中共立場，執法時緊時鬆。</p><span class="tag warning">🟡 2024 中寮聯合掃蕩壓力下一度收斂，後續動向仍待觀察</span></div>
+    <div class="role"><h3>🇲🇲 果敢四大家族</h3><div class="sub">緬北果敢自治區</div><p>白所成、魏超仁、劉國璽、劉正祥等家族長年掌控果敢行政、警政、軍事與組織犯罪，是「1027 行動」的主要清算對象。</p><span class="tag critical">🔴 2023–24 中國發逮捕令，多人遭遣返受審，部分頭目舉槍自盡</span></div>
+  </div>
+  <p class="hint">💡「掃蕩」多半打掉第一線話務員與車手；真正動搖產業的，是 2023 年緬北「1027 行動」與 2025 年輿論引爆的跨國連鎖行動（泰國斷水斷電斷網、緬甸軍方突襲、上千人遣返）——顯示唯有政治保護傘被公開拆穿，產業才會真的痛一次。</p>
+</section>
+
+<section id="escape">
+  <h2><span class="no">07</span>脫逃與代價：出得去，然後呢</h2>
+  <p class="lead">就算成功逃出來，也不是故事的結局。以下是脫逃三條路各自的代價，以及幾個真實但不美化的後續。</p>
+  <div class="stages">
+    <div class="stage"><h3><span class="n">路徑 1</span>付贖金</h3><p>親友集資，透過集團指定管道交付贖金，常見金額數萬美元不等。</p><div class="stop warn"><b>代價：</b>不保證真的放人——有受害者付了錢，仍被轉賣給另一間詐騙公司。</div></div>
+    <div class="stage"><h3><span class="n">路徑 2</span>發送求救訊息</h3><p>私訊親友、記者、大使館，甚至在省長臉書頁面留言，向地方或國家層級政府機關求救。</p><div class="stop warn"><b>代價：</b>訊息可能石沉大海，甚至輾轉傳回園區經理耳中，讓對方提前銷毀證據、轉移受困者。</div></div>
+    <div class="stage"><h3><span class="n">路徑 3</span>物理脫逃</h3><p>趁隙翻窗、爬牆、徒步逃跑，是三條路裡最直接、也最危險的一種。</p><div class="stop warn"><b>代價：</b>逃跑失敗常遭電擊棒、電線棍棒毒打，關暗房數天；逃跑成功也可能摔傷骨折，得徒步數公里才找到安全點。</div></div>
+  </div>
+  <div class="chain" style="margin-top:20px">
+    <div class="role"><h3>🪟 傑克的跳窗記</h3><p>從二樓翻窗夜逃，落地時腳踝骨折，忍痛徒步約百公尺求救；即使成功聯繫上救援隊，仍花了將近一個月才被安全送達金邊安全屋。</p></div>
+    <div class="role"><h3>📄 李先生的第一週</h3><p>抵達園區第一週，移民官逼他簽下一份看不懂的高棉語文件，隨後就被轉頭送回加害者手中——公權力在他最需要協助的時刻，選擇了配合園區而非救援。</p></div>
+    <div class="role"><h3>🏠 愛麗絲獲救之後</h3><p>柬埔寨警方以「對外國人案件無能為力」拒絕正式受理她的案子，庇護所人滿為患，她大部分時間只能困在自己房間裡，靠社群媒體向外求助——脫逃不是終點，只是下一場硬仗的開始。</p></div>
+  </div>
+  <p class="hint">💡 民間自救網絡（如志工多為受害者本人的 IASA／ASTR Intl.）填補了官方缺位的真空，但核心成員常收到針對個人人身安全的威脅——這場戰爭，第一線幾乎全靠沒有薪水的普通人在扛。</p>
+</section>
+
 <section id="law">
-  <h2><span class="no">04</span>法遵攔截對照表：誰的義務、哪一條法</h2>
+  <h2><span class="no">08</span>法遵攔截對照表：誰的義務、哪一條法</h2>
   <p class="lead">台灣打詐法制在 2023–2026 年密集升級：洗防法大修、打詐專法上路、虛擬資產專法三讀。這張表是整套制度的骨架。</p>
   <div class="tablewrap">
   <table>
@@ -227,7 +346,7 @@ footer .refs{margin-top:6px}
 </section>
 
 <section id="redflags">
-  <h2><span class="no">05</span>紅旗指標自檢清單</h2>
+  <h2><span class="no">09</span>紅旗指標自檢清單</h2>
   <p class="lead">法遵實務的日常就是認紅旗。三種視角：銀行端、VASP 端、個人端。</p>
   <div class="tabs" id="flagTabs">
     <button class="on" data-t="bank">🏦 銀行端</button>
@@ -241,8 +360,8 @@ footer .refs{margin-top:6px}
 </section>
 
 <section id="quiz">
-  <h2><span class="no">06</span>法遵判斷測驗</h2>
-  <p class="lead">八題情境題，測你能不能站在守門人的位置做出正確判斷。</p>
+  <h2><span class="no">10</span>法遵判斷測驗</h2>
+  <p class="lead">十題情境題，測你能不能站在守門人的位置做出正確判斷。</p>
   <div class="quiz" id="quizBox">
     <div id="quizBody"></div>
     <div class="result" id="quizResult"></div>
@@ -254,14 +373,38 @@ footer .refs{margin-top:6px}
 </section>
 
 <footer>
-  <p>⚠️ 本頁為法律科技作品集之教育性整理，非法律意見；條文內容與門檻請以<a href="https://law.moj.gov.tw/" target="_blank">全國法規資料庫</a>公布之現行條文為準。</p>
-  <p class="refs">延伸閱讀：《東南亞詐騙園區內幕》（Ivan Franceschini、李玲、Mark Bo）· <a href="https://165dashboard.tw/" target="_blank">165 打詐儀表板</a> · <a href="https://elainechi-art.github.io/carlaw/">車禍法律知識庫</a></p>
+  <p>⚠️ 本頁為法律科技作品集之教育性整理，非法律意見；條文內容與門檻請以<a href="https://law.moj.gov.tw/" target="_blank">全國法規資料庫</a>公布之現行條文為準。組織架構與人數資料取自單一 2022 年案例，僅供理解園區運作模式，非全產業統計值。</p>
+  <p class="refs">延伸閱讀：《東南亞詐騙園區內幕》（Ivan Franceschini、李玲 Ling Li、Mark Bo 著）· <a href="https://165dashboard.tw/" target="_blank">165 打詐儀表板</a> · <a href="https://elainechi-art.github.io/carlaw/">車禍法律知識庫</a></p>
   <p style="margin-top:10px">Scam Flow Lab · 詐騙金流實驗室 — <a href="https://elainechi-art.github.io/resume/">Elaine Chi</a> 法律科技 × 金融法遵作品</p>
 </footer>
 
 </div>
 
 <script>
+/* ---------- 求職紅旗清單 ---------- */
+const JOBFLAGS = [
+ '工作內容模糊（如「App 開發工程師」「人資」「翻譯」卻不說明具體任務）',
+ '食宿交通全包，福利好到跟開出的薪資不成比例',
+ '語言要求（中英文）但門檻極低，只要「基本電腦技能、無需經驗」',
+ '鎖定 18–35 歲、跨國籍的年輕求職者，招募貼文同時對大量人投放',
+ '工作地點在博弈／詐騙聞名區，或刻意謊稱在「安全」地點（如新加坡、泰國）',
+ '提早解約要付高額罰金；或反過來刻意強調「完全不收任何費用」以打消你的疑慮'
+];
+const jobList = document.getElementById('jobFlagList');
+JOBFLAGS.forEach(txt=>{
+  const l=document.createElement('label');
+  l.className='flag-item';
+  l.innerHTML=`<input type="checkbox"><span>🚩 ${txt}</span>`;
+  l.querySelector('input').onchange=e=>{l.classList.toggle('done',e.target.checked);countJobFlags();};
+  jobList.appendChild(l);
+});
+function countJobFlags(){
+  const total=jobList.querySelectorAll('.flag-item').length;
+  const done=jobList.querySelectorAll('.flag-item.done').length;
+  document.getElementById('jobFlagCount').textContent=`已檢視 ${done} / ${total} 項危險信號`;
+}
+countJobFlags();
+
 /* ---------- 金流七站 ---------- */
 const SEG = {
   bank:   {name:'銀行／法幣段', color:'var(--seg-bank)'},
@@ -276,7 +419,7 @@ const FLOW = [
   laws:['詐欺犯罪危害防制條例：金融機構防詐措施','銀行內部作業規範（臨櫃關懷、通報警方）'],
   flags:['邊講電話邊操作匯款','臨櫃神情緊張、說詞反覆','高齡客戶突然要解定存匯往陌生帳戶']},
  {ic:'🪪', t:'一層人頭帳戶', d:'贓款第一站', seg:'bank',
-  what:'收簿手收來的帳戶。錢通常只停留幾分鐘到幾小時，立刻被拆往下一層。',
+  what:'收簿手收來的帳戶，也是集團內部所稱「車隊」實際取得匯款資訊的地方。錢通常只停留幾分鐘到幾小時，立刻被拆往下一層。',
   stop:['遭通報即列「警示帳戶」：全行凍結、匯入款退回','銀行交易監控系統（AML）偵測快進快出模式'],
   laws:['存款帳戶及其疑似不法或顯屬異常交易管理辦法','洗錢防制法：提供帳戶罪（賣帳戶的人）'],
   flags:['久未往來帳戶突然大量進出','入帳後數分鐘內分散轉出、餘額歸零','同一裝置／IP 操作多個不同人帳戶']},
@@ -297,12 +440,12 @@ const FLOW = [
   flags:['堅持現金面交、拒絕留下身分紀錄','金額與客戶身分明顯不相稱','要求直接打到第三人指定錢包']},
  {ic:'⛓️', t:'鏈上跳轉', d:'錢包間洗牌', seg:'crypto',
   what:'USDT 在數十個錢包間跳轉、分散、聚合，有時經過混幣或換鏈。但區塊鏈是公開帳本——每一步其實都留下永久紀錄。',
-  stop:['鏈上分析（Chainalysis 類工具）可標記贓款地址、畫出資金圖譜','Travel Rule：達門檻的移轉須傳遞雙方資訊','發行商（Tether）可配合執法凍結特定地址的 USDT'],
+  stop:['鏈上分析（Chainalysis／Elliptic 類工具）可標記贓款地址、畫出資金圖譜','Travel Rule：達門檻的移轉須傳遞雙方資訊','發行商（Tether）可配合執法凍結特定地址的 USDT'],
   laws:['虛擬通貨平台洗防辦法：Travel Rule 與申報義務','洗錢防制法'],
   flags:['新錢包立即收大額後快速分散','資金流向已被標記的高風險地址','刻意經過混幣服務']},
  {ic:'🏰', t:'境外交易所／園區金庫', d:'落袋', seg:'abroad',
-  what:'贓款進入境外交易所變現，或直接成為園區集團的營運資金。到這一站，能不能追回取決於跨國合作。',
-  stop:['國際刑警＋司法互助（MLAT）請求凍結','對配合的境外交易所發出止付與調取請求','國際制裁：美國 OFAC 已多次制裁園區集團與其金流網絡'],
+  what:'贓款進入境外交易所變現，或直接成為園區集團的營運資金。到這一站，能不能追回取決於跨國合作——區塊鏈分析公司曾追蹤到單一柬埔寨「通道」公司經手的加密貨幣交易總值超過百億美元。',
+  stop:['國際刑警＋司法互助（MLAT）請求凍結','對配合的境外交易所發出止付與調取請求','國際制裁：美英已多次制裁園區集團與其金流網絡（見第 06 節）'],
   laws:['國際刑事司法互助法','洗錢防制法：跨境合作條款'],
   flags:['收款集中於特定境外交易所帳戶','與已被制裁實體關聯的地址','—— 以及一個殘酷事實：公文速度永遠追不上鏈上轉帳']}
 ];
@@ -331,7 +474,7 @@ function selectNode(i){
 }
 selectNode(0);
 
-/* ---------- 紅旗清單 ---------- */
+/* ---------- 紅旗清單（銀行／VASP／個人） ---------- */
 const FLAGS = {
  bank:['久未往來的帳戶突然出現密集、快進快出的資金','客戶臨櫃匯款時一直在講電話、或不斷看手機指示','高齡客戶突然解定存／保單，要匯給「網路認識的人」','多筆金額刻意低於通貨申報門檻（結構化拆分）','入帳後數分鐘內即分散轉出、餘額趨近於零','同一 IP／裝置登入多個無關聯客戶的網銀'],
  vasp:['客戶堅持現金面交換 USDT、拒絕完成 KYC','交易金額與客戶年齡、職業、財力顯不相稱','要求把幣直接轉到第三人指定的錢包地址','資金流向已遭標記的高風險或受制裁地址','新註冊帳戶立即進行大額出金','說不清楚資金來源，或說法前後矛盾'],
@@ -341,7 +484,7 @@ const tabs=document.getElementById('flagTabs');
 tabs.querySelectorAll('button').forEach(b=>{
   b.onclick=()=>{
     tabs.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
-    document.querySelectorAll('.flags').forEach(p=>p.classList.toggle('on',p.dataset.p===b.dataset.t));
+    document.querySelectorAll('.flags').forEach(p=>{ if(p.dataset.p) p.classList.toggle('on',p.dataset.p===b.dataset.t); });
   };
 });
 Object.entries(FLAGS).forEach(([k,list])=>{
@@ -355,8 +498,9 @@ Object.entries(FLAGS).forEach(([k,list])=>{
   });
 });
 function countFlags(){
-  const total=document.querySelectorAll('.flag-item').length;
-  const done=document.querySelectorAll('.flag-item.done').length;
+  const scoped=document.querySelectorAll('.flags[data-p] .flag-item');
+  const total=scoped.length;
+  const done=Array.from(scoped).filter(x=>x.classList.contains('done')).length;
   document.getElementById('flagCount').textContent=`已檢視 ${done} / ${total} 項紅旗`;
 }
 countFlags();
@@ -386,7 +530,13 @@ const QUIZ = [
   a:1, e:'加密段的特性是「難凍結、可追蹤」：每筆轉帳都是<b>永久公開紀錄</b>，鏈上分析工具可標記贓款地址；Tether 也曾多次配合執法凍結地址。真正的斷點在「出金變現」那一刻。'},
  {q:'被害人剛匯出 50 萬就發現被騙。第一時間最能提高把錢追回機率的動作是？',
   o:['先蒐集完整證據，一週內去地檢署按鈴申告','立刻撥 165／報警，啟動通報讓銀行圈存攔阻','在社群發文警告大家','私訊詐騙集團要求退款'],
-  a:1, e:'錢在一層帳戶通常只停留<b>幾分鐘到幾小時</b>。165 通報會啟動銀行端的警示與<b>圈存</b>機制，是唯一跑得過水房的管道；證據可以之後補，金流不等人。'}
+  a:1, e:'錢在一層帳戶通常只停留<b>幾分鐘到幾小時</b>。165 通報會啟動銀行端的警示與<b>圈存</b>機制，是唯一跑得過水房的管道；證據可以之後補，金流不等人。'},
+ {q:'一則柬埔寨徵才貼文寫著：「App 工程師，月薪人民幣 6,000 含住宿，只要會打字、會中文，無需經驗。」這則廣告命中了幾項求職紅旗危險信號？',
+  o:['0 項，這是很正常的海外職缺','1 項，只有薪資偏高比較可疑','至少 3 項：工作內容模糊、食宿全包、語言門檻與薪資明顯不成比例','無法判斷，因為沒提到地點'],
+  a:2, e:'同時命中「工作內容模糊」「食宿交通全包」「語言要求極低卻仍給薪」三項危險信號——這正是第 04 節「希望枝子」六大信號中最常同時出現的組合，也是本書多個真實案例的原始廣告樣板。'},
+ {q:'某柬埔寨房地產開發商名下的度假村計畫，被英國政府以「助長並從詐騙受害者身上獲利」為由制裁，開發商的公開回應通常是？',
+  o:['坦承經營詐騙業務並道歉','否認犯罪，主張自己只是收租房東，把責任推給承租的業者','立刻關閉所有物業並配合調查','對外宣布破產'],
+  a:1, e:'這是第 06 節「幕後金主」中反覆出現的公司回應模式（如正恆集團「長灣」案）：地主與開發商透過「只是出租房產」的說法規避直接責任，即使物業內確實查獲強迫勞動與詐騙行為。'}
 ];
 let qi=0, qScore=0, answered=false;
 const qBody=document.getElementById('quizBody'), qNext=document.getElementById('quizNext'),
@@ -422,7 +572,7 @@ qNext.onclick=()=>{
     const pct=qScore/QUIZ.length;
     const msg = pct===1 ? '滿分！你已經具備第一線法遵的判斷直覺 💪'
       : pct>=0.75 ? '很強！再把錯的那幾題法源記起來就完整了'
-      : pct>=0.5 ? '及格邊緣——建議把 03 金流解剖每一站再點一遍'
+      : pct>=0.5 ? '及格邊緣——建議把 05 金流解剖每一站再點一遍'
       : '先別急，從 01 產業鏈重新走一遍，紅旗會越來越眼熟';
     qResult.style.display='block';
     qResult.innerHTML=`<div class="big">${qScore} / ${QUIZ.length}</div><p>${msg}</p>
