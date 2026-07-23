@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>職涯規劃 · Career Roadmap｜Elaine Chi</title>
+<style>
+  :root{--bg:#0d1017;--card:#161b26;--card2:#12151d;--line:#262d3c;--text:#e7ebf3;--muted:#8b95a9;
+        --accent:#8b7cff;--blue:#4d8dff;--ok:#3ddc97;--warn:#f4b740;--faint:#5c6678}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Inter","PingFang TC",system-ui,sans-serif;background:
+       radial-gradient(900px 500px at 90% -10%,#1a1633 0,transparent 55%),var(--bg);
+       color:var(--text);min-height:100vh;line-height:1.6;padding:0 16px 70px}
+  .wrap{max-width:920px;margin:0 auto}
+  .top{display:flex;justify-content:space-between;align-items:center;padding:16px 0;font-size:13px}
+  .top a{color:var(--muted);text-decoration:none}
+  header{text-align:center;padding:22px 0 10px}
+  h1{font-size:30px;font-weight:800}
+  h1 .g{background:linear-gradient(135deg,#8b7cff,#4d8dff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted);margin-top:6px;font-size:14px}
+  section{margin-top:26px}
+  h2{font-size:15px;color:#fff;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  h2 .bar{width:4px;height:18px;background:linear-gradient(#8b7cff,#4d8dff);border-radius:2px}
+  .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
+        border-radius:16px;padding:20px;margin-bottom:14px}
+  .goal{font-size:15px}.goal b{color:var(--accent)}
+  .pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .pill{font-size:12px;background:#20263a;border:1px solid #33405233;border-radius:20px;padding:4px 12px;color:#cbd5e1}
+  /* roadmap */
+  .phase{border-left:2px solid var(--line);padding:0 0 6px 18px;position:relative;margin-bottom:6px}
+  .phase::before{content:"";position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--accent)}
+  .phase h3{font-size:14px;margin-bottom:8px}.phase h3 span{color:var(--muted);font-weight:400;font-size:12px}
+  .task{display:flex;align-items:flex-start;gap:9px;padding:5px 0;font-size:13.5px;cursor:pointer}
+  .task input{margin-top:3px;accent-color:var(--accent);width:15px;height:15px}
+  .task.done span{color:var(--faint);text-decoration:line-through}
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;font-size:12px}
+  td .why{color:var(--faint);font-size:11px;display:block}
+  select,input.note{background:#0f131c;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 8px;font-size:12.5px;width:100%}
+  .st-0{color:var(--muted)}.st-1{color:var(--blue)}.st-2{color:var(--warn)}.st-3{color:var(--ok)}.st-4{color:var(--faint)}
+  .addrow{margin-top:10px;font-size:12px;color:var(--accent);cursor:pointer;background:none;border:none}
+  /* skills */
+  .skgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+  .skcat{background:#12151d;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .skcat h4{font-size:13px;color:var(--blue);margin-bottom:8px}
+  .sk{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px}
+  .lvl{font-size:11px;font-weight:700;border-radius:6px;padding:2px 9px;cursor:pointer;user-select:none;white-space:nowrap}
+  .lvl.l0{background:#2a2f3a;color:#8b95a9}.lvl.l1{background:#3a2f1a;color:#f4b740}.lvl.l2{background:#16321f;color:#3ddc97}
+  /* resources */
+  .resgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+  .resbox h4{font-size:13px;color:var(--accent);margin-bottom:8px}
+  .resbox a{display:block;color:#cfd6e2;text-decoration:none;font-size:13px;padding:4px 0;border-bottom:1px solid var(--line)}
+  .resbox a:hover{color:var(--blue)}
+  .resbox a small{color:var(--faint);font-size:11px}
+  .foot{text-align:center;color:var(--faint);font-size:12px;margin-top:30px;line-height:1.9}
+  .prog{height:6px;background:#20263a;border-radius:4px;overflow:hidden;margin-top:8px}
+  .prog>div{height:100%;background:linear-gradient(90deg,#8b7cff,#4d8dff);width:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a href="../">← 學習中心</a><span id="clock"></span></div>
+  <header>
+    <h1>職涯規劃 <span class="g">Career Roadmap</span></h1>
+    <div class="sub">目標 → 時間軸 → 應徵追蹤 → 技能地圖 → 資訊追蹤 · 進度自動存在本機</div>
+  </header>
+
+  <!-- 目標 -->
+  <section>
+    <h2><span class="bar"></span>🎯 我的目標</h2>
+    <div class="card goal">
+      定位：<b>Full-Stack & Web3 Developer × 金融法遵背景</b><br>
+      主攻方向：Web3 / 智慧合約開發、前端 / 全端、法遵科技(RegTech)<br>
+      目標：<b>畢業即就業</b> · 遠端或國際佳 · 高薪 · 用得到我的跨域優勢
+      <div class="pills">
+        <span class="pill">區塊鏈/智慧合約工程師</span><span class="pill">前端/全端工程師</span>
+        <span class="pill">Web3/dApp</span><span class="pill">法遵科技 RegTech</span>
+      </div>
+      <div class="prog"><div id="allprog"></div></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px" id="progtext"></div>
+    </div>
+  </section>
+
+  <!-- 時間軸 -->
+  <section>
+    <h2><span class="bar"></span>🗺️ 時間軸(勾選追蹤進度)</h2>
+    <div class="card" id="roadmap"></div>
+  </section>
+
+  <!-- 應徵追蹤 -->
+  <section>
+    <h2><span class="bar"></span>💼 應徵追蹤</h2>
+    <div class="card">
+      <table id="apptbl"><thead><tr><th style="width:32%">公司</th><th style="width:24%">狀態</th><th>備註</th></tr></thead><tbody></tbody></table>
+      <button class="addrow" onclick="addCompany()">＋ 新增公司</button>
+    </div>
+  </section>
+
+  <!-- 技能地圖 -->
+  <section>
+    <h2><span class="bar"></span>🧩 技能地圖(點右側標籤切換：待學→學習中→熟練)</h2>
+    <div class="card"><div class="skgrid" id="skills"></div></div>
+  </section>
+
+  <!-- 資訊追蹤 -->
+  <section>
+    <h2><span class="bar"></span>📡 資訊 & 資源追蹤</h2>
+    <div class="card"><div class="resgrid" id="resources"></div></div>
+  </section>
+
+  <div class="foot">© 2026 姬政妤 Elaine Chi · 保留所有權利<br>你的職涯儀表板 · 進度儲存在此瀏覽器</div>
+</div>
+
+<script>
+const LS=k=>"career_"+k;
+document.getElementById('clock').textContent=new Date().toLocaleDateString('zh-TW');
+
+/* ---------- 時間軸 ---------- */
+const ROADMAP=[
+ {t:"現在(碩二/碩三 · 在學)",note:"累積作品、實習、技能",tasks:[
+   "深化 Solidity / Web3(NFT、工廠模式、安全性)","投遞 Web3/法遵科技實習(KryptoGO、XREX)",
+   "到青年職涯發展中心做免費履歷健診","加入 XueDAO / 關注 ETHPanda Web3 實習計畫",
+   "持續更新作品集 + 寫鏈法醫專欄","把作品的真實流量數字填進履歷"]},
+ {t:"畢業前半年",note:"衝刺求職",tasks:[
+   "註冊台灣就業通、鎖定青年就業旗艦職缺","三路投遞：Yourator / Cake / 104 + LinkedIn",
+   "準備面試：把每個作品練成能講的故事","補齊技能缺口(依技能地圖『待學』項目)",
+   "投 2–3 家大公司(金控法遵科技 / Big4)分散風險"]},
+ {t:"畢業即就業",note:"接軌",tasks:[
+   "比較 offer(薪資、遠端、成長、發揮空間)","到職","善用產業人才投資方案持續進修"]},
+];
+function renderRoadmap(){
+  const box=document.getElementById('roadmap');box.innerHTML="";
+  ROADMAP.forEach((p,pi)=>{
+    const div=document.createElement('div');div.className="phase";
+    div.innerHTML=`<h3>${p.t} <span>· ${p.note}</span></h3>`;
+    p.tasks.forEach((t,ti)=>{
+      const key=LS("rm_"+pi+"_"+ti);const done=localStorage.getItem(key)==="1";
+      const lab=document.createElement('label');lab.className="task"+(done?" done":"");
+      lab.innerHTML=`<input type="checkbox" ${done?"checked":""}><span>${t}</span>`;
+      lab.querySelector('input').addEventListener('change',e=>{
+        localStorage.setItem(key,e.target.checked?"1":"0");lab.classList.toggle('done',e.target.checked);updateProg();});
+      div.appendChild(lab);
+    });
+    box.appendChild(div);
+  });
+}
+function updateProg(){
+  let tot=0,done=0;ROADMAP.forEach((p,pi)=>p.tasks.forEach((t,ti)=>{tot++;if(localStorage.getItem(LS("rm_"+pi+"_"+ti))==="1")done++;}));
+  const pct=tot?Math.round(done/tot*100):0;
+  document.getElementById('allprog').style.width=pct+"%";
+  document.getElementById('progtext').textContent=`整體進度：${done}/${tot} 項完成（${pct}%）`;
+}
+
+/* ---------- 應徵追蹤 ---------- */
+const STATUS=["未投遞","想投","已投遞","面試中","已錄取","婉拒/未錄取"];
+const DEFAULT_CO=[
+ ["KryptoGO","Web3錢包+法遵，你的王牌"],["XREX","合規區塊鏈金融，國際"],
+ ["BitoGroup 幣託","老牌交易所"],["MaiCoin / MAX","交易所+區塊鏈技術"],
+ ["Portto / Blocto","區塊鏈錢包(前端)"],["國泰金控 數位/法遵科技","大公司+用得到你背景"],
+ ["富邦/中信/玉山 數金","金控法遵科技部門"],["KPMG / PwC 金融科技法遵","Big4 大品牌"],
+ ["Lawsnote 七法","法律科技"],
+];
+function loadCompanies(){ try{return JSON.parse(localStorage.getItem(LS("apps")))||null}catch(e){return null} }
+function saveCompanies(a){localStorage.setItem(LS("apps"),JSON.stringify(a))}
+let companies=loadCompanies()|| DEFAULT_CO.map(c=>({name:c[0],why:c[1],status:0,note:""}));
+function renderApps(){
+  const tb=document.querySelector('#apptbl tbody');tb.innerHTML="";
+  companies.forEach((c,i)=>{
+    const tr=document.createElement('tr');
+    const opts=STATUS.map((s,si)=>`<option value="${si}" ${c.status==si?"selected":""}>${s}</option>`).join("");
+    tr.innerHTML=`<td><b>${c.name}</b><span class="why">${c.why||""}</span></td>
+      <td><select class="st-${c.status}">${opts}</select></td>
+      <td><input class="note" value="${(c.note||"").replace(/"/g,'&quot;')}" placeholder="面試日期、聯絡人…"></td>`;
+    const sel=tr.querySelector('select');
+    sel.addEventListener('change',e=>{c.status=+e.target.value;sel.className="st-"+c.status;saveCompanies(companies);});
+    tr.querySelector('.note').addEventListener('input',e=>{c.note=e.target.value;saveCompanies(companies);});
+    tb.appendChild(tr);
+  });
+}
+function addCompany(){const n=prompt("公司名稱？");if(!n)return;companies.push({name:n,why:"",status:1,note:""});saveCompanies(companies);renderApps();}
+
+/* ---------- 技能地圖 ---------- */
+const SKILLS={
+ "前端 / 全端":["JavaScript","HTML / CSS","RWD 響應式","API 整合","React(待學)","Git / GitHub"],
+ "區塊鏈 / Web3":["Solidity","Foundry 測試/部署","ethers.js","智慧合約部署","合約安全性(待學)","NFT / 工廠模式(待學)"],
+ "AI / 資料":["Python","LLM 應用","LSTM / 資料分析","生成式 AI"],
+ "領域優勢 · 法律金融":["金融法遵","虛擬資產法規","白領/金融刑法","智慧財產權"],
+};
+const LVL=["待學","學習中","熟練"];
+function renderSkills(){
+  const box=document.getElementById('skills');box.innerHTML="";
+  Object.entries(SKILLS).forEach(([cat,arr])=>{
+    const div=document.createElement('div');div.className="skcat";div.innerHTML=`<h4>${cat}</h4>`;
+    arr.forEach(s=>{
+      const key=LS("sk_"+s);let lv=+(localStorage.getItem(key)|| (s.includes("待學")?0:2));
+      const row=document.createElement('div');row.className="sk";
+      const tag=document.createElement('span');
+      const set=v=>{tag.className="lvl l"+v;tag.textContent=LVL[v];};set(lv);
+      tag.addEventListener('click',()=>{lv=(lv+1)%3;localStorage.setItem(key,lv);set(lv);});
+      row.innerHTML=`<span>${s.replace("(待學)","")}</span>`;row.appendChild(tag);div.appendChild(row);
+    });
+    box.appendChild(div);
+  });
+}
+
+/* ---------- 資訊 & 資源 ---------- */
+const RES={
+ "🔎 求職平台":[["Yourator Web3 專區","yourator.co/events/web3-jobs","https://www.yourator.co/events/web3-jobs"],
+   ["Cake 加密貨幣職缺","cake.me","https://www.cake.me/companies?q=加密貨幣"],
+   ["104 區塊鏈公司","104.com.tw","https://www.104.com.tw/company/search/?keyword=區塊鏈"],
+   ["LinkedIn","你的檔案","https://www.linkedin.com/in/elaine-chi-3384a441b"]],
+ "🏛️ 政府資源(免費/補助)":[["台灣就業通","taiwanjobs.gov.tw","https://www.taiwanjobs.gov.tw/"],
+   ["青年就業旗艦計畫","畢業即就業","https://ttms.etraining.gov.tw/eYVTR/Main/Index1"],
+   ["產業人才投資方案","上課補助","https://ojt.wda.gov.tw/"],
+   ["青年職涯發展中心","免費履歷健診","https://young.taiwanjobs.gov.tw/"]],
+ "🎓 Web3 社群 & 學習":[["XueDAO","台灣學生Web3社群","https://www.xuedao.xyz/"],
+   ["ETHPanda","Web3實習計畫","https://ethpanda.org/"],
+   ["CryptoZombies","邊玩邊學Solidity","https://cryptozombies.io/"],
+   ["Solidity by Example","語法範例","https://solidity-by-example.org/"],
+   ["Speedrun Ethereum","做dApp練功","https://speedrunethereum.com/"]],
+ "📰 產業新聞 / 追蹤":[["區塊客 ABMedia","台灣區塊鏈新聞","https://abmedia.io/"],
+   ["鏈新聞","加密貨幣新聞","https://www.abmedia.io/"],
+   ["你的鏈法醫專欄","持續產出","https://elainechi-art.github.io/lianfayi/"],
+   ["研究雷達(你的)","法律金融情報","https://elainechi-art.github.io/research-radar/"]],
+};
+function renderRes(){
+  const box=document.getElementById('resources');box.innerHTML="";
+  Object.entries(RES).forEach(([cat,arr])=>{
+    const div=document.createElement('div');div.className="resbox";div.innerHTML=`<h4>${cat}</h4>`;
+    arr.forEach(([n,d,u])=>div.innerHTML+=`<a href="${u}" target="_blank">${n}<small> · ${d}</small></a>`);
+    box.appendChild(div);
+  });
+}
+
+renderRoadmap();updateProg();renderApps();renderSkills();renderRes();
+</script>
+</body>
+</html>
