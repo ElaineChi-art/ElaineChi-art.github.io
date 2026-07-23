@@ -95,25 +95,23 @@
 
   <!-- 工作雷達 -->
   <section>
-    <h2><span class="bar"></span>📡 工作雷達 <span style="font-size:12px;color:var(--muted);font-weight:400">· 自動抓國際遠端職缺 · Web3 優先 · 高薪排序</span></h2>
+    <h2><span class="bar"></span>📡 台灣實習雷達 <span style="font-size:12px;color:var(--muted);font-weight:400">· 每天自動抓台灣技術實習 · Web3／前端／軟體</span></h2>
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px">
-        <div class="hint">每次打開自動更新。來源：RemoteOK、Arbeitnow（遠端）。</div>
+        <div class="hint" id="jobsupd">每天自動更新台灣技術實習</div>
         <button class="addrow" onclick="loadJobs()">🔄 重新整理</button>
       </div>
       <div id="jobs"></div>
       <div style="border-top:1px dashed var(--line);margin-top:14px;padding-top:12px">
-        <div class="hint" style="margin-bottom:8px">🔎 一鍵深挖(Web3／台灣／目標公司 —— 這些無法自動抓，點了看最新)：</div>
+        <div class="hint" style="margin-bottom:8px">🔎 一鍵深挖(看更多台灣／Web3 最新職缺)：</div>
         <div class="deep">
-          <a href="https://web3.career/remote-jobs" target="_blank">web3.career 遠端</a>
-          <a href="https://cryptojobslist.com/" target="_blank">CryptoJobsList</a>
-          <a href="https://www.yourator.co/events/web3-jobs" target="_blank">Yourator Web3</a>
-          <a href="https://www.cake.me/jobs?q=blockchain" target="_blank">Cake 區塊鏈</a>
+          <a href="https://www.yourator.co/jobs?term[]=實習" target="_blank">Yourator 實習</a>
+          <a href="https://www.cake.me/jobs?q=實習%20前端" target="_blank">Cake 實習</a>
+          <a href="https://www.104.com.tw/jobs/intern/" target="_blank">104 實習專區</a>
           <a href="https://www.104.com.tw/jobs/search/?keyword=區塊鏈" target="_blank">104 區塊鏈</a>
-          <a href="https://www.linkedin.com/jobs/search/?keywords=Solidity" target="_blank">LinkedIn Solidity</a>
           <a href="https://www.cake.me/jobs?q=KryptoGO" target="_blank">KryptoGO</a>
           <a href="https://www.cake.me/jobs?q=XREX" target="_blank">XREX</a>
-          <a href="https://www.binance.com/en/careers/job-openings" target="_blank">Binance 職缺</a>
+          <a href="https://www.binance.com/en/careers/job-openings" target="_blank">Binance</a>
         </div>
       </div>
     </div>
@@ -270,31 +268,24 @@ function renderRes(){
   });
 }
 
-/* ---------- 工作雷達(自動抓遠端職缺) ---------- */
-const KW_WEB3=['solidity','blockchain','web3','smart contract','smart-contract','crypto','ethereum','defi','nft','dapp'];
-const KW_DEV=['frontend','front-end','front end','react','javascript','typescript','fullstack','full stack','full-stack','web developer','software engineer','engineer','developer','vue','node.js'];
+/* ---------- 台灣實習雷達(讀每日自動更新的 jobs.json) ---------- */
 function esc(s){return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));}
-function salTxt(mn,mx){mn=+mn||0;mx=+mx||0;return mx>0?('$'+(mn>0?Math.round(mn/1000)+'k–':'')+Math.round(mx/1000)+'k/yr'):'';}
-async function fetchROK(){try{const r=await fetch('https://remoteok.com/api');const d=await r.json();
-  return d.filter(j=>j.position).map(j=>({title:j.position,company:j.company,tags:j.tags||[],mn:+j.salary_min||0,mx:+j.salary_max||0,url:j.url,src:'RemoteOK'}));}catch(e){return[]}}
-async function fetchAN(){try{const r=await fetch('https://www.arbeitnow.com/api/job-board-api');const d=await r.json();
-  return (d.data||[]).filter(j=>j.remote).map(j=>({title:j.title,company:j.company_name,tags:j.tags||[],mn:0,mx:0,url:j.url,src:'Arbeitnow'}));}catch(e){return[]}}
-function cls(j){const s=(j.title+' '+(j.tags||[]).join(' ')).toLowerCase();
-  return {w3:KW_WEB3.some(k=>s.includes(k)),dev:KW_DEV.some(k=>s.includes(k))};}
+function isW3(t){return /web3|區塊鏈|solidity|blockchain|crypto|智慧合約|nft|defi/i.test(t||'');}
 async function loadJobs(){
-  const box=document.getElementById('jobs');box.innerHTML='<div class="hint">讀取遠端職缺中…</div>';
-  const [a,b]=await Promise.all([fetchROK(),fetchAN()]);
-  let all=a.concat(b).map(j=>({...j,...cls(j)})).filter(j=>j.w3||j.dev);
-  all.sort((x,y)=>(y.w3-x.w3)||(y.mx-x.mx));
-  if(!all.length){box.innerHTML='<div class="hint">今天來源暫無符合職缺（Web3 職缺較少見於通用板）。用下方「一鍵深挖」看 Web3/台灣最新職缺。</div>';return;}
-  box.innerHTML='';
-  all.slice(0,25).forEach(j=>{
-    const s=salTxt(j.mn,j.mx);
-    const a=document.createElement('a');a.className='job';a.href=j.url;a.target='_blank';
-    a.innerHTML=`<div class="jt">${j.w3?'<span class="w3">Web3</span> ':''}${esc(j.title)}</div>
-      <div class="jm">${esc(j.company||'')} · ${j.src}${s?' · <b class="sal">'+s+'</b>':''} · 🌐 遠端</div>`;
-    box.appendChild(a);
-  });
+  const box=document.getElementById('jobs');box.innerHTML='<div class="hint">載入台灣實習職缺…</div>';
+  try{
+    const r=await fetch('jobs.json?t='+Date.now());const d=await r.json();
+    const jobs=d.jobs||[];
+    document.getElementById('jobsupd').textContent=d.updated?('每日自動更新 · 最後更新 '+d.updated):'每日自動更新台灣技術實習';
+    if(!jobs.length){box.innerHTML='<div class="hint">今天暫無符合的台灣技術實習，明天會再更新。用下方一鍵深挖看最新。</div>';return;}
+    box.innerHTML='';
+    jobs.forEach(j=>{
+      const meta=[j.company,j.salary,j.location].filter(Boolean).map(esc).join(' · ');
+      const a=document.createElement('a');a.className='job';a.href=j.url;a.target='_blank';
+      a.innerHTML=`<div class="jt">${isW3(j.title)?'<span class="w3">Web3</span> ':''}${esc(j.title)}</div><div class="jm">${meta}</div>`;
+      box.appendChild(a);
+    });
+  }catch(e){box.innerHTML='<div class="hint">職缺資料還在產生中（首次部署後由每日排程更新）。先用下方一鍵深挖。</div>';}
 }
 
 renderRoadmap();updateProg();renderApps();renderSkills();renderRes();loadJobs();
