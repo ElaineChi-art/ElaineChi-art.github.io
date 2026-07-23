@@ -57,6 +57,16 @@
   .foot{text-align:center;color:var(--faint);font-size:12px;margin-top:30px;line-height:1.9}
   .prog{height:6px;background:#20263a;border-radius:4px;overflow:hidden;margin-top:8px}
   .prog>div{height:100%;background:linear-gradient(90deg,#8b7cff,#4d8dff);width:0}
+  .hint{font-size:12px;color:var(--faint)}
+  .job{display:block;padding:9px 6px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--text)}
+  .job:hover{background:#12151d}
+  .jt{font-size:13.5px;font-weight:600}
+  .jm{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .w3{background:linear-gradient(135deg,#8b7cff,#4d8dff);color:#fff;font-size:10px;padding:1px 7px;border-radius:5px;font-weight:700}
+  .sal{color:var(--ok)}
+  .deep{display:flex;flex-wrap:wrap;gap:8px}
+  .deep a{font-size:12px;background:#20263a;border:1px solid var(--line);border-radius:8px;padding:6px 11px;color:#cbd5e1;text-decoration:none}
+  .deep a:hover{color:var(--blue);border-color:var(--blue)}
 </style>
 </head>
 <body>
@@ -80,6 +90,32 @@
       </div>
       <div class="prog"><div id="allprog"></div></div>
       <div style="font-size:12px;color:var(--muted);margin-top:6px" id="progtext"></div>
+    </div>
+  </section>
+
+  <!-- 工作雷達 -->
+  <section>
+    <h2><span class="bar"></span>📡 工作雷達 <span style="font-size:12px;color:var(--muted);font-weight:400">· 自動抓國際遠端職缺 · Web3 優先 · 高薪排序</span></h2>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px">
+        <div class="hint">每次打開自動更新。來源：RemoteOK、Arbeitnow（遠端）。</div>
+        <button class="addrow" onclick="loadJobs()">🔄 重新整理</button>
+      </div>
+      <div id="jobs"></div>
+      <div style="border-top:1px dashed var(--line);margin-top:14px;padding-top:12px">
+        <div class="hint" style="margin-bottom:8px">🔎 一鍵深挖(Web3／台灣／目標公司 —— 這些無法自動抓，點了看最新)：</div>
+        <div class="deep">
+          <a href="https://web3.career/remote-jobs" target="_blank">web3.career 遠端</a>
+          <a href="https://cryptojobslist.com/" target="_blank">CryptoJobsList</a>
+          <a href="https://www.yourator.co/events/web3-jobs" target="_blank">Yourator Web3</a>
+          <a href="https://www.cake.me/jobs?q=blockchain" target="_blank">Cake 區塊鏈</a>
+          <a href="https://www.104.com.tw/jobs/search/?keyword=區塊鏈" target="_blank">104 區塊鏈</a>
+          <a href="https://www.linkedin.com/jobs/search/?keywords=Solidity" target="_blank">LinkedIn Solidity</a>
+          <a href="https://www.cake.me/jobs?q=KryptoGO" target="_blank">KryptoGO</a>
+          <a href="https://www.cake.me/jobs?q=XREX" target="_blank">XREX</a>
+          <a href="https://www.binance.com/en/careers/job-openings" target="_blank">Binance 職缺</a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -156,7 +192,7 @@ function updateProg(){
 /* ---------- 應徵追蹤 ---------- */
 const STATUS=["未投遞","想投","已投遞","面試中","已錄取","婉拒/未錄取"];
 const DEFAULT_CO=[
- ["KryptoGO","Web3錢包+法遵，你的王牌"],["XREX","合規區塊鏈金融，國際"],
+ ["Binance 幣安","全球最大交易所，國際/遠端/高薪"],["KryptoGO","Web3錢包+法遵，你的王牌"],["XREX","合規區塊鏈金融，國際"],
  ["BitoGroup 幣託","老牌交易所"],["MaiCoin / MAX","交易所+區塊鏈技術"],
  ["Portto / Blocto","區塊鏈錢包(前端)"],["國泰金控 數位/法遵科技","大公司+用得到你背景"],
  ["富邦/中信/玉山 數金","金控法遵科技部門"],["KPMG / PwC 金融科技法遵","Big4 大品牌"],
@@ -234,7 +270,34 @@ function renderRes(){
   });
 }
 
-renderRoadmap();updateProg();renderApps();renderSkills();renderRes();
+/* ---------- 工作雷達(自動抓遠端職缺) ---------- */
+const KW_WEB3=['solidity','blockchain','web3','smart contract','smart-contract','crypto','ethereum','defi','nft','dapp'];
+const KW_DEV=['frontend','front-end','front end','react','javascript','typescript','fullstack','full stack','full-stack','web developer','software engineer','engineer','developer','vue','node.js'];
+function esc(s){return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));}
+function salTxt(mn,mx){mn=+mn||0;mx=+mx||0;return mx>0?('$'+(mn>0?Math.round(mn/1000)+'k–':'')+Math.round(mx/1000)+'k/yr'):'';}
+async function fetchROK(){try{const r=await fetch('https://remoteok.com/api');const d=await r.json();
+  return d.filter(j=>j.position).map(j=>({title:j.position,company:j.company,tags:j.tags||[],mn:+j.salary_min||0,mx:+j.salary_max||0,url:j.url,src:'RemoteOK'}));}catch(e){return[]}}
+async function fetchAN(){try{const r=await fetch('https://www.arbeitnow.com/api/job-board-api');const d=await r.json();
+  return (d.data||[]).filter(j=>j.remote).map(j=>({title:j.title,company:j.company_name,tags:j.tags||[],mn:0,mx:0,url:j.url,src:'Arbeitnow'}));}catch(e){return[]}}
+function cls(j){const s=(j.title+' '+(j.tags||[]).join(' ')).toLowerCase();
+  return {w3:KW_WEB3.some(k=>s.includes(k)),dev:KW_DEV.some(k=>s.includes(k))};}
+async function loadJobs(){
+  const box=document.getElementById('jobs');box.innerHTML='<div class="hint">讀取遠端職缺中…</div>';
+  const [a,b]=await Promise.all([fetchROK(),fetchAN()]);
+  let all=a.concat(b).map(j=>({...j,...cls(j)})).filter(j=>j.w3||j.dev);
+  all.sort((x,y)=>(y.w3-x.w3)||(y.mx-x.mx));
+  if(!all.length){box.innerHTML='<div class="hint">今天來源暫無符合職缺（Web3 職缺較少見於通用板）。用下方「一鍵深挖」看 Web3/台灣最新職缺。</div>';return;}
+  box.innerHTML='';
+  all.slice(0,25).forEach(j=>{
+    const s=salTxt(j.mn,j.mx);
+    const a=document.createElement('a');a.className='job';a.href=j.url;a.target='_blank';
+    a.innerHTML=`<div class="jt">${j.w3?'<span class="w3">Web3</span> ':''}${esc(j.title)}</div>
+      <div class="jm">${esc(j.company||'')} · ${j.src}${s?' · <b class="sal">'+s+'</b>':''} · 🌐 遠端</div>`;
+    box.appendChild(a);
+  });
+}
+
+renderRoadmap();updateProg();renderApps();renderSkills();renderRes();loadJobs();
 </script>
 </body>
 </html>
