@@ -1,7 +1,20 @@
 {
- "updated": "2026-07-23 04:16 UTC",
- "count": 7,
+ "updated": "2026-07-24 04:15 UTC",
+ "count": 11,
  "jobs": [
+  {
+   "title": "CRM 技術顧問實習生(應屆畢業）",
+   "company": "伊原力科技",
+   "salary": "面議（經常性薪資達4萬元）",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/may4s/jobs/32773",
+   "tags": [
+    "實習",
+    "全端工程師",
+    "CRM",
+    "Salesforce"
+   ]
+  },
   {
    "title": "[實習生專區]-專案系統開發實習生｜完整培訓＋實務經驗＋優先轉正機會",
    "company": "人工智能股份有限公司",
@@ -9,6 +22,30 @@
    "location": "臺北市",
    "url": "https://www.yourator.co/companies/8d8a33fc/jobs/47374",
    "tags": []
+  },
+  {
+   "title": "[CNS] 雲端平台JAVA後端工程師",
+   "company": "動力安全資訊股份有限公司 Dynasafe",
+   "salary": "面議（經常性薪資達4萬元）",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/dynasafe/jobs/24462",
+   "tags": [
+    "軟體設計工程師",
+    "Internet程式設計師",
+    "系統維護／操作人員"
+   ]
+  },
+  {
+   "title": "[CNS] 雲原生容器平台DevOps/SRE工程師 ",
+   "company": "動力安全資訊股份有限公司 Dynasafe",
+   "salary": "NT$ 30,000 -  (月薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/dynasafe/jobs/24463",
+   "tags": [
+    "軟體設計工程師",
+    "Internet程式設計師",
+    "系統維護／操作人員"
+   ]
   },
   {
    "title": "Investment Research Intern 投資研究實習生",
@@ -84,6 +121,19 @@
     "crypto",
     "web3",
     "DeFi"
+   ]
+  },
+  {
+   "title": "Salesforce AI Agentforce 實習顧問",
+   "company": "伊原力科技",
+   "salary": "NT$ 230 -  (時薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/may4s/jobs/38139",
+   "tags": [
+    "AI",
+    "BigData",
+    "CRM",
+    "Salesforce"
    ]
   }
  ]
