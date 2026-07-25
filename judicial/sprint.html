@@ -171,6 +171,12 @@
   #gjblk{scroll-margin-top:54px} .stem{scroll-margin-top:54px}
   .starbtn{flex:none;background:none;border:none;font-size:20px;line-height:1;color:#6b6f76;cursor:pointer;padding:2px 4px}
   .starbtn.on{color:#ffd86b}
+  .biaowrap{overflow-x:auto;margin-top:6px}
+  table.biao{border-collapse:collapse;font-size:12px}
+  table.biao th,table.biao td{border:1px solid rgba(255,255,255,.15);padding:4px 6px;vertical-align:top;text-align:left;color:var(--txt);white-space:normal;min-width:70px}
+  table.biao th{background:rgba(195,167,255,.16);color:#d9c8ff;font-weight:700}
+  .biaolink{margin-top:6px;display:flex;flex-wrap:wrap;gap:10px}
+  .biaolink a{font-size:12px;color:var(--teal)}
   .opt:disabled{cursor:default}
   .teach{background:rgba(127,224,207,.07);border:1px solid rgba(127,224,207,.25);border-radius:16px;padding:15px 16px;margin-top:6px;animation:slidein .25s}
   @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -302,6 +308,7 @@
 <script src="sr-guoji.js?v=6"></script>
 <script src="sr-tips.js?v=1"></script>
 <script src="sr-xingfa.js?v=1"></script>
+<script src="biao.js?v=1"></script>
 <script>
 /* ===== 防呆：任何錯誤直接顯示在畫面上，不要一片空白 ===== */
 window.addEventListener("error",function(e){
@@ -639,12 +646,17 @@ function ssMatch(r){const q=(r.p.concept||"")+" "+(r.p.law||"");let best=null,bs
   return bs>=0.16?best:null;}
 function srReflexMatch(r,g){return g==="國際法+法學英文"?gjMatch(r):g==="刑法"?sxMatch(r):g==="商事法"?ssMatch(r):null;}
 function isRG(g){return g==="商事法"||g==="刑法"||g==="國際法+法學英文";}   // 有反射地圖整套功能的科
-function isHL(g){return isRG(g)||g==="民法"||g==="刑訴"||g==="行政法";}   // 題幹高亮＋選項訂正（民法/刑訴/行政法用現有筆記，無反射地圖）
+function isHL(g){return isRG(g)||g==="民法"||g==="刑訴"||g==="行政法"||g==="憲法"||g==="民訴";}   // 題幹高亮＋選項訂正（全科；非反射科用現有筆記）
 function gjVoice(t){return [t.title,...t.body].join("。").replace(/\*\*/g,"").replace(/§/g,"第").replace(/[「」『』]/g,"");}
 function gjBlockHTML(t){const inner=[t.title,...t.body].map(srLineHTML).join("");
   return `<div class="blk" id="gjblk"><span class="l">📎 我的反射地圖解析</span>`
     +`<div style="background:rgba(159,224,168,.06);border:1px solid rgba(159,224,168,.25);border-radius:12px;padding:10px 12px;margin-top:6px">${inner}</div>`
     +`<button class="audio" id="gjAudio" style="margin-top:8px">🔊 念這題解析</button></div>`;}
+// 📊 公司法/證交法 比較表（來自我的 Excel 總整理）掛進解析
+function biaoMatch(r){if(!window.BIAO)return null;const q=(r.p.concept||"")+" "+(r.p.key||"")+" "+(r.p.ans||"")+" "+(r.p.law||"");
+  let best=null,bs=0;window.BIAO.forEach(t=>{let s=0;t.kw.forEach(k=>{if(q.indexOf(k)>=0)s++;});if(s>bs){bs=s;best=t;}});
+  return bs>=2?best:null;}
+function biaoBlockHTML(t){return `<div class="blk"><span class="l">${esc(t.title)}</span><div class="biaowrap">${t.html}</div></div>`;}
 // 從頭一段接一段念完（避免長句被截斷）
 function srSpeakSeq(start){
   if(!srSeq||!("speechSynthesis"in window)||start>=srItems.length){srSeq=false;return;}
@@ -928,6 +940,7 @@ function answer(idx){
   let t=`<div class="teach"><div class="res ${correct?'ok':'no'}">${correct?"✅ 答對了！":"❌ 沒關係，這題記起來就賺到"}　正解：${L[ans]}</div>`;
   if(tmap)t+=`<button class="audio" id="optAudio" style="margin:2px 0 8px">🔊 唸選項＋訂正</button>`;   // 放解析最上方
   if(gj)t+=gjBlockHTML(gj);   // 📎 反射地圖放解析最上方
+  if(SES.group==="商事法"){const bt=biaoMatch(r);if(bt)t+=biaoBlockHTML(bt);}   // 📊 公司法/證交法比較表
   t+=reflexHTML(r,whyC);   // ⚡ 反射卡：看到→反射→法條→陷阱（每題都有）
   if(!correct&&whyW)t+=`<div class="blk"><span class="l">你選的 ${L[idx]} 為什麼錯</span>${esc(whyW)}</div>`;
   if(whyC)t+=`<div class="blk"><span class="l">✅ 正解 ${L[ans]} 為什麼對</span>${esc(whyC)}</div>`;
@@ -1010,7 +1023,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s50";
+const APP_VERSION="s51";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
