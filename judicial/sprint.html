@@ -295,6 +295,7 @@
     <div class="ses-bar"><div id="sesBar"></div></div>
     <button class="x" id="sesFont" title="字放大">A⁺</button>
     <button class="x" id="sesMute" title="靜音／開聲">🔊</button>
+    <button class="x" id="sesDiag" title="語音診斷">🔍</button>
     <div class="ses-cnt" id="sesCnt"></div>
   </div>
   <div class="ses-subs" id="sesSubs"></div>
@@ -1008,6 +1009,15 @@ document.getElementById("sesX").onclick=closeSession;
 (function(){const mb=document.getElementById("sesMute");
   const set=()=>mb.textContent=muted()?"🔇":"🔊";set();
   mb.onclick=()=>{localStorage.setItem("sjg_mute",muted()?"0":"1");set();if(muted())stopSpeak();};})();
+(function(){const db=document.getElementById("sesDiag");if(!db)return;
+  db.onclick=()=>{
+    if(!("speechSynthesis"in window)){alert("這個瀏覽器不支援語音（speechSynthesis）");return;}
+    const vs=speechSynthesis.getVoices();
+    const zh=vs.filter(v=>/zh|cmn|yue|中文|Chinese|Mei|Ting|Han|Sin|Yu/i.test((v.lang||"")+(v.name||"")));
+    alert("🔊 語音診斷\n語音總數："+vs.length+"\n中文語音："+zh.length+" 個\n"+(zh.slice(0,8).map(v=>"• "+v.name+" ("+v.lang+")").join("\n")||"（沒有中文語音！這就是沒聲音的原因）")+"\n\n靜音狀態："+(muted()?"🔇 已靜音":"🔊 開")+"\n\n按確定後直接試念一句（用系統預設語音）");
+    try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance("測試，一二三四五，你聽得到嗎");speechSynthesis.speak(u);speechSynthesis.resume();}catch(e){alert("試念出錯："+e);}
+  };})();
+try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=function(){};}catch(e){}   // 預熱語音清單
 (function(){const fb=document.getElementById("sesFont"),body=document.getElementById("sesBody");
   if(localStorage.getItem("sjg_fontbig")==="1")body.classList.add("big");
   fb.onclick=()=>{body.classList.toggle("big");localStorage.setItem("sjg_fontbig",body.classList.contains("big")?"1":"0");};})();
@@ -1039,7 +1049,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s57";
+const APP_VERSION="s58";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
