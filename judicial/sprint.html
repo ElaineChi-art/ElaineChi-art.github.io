@@ -171,6 +171,8 @@
   #gjblk{scroll-margin-top:54px} .stem{scroll-margin-top:54px}
   .starbtn{flex:none;background:none;border:none;font-size:20px;line-height:1;color:#6b6f76;cursor:pointer;padding:2px 4px}
   .starbtn.on{color:#ffd86b}
+  .srplay{flex:none;background:rgba(159,224,168,.15);border:1px solid var(--ok);color:var(--ok);border-radius:6px;font-size:12px;padding:1px 6px;cursor:pointer;line-height:1.5;margin-top:1px}
+  .srplay:hover{background:rgba(159,224,168,.3)}
   .ftrow{border-left:3px solid rgba(159,224,168,.4);padding:3px 0 3px 9px;margin:6px 0}
   .ftrow .ftn{color:#bfe9c4;font-weight:800;margin-right:6px}
   .ftrow .ftt{color:var(--teal);font-size:12px;font-weight:700}
@@ -701,7 +703,9 @@ function renderSpeed(g){
     srItems=groupByTopic(OV);                // 語音一格=一題（題號與畫面一致）
     srStep=8;                                // 每段語音念 8 題
     if(cnt)cnt.textContent=srItems.length+" 題 · 我的筆記（分段序號＝題號）";
-    html=OV.map(srLineHTML).join("");
+    let _ti=0;html=OV.map(p=>{               // 每題前加 ▶ 從這裡開始念
+      if(/^\d+\./.test(p)){const idx=_ti++;return `<div class="sr" style="display:flex;align-items:flex-start;gap:6px"><button class="srplay" data-play="${idx}" title="從這一題開始自動念">▶</button><b style="flex:1">${srMd(p)}</b></div>`;}
+      return srLineHTML(p);}).join("");
     // 反射地圖上方也放「挑一區測驗」（熟悉度用題庫作答記錄）
     const rows=groupRows(g),pos=getPos(g),ew=new Set(everWrong()),fm=famGet(),B={n:[],w:[],k:[]};
     rows.forEach((r,i)=>{const st=fm[r.k]||(ew.has(r.k)?"w":(i<pos?"k":"n"));B[st].push(r);});
@@ -730,8 +734,8 @@ function renderSpeed(g){
     const testCtl=`<div class="subrow" style="margin:0 0 6px">${nch}</div>`
       +`<button class="subchip" id="srTestBtn" style="border-style:solid;background:rgba(127,224,160,.15);border-color:var(--ok);color:var(--ok);font-weight:800">▶ 測驗${fLbl} ${takeN} 題</button>`;
     const starBtn=k=>`<button class="starbtn${starHas(k)?" on":""}" data-star="${k}">${starHas(k)?"★":"☆"}</button>`;
-    const rowHTML=r=>{const mn=mnOf(r);srItems.push((r.p.concept||"").replace(/§.*/,"")+"。"+mn);
-      return `<div class="sr" style="display:flex;align-items:flex-start;gap:8px"><div style="flex:1"><b>${esc(r.p.concept)}</b><div style="font-size:13px;color:#ffeab0;margin-top:2px">💡 ${esc(mn)}</div></div>${starBtn(r.k)}</div>`;};
+    const rowHTML=r=>{const mn=mnOf(r);const idx=srItems.length;srItems.push((r.p.concept||"").replace(/§.*/,"")+"。"+mn);
+      return `<div class="sr" style="display:flex;align-items:flex-start;gap:6px"><button class="srplay" data-play="${idx}" title="從這一題開始念">▶</button><div style="flex:1"><b>${esc(r.p.concept)}</b><div style="font-size:13px;color:#ffeab0;margin-top:2px">💡 ${esc(mn)}</div></div>${starBtn(r.k)}</div>`;};
     srItems=[];let hh=`<div class="subrow" style="margin:0 0 8px">${flt}</div>${testCtl}`;
     if(F==="s"){
       hh+=`<div style="font-size:14px;font-weight:800;color:#ffd86b;margin:14px 0 6px;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:4px">⭐ 我的星星（${starRows.length}）</div>`;
@@ -759,7 +763,8 @@ function renderSpeed(g){
   if(body){body.querySelectorAll("[data-flt]").forEach(b=>b.onclick=()=>{srFilter=b.dataset.flt;renderSpeed(g);});   // 熟悉度篩選切換
     body.querySelectorAll("[data-testn]").forEach(b=>b.onclick=()=>{srTestN=+b.dataset.testn;renderSpeed(g);});     // 題數
     const tb=body.querySelector("#srTestBtn");if(tb)tb.onclick=()=>startBucketSession(g,srTestRows,srTestN);       // ▶ 直接測驗這區
-    body.querySelectorAll("[data-star]").forEach(b=>b.onclick=e=>{e.stopPropagation();const on=starToggle(b.dataset.star);b.textContent=on?"★":"☆";b.classList.toggle("on",on);});}   // ⭐ 收藏切換（就地）
+    body.querySelectorAll("[data-star]").forEach(b=>b.onclick=e=>{e.stopPropagation();const on=starToggle(b.dataset.star);b.textContent=on?"★":"☆";b.classList.toggle("on",on);});   // ⭐ 收藏切換（就地）
+    body.querySelectorAll("[data-play]").forEach(b=>b.onclick=()=>{stopSpeak();srSeq=true;srSpeakSeq(+b.dataset.play);b.scrollIntoView({behavior:"smooth",block:"center"});});}   // ▶ 從這題開始自動念
 }
 /* 📕 錯題本 */
 function renderEW(){
@@ -1060,7 +1065,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s59";
+const APP_VERSION="s60";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
