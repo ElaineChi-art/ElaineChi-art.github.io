@@ -55,8 +55,10 @@
     font-size:12.5px;padding:4px 9px;border-radius:7px;display:none;max-width:260px;line-height:1.5}
 
   /* 右側詳解面板 */
-  #panel{position:absolute;right:0;top:0;height:100%;width:680px;max-width:94vw;background:#0f1320;border-left:1px solid var(--line);
+  #panel{position:absolute;right:0;top:0;height:100%;width:min(1200px,96vw);max-width:96vw;background:#0f1320;border-left:1px solid var(--line);
     transform:translateX(102%);transition:transform .22s ease;z-index:8;display:flex;flex-direction:column}
+  #panel .pbar{padding:8px 14px;border-bottom:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;flex:none}
+  #panel .pbar .hbtn{font-size:13px;padding:6px 12px}
   #panel.open{transform:translateX(0)}
   #panel .ph{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:flex-start}
   #panel .ph .sys{font-size:11.5px;color:#9db4ff;font-weight:bold;letter-spacing:.5px}
@@ -178,9 +180,6 @@
       <button class="hbtn" id="planBtn" style="border-color:var(--gold);color:#ffd86b">📅 6天計畫</button>
       <button class="hbtn" id="reheat">🔄 重新排列</button>
       <button class="hbtn" id="fit">🎯 置中</button>
-      <button class="hbtn" id="corrToggle" style="border-color:#7fd4ff;color:#9fe0ff">🙈 隱藏訂正</button>
-      <button class="hbtn" id="expandAll">⊞ 全部展開</button>
-      <button class="hbtn" id="collapseAll">⊟ 全部收合</button>
       <select id="rate" title="唸書語速">
         <option value="0.8">🔊 慢</option>
         <option value="1">🔊 正常</option>
@@ -200,6 +199,11 @@
         <div class="cpt" id="p-cpt"></div>
       </div>
       <button class="x" id="p-close">×</button>
+    </div>
+    <div class="pbar">
+      <button class="hbtn" id="corrToggle" style="border-color:#7fd4ff;color:#9fe0ff">🙈 隱藏訂正</button>
+      <button class="hbtn" id="expandAll">⊞ 全部展開</button>
+      <button class="hbtn" id="collapseAll">⊟ 全部收合</button>
     </div>
     <div class="pb" id="p-body"></div>
   </div>
@@ -679,7 +683,7 @@ function speak(text,btn){
   const cs=String(text).split(/(?<=[。！？；!?;\n])/).reduce((a,s)=>{s=s.trim();if(!s)return a;if(a.length&&a[a.length-1].length+s.length<=160)a[a.length-1]+=s;else a.push(s);return a;},[]);   // 切短句(修Chrome長句中斷)
   if(!cs.length){done();return;}
   if(btn){btn.classList.add("on");_audioBtn=btn;}
-  let i=0;const nx=()=>{if(i>=cs.length){done();return;}const u=new SpeechSynthesisUtterance(cs[i]);u.lang="zh-TW";u.rate=speechRate();u.pitch=1;u.volume=1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}u.onend=()=>{i++;nx();};u.onerror=done;speechSynthesis.speak(u);speechSynthesis.resume();};setTimeout(nx,60);
+  let i=0;const nx=()=>{if(i>=cs.length){done();return;}const u=new SpeechSynthesisUtterance(cs[i]);u.lang="zh-TW";u.rate=speechRate();u.pitch=1;u.volume=1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}u.onend=()=>{i++;nx();};u.onerror=done;speechSynthesis.speak(u);speechSynthesis.resume();};nx();
 }
 try{setInterval(()=>{try{if(speechSynthesis.speaking)speechSynthesis.resume();}catch(e){}},7000);}catch(e){}
 function rowSpeechText(r){
@@ -998,5 +1002,5 @@ resize();
 buildSide();
 loadGraph();
 </script>
-<script>(function(){var V="2";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();</script></body>
+<script>(function(){var V="3";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();</script></body>
 </html>
