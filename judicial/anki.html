@@ -379,7 +379,7 @@
 <script src="anki-cards.js"></script>
 <script>
 "use strict";
-const APP_VERSION='v21';
+const APP_VERSION='v22';
 const LS_KEY='ankiDB_v1';
 const $=s=>document.querySelector(s);
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -850,8 +850,11 @@ function bestVoice(){ const c=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
 let speakRate=parseFloat(localStorage.getItem('ankiRate')||'1');
 const cleanSpk=t=>String(t).replace(/[§【】*🔑📖📌✅❌⚖️▸🔗📚🕸️📅]/g,' ').replace(/<br\s*\/?>/gi,'，').replace(/\s+/g,' ').trim();
 function speak(text,onend){ if(!window.speechSynthesis){onend&&onend();return;}
-  speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(cleanSpk(text));
-  u.lang='zh-TW'; u.rate=speakRate; const v=bestVoice(); if(v)u.voice=v; if(onend)u.onend=onend; speechSynthesis.speak(u); }
+  speechSynthesis.cancel();
+  const cs=String(cleanSpk(text)).split(/(?<=[。！？；!?;\n])/).reduce((a,s)=>{s=s.trim();if(!s)return a;if(a.length&&a[a.length-1].length+s.length<=160)a[a.length-1]+=s;else a.push(s);return a;},[]);
+  if(!cs.length){onend&&onend();return;}
+  let i=0;const nx=()=>{if(i>=cs.length){onend&&onend();return;}const u=new SpeechSynthesisUtterance(cs[i]);u.lang='zh-TW';u.rate=speakRate;const v=bestVoice();if(v)u.voice=v;u.onend=()=>{i++;nx();};speechSynthesis.speak(u);};nx(); }
+try{setInterval(()=>{try{if(speechSynthesis.speaking)speechSynthesis.resume();}catch(e){}},7000);}catch(e){}
 function stopSpeak(){ try{speechSynthesis.cancel();}catch(e){} }
 function buildVoicePicker(){
   loadVoices(); const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));

@@ -364,12 +364,14 @@ function speak(t,btn){
   if(!("speechSynthesis"in window))return;
   if(btn&&btn._on){speechSynthesis.cancel();btn._on=false;btn.classList.remove("on");return;}
   speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.pitch=1;u.volume=1;
-  const rt=localStorage.getItem("sjg_rate"); if(rt)u.rate=parseFloat(rt)||1;
-  const v=pickVoice(); if(v){u.voice=v; u.lang=v.lang||"zh-TW";}
-  if(btn){btn._on=true;btn.classList.add("on");u.onend=u.onerror=()=>{btn._on=false;btn.classList.remove("on");};}
-  speechSynthesis.speak(u);
+  const done=()=>{if(btn){btn._on=false;btn.classList.remove("on");}};
+  const cs=String(t).split(/(?<=[。！？；!?;\n])/).reduce((a,s)=>{s=s.trim();if(!s)return a;if(a.length&&a[a.length-1].length+s.length<=160)a[a.length-1]+=s;else a.push(s);return a;},[]);
+  if(!cs.length)return;
+  const rt=localStorage.getItem("sjg_rate");
+  if(btn){btn._on=true;btn.classList.add("on");}
+  let i=0;const nx=()=>{if(i>=cs.length){done();return;}const u=new SpeechSynthesisUtterance(cs[i]);u.lang="zh-TW";u.pitch=1;u.volume=1;if(rt)u.rate=parseFloat(rt)||1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}u.onend=()=>{i++;nx();};u.onerror=done;speechSynthesis.speak(u);};nx();
 }
+try{setInterval(()=>{try{if(speechSynthesis.speaking)speechSynthesis.resume();}catch(e){}},7000);}catch(e){}
 
 /* ===== 法條原文 ===== */
 function lawTextHTML(rs){

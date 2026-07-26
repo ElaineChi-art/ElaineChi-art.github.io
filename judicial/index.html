@@ -673,9 +673,10 @@ function pickVoice(){
 if("speechSynthesis" in window){ try{speechSynthesis.getVoices();}catch(e){} speechSynthesis.onvoiceschanged=()=>{}; }
 function speak(t){
   t=cleanForSpeech(t); if(!t) return;
-  const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.rate=speechRate();u.pitch=1;u.volume=1;
-  const v=pickVoice(); if(v){u.voice=v; u.lang=v.lang||"zh-TW";}
-  speechSynthesis.cancel();speechSynthesis.speak(u);}
+  speechSynthesis.cancel();
+  const cs=String(t).split(/(?<=[。！？；!?;\n])/).reduce((a,s)=>{s=s.trim();if(!s)return a;if(a.length&&a[a.length-1].length+s.length<=160)a[a.length-1]+=s;else a.push(s);return a;},[]);   // 切≤160字短句(修Chrome長句中斷)
+  let i=0;const nx=()=>{if(i>=cs.length)return;const u=new SpeechSynthesisUtterance(cs[i]);u.lang="zh-TW";u.rate=speechRate();u.pitch=1;u.volume=1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}u.onend=()=>{i++;nx();};speechSynthesis.speak(u);};nx();}
+try{setInterval(()=>{try{if(speechSynthesis.speaking)speechSynthesis.resume();}catch(e){}},7000);}catch(e){}
 function readQ(){const q=window._q,L=["A","B","C","D"];
   speak("第"+q.num+"題。"+q.stem+" "+q.options.map((o,i)=>"選項"+L[i]+"，"+o).join("。"));
   if(typeof tAutoRestart==="function") tAutoRestart();}   // 按「念題目／念整題」也算進入下一題→自動重計

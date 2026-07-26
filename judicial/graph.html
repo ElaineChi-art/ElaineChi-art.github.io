@@ -670,13 +670,13 @@ function speak(text,btn){
   if(!("speechSynthesis" in window)){alert("此瀏覽器不支援語音朗讀");return;}
   if(btn&&btn===_audioBtn&&speechSynthesis.speaking){stopSpeak();return;} // 再按一次＝停
   stopSpeak();
-  const u=new SpeechSynthesisUtterance(text);
-  u.lang="zh-TW"; u.rate=speechRate(); u.pitch=1; u.volume=1;
-  const v=pickVoice(); if(v){u.voice=v; u.lang=v.lang||"zh-TW";}
-  u.onend=u.onerror=()=>{if(btn)btn.classList.remove("on");if(_audioBtn===btn)_audioBtn=null;};
+  const done=()=>{if(btn)btn.classList.remove("on");if(_audioBtn===btn)_audioBtn=null;};
+  const cs=String(text).split(/(?<=[。！？；!?;\n])/).reduce((a,s)=>{s=s.trim();if(!s)return a;if(a.length&&a[a.length-1].length+s.length<=160)a[a.length-1]+=s;else a.push(s);return a;},[]);   // 切短句(修Chrome長句中斷)
+  if(!cs.length){done();return;}
   if(btn){btn.classList.add("on");_audioBtn=btn;}
-  speechSynthesis.speak(u);
+  let i=0;const nx=()=>{if(i>=cs.length){done();return;}const u=new SpeechSynthesisUtterance(cs[i]);u.lang="zh-TW";u.rate=speechRate();u.pitch=1;u.volume=1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}u.onend=()=>{i++;nx();};u.onerror=done;speechSynthesis.speak(u);};nx();
 }
+try{setInterval(()=>{try{if(speechSynthesis.speaking)speechSynthesis.resume();}catch(e){}},7000);}catch(e){}
 function rowSpeechText(r){
   const L=["A","B","C","D","E","F"];
   let t="第"+r.q.num+"題。"+r.q.stem+" "+(r.q.options||[]).map((o,i)=>"選項"+L[i]+"，"+o).join("。")+"。";
