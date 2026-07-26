@@ -179,6 +179,8 @@
       <button class="hbtn" id="reheat">🔄 重新排列</button>
       <button class="hbtn" id="fit">🎯 置中</button>
       <button class="hbtn" id="corrToggle" style="border-color:#7fd4ff;color:#9fe0ff">🙈 隱藏訂正</button>
+      <button class="hbtn" id="expandAll">⊞ 全部展開</button>
+      <button class="hbtn" id="collapseAll">⊟ 全部收合</button>
       <select id="rate" title="唸書語速">
         <option value="0.8">🔊 慢</option>
         <option value="1">🔊 正常</option>
@@ -631,6 +633,9 @@ document.getElementById("fit").onclick=fitView;
   function apply(){const hide=localStorage.getItem("sjg_corr_hidden")==="1";document.body.classList.toggle("corr-hidden",hide);if(cb)cb.textContent=hide?"👁 顯示訂正":"🙈 隱藏訂正";}
   if(cb)cb.onclick=()=>{const hide=localStorage.getItem("sjg_corr_hidden")==="1";localStorage.setItem("sjg_corr_hidden",hide?"0":"1");apply();};
   apply();})();
+// ⊞ 全部展開／⊟ 收合：把面板裡所有考點題目一次點開/收起
+document.getElementById("expandAll").onclick=()=>{document.querySelectorAll("#panel .cbtn").forEach(b=>{const h=b.nextElementSibling;if(h&&h.classList.contains("qhost")&&h.dataset.open!=="1")b.click();});};
+document.getElementById("collapseAll").onclick=()=>{document.querySelectorAll("#panel .cbtn").forEach(b=>{const h=b.nextElementSibling;if(h&&h.classList.contains("qhost")&&h.dataset.open==="1")b.click();});};
 document.getElementById("search").addEventListener("input",e=>{
   const v=e.target.value.trim();
   if(!v){selNode=null;closePanel();return;}
@@ -674,7 +679,7 @@ function speak(text,btn){
   const cs=String(text).split(/(?<=[。！？；!?;\n])/).reduce((a,s)=>{s=s.trim();if(!s)return a;if(a.length&&a[a.length-1].length+s.length<=160)a[a.length-1]+=s;else a.push(s);return a;},[]);   // 切短句(修Chrome長句中斷)
   if(!cs.length){done();return;}
   if(btn){btn.classList.add("on");_audioBtn=btn;}
-  let i=0;const nx=()=>{if(i>=cs.length){done();return;}const u=new SpeechSynthesisUtterance(cs[i]);u.lang="zh-TW";u.rate=speechRate();u.pitch=1;u.volume=1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}u.onend=()=>{i++;nx();};u.onerror=done;speechSynthesis.speak(u);};nx();
+  let i=0;const nx=()=>{if(i>=cs.length){done();return;}const u=new SpeechSynthesisUtterance(cs[i]);u.lang="zh-TW";u.rate=speechRate();u.pitch=1;u.volume=1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}u.onend=()=>{i++;nx();};u.onerror=done;speechSynthesis.speak(u);speechSynthesis.resume();};setTimeout(nx,60);
 }
 try{setInterval(()=>{try{if(speechSynthesis.speaking)speechSynthesis.resume();}catch(e){}},7000);}catch(e){}
 function rowSpeechText(r){
@@ -993,5 +998,5 @@ resize();
 buildSide();
 loadGraph();
 </script>
-<script>(function(){var V="1";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();</script></body>
+<script>(function(){var V="2";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();</script></body>
 </html>

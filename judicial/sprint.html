@@ -417,7 +417,7 @@ function mkUtter(t){const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.pit
 // 切成短句：Chrome 對過長語句會中斷/卡住，每段≤160字才穩
 function chunks(t){return String(t||"").split(/(?<=[。！？；!?;\n])/).reduce((a,s)=>{s=s.trim();if(!s)return a;if(a.length&&a[a.length-1].length+s.length<=160)a[a.length-1]+=s;else a.push(s);return a;},[]);}
 function speak(t){if(!("speechSynthesis"in window))return;speechSynthesis.cancel();const cs=chunks(t);let i=0;
-  const nx=()=>{if(i>=cs.length)return;const u=mkUtter(cs[i]);u.onend=()=>{i++;nx();};speechSynthesis.speak(u);};nx();}
+  const nx=()=>{if(i>=cs.length)return;const u=mkUtter(cs[i]);u.onend=()=>{i++;nx();};speechSynthesis.speak(u);speechSynthesis.resume();};setTimeout(nx,60);}
 function stopSpeak(){if("speechSynthesis"in window)speechSynthesis.cancel();}
 // Chrome keep-alive：長時間朗讀會被暫停，定時喚醒
 setInterval(()=>{try{if(speechSynthesis.speaking)speechSynthesis.resume();}catch(e){}},7000);
@@ -511,7 +511,7 @@ function speakSeq(items,onDone){if(!("speechSynthesis"in window))return;speechSy
   const nx=()=>{if(i>=list.length){if(onDone)onDone();return;}
     const it=list[i];if(it.before)it.before();
     const cs=chunks(it.text);let j=0;                              // 每段也切短句，避免中斷
-    const nxc=()=>{if(j>=cs.length){i++;nx();return;}const u=mkUtter(cs[j]);u.onend=()=>{j++;nxc();};speechSynthesis.speak(u);};nxc();};nx();}
+    const nxc=()=>{if(j>=cs.length){i++;nx();return;}const u=mkUtter(cs[j]);u.onend=()=>{j++;nxc();};speechSynthesis.speak(u);speechSynthesis.resume();};nxc();};setTimeout(nx,60);}
 
 /* ===== 機器人語句 ===== */
 const MSGS=["早安。今天不用想全部，我一張一張帶你，你只要點就好。","你已經在別人放棄的路上多走一步了。","忘記很正常，答錯的我都幫你記著、之後回鍋。","分心了沒關係，回來點下一張就好。","一次一題，一天一點，考試那天你會謝謝現在。","你大學把每件事做滿，這次也是。老天有眼。","不用完美，今天比昨天多會一點就贏了。","做不下去時先餵一次魚，再回來一張。"];
@@ -1039,7 +1039,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s55";
+const APP_VERSION="s56";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
