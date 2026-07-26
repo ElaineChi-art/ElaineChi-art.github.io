@@ -175,7 +175,9 @@
   .ftrow .ftn{color:#bfe9c4;font-weight:800;margin-right:6px}
   .ftrow .ftt{color:var(--teal);font-size:12px;font-weight:700}
   .ftrow .ftc{font-size:12.5px;line-height:1.55;color:var(--txt);margin-top:2px}
-  .ftrow .ftpt{font-size:12px;line-height:1.5;color:#ffeab0;margin-top:2px}
+  .ftrow .ftpt{font-size:12px;line-height:1.5;color:#cfe8d4;margin-top:2px}
+  .ftrow mark{background:rgba(255,216,107,.32);color:inherit;border-radius:3px;padding:0 2px}
+  .ftrow b:not(.ftn){color:#ffe79c}
   .opt:disabled{cursor:default}
   .teach{background:rgba(127,224,207,.07);border:1px solid rgba(127,224,207,.25);border-radius:16px;padding:15px 16px;margin-top:6px;animation:slidein .25s}
   @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -411,8 +413,14 @@ function streak(){const o=log();let s=0;for(let k=0;k<400;k++){const key=iso(new
 /* ===== 語音 ===== */
 function pickVoice(){const vs=speechSynthesis.getVoices();const sc=v=>{const lang=(v.lang||"").toLowerCase().replace("_","-"),n=(v.name||"").toLowerCase();let s;if(lang==="zh-tw"||lang.startsWith("zh-hant"))s=100;else if(lang==="zh-hk")s=60;else if(lang.startsWith("zh"))s=40;else return -1;if(/premium|enhanced|neural|natural|siri|美佳|mei.?jia|婷婷/.test(n))s+=25;if(/compact|eloquence|novelty|whisper|zarvox/.test(n))s-=40;if(v.localService)s+=3;return s;};let b=null,bs=-1;vs.forEach(v=>{const s=sc(v);if(s>bs){bs=s;b=v;}});return b;}
 if("speechSynthesis" in window){try{speechSynthesis.getVoices();}catch(e){}speechSynthesis.onvoiceschanged=()=>{};}
-function speak(t){if(!("speechSynthesis"in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.pitch=1;const rt=localStorage.getItem("sjg_rate");u.rate=rt?(parseFloat(rt)||1):1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}speechSynthesis.speak(u);}
+function mkUtter(t){const u=new SpeechSynthesisUtterance(t);u.lang="zh-TW";u.pitch=1;const rt=localStorage.getItem("sjg_rate");u.rate=rt?(parseFloat(rt)||1):1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}return u;}
+// 切成短句：Chrome 對過長語句會中斷/卡住，每段≤160字才穩
+function chunks(t){return String(t||"").split(/(?<=[。！？；!?;\n])/).reduce((a,s)=>{s=s.trim();if(!s)return a;if(a.length&&a[a.length-1].length+s.length<=160)a[a.length-1]+=s;else a.push(s);return a;},[]);}
+function speak(t){if(!("speechSynthesis"in window))return;speechSynthesis.cancel();const cs=chunks(t);let i=0;
+  const nx=()=>{if(i>=cs.length)return;const u=mkUtter(cs[i]);u.onend=()=>{i++;nx();};speechSynthesis.speak(u);};nx();}
 function stopSpeak(){if("speechSynthesis"in window)speechSynthesis.cancel();}
+// Chrome keep-alive：長時間朗讀會被暫停，定時喚醒
+setInterval(()=>{try{if(speechSynthesis.speaking)speechSynthesis.resume();}catch(e){}},7000);
 
 /* ===== 每題選項的觀念（why） ===== */
 function optWhy(r,i){const d=DIAG[r.k];if(d&&d.o&&d.o.length===r.q.options.length&&d.o[i])return d.o[i].why||"";return "";}
@@ -426,6 +434,8 @@ function lawTextOf(r){
 function esc(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
 /* ⚡ 反射卡：把這題的 考點/規則/法條/陷阱 濃縮成「看到→0.5秒反射→法條→陷阱」*/
 // 📖 我的法條筆記（HackMD）：依題目引用的公司法/證交法§顯示對應筆記
+let FT_BG=null;   // 全部法條的雙字集合快取（供選項配條文）
+function ftBG(){if(FT_BG)return FT_BG;FT_BG={};if(window.FATIAO)for(const n in window.FATIAO){const b=window.FATIAO[n];FT_BG[n]=gjCn((b.t||"")+" "+(b.r||"")+" "+(b.p||""));}return FT_BG;}
 function fatiaoHTML(r){if(!window.FATIAO)return "";
   const arts=(window.QARTS||{})[r.k]||[],shown=[];let h="";
   arts.forEach(a=>{if(a[0]!=="公司法"&&a[0]!=="證券交易法")return;const n=String(a[1]).replace(/\s/g,"");
@@ -500,9 +510,8 @@ function speakSeq(items,onDone){if(!("speechSynthesis"in window))return;speechSy
   const list=items.filter(x=>x&&x.text&&x.text.trim());let i=0;
   const nx=()=>{if(i>=list.length){if(onDone)onDone();return;}
     const it=list[i];if(it.before)it.before();
-    const u=new SpeechSynthesisUtterance(it.text);u.lang="zh-TW";
-    const rt=localStorage.getItem("sjg_rate");u.rate=rt?(parseFloat(rt)||1):1;const v=pickVoice();if(v)u.voice=v;
-    u.onend=()=>{i++;nx();};speechSynthesis.speak(u);};nx();}
+    const cs=chunks(it.text);let j=0;                              // 每段也切短句，避免中斷
+    const nxc=()=>{if(j>=cs.length){i++;nx();return;}const u=mkUtter(cs[j]);u.onend=()=>{j++;nxc();};speechSynthesis.speak(u);};nxc();};nx();}
 
 /* ===== 機器人語句 ===== */
 const MSGS=["早安。今天不用想全部，我一張一張帶你，你只要點就好。","你已經在別人放棄的路上多走一步了。","忘記很正常，答錯的我都幫你記著、之後回鍋。","分心了沒關係，回來點下一張就好。","一次一題，一天一點，考試那天你會謝謝現在。","你大學把每件事做滿，這次也是。老天有眼。","不用完美，今天比昨天多會一點就贏了。","做不下去時先餵一次魚，再回來一張。"];
@@ -924,11 +933,12 @@ function answer(idx){
   const shortRule=i=>{const l=optReflex(gj,r.q.options[i]);return l?l.split(/[。！？]/)[0].trim():"";};   // 只取反射地圖第一句(不整段貼)
   const optCorr=i=>(i===ans)?(jsStripAns(r.p.ans)||r.p.key||shortRule(i)):((tmap&&tmap[L[i]])||shortRule(i));
   // 每個選項對應到的正確條文：用這題引用的公司/證交法§，挑跟該選項最相關那條
-  const qArts=((window.QARTS||{})[r.k]||[]).filter(a=>(a[0]==="公司法"||a[0]==="證券交易法")&&window.FATIAO&&window.FATIAO[String(a[1]).replace(/\s/g,"")]).map(a=>String(a[1]).replace(/\s/g,""));
-  const artFor=i=>{if(!qArts.length)return "";const o=r.q.options[i]+" "+(optCorr(i)||"");let best="",bs=-1;
-    qArts.forEach(n=>{const b=window.FATIAO[n];const s=gjJac(gjCn(o),gjCn(b.t+" "+b.r+" "+b.p));if(s>bs){bs=s;best=n;}});return best;};
+  const isCorp=((window.QARTS||{})[r.k]||[]).some(a=>a[0]==="公司法"||a[0]==="證券交易法");   // 這題是公司/證交題才配
+  const artFor=i=>{if(!isCorp||!window.FATIAO)return "";const oc=gjCn(r.q.options[i]+" "+(optCorr(i)||""));const BG=ftBG();
+    let best="",bs=0.07;for(const n in BG){const s=gjJac(oc,BG[n]);if(s>bs){bs=s;best=n;}}return best;};   // 每個選項比對全部272條，挑最像
+  const ftMd=s=>esc(s).replace(/==(.+?)==/g,'<mark>$1</mark>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
   const artTag=i=>{if(SES.group!=="商事法")return "";const n=artFor(i);if(!n)return "";const b=window.FATIAO[n];
-    return `<div class="ftrow"><b class="ftn">§${esc(n)}</b><span class="ftt">${esc(b.t)}</span><div class="ftc">${esc(b.r)}</div></div>`;};
+    return `<div class="ftrow"><b class="ftn">§${esc(n)}</b><span class="ftt">${ftMd(b.t)}</span><div class="ftc">${ftMd(b.r)}</div>${b.p?`<div class="ftpt">${ftMd(b.p)}</div>`:""}</div>`;};
   document.querySelectorAll(".opt").forEach(b=>{const i=+b.dataset.i;b.disabled=true;
     if(i===ans)b.classList.add("correct");else if(i===idx)b.classList.add("wrong");else b.classList.add("dim");
     if(tmap){const d=optCorr(i);let cls,badge;
@@ -1029,7 +1039,7 @@ try{recoverProgress(false);renderCountdown();renderLaunch();renderWeek();renderC
 }catch(err){window.dispatchEvent(new ErrorEvent("error",{message:(err&&err.message)||String(err),lineno:0}));}
 
 /* ===== 自動更新（改版後約1分鐘自動抓新版，免手動清快取）===== */
-const APP_VERSION="s54";
+const APP_VERSION="s55";
 async function checkUpdate(){try{const r=await fetch("sprint-version.json?_="+Date.now(),{cache:"no-store"});if(!r.ok)return;
   const j=await r.json(),v=(j&&j.v!=null)?String(j.v):null;if(!v||v===APP_VERSION)return;
   const cur=new URL(location.href).searchParams.get("_v");if(cur===v)return;
