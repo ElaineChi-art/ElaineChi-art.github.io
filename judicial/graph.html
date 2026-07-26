@@ -204,6 +204,7 @@
       <button class="hbtn" id="corrToggle" style="border-color:#7fd4ff;color:#9fe0ff">🙈 隱藏訂正</button>
       <button class="hbtn" id="expandAll">⊞ 全部展開</button>
       <button class="hbtn" id="collapseAll">⊟ 全部收合</button>
+      <button class="hbtn" id="voiceDiag" style="border-color:#ffd86b;color:#ffd86b">🔍 語音測試</button>
     </div>
     <div class="pb" id="p-body"></div>
   </div>
@@ -638,6 +639,13 @@ document.getElementById("fit").onclick=fitView;
   if(cb)cb.onclick=()=>{const hide=localStorage.getItem("sjg_corr_hidden")==="1";localStorage.setItem("sjg_corr_hidden",hide?"0":"1");apply();};
   apply();})();
 // ⊞ 全部展開／⊟ 收合：把面板裡所有考點題目一次點開/收起
+document.getElementById("voiceDiag").onclick=()=>{
+  if(!("speechSynthesis"in window)){alert("此瀏覽器不支援語音");return;}
+  const vs=speechSynthesis.getVoices();
+  const zh=vs.filter(v=>/zh|cmn|yue|中文|Chinese|Mei|Ting|Han|Sin|Yu/i.test((v.lang||"")+(v.name||"")));
+  alert("🔊 語音診斷\n語音總數："+vs.length+"\n中文語音："+zh.length+" 個\n"+(zh.slice(0,8).map(v=>"• "+v.name+" ("+v.lang+")").join("\n")||"（沒有中文語音！這就是沒聲音的原因）")+"\n\n按確定後直接試念一句");
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance("測試，一二三四五，你聽得到嗎");speechSynthesis.speak(u);speechSynthesis.resume();}catch(e){alert("試念出錯："+e);}
+};
 document.getElementById("expandAll").onclick=()=>{document.querySelectorAll("#panel .cbtn").forEach(b=>{const h=b.nextElementSibling;if(h&&h.classList.contains("qhost")&&h.dataset.open!=="1")b.click();});};
 document.getElementById("collapseAll").onclick=()=>{document.querySelectorAll("#panel .cbtn").forEach(b=>{const h=b.nextElementSibling;if(h&&h.classList.contains("qhost")&&h.dataset.open==="1")b.click();});};
 document.getElementById("search").addEventListener("input",e=>{
@@ -1002,5 +1010,5 @@ resize();
 buildSide();
 loadGraph();
 </script>
-<script>(function(){var V="3";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();</script></body>
+<script>(function(){var V="4";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();</script></body>
 </html>
