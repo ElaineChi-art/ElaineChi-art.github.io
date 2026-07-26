@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transformer為什麼贏了：自注意力機制如何取代RNN成為現代AI的地基｜技能實驗室・每日課程</title>
+<meta name="description" content="RNN一個字一個字讀，讀到後面就忘了前面、還沒辦法平行。Transformer的自注意力讓每個字直接看全句、一次算完關聯，才成為大型語言模型能被養大的地基。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-07-26</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・人工智慧核心概念</div>
+  <h1>Transformer為什麼贏了：自注意力機制如何取代RNN成為現代AI的地基</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-07-26</span>
+    <span>約 6 分鐘</span>
+    <span>對應真專案主題：Transformer模型</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>Transformer 贏在兩件事：一次看全句、可以平行算。舊做法 RNN 是一個字一個字讀，讀到後面就把前面稀釋掉了，而且只能照順序算、快不起來。Transformer 的自注意力機制讓每個字直接對句子裡所有字算一次關聯分數，距離再遠也一步到位；因為每個字的計算彼此獨立，能整批丟進 GPU 平行運算。就是這個「一次看全部＋能平行」的組合，讓模型可以被堆到巨大，成了今天所有大型語言模型的地基。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-3-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260726" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260726" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260726" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260726)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260726)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M1 · 人工智慧核心概念  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">Transformer 為什麼贏了？<tspan fill="#4D9FFF">把「排隊讀」換成「一次看全部」</tspan></text>
+
+      <!-- 舊做法：RNN -->
+      <rect x="64" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <rect x="64" y="140" width="336" height="5" rx="2.5" fill="url(#topbarD20260726)"/>
+      <text x="88" y="184" font-size="20" font-weight="800" fill="#4D9FFF">■ 舊做法　RNN</text>
+      <text x="88" y="224" font-size="17" fill="#8FA1C0">怎麼讀</text>
+      <text x="88" y="250" font-size="17" fill="#C7D2E4">一個字一個字讀，</text>
+      <text x="88" y="274" font-size="17" fill="#C7D2E4">把前文壓成一小段記憶傳下去。</text>
+      <text x="88" y="318" font-size="17" fill="#8FA1C0">卡在哪</text>
+      <text x="88" y="344" font-size="17" fill="#C7D2E4">讀到後面，前面關鍵字</text>
+      <text x="88" y="368" font-size="17" fill="#C7D2E4">早被稀釋——長距離依賴難。</text>
+      <text x="88" y="392" font-size="17" fill="#C7D2E4">而且只能照順序算。</text>
+      <text x="88" y="436" font-size="17" fill="#8FA1C0">代價</text>
+      <text x="88" y="462" font-size="17" fill="#C7D2E4">沒辦法平行，句子越長</text>
+      <text x="88" y="486" font-size="17" fill="#C7D2E4">越慢，也越健忘。</text>
+      <text x="88" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 快不起來，也記不遠。</text>
+
+      <line x1="404" y1="340" x2="466" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260726)"/>
+
+      <!-- 核心：自注意力 -->
+      <rect x="472" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="472" y="140" width="336" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="496" y="184" font-size="20" font-weight="800" fill="#F2A33C">■ 核心　自注意力</text>
+      <text x="496" y="224" font-size="17" fill="#8FA1C0">怎麼讀</text>
+      <text x="496" y="250" font-size="17" fill="#C7D2E4">每個字直接對全句每個字，</text>
+      <text x="496" y="274" font-size="17" fill="#C7D2E4">各算一個關聯分數。</text>
+      <text x="496" y="318" font-size="17" fill="#8FA1C0">怎麼算</text>
+      <text x="496" y="344" font-size="17" fill="#C7D2E4">每個字化成 Q、K、V 三向量：</text>
+      <text x="496" y="368" font-size="17" fill="#C7D2E4">Q 問、K 被問、V 是內容，</text>
+      <text x="496" y="392" font-size="17" fill="#C7D2E4">算出「我該多注意誰」。</text>
+      <text x="496" y="436" font-size="17" fill="#8FA1C0">重點</text>
+      <text x="496" y="462" font-size="17" fill="#C7D2E4">距離再遠也是一步到位，</text>
+      <text x="496" y="486" font-size="17" fill="#C7D2E4">不必一路傳過來。</text>
+      <text x="496" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 一次看全部，看誰由分數決定。</text>
+
+      <line x1="812" y1="340" x2="874" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260726)"/>
+
+      <!-- 結果：可平行、可堆大 -->
+      <rect x="880" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="880" y="140" width="336" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="904" y="184" font-size="20" font-weight="800" fill="#35C08E">■ 結果　可平行・可堆大</text>
+      <text x="904" y="224" font-size="17" fill="#8FA1C0">為什麼快</text>
+      <text x="904" y="250" font-size="17" fill="#C7D2E4">每個字的計算彼此獨立，</text>
+      <text x="904" y="274" font-size="17" fill="#C7D2E4">整批丟進 GPU 一起算。</text>
+      <text x="904" y="318" font-size="17" fill="#8FA1C0">帶來什麼</text>
+      <text x="904" y="344" font-size="17" fill="#C7D2E4">同樣時間能吃更多資料、</text>
+      <text x="904" y="368" font-size="17" fill="#C7D2E4">把模型疊得更深更大。</text>
+      <text x="904" y="392" font-size="17" fill="#C7D2E4">位置資訊另外補（位置編碼）。</text>
+      <text x="904" y="436" font-size="17" fill="#8FA1C0">重點</text>
+      <text x="904" y="462" font-size="17" fill="#C7D2E4">GPT、BERT 這些名字，</text>
+      <text x="904" y="486" font-size="17" fill="#C7D2E4">底下都是這塊積木。</text>
+      <text x="904" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 大型語言模型的地基。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：Transformer 用「一次看全句」換掉「一個字一個字傳」，解決了長距離依賴、又能平行運算。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">自注意力讓每個字對全句算關聯（Q 問、K 被問、V 是內容）；能平行，才把模型堆到巨大——這就是大型語言模型的地基。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+
+  <div class="script-panel" id="sp-3-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-07-26-1.mp3"></audio>
+    <p>這張圖在講的是，Transformer 為什麼能取代 RNN。左邊是舊做法 RNN：它一個字一個字讀，讀到後面才發現前面某個字很關鍵時，資訊已經在傳遞過程中被稀釋掉了，這就是長距離依賴的難題；而且它必須照順序算，沒辦法平行，訓練很慢。中間是核心機制，自注意力：每一個字直接對句子裡所有字算一次關聯分數，用 Query、Key、Value 這三組向量算出「我該多注意誰」，距離再遠也是一步到位。右邊是結果：因為每個字的計算彼此獨立，可以一次全部丟進 GPU 平行運算，訓練速度大幅提升，這正是大型語言模型能夠被養大的地基。一句話總結：Transformer 用「一次看全部」換掉了「一個字一個字傳」。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>Transformer 是一種「讓模型一次看完整句話、再決定每個字該注意誰」的網路架構。要懂它，先看它取代的東西：RNN（循環神經網路，一種一個字一個字依序讀、把前文壓成一小段記憶往下傳的架構）。RNN 讀句子像排隊傳話，第一個字讀完把重點記下來傳給第二個字，第二個字接著讀、更新記憶再往下傳。這種做法有個先天問題：句子一長，前面的字傳到後面早就被稀釋，模型「記不遠」，這叫長距離依賴問題（句中相隔很遠的兩個詞，其實有關係，但模型抓不住）。</p>
+  <p>Transformer 的解法是自注意力（self-attention，讓句子裡每個字直接對所有字算一次關聯分數的機制）。它不排隊，每個字一步就能「看」到全句任何一個字。做法是把每個字轉成三組向量：Query（我在找什麼）、Key（我是什麼、能被誰找到）、Value（我實際帶的內容）。用我的 Q 去比對每個字的 K，得到一串分數，代表「這個字該多注意其他每個字」；再拿這串分數去加權平均所有字的 V，得到融合了上下文的新表示。距離不再是障礙，因為遠近都是同一步算出來的。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎 Transformer，是因為它同時解決了「記不遠」和「跑不快」兩件事，而後者才是它真正改變產業的原因。RNN 必須照順序算，第 100 個字要等前 99 個算完，天生沒辦法平行；Transformer 的每個字計算彼此獨立，可以整批丟進 GPU 一次算完。這個「可平行」的特性，讓工程師能用同樣的時間吃進遠多於以往的訓練資料、把模型疊得更深更大——今天叫得出名字的大型語言模型，像 GPT、BERT 這類，底層積木全是 Transformer。這是常識性的技術知識，不是引用哪份特定報告的數字。</p>
+  <p>對求職者來說，這一課的價值在於「打通完整應用情境」而不是背一個名詞。104 人力銀行《AI 人才趨勢報告》就建議求職者培養端到端的應用能力，而非零散學單一技能。以 Transformer 來說，面試裡光說「它用了自注意力」是零分；能講清楚「它解決了 RNN 的什麼痛點、為什麼可平行、可平行又如何撐起整個大型語言模型的規模」，才是一條能被追問也答得下去的完整脈絡。你不需要會從零手刻一個 Transformer，但要能說出它為什麼是現在這一切的地基。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到金融場景，最貼近的樣子是把一段客戶文字丟給一個基於 Transformer 的模型去理解。假設我在國泰或玉山，任務是「自動判讀客服對話裡客戶到底想辦什麼」。一句「我卡片昨天在國外刷不過，但我人明明在台灣」——真正的關鍵訊號散在句子兩端：「刷不過」在前、「人在台灣」在後，兩者合起來才是「疑似盜刷或風控誤擋」。RNN 容易讀到後面就淡化了前面；自注意力則能讓「刷不過」和「人在台灣」這兩個遠距離的詞直接建立關聯，模型才抓得到完整語意。</p>
+  <p>對我這種法律金融跨域背景的人，能加分的地方在模型之外。金融業用這類模型不是準就好，還要能解釋與合規：這個判讀結果送去自動化流程前，錯判的代價是什麼？模型是不是靠某些跟敏感屬性相關的用詞在做判斷？我看得懂自注意力「是用整句上下文加權算出來的、不是規則寫死的」，才問得出「那它為什麼會這樣判、我能不能驗證」這種問題。這正好落在我的背景和技術的交界處——技術端知道它怎麼運作，法遵端知道該追問什麼。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易答錯的地方，是以為自注意力天生就懂字的順序。它不懂。自注意力是「一次看全部」，本質上把句子當成一袋沒有先後的字——「狗咬人」和「人咬狗」在純注意力眼中會長得太像。所以 Transformer 一定要另外補上位置編碼（position encoding，把每個字在第幾個位置這個資訊，用一組數字加進去），順序才回得來。這題很常拿來確認你是真懂還是背的：會背的人講得出「有自注意力」，卻答不出「那順序怎麼辦」。</p>
+  <p>另一個要小心的追問，是「自注意力是不是免費的長距離」。不是。它讓每個字對每個字都算一次關聯，計算量大致隨句子長度的平方成長——句子變兩倍長，注意力的計算量大約變四倍。這也是為什麼「上下文長度」會是大型語言模型的成本瓶頸、業界一直在研究各種讓它更省的變體。至於這些高效變體的細節，我目前是理解到「因為平方成長所以要優化」這個層次，還沒有實作經驗，被問到我會誠實說明原理、而不是硬掰。</p>
+
+  <p>Transformer 贏在把「排隊一個字一個字傳」換成「一次看全句、看誰由分數決定」——記得遠，又跑得快，才撐得起今天這些巨大的模型。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「可以用白話講一下，Transformer 比 RNN 好在哪嗎？」</span>
+        <span class="hint">👉 這題其實在問：你是真的理解差異，還是只會背名詞。</span>
+        <span class="a">她可以怎麼答：好在兩件事。第一，RNN 一個字一個字讀，句子一長前面就被稀釋、記不遠；Transformer 的自注意力讓每個字直接對全句所有字算關聯，距離再遠也一步到位。第二，RNN 只能照順序算、沒辦法平行，Transformer 每個字的計算彼此獨立，能整批丟進 GPU 一起算，訓練快很多。就是這個「記得遠又跑得快」，才撐得起今天的大型語言模型。</span>
+      </li>
+      <li>
+        <span class="q">「自注意力裡的 Q、K、V 分別是什麼？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂機制的內部，還是只到表面。</span>
+        <span class="a">她可以怎麼答：每個字都會被轉成三組向量。Query 是「我在找什麼」，Key 是「我是什麼、能被誰找到」，Value 是「我實際帶的內容」。用我的 Q 去比對每個字的 K，得到一串分數，代表我該多注意誰；再拿這串分數去加權平均所有字的 V，就得到融合了上下文的新表示。核心就是：關聯分數由 Q 和 K 決定，真正被融合進來的內容是 V。</span>
+      </li>
+      <li>
+        <span class="q">「自注意力本身知道字的先後順序嗎？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道位置編碼這個必要補丁，是分辨真懂假懂的關鍵題。</span>
+        <span class="a">她可以怎麼答：不知道。自注意力一次看全部，本質上把句子當成一袋沒有先後的字，「狗咬人」跟「人咬狗」會長得太像。所以 Transformer 一定要另外加位置編碼，把每個字在第幾個位置的資訊用一組數字加進去，順序才回得來。它不是效能優化，是讓模型看得懂語序的前提。</span>
+      </li>
+      <li>
+        <span class="q">「為什麼大家說 Transformer 是大型語言模型的地基？」</span>
+        <span class="hint">👉 這題其實在問：你能不能把單一技術接到整個產業脈絡。</span>
+        <span class="a">她可以怎麼答：關鍵是它可以平行運算。因為每個字的計算彼此獨立，能整批丟進 GPU，工程師才有辦法用同樣時間吃進大量資料、把模型疊得又深又大。RNN 卡在只能照順序算，規模上不去。所以 GPT、BERT 這些模型底層積木全是 Transformer，它讓「把模型養大」這件事第一次變得可行。</span>
+      </li>
+      <li>
+        <span class="q">「自注意力有什麼成本上的代價嗎？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有意識到它不是免費的萬靈丹。</span>
+        <span class="a">她可以怎麼答（誠實的答法）：有。它讓每個字對每個字都算一次關聯，計算量大致隨句子長度的平方成長，句子變兩倍長、計算量大約變四倍，所以上下文長度會是成本瓶頸。業界有很多讓它更省的變體，這部分我目前是理解到原理層次、還沒有實作經驗，如果被追問細節我會誠實說我還在學，並講清楚我理解的那條主線。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-07-23.html"><span class="dir">上一課</span>← 深度學習到底在學什麼</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

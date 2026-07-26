@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-23",
+  "updated": "2026-07-26",
   "lessons": [
     {
       "id": 1,
@@ -29,10 +29,10 @@
       "category": "ai",
       "topic": "Transformer模型",
       "title": "Transformer為什麼贏了：自注意力機制如何取代RNN成為現代AI的地基",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-07-26",
+      "url": "posts/daily/2026-07-26.html",
+      "slides": 1
     },
     {
       "id": 4,
