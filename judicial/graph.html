@@ -94,6 +94,12 @@
   .qd .sopt b{color:#8a93a3;margin-right:5px}
   .qd .sopt.cor{background:#16271b;color:#bfe9c4}
   .qd .sopt.cor b{color:#6fcf8a}
+  .qd .sopt .optcorr{font-size:12px;margin-top:3px;color:#aeb6c4;font-weight:500;line-height:1.5}
+  .qd .sopt .optcorr b{margin-right:4px}
+  .qd .sopt .optcorr.ok b{color:#6fcf8a} .qd .sopt .optcorr.ok2 b{color:#7fd4ff} .qd .sopt .optcorr.no b{color:#ff9d9d}
+  body.corr-hidden .qd .optcorr, body.corr-hidden .qd .qd-note{display:none}
+  body.corr-hidden .qd .sopt.cor{background:#11161f;color:#b6c0d2}
+  body.corr-hidden .qd .sopt.cor b{color:#8a93a3}
   .qd-note{margin-top:9px;padding-top:9px;border-top:1px dashed var(--line);color:#cdd6e4;font-size:12.5px}
   .qd-laws{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line)}
   .qd-point{background:rgba(255,216,107,.10);border:1px solid rgba(255,216,107,.35);border-radius:8px;
@@ -172,6 +178,7 @@
       <button class="hbtn" id="planBtn" style="border-color:var(--gold);color:#ffd86b">📅 6天計畫</button>
       <button class="hbtn" id="reheat">🔄 重新排列</button>
       <button class="hbtn" id="fit">🎯 置中</button>
+      <button class="hbtn" id="corrToggle" style="border-color:#7fd4ff;color:#9fe0ff">🙈 隱藏訂正</button>
       <select id="rate" title="唸書語速">
         <option value="0.8">🔊 慢</option>
         <option value="1">🔊 正常</option>
@@ -301,6 +308,15 @@ function parseNote(note){
   const grab=e=>{const m=lines.find(l=>l.trim().startsWith(e));return m?m.replace(e,"").replace(/^法條：/,"").trim():"";};
   return {law:grab("⚖️"), key:grab("🔑"), ans:grab("✅"), trap:grab("❌"), concept:note.concept||""};
 }
+/* 選項訂正（與機器人同一套）：把❌陷阱依A/B/C/D拆到各選項 */
+function normL(c){const i="ＡＢＣＤ".indexOf(c);return i>=0?"ABCD"[i]:c;}
+function jsStripAns(s){return (s||"").replace(/^答案[A-DＡ-Ｄ][^：:]*[：:]\s*/,"").trim();}
+function parseTrap(trap){const m={};if(!trap)return m;
+  trap.replace(/[，,。]?\s*皆(對|錯|有誤|正確|為[^，。]*)。?\s*$/,"").split(/[、；;]/).forEach(seg=>{
+    seg=seg.trim();const mm=seg.match(/^([A-DＡ-Ｄ](?:[／/][A-DＡ-Ｄ])*)/);if(!mm)return;
+    const ls=mm[1].split(/[／/]/).map(normL);let txt=seg.slice(mm[1].length).replace(/^之/,"").trim();
+    if(txt)ls.forEach(L=>{m[L]=(m[L]?m[L]+"；":"")+txt;});});
+  return m;}
 
 /* ===== 科目定義與配色 ===== */
 const GROUPS=[
@@ -610,6 +626,11 @@ cv.addEventListener("touchend",e=>{dragNode=null;panning=false;const p=last;cons
 
 document.getElementById("reheat").onclick=()=>{ G.nodes.forEach(n=>n.pinned=false); alpha=1; };
 document.getElementById("fit").onclick=fitView;
+// 🙈 一鍵顯示／隱藏所有選項訂正（隱藏＝自己先想再點開），記住選擇
+(function(){const cb=document.getElementById("corrToggle");
+  function apply(){const hide=localStorage.getItem("sjg_corr_hidden")==="1";document.body.classList.toggle("corr-hidden",hide);if(cb)cb.textContent=hide?"👁 顯示訂正":"🙈 隱藏訂正";}
+  if(cb)cb.onclick=()=>{const hide=localStorage.getItem("sjg_corr_hidden")==="1";localStorage.setItem("sjg_corr_hidden",hide?"0":"1");apply();};
+  apply();})();
 document.getElementById("search").addEventListener("input",e=>{
   const v=e.target.value.trim();
   if(!v){selNode=null;closePanel();return;}
@@ -776,7 +797,16 @@ function lawsHTML(r){
 function qDetailHTML(r){
   if(!r) return "";
   const L=["A","B","C","D","E","F"];
-  const opts=(r.q.options||[]).map((o,i)=>`<div class="sopt ${i===r.q.ansIndex?'cor':''}"><b>${L[i]}</b> ${o}</div>`).join("");
+  const ans=r.q.ansIndex,tmap=parseTrap(r.p.trap);
+  const findWrong=/錯誤|不正確|為非|何者[^，。]{0,6}非|下列.{0,6}非/.test(r.q.stem)||/[（(]錯[）)]/.test(r.p.ans||"");
+  const ansWhy=jsStripAns(r.p.ans)||r.p.key||"";
+  const opts=(r.q.options||[]).map((o,i)=>{
+    let cls,badge,d;
+    if(i===ans){cls="ok";badge=findWrong?"✓ 正解（這句才是錯的）":"✓ 正解";d=ansWhy;}
+    else if(findWrong){cls="ok2";badge="○ 正確敘述";d=tmap[L[i]]||"";}
+    else{cls="no";badge="✗ 錯在這";d=tmap[L[i]]||"";}
+    return `<div class="sopt ${i===ans?'cor':''}"><b>${L[i]}</b> ${escHtml(o)}<div class="optcorr ${cls}"><b>${badge}</b>${d?" "+escHtml(d):""}</div></div>`;
+  }).join("");
   const note=(r.note.body||"").replace(/\n/g,"<br>");
   return `<div class="qd">
     <div class="qd-h">📄 ${r.q.year}年 第${r.q.num}題（答案 ${r.q.ansLetter}）
