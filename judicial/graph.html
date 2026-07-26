@@ -90,6 +90,9 @@
   .qd-audio,.cpt-audio{background:#1b2230;border:1px solid var(--line);color:#9fd0ff;border-radius:12px;padding:2px 9px;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap}
   .qd-audio:hover,.cpt-audio:hover{background:#26324a;color:#fff}
   .qd-audio.on,.cpt-audio.on{background:#1c2435;border-color:var(--gold);color:#ffd86b}
+  .qd-auto{background:rgba(159,224,168,.14);border:1px solid #6fcf8a;color:#9fe0a8;border-radius:12px;padding:2px 9px;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-left:6px}
+  .qd-auto:hover{background:rgba(159,224,168,.3);color:#fff}
+  .qd-auto.on{background:#6fcf8a;color:#0b0d12;font-weight:bold}
   .cpt-audio{margin-left:6px}
   .qd-stem{color:#dfe6f2;margin-bottom:8px}
   .qd .sopt{color:#b6c0d2;padding:4px 8px;border-radius:6px;margin:3px 0;background:#11161f}
@@ -682,7 +685,7 @@ function pickVoice(){
 }
 // 有些瀏覽器首次 getVoices() 為空，載入後預熱
 if("speechSynthesis" in window){ try{speechSynthesis.getVoices();}catch(e){} speechSynthesis.onvoiceschanged=()=>{}; }
-function stopSpeak(){speechSynthesis.cancel();if(_audioBtn){_audioBtn.classList.remove("on");_audioBtn=null;}}
+function stopSpeak(){speechSynthesis.cancel();if(typeof _auto!=="undefined"&&_auto)_auto.on=false;document.querySelectorAll(".qd-auto.on").forEach(b=>b.classList.remove("on"));if(_audioBtn){_audioBtn.classList.remove("on");_audioBtn=null;}}
 function speak(text,btn){
   if(!("speechSynthesis" in window)){alert("此瀏覽器不支援語音朗讀");return;}
   if(btn&&btn===_audioBtn&&speechSynthesis.speaking){stopSpeak();return;} // 再按一次＝停
@@ -694,6 +697,17 @@ function speak(text,btn){
   let i=0;const nx=()=>{if(i>=cs.length){done();return;}const u=new SpeechSynthesisUtterance(cs[i]);u.lang="zh-TW";u.rate=speechRate();u.pitch=1;u.volume=1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}u.onend=()=>{i++;nx();};u.onerror=done;speechSynthesis.speak(u);speechSynthesis.resume();};nx();
 }
 try{setInterval(()=>{try{if(speechSynthesis.speaking)speechSynthesis.resume();}catch(e){}},7000);}catch(e){}
+// ▶ 從某題開始「連續念」後面所有題
+function chunkText(t){return String(t||"").split(/(?<=[。！？；!?;\n])/).reduce((a,s)=>{s=s.trim();if(!s)return a;if(a.length&&a[a.length-1].length+s.length<=160)a[a.length-1]+=s;else a.push(s);return a;},[]);}
+let _auto={on:false,rows:null,i:0};
+function autoStop(){_auto.on=false;stopSpeak();document.querySelectorAll(".qd-auto.on").forEach(b=>b.classList.remove("on"));}
+function autoPlay(rows,start){autoStop();if(!rows||!rows.length)return;_auto={on:true,rows:rows,i:start};autoStep();}
+function autoStep(){if(!_auto.on||_auto.i>=_auto.rows.length){_auto.on=false;return;}
+  const r=_auto.rows[_auto.i];
+  document.querySelectorAll(".qd-auto").forEach(b=>b.classList.toggle("on",b.dataset.k===keyOf(r.q)));
+  speechSynthesis.cancel();const cs=chunkText(rowSpeechText(r));let j=0;
+  const nx=()=>{if(!_auto.on)return;if(j>=cs.length){_auto.i++;autoStep();return;}
+    const u=new SpeechSynthesisUtterance(cs[j]);u.lang="zh-TW";u.rate=speechRate();u.pitch=1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}u.onend=()=>{j++;nx();};speechSynthesis.speak(u);speechSynthesis.resume();};nx();}
 function rowSpeechText(r){
   const L=["A","B","C","D","E","F"];
   let t="第"+r.q.num+"題。"+r.q.stem+" "+(r.q.options||[]).map((o,i)=>"選項"+L[i]+"，"+o).join("。")+"。";
@@ -712,6 +726,13 @@ function cptSpeechText(n){
 }
 // 面板內所有 🔊 用事件代理處理（內容是動態插入的）
 document.getElementById("p-body").addEventListener("click",e=>{
+  const ab=e.target.closest(".qd-auto");
+  if(ab){e.stopPropagation();
+    if(ab.classList.contains("on")){autoStop();return;}
+    let rows=(panelNode&&panelNode.rows?panelNode.rows.slice():[]).sort((a,b)=>a.q.year-b.q.year||a.q.num-b.q.num);
+    if(!rows.length)rows=[ROW_BY_KEY[ab.dataset.k]].filter(Boolean);
+    const idx=rows.findIndex(r=>keyOf(r.q)===ab.dataset.k);
+    autoPlay(rows,idx<0?0:idx);return;}
   const qb=e.target.closest(".qd-audio");
   if(qb){e.stopPropagation();speak(rowSpeechText(ROW_BY_KEY[qb.dataset.k]),qb);return;}
   const cb=e.target.closest(".cpt-audio");
@@ -827,7 +848,8 @@ function qDetailHTML(r){
   const note=(r.note.body||"").replace(/\n/g,"<br>");
   return `<div class="qd">
     <div class="qd-h">📄 ${r.q.year}年 第${r.q.num}題（答案 ${r.q.ansLetter}）
-      <button class="qd-audio" data-k="${keyOf(r.q)}" title="念這題＋詳解">🔊 念</button></div>
+      <button class="qd-audio" data-k="${keyOf(r.q)}" title="念這題＋詳解">🔊 念</button>
+      <button class="qd-auto" data-k="${keyOf(r.q)}" title="從這題開始連續念後面所有題">▶ 連續念</button></div>
     <div class="qd-stem">${r.q.stem}</div>${opts}
     ${note?`<div class="qd-note"><b>🖊️ ${r.note.concept||""}</b><br>${note}</div>`:""}
     ${lawsHTML(r)}
@@ -1010,5 +1032,5 @@ resize();
 buildSide();
 loadGraph();
 </script>
-<script>(function(){var V="4";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();</script></body>
+<script>(function(){var V="5";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();</script></body>
 </html>
