@@ -522,8 +522,8 @@ function colorParties(s){return s.replace(/[甲乙丙丁戊己]/g,c=>`<span clas
 function hlKey(s){return s
   .replace(/(「[^」]*」|『[^』]*』)/g,'<mark class="k1">$1</mark>')
   .replace(/(§\s*\d+(?:-\d+)?)/g,'<mark class="k2">$1</mark>')
-  .replace(/(\d+(?:日|個月|年|%|萬元|萬|成|分之[一二三四五六七八九十百\d]+))/g,'<mark class="k3">$1</mark>')
-  .replace(/(不得|無須|毋須|視為|推定|準用|不適用|善意|惡意|連帶責任|連帶|無效|得撤銷|撤銷|對抗|優先|至遲|屆滿|逾期|超過|不以.{0,8}為必要|忠實義務|注意義務|善良管理人|經營判斷|競業禁止|歸入權|自我交易|利益迴避|複數表決權|表決權|特別股|庫藏股|盈餘分派|股東會|董事會|董事長|監察人|經理人|發起人|關係企業|控制公司|從屬公司|閉鎖性公司|有限公司|少數股東|公司負責人|代表權|轉投資|資金貸與|重整|解任|董事)/g,'<mark class="k4">$1</mark>');}
+  .replace(/(\d+\/\d+|\d+(?:日|個月|年|%|萬元|萬|成|人|分之[一二三四五六七八九十百\d]+))/g,'<mark class="k3">$1</mark>')
+  .replace(/(不得|無須|毋須|不須|視為|推定|準用|不適用|善意|惡意|連帶責任|連帶|無效|得撤銷|撤銷|對抗|優先|至遲|屆滿|逾期|超過|未逾|全體|過半數|三分之二|二分之一|仍得|亦得|不在此限|除外|排除|以章程|不以.{0,8}為必要)/g,'<mark class="k4">$1</mark>');}
 function markStem(r){let s=esc(r.q.stem);const t=srReflexMatch(r,SES.group);
   if(t)noteTrig(t).forEach(tp=>{const e=esc(tp);if(e.length>=3&&s.indexOf(e)>=0)s=s.split(e).join(""+e+"");});   // 先標記我筆記的關鍵詞
   s=hlKey(s).split("").join('<mark class="k1">').split("").join("</mark>");
@@ -1074,7 +1074,7 @@ function renderCard(){
     <div class="qhelp"><button class="hlp" id="readStem">🔊 唸題目</button><button class="hlp" id="readOpts">🔊 唸四個選項</button><button class="hlp" id="starBtn">${starHas(r.k)?"★ 已收藏":"☆ 收藏"}</button><button class="hlp" id="hintBtn">🔑 看不懂？先看這題在考什麼</button></div>
     <div class="hint" id="hintBox"></div>
     <div id="opts">`;
-  r.q.options.forEach((o,i)=>{h+=`<button class="opt" data-i="${i}"><span class="lt">${L[i]}</span><span>${colorParties(esc(o))}</span></button>`;});
+  r.q.options.forEach((o,i)=>{h+=`<button class="opt" data-i="${i}"><span class="lt">${L[i]}</span><span>${colorParties(isHL(SES.group)?hlKey(esc(o)):esc(o))}</span></button>`;});
   h+=`</div><div id="teach"></div>`;
   body.innerHTML=h;body.scrollTop=0;
   body.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i));
