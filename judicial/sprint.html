@@ -243,6 +243,56 @@
     <div class="subrow" id="subRow"></div>
   </div>
 
+  <!-- 🏁 考前最後衝刺總表：每天照這張做就好 -->
+  <div class="card" id="fpCard" style="border-color:var(--gold)">
+    <div class="sec-h">🏁 考前最後衝刺 · 每天照這張做就好　<span style="color:var(--gold)">→ 8/1（六）司律一試</span></div>
+    <div class="mini" style="text-align:left;margin:-2px 0 12px">不用想全部。打開這頁 → 做<b>今天這幾件</b> → 打勾 → 就去休息。<b style="color:var(--gold)">做完＝你今天達標了，可以心安理得。</b></div>
+    <div id="fpDays"></div>
+    <details style="margin-top:10px"><summary style="cursor:pointer;font-size:13px;color:var(--mut);font-weight:700;list-style:none">📌 8/1 考完之後呢？（調查局 8/8）</summary>
+      <div class="mini" style="text-align:left;margin-top:8px">8/1 一試考完先<b>睡飽</b>。<b>8/2–8/7</b> 換去「🥇 無敵鍛鍊機器人」練調查局申論（刑法·行政法·刑訴·商事法），<b>8/8</b> 上場。<br>現在<b>只要顧 8/1</b>，一關一關來，不要提前擔心下一關。</div>
+    </details>
+  </div>
+  <script>(function(){
+    var FP=[
+     {d:"2026-07-28",wd:"一",sub:"刑法 ＋ 刑訴",tasks:["清錯題本 15 題（下面📕錯題本 → 只練錯題）","刑法高頻考點掃一輪（考點關聯圖）","刑訴高頻考點掃一輪"],heart:"第一天先動起來就贏了，不用做滿。"},
+     {d:"2026-07-29",wd:"二",sub:"民法 ＋ 民訴",tasks:["清錯題本 15 題","民法（債編／物權／總則）高頻考點","民訴（訴訟標的·既判力·當事人）高頻考點"],heart:"民法債編你剛整理過，今天是回鍋，會比想像中快。"},
+     {d:"2026-07-30",wd:"三",sub:"憲法 ＋ 行政法 ＋ 國際/英文",tasks:["清錯題本 15 題","憲法高頻（釋字·基本權·權力分立）","行政法高頻（行政處分·救濟）＋ 國際私法·法學英文快掃"],heart:"公法題量最大，抓高頻就好，別陷進細節。"},
+     {d:"2026-07-31",wd:"四",sub:"商事法 ＋ 全科總清",tasks:["商事法高頻（公司法董事·決議／證交／保險）","錯題本『全部』再清一遍","把最不熟的 10 題加星 ★，明早只看它們"],heart:"最後一天求穩不求多。早點睡，明天狀態最重要。"},
+     {d:"2026-08-01",wd:"六",sub:"🎯 司律一試上場",exam:1,tasks:["早上只看：📖考場速讀（法條）＋ 昨晚加星的 10 題","深呼吸——你準備過了，剩下的交給考場"],heart:"You have no choice — 你會考得不錯。"}
+    ];
+    function iso(dt){return dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");}
+    var today=iso(new Date());
+    var KEY="sjg_fp";
+    function get(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}}
+    function set(o){localStorage.setItem(KEY,JSON.stringify(o))}
+    function render(){
+      var st=get(),host=document.getElementById("fpDays");if(!host)return;var h="";
+      FP.forEach(function(day,di){
+        var isToday=day.d===today, past=day.d<today && !day.exam;
+        var done=day.tasks.filter(function(_,ti){return st[di+"_"+ti]}).length, tot=day.tasks.length;
+        var bd=isToday?"border:1.5px solid var(--gold);background:rgba(255,216,107,.08)":past?"border:1px solid var(--line);opacity:.6":"border:1px solid var(--line)";
+        h+='<div style="border-radius:12px;padding:11px 13px;margin:8px 0;'+bd+'">';
+        h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">';
+        h+='<b style="color:'+(day.exam?"#ff9e8a":isToday?"var(--gold)":"#cfd6e2")+';font-size:14.5px">'+(day.exam?"":"Day "+(di+1)+" · ")+day.d.slice(5).replace("-","/")+"（"+day.wd+"）</b>";
+        if(isToday)h+='<span style="background:var(--gold);color:#0b0d12;font-size:11px;font-weight:800;border-radius:6px;padding:1px 7px">今天</span>';
+        if(!day.exam)h+='<span class="mini" style="margin:0 0 0 auto">'+done+"/"+tot+" 完成</span>";
+        h+='</div>';
+        h+='<div style="font-size:13px;color:var(--mut);margin-bottom:8px">📚 '+day.sub+'</div>';
+        day.tasks.forEach(function(t,ti){
+          var on=!!st[di+"_"+ti];
+          h+='<div class="fptask" data-k="'+di+"_"+ti+'" style="display:flex;gap:9px;align-items:flex-start;padding:6px 4px;cursor:pointer;font-size:13.5px;line-height:1.5;'+(on?"opacity:.55;text-decoration:line-through":"")+'"><span style="font-size:16px;line-height:1.3">'+(on?"✅":"⬜")+'</span><span>'+t+'</span></div>';
+        });
+        h+='<div class="mini" style="text-align:left;margin:6px 0 0;color:'+(day.exam?"#ff9e8a":"#8fbf8f")+'">💛 '+day.heart+'</div>';
+        h+='</div>';
+      });
+      host.innerHTML=h;
+      Array.prototype.forEach.call(host.querySelectorAll(".fptask"),function(el){
+        el.onclick=function(){var st=get(),k=el.dataset.k;if(st[k])delete st[k];else st[k]=1;set(st);render();};
+      });
+    }
+    render();
+  })();</script>
+
   <div class="card" id="srCard">
     <div class="sec-h">📖 考場速讀 · <span id="srSub" style="color:var(--gold)"></span>（考前只看這個）</div>
     <div class="subrow" id="srChips"></div>
@@ -610,7 +660,71 @@ function renderCal(){const cal=document.getElementById("cal");if(!cal)return;
 function renderStreak(){document.getElementById("streak").textContent=`🔥 連續 ${streak()} 天`;}
 /* 📖 考場速讀：某科高頻考點→核心規則→陷阱（依題數排序，高頻在前） */
 function subjectRows(g){const subs=GROUPS[g]||[g];return ROWS.filter(r=>subs.includes(r.sub));}
-let srGroup=null, srItems=[], srSeq=false, srFilter="all", srTestRows=[];
+let srGroup=null, srItems=[], srSeq=false, srFilter="all", srTestRows=[], srSys="all";
+/* 🗺️ 區域分類：讓某些科目能再切成「小區」，一按只測那區（目前：民法） */
+const REGSUBS={
+ "民法":["民總","債編","物權","親屬繼承·計算","親屬繼承·畫圖","親屬繼承·記憶","民法·其他"],
+ "商事法":["公司·設立登記","公司·行為限制","公司·治理負責人","公司·股東會","公司·資本股份","公司·有限閉鎖","公司·關係企業重整","公司·其他",
+   "保險·計算比例","保險·業務監理","保險·代位利益","保險·關鍵反射","保險·其他",
+   "票據·效力基礎","票據·背書轉讓","票據·偽造變造喪失","票據·匯本支","票據·其他",
+   "證交·身分組織","證交·交易防弊","證交·計算門檻","證交·其他",
+   "執行·名義管轄","執行·不動產","執行·動產債權","執行·異議保全分配","執行·其他"]
+};
+function regionOf(g,r){
+  const p=(r&&r.p)||r||{};
+  const t=((p.concept)||"")+" "+((p.key)||"")+" "+((p.law)||"");
+  const has=re=>re.test(t);
+  if(g==="民法"){
+    if(has(/婚姻|結婚|離婚|夫妻|剩餘財產|親子|收養|認領|監護|扶養|親權|姻親|血親|婚生|繼承|遺產|遺囑|特留分|應繼分|拋棄繼承|限定繼承|代位繼承|歸扣|遺贈/)){
+      if(has(/剩餘財產|特留分|應繼分|遺產分配|歸扣|扣減|分配額|價額|二分之一|三分之一|1\/2|1\/3|計算|平均分擔|給付.{0,4}萬/)) return "親屬繼承·計算";
+      if(has(/禁婚|結婚無效|婚姻無效|受胎|認領|婚生|非婚生|收養|養子女|代位繼承|喪失繼承|親等|旁系|直系血親|姻親|同時死亡|扶養義務|監護宣告/)) return "親屬繼承·畫圖";
+      return "親屬繼承·記憶";
+    }
+    if(has(/行為能力|意思表示|法律行為|代理|消滅時效|條件|期日|期間|權利能力|人格|法人|住所|誠信|權利濫用|輔助宣告|死亡宣告/)) return "民總";
+    if(has(/債|契約|侵權|不當得利|無因管理|買賣|租賃|承攬|委任|借貸|保證|債務不履行|給付|代位|撤銷|讓與|承擔|連帶|抵銷|定金|違約金|解除|擔保|瑕疵/)) return "債編";
+    if(has(/物權|所有權|共有|抵押|質權|留置|地上權|典權|役權|占有|善意取得|登記|相鄰|添附|流抵/)) return "物權";
+    return "民法·其他";
+  }
+  if(g==="商事法"){
+    const sb=(r&&r.sub)||"";
+    if(sb==="保險法"){
+      if(has(/不足額|比例分攤|比例償還|按比例|§?77|年齡不實|§?122|超額保險|§?76|部分損失|§?82|避免損害|§?33|複保險|§?3[5-8]/)) return "保險·計算比例";
+      if(has(/安定基金|§?143|放款|§?146|保險業|輔助人|§?163|同業公會|§?165|業務範圍|§?138|信託|健康保險|準用/)) return "保險·業務監理";
+      if(has(/代位|§?53|§?103|保險利益|§?1[467]\b|§?20\b|受益人|§?105|§?111|死亡給付|§?107|責任保險|直接請求|§?9[34]|和解參與|質借|§?120/)) return "保險·代位利益";
+      if(has(/告知|說明|§?64|因果|通知|§?5[89]|§?6[0-3]|危險增加|危險減少|職業變更|自殺|§?13[134]|意外|傷害保險|復效|停效|§?116|諾成|不要式|不要物|§?4[3-6]|特約|§?68|§?69/)) return "保險·關鍵反射";
+      return "保險·其他";
+    }
+    if(sb==="票據法"){
+      if(has(/偽造|§?15\b|變造|§?16\b|塗銷|§?17\b|喪失|§?18\b|止付|公示催告|善意取得|獨立性/)) return "票據·偽造變造喪失";
+      if(has(/背書|§?36|§?30\b|§?40\b|轉讓|禁止背書|一部背書|條件背書|委任取款|隱存保證|空白/)) return "票據·背書轉讓";
+      if(has(/承兌|§?43|提示|§?69|§?130|參加付款|§?80|本票裁定|§?123|平行線|§?139|保付|見票即付|到期日|複本|謄本|付款委託/)) return "票據·匯本支";
+      if(has(/發票|絕對必要|文字|號碼|§?7\b|代理|§?9\b|時效|§?22|利益償還|文義|簽名|金額|要式|空白授權|欠缺記載/)) return "票據·效力基礎";
+      return "票據·其他";
+    }
+    if(sb==="證交法"){
+      if(has(/短線.*計算|內線.*計算|申報.*期限|補選|§?36\b|金額上限|歸入.*時效|45日|3個月|60日/)) return "證交·計算門檻";
+      if(has(/審計委員會|獨立董事|獨董|薪資報酬|薪酬|監察人|發行人|發起人|證券商|證券交易所|公司制|董事間|親屬|常務董事|延期召開|公開招募|STO|虛擬通貨|會計師|§?14-[2-6]|§?26-3|§?124|§?126|§?5\b|§?6\b/)) return "證交·身分組織";
+      if(has(/內線|短線|歸入|操縱|炒作|場外|公開收購|財報不實|不實|募集|私募|承銷|包銷|代銷|庫藏股|買回股份|委託書|內部人|發行新股|認購|提撥|轉換公司債|設質|重大消息|集中保管|§?157|§?28|§?43|§?150|§?32|§?20|§?267|§?25/)) return "證交·交易防弊";
+      return "證交·其他";
+    }
+    if(sb==="強制執行"){
+      if(has(/不動產|點交|§?99|拆屋|返還土地|未保存登記|分割共有|§?131|建物|特別拍賣|§?95|§?75/)) return "執行·不動產";
+      if(has(/動產|§?114|§?117|飛機|航空器|船舶|礦業權|出資|薪資|移轉命令|收取命令|扣押命令|存款|第三人|§?115|§?119|還車/)) return "執行·動產債權";
+      if(has(/異議之訴|§?15\b|§?14\b|債務人異議|假扣押|假處分|保全|參與分配|§?34|抵押權人|本票債權|財產開示|終局執行|併案/)) return "執行·異議保全分配";
+      if(has(/執行名義|§?4\b|意思表示|代替行為|管轄|囑託|形式審查|確定判決|移轉登記|登報道歉|§?12|§?7\b/)) return "執行·名義管轄";
+      return "執行·其他";
+    }
+    if(has(/有限公司|閉鎖性|勞務出資|不設監察人|五十人|50人|兩合|無限公司|組織之變更|變更組織|出資方式/)) return "公司·有限閉鎖";
+    if(has(/關係企業|控制公司|從屬公司|控制從屬|代位求償|劣後|重整|保全處分|合併|分割|收購|股份轉換|企業併購|解散|清算/)) return "公司·關係企業重整";
+    if(has(/特別股|複數表決權|黃金股|員工|酬勞|獎酬|新股|盈餘|分派|公積|發放|增資|減資|庫藏股|認股|票面|股份轉讓|股票|股款|公司債|私募|轉換|附認股權|虧損/)) return "公司·資本股份";
+    if(has(/股東會|召集|開會通知|臨時動議|電子投票|委託書|提案|自行召集|表決權|決議|撤銷|假決議|股東常會|股東臨時會/)) return "公司·股東會";
+    if(has(/董事|監察人|經理人|負責人|清算人|臨時管理人|檢查人|忠實義務|注意義務|善良管理人|競業|自我交易|利益迴避|代表權|代表人|改派|越權|解任|經營判斷|報酬|選任|補選|缺額|董事會|股東代表訴訟|制止請求/)) return "公司·治理負責人";
+    if(has(/轉投資|資金貸與|貸款|公司保證|背書保證|物上保證|無限責任|合夥|對外保證/)) return "公司·行為限制";
+    if(has(/設立|發起人|公司名稱|名稱|廢止登記|資本額|簽證|分公司|分支機構|章程|公司種類|認許|登記/)) return "公司·設立登記";
+    return "公司·其他";
+  }
+  return "全部";
+}
 // 某一段(50條)的朗讀文字
 let srStep=50;   // 每一段語音包含幾個單位
 function srSegText(start){return srItems.slice(start,start+srStep).join("。");}   // srItems 皆為朗讀字串
@@ -707,7 +821,18 @@ function renderSpeed(g){
       if(/^\d+\./.test(p)){const idx=_ti++;return `<div class="sr" style="display:flex;align-items:flex-start;gap:6px"><button class="srplay" data-play="${idx}" title="從這一題開始自動念">▶</button><b style="flex:1">${srMd(p)}</b></div>`;}
       return srLineHTML(p);}).join("");
     // 反射地圖上方也放「挑一區測驗」（熟悉度用題庫作答記錄）
-    const rows=groupRows(g),pos=getPos(g),ew=new Set(everWrong()),fm=famGet(),B={n:[],w:[],k:[]};
+    let rows=groupRows(g);const pos=getPos(g),ew=new Set(everWrong()),fm=famGet();
+    let regChips="";
+    if(REGSUBS[g]){
+      const cnt={};rows.forEach(r=>{const s=regionOf(g,r);cnt[s]=(cnt[s]||0)+1;});
+      const order=REGSUBS[g].filter(s=>cnt[s]);
+      if(srSys!=="all"&&!cnt[srSys])srSys="all";
+      regChips=`<div class="subrow" style="margin:0 0 6px">`
+        +`<button class="subchip${srSys==="all"?" on":""}" data-sys="all">🗺️全部（${rows.length}）</button>`
+        +order.map(s=>`<button class="subchip${srSys===s?" on":""}" data-sys="${s}">${s}（${cnt[s]}）</button>`).join("")+`</div>`;
+      if(srSys!=="all")rows=rows.filter(r=>regionOf(g,r)===srSys);
+    }
+    const B={n:[],w:[],k:[]};
     rows.forEach((r,i)=>{const st=fm[r.k]||(ew.has(r.k)?"w":(i<pos?"k":"n"));B[st].push(r);});
     const starRows=rows.filter(r=>starHas(r.k)),F=srFilter||"all";
     const flt=[["all","全部"],["n","🔴未測"],["w","🟡不熟"],["k","🟢已熟"],["s","⭐星星"]].map(c=>`<button class="subchip${c[0]===F?" on":""}" data-flt="${c[0]}">${c[1]}${c[0]==="all"?"":"（"+(c[0]==="s"?starRows.length:B[c[0]].length)+"）"}</button>`).join("");
@@ -715,11 +840,22 @@ function renderSpeed(g){
     const nch=[10,20,30,50,0].map(nn=>`<button class="subchip${nn===srTestN?" on":""}" data-testn="${nn}">${nn===0?"全部":nn+"題"}</button>`).join("");
     const takeN=(srTestN>0)?Math.min(srTestN,srTestRows.length):srTestRows.length,fLbl={all:"這科",n:"未測",w:"不熟",k:"已熟",s:"星星"}[F];
     html=`<div style="background:rgba(127,224,160,.06);border:1px solid rgba(127,224,160,.25);border-radius:12px;padding:10px 12px;margin-bottom:12px">`
-      +`<div style="font-size:12px;font-weight:800;color:var(--teal);margin-bottom:6px">🎯 挑一區測驗（未測 ${B.n.length}・不熟 ${B.w.length}・熟 ${B.k.length}）</div>`
+      +`<div style="font-size:12px;font-weight:800;color:var(--teal);margin-bottom:6px">🗺️ 挑一區直接攻（未測 ${B.n.length}・不熟 ${B.w.length}・熟 ${B.k.length}）</div>`
+      +regChips
       +`<div class="subrow" style="margin:0 0 6px">${flt}</div><div class="subrow" style="margin:0 0 6px">${nch}</div>`
       +`<button class="subchip" id="srTestBtn" style="border-style:solid;background:rgba(127,224,160,.15);border-color:var(--ok);color:var(--ok);font-weight:800">▶ 測驗${fLbl} ${takeN} 題</button></div>`+html;
   }else{                                     // 自動科：依熟悉度分三區＋每題一句話記法＋可直接測驗
-    const rows=groupRows(g),pos=getPos(g),ew=new Set(everWrong()),fm=famGet();
+    let rows=groupRows(g);const pos=getPos(g),ew=new Set(everWrong()),fm=famGet();
+    let regChips="";
+    if(REGSUBS[g]){
+      const cnt={};rows.forEach(r=>{const s=regionOf(g,r);cnt[s]=(cnt[s]||0)+1;});
+      const order=REGSUBS[g].filter(s=>cnt[s]);
+      if(srSys!=="all"&&!cnt[srSys])srSys="all";
+      regChips=`<div class="subttl" style="margin:2px 0 6px">🗺️ 挑一區直接攻（選了下面就只測這一區）</div><div class="subrow" style="margin:0 0 8px">`
+        +`<button class="subchip${srSys==="all"?" on":""}" data-sys="all">全部區域（${rows.length}）</button>`
+        +order.map(s=>`<button class="subchip${srSys===s?" on":""}" data-sys="${s}">${s}（${cnt[s]}）</button>`).join("")+`</div>`;
+      if(srSys!=="all")rows=rows.filter(r=>regionOf(g,r)===srSys);
+    }
     const B={n:[],w:[],k:[]};                 // 未測 / 測過不熟 / 已熟
     rows.forEach((r,i)=>{const st=fm[r.k]||(ew.has(r.k)?"w":(i<pos?"k":"n"));B[st].push(r);});
     const mnOf=r=>((r.p.key||r.p.ans||r.p.concept||"").split(/[。！]/)[0].replace(/^答案[A-DＡ-Ｄ][^：:]*[：:]\s*/,"").trim());
@@ -736,7 +872,7 @@ function renderSpeed(g){
     const starBtn=k=>`<button class="starbtn${starHas(k)?" on":""}" data-star="${k}">${starHas(k)?"★":"☆"}</button>`;
     const rowHTML=r=>{const mn=mnOf(r);const idx=srItems.length;srItems.push((r.p.concept||"").replace(/§.*/,"")+"。"+mn);
       return `<div class="sr" style="display:flex;align-items:flex-start;gap:6px"><button class="srplay" data-play="${idx}" title="從這一題開始念">▶</button><div style="flex:1"><b>${esc(r.p.concept)}</b><div style="font-size:13px;color:#ffeab0;margin-top:2px">💡 ${esc(mn)}</div></div>${starBtn(r.k)}</div>`;};
-    srItems=[];let hh=`<div class="subrow" style="margin:0 0 8px">${flt}</div>${testCtl}`;
+    srItems=[];let hh=`${regChips}<div class="subrow" style="margin:0 0 8px">${flt}</div>${testCtl}`;
     if(F==="s"){
       hh+=`<div style="font-size:14px;font-weight:800;color:#ffd86b;margin:14px 0 6px;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:4px">⭐ 我的星星（${starRows.length}）</div>`;
       hh+=starRows.length?starRows.map(rowHTML).join(""):`<div class="mini" style="text-align:left">還沒有星星。點各題右邊的 ☆ 收藏。</div>`;
@@ -761,6 +897,7 @@ function renderSpeed(g){
   }
   if(body)body.innerHTML=html;
   if(body){body.querySelectorAll("[data-flt]").forEach(b=>b.onclick=()=>{srFilter=b.dataset.flt;renderSpeed(g);});   // 熟悉度篩選切換
+    body.querySelectorAll("[data-sys]").forEach(b=>b.onclick=()=>{srSys=b.dataset.sys;srFilter="all";renderSpeed(g);});   // 🗺️ 區域切換
     body.querySelectorAll("[data-testn]").forEach(b=>b.onclick=()=>{srTestN=+b.dataset.testn;renderSpeed(g);});     // 題數
     const tb=body.querySelector("#srTestBtn");if(tb)tb.onclick=()=>startBucketSession(g,srTestRows,srTestN);       // ▶ 直接測驗這區
     body.querySelectorAll("[data-star]").forEach(b=>b.onclick=e=>{e.stopPropagation();const on=starToggle(b.dataset.star);b.textContent=on?"★":"☆";b.classList.toggle("on",on);});   // ⭐ 收藏切換（就地）
