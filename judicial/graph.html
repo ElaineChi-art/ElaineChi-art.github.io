@@ -93,6 +93,8 @@
   .qd-auto{background:rgba(159,224,168,.14);border:1px solid #6fcf8a;color:#9fe0a8;border-radius:12px;padding:2px 9px;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-left:6px}
   .qd-auto:hover{background:rgba(159,224,168,.3);color:#fff}
   .qd-auto.on{background:#6fcf8a;color:#0b0d12;font-weight:bold}
+  .qd-star{background:none;border:none;color:#6b7486;font-size:19px;line-height:1;cursor:pointer;padding:0 4px;margin-left:4px}
+  .qd-star.on{color:#ffd86b}
   .cpt-audio{margin-left:6px}
   .qd-stem{color:#dfe6f2;margin-bottom:8px}
   .qd .sopt{color:#b6c0d2;padding:4px 8px;border-radius:6px;margin:3px 0;background:#11161f}
@@ -318,6 +320,10 @@ function parseNote(note){
   const grab=e=>{const m=lines.find(l=>l.trim().startsWith(e));return m?m.replace(e,"").replace(/^法條：/,"").trim():"";};
   return {law:grab("⚖️"), key:grab("🔑"), ans:grab("✅"), trap:grab("❌"), concept:note.concept||""};
 }
+/* ⭐ 星星：與機器人共用 sjg_star，收藏不熟的題 */
+function starGet(){try{return JSON.parse(localStorage.getItem("sjg_star")||"[]");}catch(e){return [];}}
+function starHas(k){return starGet().indexOf(k)>=0;}
+function starToggle(k){const a=starGet(),i=a.indexOf(k);if(i<0)a.push(k);else a.splice(i,1);localStorage.setItem("sjg_star",JSON.stringify(a));return i<0;}
 /* 選項訂正（與機器人同一套）：把❌陷阱依A/B/C/D拆到各選項 */
 function normL(c){const i="ＡＢＣＤ".indexOf(c);return i>=0?"ABCD"[i]:c;}
 function jsStripAns(s){return (s||"").replace(/^答案[A-DＡ-Ｄ][^：:]*[：:]\s*/,"").trim();}
@@ -358,6 +364,7 @@ const side=document.getElementById("side");
 let curSubject="__ALL__";
 function buildSide(){
   let h=`<button class="sbtn all ${curSubject==="__ALL__"?"cur":""}" data-s="__ALL__">🌐 全部科目總覽<span class="cnt">${ROWS.length}</span></button>`;
+  h+=`<button class="sbtn all" data-s="__STAR__" style="color:#ffd86b">⭐ 星星區（不熟的題）<span class="cnt">${starGet().length}</span></button>`;
   GROUPS.forEach(([g,subs])=>{
     h+=`<div class="grpttl">${g}</div>`;
     subs.forEach(s=>{
@@ -366,7 +373,17 @@ function buildSide(){
     });
   });
   side.innerHTML=h;
-  side.querySelectorAll(".sbtn").forEach(b=>b.onclick=()=>{curSubject=b.dataset.s;buildSide();loadGraph();});
+  side.querySelectorAll(".sbtn").forEach(b=>b.onclick=()=>{if(b.dataset.s==="__STAR__"){openStarPanel();return;}curSubject=b.dataset.s;buildSide();loadGraph();});
+}
+function openStarPanel(){
+  const rows=starGet().map(k=>ROW_BY_KEY[k]).filter(Boolean).sort((a,b)=>(a.q.section||"").localeCompare(b.q.section||"")||a.q.year-b.q.year||a.q.num-b.q.num);
+  panelNode={rows:rows};panelConcepts=[];
+  document.getElementById("p-sys").textContent="⭐ 星星區";
+  document.getElementById("p-cpt").textContent="不熟的題（"+rows.length+"）";
+  const b=document.getElementById("p-body");
+  b.innerHTML=rows.length?`<div class="meta">共 ${rows.length} 題 · 按任一題 ▶ 連續念可依序複習；☆ 取消收藏</div>`+rows.map(qDetailHTML).join("")
+    :`<div class="meta">還沒有星星。打開任一題，按右上 ☆ 收藏到這裡集中複習。</div>`;
+  panel.classList.add("open");
 }
 
 /* ===== 建立圖資料 ===== */
@@ -726,6 +743,8 @@ function cptSpeechText(n){
 }
 // 面板內所有 🔊 用事件代理處理（內容是動態插入的）
 document.getElementById("p-body").addEventListener("click",e=>{
+  const sb=e.target.closest(".qd-star");
+  if(sb){e.stopPropagation();const on=starToggle(sb.dataset.k);sb.textContent=on?'★':'☆';sb.classList.toggle('on',on);buildSide();return;}
   const ab=e.target.closest(".qd-auto");
   if(ab){e.stopPropagation();
     if(ab.classList.contains("on")){autoStop();return;}
@@ -849,7 +868,8 @@ function qDetailHTML(r){
   return `<div class="qd">
     <div class="qd-h">📄 ${r.q.year}年 第${r.q.num}題（答案 ${r.q.ansLetter}）
       <button class="qd-audio" data-k="${keyOf(r.q)}" title="念這題＋詳解">🔊 念</button>
-      <button class="qd-auto" data-k="${keyOf(r.q)}" title="從這題開始連續念後面所有題">▶ 連續念</button></div>
+      <button class="qd-auto" data-k="${keyOf(r.q)}" title="從這題開始連續念後面所有題">▶ 連續念</button>
+      <button class="qd-star${starHas(keyOf(r.q))?' on':''}" data-k="${keyOf(r.q)}" title="收藏到星星區（不熟的題）">${starHas(keyOf(r.q))?'★':'☆'}</button></div>
     <div class="qd-stem">${r.q.stem}</div>${opts}
     ${note?`<div class="qd-note"><b>🖊️ ${r.note.concept||""}</b><br>${note}</div>`:""}
     ${lawsHTML(r)}
@@ -1032,5 +1052,5 @@ resize();
 buildSide();
 loadGraph();
 </script>
-<script>(function(){var V="5";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();</script></body>
+<script>(function(){var V="6";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();</script></body>
 </html>
