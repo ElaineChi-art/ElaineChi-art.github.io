@@ -31,7 +31,7 @@
       "category": "ai",
       "topic": "LLM大型語言模型",
       "t": "大型語言模型的能力邊界：它真的「理解」還是很會「猜下一個字」",
-      "status": "todo",
+      "status": "done 2026-07-27",
       "ref": "OpenAI/Anthropic 官方模型說明文件"
     },
     {

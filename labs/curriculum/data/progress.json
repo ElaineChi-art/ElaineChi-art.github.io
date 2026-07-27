@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-26",
+  "updated": "2026-07-27",
   "lessons": [
     {
       "id": 1,
@@ -40,10 +40,10 @@
       "category": "ai",
       "topic": "LLM大型語言模型",
       "title": "大型語言模型的能力邊界：它真的「理解」還是很會「猜下一個字」",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-07-27",
+      "url": "posts/daily/2026-07-27.html",
+      "slides": 1
     },
     {
       "id": 5,

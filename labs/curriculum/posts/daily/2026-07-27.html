@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大型語言模型的能力邊界：它真的「理解」還是很會「猜下一個字」｜技能實驗室・每日課程</title>
+<meta name="description" content="大型語言模型的本質是「預測下一個字」，靠夠大的規模看起來像在理解。但它沒有事實查核機制，會流暢地說錯（幻覺）、知識有截止日——用它就要為輸出把關。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-07-27</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・人工智慧核心概念</div>
+  <h1>大型語言模型的能力邊界：它真的「理解」還是很會「猜下一個字」</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-07-27</span>
+    <span>約 6 分鐘</span>
+    <span>對應真專案主題：LLM大型語言模型</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>大型語言模型的本質，是「給一段文字、猜下一個最可能的字」，一個字一個字接出整段回答。它並沒有我們以為的那種「理解」，只是資料和模型都夠大，猜字這件事逼它學會了語法、事實關聯和推理的模式，規模到了才看起來像懂。這個本質決定了它的能力邊界：它會流暢地講出錯的內容（幻覺）、知識有截止日、沒有即時查核事實的機制。所以面試時的正確講法不是「它很聰明」，而是「它很會猜，但答得流暢不等於答得對，用它就要有人為輸出把關」。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-4-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260727" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260727" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260727" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260727)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260727)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M1 · 人工智慧核心概念  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">大型語言模型：它「理解」，<tspan fill="#4D9FFF">還是很會「猜下一個字」？</tspan></text>
+
+      <!-- 卡1：它到底在做什麼 -->
+      <rect x="64" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <rect x="64" y="140" width="336" height="5" rx="2.5" fill="url(#topbarD20260727)"/>
+      <text x="88" y="184" font-size="20" font-weight="800" fill="#4D9FFF">■ 它到底在做什麼</text>
+      <text x="88" y="224" font-size="17" fill="#8FA1C0">核心動作</text>
+      <text x="88" y="250" font-size="17" fill="#C7D2E4">給一段文字，算出「下一個</text>
+      <text x="88" y="274" font-size="17" fill="#C7D2E4">最可能的字」，接上去。</text>
+      <text x="88" y="318" font-size="17" fill="#8FA1C0">怎麼變成一段話</text>
+      <text x="88" y="344" font-size="17" fill="#C7D2E4">把新的一串再丟回去，</text>
+      <text x="88" y="368" font-size="17" fill="#C7D2E4">猜下一個、再下一個⋯⋯</text>
+      <text x="88" y="392" font-size="17" fill="#C7D2E4">整段回答一個字一個字接出來。</text>
+      <text x="88" y="436" font-size="17" fill="#8FA1C0">所以本質是</text>
+      <text x="88" y="462" font-size="17" fill="#C7D2E4">一台超強的「文字接龍」機器，</text>
+      <text x="88" y="486" font-size="17" fill="#C7D2E4">不是資料庫、不是搜尋引擎。</text>
+      <text x="88" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 它在算機率，不是在查答案。</text>
+
+      <line x1="404" y1="340" x2="466" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260727)"/>
+
+      <!-- 卡2：為什麼看起來像理解 -->
+      <rect x="472" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="472" y="140" width="336" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="496" y="184" font-size="20" font-weight="800" fill="#F2A33C">■ 為什麼像在理解</text>
+      <text x="496" y="224" font-size="17" fill="#8FA1C0">規模的效果</text>
+      <text x="496" y="250" font-size="17" fill="#C7D2E4">資料夠多、模型夠大，</text>
+      <text x="496" y="274" font-size="17" fill="#C7D2E4">「猜對下一個字」這件事，</text>
+      <text x="496" y="298" font-size="17" fill="#C7D2E4">逼它學會語法、事實、推理模式。</text>
+      <text x="496" y="342" font-size="17" fill="#8FA1C0">湧現能力</text>
+      <text x="496" y="368" font-size="17" fill="#C7D2E4">規模過某個門檻，會冒出</text>
+      <text x="496" y="392" font-size="17" fill="#C7D2E4">沒被特別教的新能力。</text>
+      <text x="496" y="436" font-size="17" fill="#8FA1C0">但要小心</text>
+      <text x="496" y="462" font-size="17" fill="#C7D2E4">它抓到的是統計上的規律，</text>
+      <text x="496" y="486" font-size="17" fill="#C7D2E4">不是我們說的那種「懂」。</text>
+      <text x="496" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 像理解，是規模堆出來的錯覺。</text>
+
+      <line x1="812" y1="340" x2="874" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260727)"/>
+
+      <!-- 卡3：邊界在哪 -->
+      <rect x="880" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="880" y="140" width="336" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="904" y="184" font-size="20" font-weight="800" fill="#35C08E">■ 能力邊界在哪</text>
+      <text x="904" y="224" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">會幻覺</tspan>：沒把握時照樣</text>
+      <text x="904" y="248" font-size="17" fill="#C7D2E4">　流暢地編出錯的內容。</text>
+      <text x="904" y="292" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">沒即時查核</tspan>：它不知道自己</text>
+      <text x="904" y="316" font-size="17" fill="#C7D2E4">　說得對不對。</text>
+      <text x="904" y="360" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">知識有截止日</tspan>：訓練後發生</text>
+      <text x="904" y="384" font-size="17" fill="#C7D2E4">　的事，它不會自己知道。</text>
+      <text x="904" y="428" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">沒有意圖</tspan>：沒有目標，也</text>
+      <text x="904" y="452" font-size="17" fill="#C7D2E4">　不會「想騙你」，只是接字。</text>
+      <text x="904" y="496" font-size="17" fill="#C7D2E4">→ 答得流暢 ≠ 答得對。</text>
+      <text x="904" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 所以人要為輸出把關。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：LLM 的本質是「預測下一個字」，規模讓它看起來像理解，但它沒有事實查核機制。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">所以它會流暢地說錯（幻覺）、知識有截止日——用它做產品，一定要有人或機制為輸出把關。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+
+  <div class="script-panel" id="sp-4-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-07-27-1.mp3"></audio>
+    <p>這張圖在講的是，大型語言模型到底在做什麼、以及它做不到什麼。左邊是核心：它其實只是在「預測下一個字」，給一段文字、算出最可能接哪個字，再把新的一串丟回去繼續猜，整段回答就是一個字一個字接出來的，所以本質上是一台超強的文字接龍機器，不是資料庫。中間解釋為什麼看起來像理解：資料和模型都夠大時，猜對下一個字這件事會逼它學會語法、事實關聯和推理模式，規模過門檻還會冒出沒被特別教的能力，但它抓到的是統計規律，不是真的懂。右邊是重點，也是它的能力邊界：它會流暢地講錯（幻覺）、不知道自己對不對、知識有截止日。一句話：答得流暢不等於答得對，用它就要有人把關。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>大型語言模型（Large Language Model，一種用海量文字訓練、專門預測「下一個字」的巨大神經網路）的核心動作，其實只有一件事：預測下一個字。你給它一段文字，它算出「接下來最可能出現哪個字」，把那個字接上去，再拿加長後的一整串重新丟回去，繼續猜下一個、再下一個。你看到的一整段流暢回答，就是這樣一個字一個字接出來的。它不是在查一個資料庫，也不是在搜尋，而是在算機率。</p>
+  <p>釐清這件事，才答得清「它到底懂不懂」。它並沒有我們日常說的那種「理解」——它沒有一個心裡明白的意思，再把意思轉成文字。它是反過來的：先學會了「這種上下文後面通常接什麼」的統計規律，然後照著規律把字接出來。之所以看起來像懂，是因為當訓練資料夠多、模型夠大時，「把下一個字猜準」這個目標會反過來逼模型學會語法、常識、事實之間的關聯，甚至一部分推理的模式。規模到一定程度，還會冒出一些沒有被特別教過的能力，業界叫它湧現（emergence，能力隨規模跨過某個門檻才突然出現的現象）。但這一切的底層，仍然只是「很會接下一個字」。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎「它是理解還是猜」，是因為這條界線直接決定你敢把它放進產品的哪一段。如果你以為它「懂」，你會傾向相信它的輸出、直接拿去用；一旦認清它是「很會猜、但不保證對」，你就會在它前後補上防線。這正是「幻覺」（hallucination，模型在沒把握時仍流暢地生成看似合理、實際錯誤的內容）為什麼是每個 LLM 應用都要處理的頭號問題——它不會在不確定時說「我不知道」，而是照樣把最像答案的字接出來。這是常識性的技術知識，也寫在 OpenAI、Anthropic 等官方模型說明文件的使用限制章節裡：模型可能產生不準確的資訊，輸出需要人為查核。</p>
+  <p>對求職者來說，這一課的價值在於「打通完整應用情境」，而不是背一個定義。104 人力銀行《AI 人才趨勢報告》就建議求職者培養端到端的應用能力，而非零散學單一技能。放到 LLM 上，面試裡光說「它會猜下一個字」只是及格；能接著講「所以它會幻覺、知識有截止日、沒有即時查核，因此我在設計功能時會怎麼補上把關機制」，才是一條能被追問也答得下去的完整脈絡。你不需要會從零訓練一個模型，但要能說清楚它的能力從哪來、邊界在哪，以及這對產品設計代表什麼。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到金融場景，這條界線的實務意義非常直接：LLM 可以幫你「起草」，但不能「拍板」。假設我在國泰或玉山，任務是做一個內部小工具，讓客服人員把一段冗長的保單條款丟進去、請模型摘要重點。這個用法安全，因為原文就在旁邊、人可以核對。但如果反過來，讓模型直接回答客戶「這個理賠條件你符不符合」，就危險了——它可能把一條不存在的條款講得頭頭是道（幻覺），而金融業對這種錯誤是零容忍的。同一個模型，差別只在「它的輸出後面有沒有人為或規則的把關」。</p>
+  <p>對我這種法律金融跨域背景的人，能加分的地方剛好在這裡。我知道 LLM 的輸出是「算機率接出來的」、不是「查法條查出來的」，就會自然地問對問題：這段摘要有沒有漏掉對客戶不利的但書？模型引用的條款編號是不是它編的？在合規流程裡，這種「AI 起草、人工複核」的分工要怎麼留下紀錄、由誰負最後的責任？這正好落在技術和法遵的交界處——技術端我懂它為什麼會錯，法遵端我知道錯了誰要扛。這種能把「模型會幻覺」翻譯成「所以流程要這樣設計」的能力，比會不會調 API 更難被取代。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易答錯的地方，是把「幻覺」當成一個可以修掉的 bug。它不是 bug，是這套機制的副產品。模型的工作就是「不管有沒有把握，都接出最像答案的下一個字」，它本來就沒有一個「我不確定，所以停下來」的內建開關。所以正確的說法不是「等技術成熟就不會幻覺了」，而是「我們用工程手段去壓低它、去接住它」——例如讓它去查外部資料再回答（也就是之後會學到的 RAG）、要求它附上出處、或在高風險場景一律讓人複核。面試官問到這題，想確認的是你知不知道「幻覺是機率生成的必然，只能管理、不能根除」。</p>
+  <p>另一個要小心的追問，是「它答得很有自信，是不是就比較可信」。不是。模型輸出的流暢度和它的正確性沒有必然關係——它對錯誤答案一樣可以講得斬釘截鐵，因為「講得順」本來就是它最擅長的事。還有一個常被忽略的點是知識截止日（knowledge cutoff，模型訓練資料只到某個時間，之後發生的事它不會自己知道）：問它訓練之後才發生的事，它可能自信地給你一個過時或編造的答案。至於各家模型確切的截止日期、以及不同的幻覺抑制技術細節，我目前是理解到原理層次、還沒有實際上線調校過，被追問細節我會誠實說明我理解的主線、而不是硬掰一個數字。</p>
+
+  <p>大型語言模型不是懂了才回答，是很會猜才顯得像懂——記住這句，你就知道什麼時候該信它、什麼時候該親手為它把關。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「你會怎麼跟非技術的同事解釋，大型語言模型到底在做什麼？」</span>
+        <span class="hint">👉 這題其實在問：你自己是不是真的懂它的本質，而不是只會用。</span>
+        <span class="a">她可以怎麼答：我會說它本質上是一台超強的「文字接龍」機器。你給它一段文字，它算出下一個最可能的字、接上去，再把加長後的一整串丟回去繼續猜，一整段回答就是這樣一個字一個字接出來的。所以它不是在查資料庫，是在算機率。理解這點很重要，因為它決定了我們該不該直接相信它的輸出。</span>
+      </li>
+      <li>
+        <span class="q">「那它到底算不算『理解』我們的問題？」</span>
+        <span class="hint">👉 這題其實在問：你能不能講清楚「像理解」和「真理解」的差別。</span>
+        <span class="a">她可以怎麼答：我會說它沒有我們日常那種理解。它不是先懂了意思再轉成文字，而是先學會了「這種上下文後面通常接什麼」的統計規律，再照規律接字。之所以看起來像懂，是因為當資料和模型都夠大，把下一個字猜準這個目標會逼它學會語法、常識和一部分推理模式，規模到了甚至會冒出沒被特別教的能力。但底層仍然只是很會接字。</span>
+      </li>
+      <li>
+        <span class="q">「什麼是幻覺？為什麼不能直接把它修掉？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道幻覺是機制的必然，不是一個 bug。</span>
+        <span class="a">她可以怎麼答：幻覺是模型在沒把握時，仍然流暢地生成看起來合理、實際上錯的內容。它不能被直接修掉，因為模型的工作就是「不管有沒有把握都接出最像答案的字」，本來就沒有一個「我不確定就停下來」的內建開關。所以我們是用工程手段去管理它，例如讓它查外部資料再回答、要求附出處、高風險場景一律人工複核，而不是期待它某天不再幻覺。</span>
+      </li>
+      <li>
+        <span class="q">「如果要把 LLM 放進金融產品，你會擔心什麼、怎麼設計？」</span>
+        <span class="hint">👉 這題其實在問：你能不能把「模型會錯」翻成具體的產品與流程決策。</span>
+        <span class="a">她可以怎麼答：我的原則是讓它負責「起草」、不負責「拍板」。像摘要保單條款這種原文就在旁邊、人能核對的用法很安全；但讓它直接回答客戶符不符合理賠條件就危險，因為它可能把不存在的條款講得頭頭是道，而金融業對這種錯零容忍。我會設計成 AI 起草、人工複核，並且留下誰複核、由誰負最終責任的紀錄。差別不在模型多強，而在輸出後面有沒有把關。</span>
+      </li>
+      <li>
+        <span class="q">「模型答得很有自信，是不是就比較可信？還有知識截止日是什麼？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有意識到流暢度不等於正確、以及時效性的坑。</span>
+        <span class="a">她可以怎麼答（誠實的答法）：不是。流暢度跟正確性沒有必然關係，它對錯誤答案一樣可以講得斬釘截鐵，因為講得順本來就是它最擅長的事。另外知識截止日是指它的訓練資料只到某個時間，之後發生的事它不會自己知道，可能自信地給你過時或編的答案。至於各家模型確切的截止日期和不同的幻覺抑制技術細節，我目前是理解到原理層次、還沒實際上線調校過，被追問細節我會誠實說明我懂的主線。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-07-26.html"><span class="dir">上一課</span>← Transformer為什麼贏了</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>
