@@ -93,6 +93,9 @@
   .qd-auto{background:rgba(159,224,168,.14);border:1px solid #6fcf8a;color:#9fe0a8;border-radius:12px;padding:2px 9px;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-left:6px}
   .qd-auto:hover{background:rgba(159,224,168,.3);color:#fff}
   .qd-auto.on{background:#6fcf8a;color:#0b0d12;font-weight:bold}
+  .qd-auto2{background:rgba(159,180,255,.14);border:1px solid #7f9dff;color:#aebdff;border-radius:12px;padding:2px 9px;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-left:6px}
+  .qd-auto2:hover{background:rgba(159,180,255,.3);color:#fff}
+  .qd-auto2.on{background:#7f9dff;color:#0b0d12;font-weight:bold}
   .qd-star{background:none;border:none;color:#6b7486;font-size:19px;line-height:1;cursor:pointer;padding:0 4px;margin-left:4px}
   .qd-star.on{color:#ffd86b}
   .cpt-audio{margin-left:6px}
@@ -716,13 +719,29 @@ function speak(text,btn){
 try{setInterval(()=>{try{if(speechSynthesis.speaking)speechSynthesis.resume();}catch(e){}},7000);}catch(e){}
 // ▶ 從某題開始「連續念」後面所有題
 function chunkText(t){return String(t||"").split(/(?<=[。！？；!?;\n])/).reduce((a,s)=>{s=s.trim();if(!s)return a;if(a.length&&a[a.length-1].length+s.length<=160)a[a.length-1]+=s;else a.push(s);return a;},[]);}
-let _auto={on:false,rows:null,i:0};
-function autoStop(){_auto.on=false;stopSpeak();document.querySelectorAll(".qd-auto.on").forEach(b=>b.classList.remove("on"));}
-function autoPlay(rows,start){autoStop();if(!rows||!rows.length)return;_auto={on:true,rows:rows,i:start};autoStep();}
+// 只念「題目＋選項＋各選項訂正」（省時間，不念完整詳解）
+function rowSpeechCorr(r){
+  const L=["A","B","C","D","E","F"],ans=r.q.ansIndex,tmap=parseTrap(r.p.trap);
+  const findWrong=/錯誤|不正確|為非|何者[^，。]{0,6}非|下列.{0,6}非/.test(r.q.stem)||/[（(]錯[）)]/.test(r.p.ans||"");
+  const ansWhy=jsStripAns(r.p.ans)||r.p.key||"";
+  let t="第"+r.q.num+"題。"+r.q.stem+"。";
+  (r.q.options||[]).forEach((o,i)=>{
+    let corr;
+    if(i===ans)corr=(findWrong?"這句才是錯的，正解。":"這是正解。")+(ansWhy||"");
+    else if(findWrong)corr="這是正確敘述。"+(tmap[L[i]]||"");
+    else corr=(tmap[L[i]]?"錯在，"+tmap[L[i]]:"這個不是答案");
+    t+="選項"+L[i]+"，"+o+"。"+corr+"。";
+  });
+  return t.replace(/§/g,"第").replace(/[「」『』]/g,"");
+}
+let _auto={on:false,rows:null,i:0,fn:null};
+function autoStop(){_auto.on=false;stopSpeak();document.querySelectorAll(".qd-auto.on,.qd-auto2.on").forEach(b=>b.classList.remove("on"));}
+function autoPlay(rows,start,fn){autoStop();if(!rows||!rows.length)return;_auto={on:true,rows:rows,i:start,fn:fn||rowSpeechText};autoStep();}
 function autoStep(){if(!_auto.on||_auto.i>=_auto.rows.length){_auto.on=false;return;}
-  const r=_auto.rows[_auto.i];
-  document.querySelectorAll(".qd-auto").forEach(b=>b.classList.toggle("on",b.dataset.k===keyOf(r.q)));
-  speechSynthesis.cancel();const cs=chunkText(rowSpeechText(r));let j=0;
+  const r=_auto.rows[_auto.i];const cls=(_auto.fn===rowSpeechCorr)?"qd-auto2":"qd-auto";
+  document.querySelectorAll(".qd-auto,.qd-auto2").forEach(b=>b.classList.remove("on"));
+  document.querySelectorAll("."+cls).forEach(b=>{if(b.dataset.k===keyOf(r.q))b.classList.add("on");});
+  speechSynthesis.cancel();const cs=chunkText((_auto.fn||rowSpeechText)(r));let j=0;
   const nx=()=>{if(!_auto.on)return;if(j>=cs.length){_auto.i++;autoStep();return;}
     const u=new SpeechSynthesisUtterance(cs[j]);u.lang="zh-TW";u.rate=speechRate();u.pitch=1;const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}u.onend=()=>{j++;nx();};speechSynthesis.speak(u);speechSynthesis.resume();};nx();}
 function rowSpeechText(r){
@@ -745,6 +764,13 @@ function cptSpeechText(n){
 document.getElementById("p-body").addEventListener("click",e=>{
   const sb=e.target.closest(".qd-star");
   if(sb){e.stopPropagation();const on=starToggle(sb.dataset.k);sb.textContent=on?'★':'☆';sb.classList.toggle('on',on);buildSide();return;}
+  const ab2=e.target.closest(".qd-auto2");
+  if(ab2){e.stopPropagation();
+    if(ab2.classList.contains("on")){autoStop();return;}
+    let rows=(panelNode&&panelNode.rows?panelNode.rows.slice():[]).sort((a,b)=>a.q.year-b.q.year||a.q.num-b.q.num);
+    if(!rows.length)rows=[ROW_BY_KEY[ab2.dataset.k]].filter(Boolean);
+    const idx=rows.findIndex(r=>keyOf(r.q)===ab2.dataset.k);
+    autoPlay(rows,idx<0?0:idx,rowSpeechCorr);return;}
   const ab=e.target.closest(".qd-auto");
   if(ab){e.stopPropagation();
     if(ab.classList.contains("on")){autoStop();return;}
@@ -868,7 +894,8 @@ function qDetailHTML(r){
   return `<div class="qd">
     <div class="qd-h">📄 ${r.q.year}年 第${r.q.num}題（答案 ${r.q.ansLetter}）
       <button class="qd-audio" data-k="${keyOf(r.q)}" title="念這題＋詳解">🔊 念</button>
-      <button class="qd-auto" data-k="${keyOf(r.q)}" title="從這題開始連續念後面所有題">▶ 連續念</button>
+      <button class="qd-auto" data-k="${keyOf(r.q)}" title="從這題開始連續念（題目＋選項＋完整詳解）">▶ 連續念</button>
+      <button class="qd-auto2" data-k="${keyOf(r.q)}" title="從這題起連續念：只念題目＋選項＋訂正（省時間）">▶ 題+訂正</button>
       <button class="qd-star${starHas(keyOf(r.q))?' on':''}" data-k="${keyOf(r.q)}" title="收藏到星星區（不熟的題）">${starHas(keyOf(r.q))?'★':'☆'}</button></div>
     <div class="qd-stem">${r.q.stem}</div>${opts}
     ${note?`<div class="qd-note"><b>🖊️ ${r.note.concept||""}</b><br>${note}</div>`:""}
@@ -1052,5 +1079,5 @@ resize();
 buildSide();
 loadGraph();
 </script>
-<script>(function(){var V="6";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();</script></body>
+<script>(function(){var V="7";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();</script></body>
 </html>
