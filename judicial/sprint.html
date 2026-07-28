@@ -817,6 +817,24 @@ function srSpeakSeq(start){
   u.onend=()=>{if(srSeq)srSpeakSeq(start+srStep);};
   speechSynthesis.speak(u);
 }
+/* 📐 關係圖：key=題目，考場速讀裡該題可展開看圖＋說明 */
+const DIAGRAMS={
+ "113-民事組-36":{
+  fig:`第一段婚姻：
+  甲 ═══ 乙 ──→ 生丙（子）
+  丁 ═══ 戊 ──→ 生庚（女）
+
+婚姻消滅：
+  ① 甲過世（乙喪偶）
+  ② 丁、戊離婚
+
+乙與丁再婚：
+  丙（乙之子）       庚（丁之女）
+       │                  │
+       ╰── 繼兄妹關係 ──╯`,
+  note:`<b>答案 D：丙與庚得結婚。</b><br>丙是乙的兒子、庚是丁的女兒（本來是兩個不同家庭）。乙與丁「再婚」只讓丙、庚變成<b>繼兄妹</b>——但繼兄妹之間<b>既無血親、也無姻親</b>關係。<br>§983 禁婚親只限「血親」與「一定範圍的姻親」，<b>繼兄妹不在內 → 得結婚</b>。<br>⚠️ 陷阱：A／B／C 把他們當成旁系血親或姻親二親等，都錯。`
+ }
+};
 function renderSpeed(g){
   srSeq=false;stopSpeak();   // 換科即停止朗讀
   srGroup=g;
@@ -888,7 +906,8 @@ function renderSpeed(g){
       +`<button class="subchip" id="srTestBtn" style="border-style:solid;background:rgba(127,224,160,.15);border-color:var(--ok);color:var(--ok);font-weight:800">▶ 測驗${fLbl} ${takeN} 題</button>`;
     const starBtn=k=>`<button class="starbtn${starHas(k)?" on":""}" data-star="${k}">${starHas(k)?"★":"☆"}</button>`;
     const rowHTML=r=>{const mn=mnOf(r);const idx=srItems.length;srItems.push((r.p.concept||"").replace(/§.*/,"")+"。"+mn);
-      return `<div class="sr" style="display:flex;align-items:flex-start;gap:6px"><button class="srplay" data-play="${idx}" title="從這一題開始念">▶</button><div style="flex:1"><b>${esc(r.p.concept)}</b><div style="font-size:13px;color:#ffeab0;margin-top:2px">💡 ${esc(mn)}</div></div>${starBtn(r.k)}</div>`;};
+      const dg=DIAGRAMS[r.k]?`<details style="margin:2px 0 10px 26px"><summary style="cursor:pointer;color:var(--gold);font-size:13px;font-weight:800;list-style:none;padding:4px 0">📐 展開關係圖＋說明</summary><pre style="background:#0d1117;border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;font-family:ui-monospace,Menlo,'Noto Sans Mono CJK TC',monospace;font-size:13px;line-height:1.6;color:#cfe3ff;white-space:pre;margin:6px 0">${esc(DIAGRAMS[r.k].fig)}</pre><div style="font-size:13px;line-height:1.8;color:#cdd6e4;background:rgba(255,216,107,.07);border-left:3px solid var(--gold);padding:9px 11px;border-radius:6px">${DIAGRAMS[r.k].note}</div></details>`:"";
+      return `<div class="sr" style="display:flex;align-items:flex-start;gap:6px"><button class="srplay" data-play="${idx}" title="從這一題開始念">▶</button><div style="flex:1"><b>${esc(r.p.concept)}</b><div style="font-size:13px;color:#ffeab0;margin-top:2px">💡 ${esc(mn)}</div></div>${starBtn(r.k)}</div>${dg}`;};
     srItems=[];let hh=`${regChips}<div class="subrow" style="margin:0 0 8px">${flt}</div>${testCtl}`;
     if(F==="s"){
       hh+=`<div style="font-size:14px;font-weight:800;color:#ffd86b;margin:14px 0 6px;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:4px">⭐ 我的星星（${starRows.length}）</div>`;
