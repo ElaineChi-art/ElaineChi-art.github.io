@@ -254,11 +254,50 @@
   </div>
   <script>(function(){
     var FP=[
-     {d:"2026-07-28",wd:"一",sub:"刑法 ＋ 刑訴",tasks:["清錯題本 15 題（下面📕錯題本 → 只練錯題）","刑法高頻考點掃一輪（考點關聯圖）","刑訴高頻考點掃一輪"],heart:"第一天先動起來就贏了，不用做滿。"},
-     {d:"2026-07-29",wd:"二",sub:"民法 ＋ 民訴",tasks:["清錯題本 15 題","民法（債編／物權／總則）高頻考點","民訴（訴訟標的·既判力·當事人）高頻考點"],heart:"民法債編你剛整理過，今天是回鍋，會比想像中快。"},
-     {d:"2026-07-30",wd:"三",sub:"憲法 ＋ 行政法 ＋ 國際/英文",tasks:["清錯題本 15 題","憲法高頻（釋字·基本權·權力分立）","行政法高頻（行政處分·救濟）＋ 國際私法·法學英文快掃"],heart:"公法題量最大，抓高頻就好，別陷進細節。"},
-     {d:"2026-07-31",wd:"四",sub:"商事法 ＋ 全科總清",tasks:["商事法高頻（公司法董事·決議／證交／保險）","錯題本『全部』再清一遍","把最不熟的 10 題加星 ★，明早只看它們"],heart:"最後一天求穩不求多。早點睡，明天狀態最重要。"},
-     {d:"2026-08-01",wd:"六",sub:"🎯 司律一試上場",exam:1,tasks:["早上只看：📖考場速讀（法條）＋ 昨晚加星的 10 題","深呼吸——你準備過了，剩下的交給考場"],heart:"You have no choice — 你會考得不錯。"}
+     {d:"2026-07-28",wd:"一",sub:"今天：每科核心＋計算題先攻（點任務直接進去）",heart:"第一天先動起來就贏了。計算和最核心先啃，今天就有分。",tasks:[
+       "先清錯題本 15 題（下面📕只練錯題）",
+       {t:"證交·身分組織（30題·最高頻）",g:"商事法",sys:"證交·身分組織"},
+       {t:"公司·治理負責人（核心必考）",g:"商事法",sys:"公司·治理負責人"},
+       {t:"保險·計算比例（計算先攻）",g:"商事法",sys:"保險·計算比例"},
+       {t:"刑罰論·計算（數罪併罰／易科）",g:"刑法",sys:"刑罰論·計算"},
+       {t:"親屬繼承·計算（有關係圖）",g:"民法",sys:"親屬繼承·計算"},
+       {t:"憲法·基本權（高頻）",g:"憲法",sys:"all"},
+       {t:"民訴·訴訟標的與既判力",g:"民訴",sys:"all"}
+     ]},
+     {d:"2026-07-29",wd:"二",sub:"高頻主力題",heart:"民法債編你剛整理過，今天回鍋會比想像快。",tasks:[
+       "先清錯題本 15 題",
+       {t:"證交·交易防弊（內線／短線／財報）",g:"商事法",sys:"證交·交易防弊"},
+       {t:"公司·股東會（決議／召集／表決權）",g:"商事法",sys:"公司·股東會"},
+       {t:"保險·代位利益（19題）",g:"商事法",sys:"保險·代位利益"},
+       {t:"刑分·財產犯罪（高頻）",g:"刑法",sys:"刑分·財產犯罪"},
+       {t:"刑總·構成要件（故意過失因果）",g:"刑法",sys:"刑總·構成要件"},
+       {t:"親屬繼承·畫圖（有關係圖·31題）",g:"民法",sys:"親屬繼承·畫圖"},
+       {t:"民法·債編（高頻）",g:"民法",sys:"債編"},
+       {t:"刑訴·證據法則",g:"刑訴",sys:"all"}
+     ]},
+     {d:"2026-07-30",wd:"三",sub:"補主力＋開始背科",heart:"公法題量大，抓高頻就好，別陷進細節。",tasks:[
+       "先清錯題本 15 題",
+       {t:"公司·資本股份（特別股／增減資）",g:"商事法",sys:"公司·資本股份"},
+       {t:"公司·有限閉鎖（19題）",g:"商事法",sys:"公司·有限閉鎖"},
+       {t:"票據·匯本支（承兌／本票裁定／平行線）",g:"商事法",sys:"票據·匯本支"},
+       {t:"保險·關鍵反射（告知／自殺／復效）",g:"商事法",sys:"保險·關鍵反射"},
+       {t:"刑分·個人法益（24題）",g:"刑法",sys:"刑分·個人法益"},
+       {t:"親屬繼承·記憶（要件／門檻·36題）",g:"民法",sys:"親屬繼承·記憶"},
+       {t:"民法·物權",g:"民法",sys:"物權"},
+       {t:"行政法·行政作用＋救濟",g:"行政法",sys:"all"}
+     ]},
+     {d:"2026-07-31",wd:"四",sub:"偷分＋全科總清",heart:"最後一天求穩不求多。早點睡，明天狀態最重要。",tasks:[
+       "把錯題本『全部』再清一遍",
+       {t:"公司·關係企業重整（15題）",g:"商事法",sys:"公司·關係企業重整"},
+       {t:"執行·異議保全分配（18題）",g:"商事法",sys:"執行·異議保全分配"},
+       {t:"票據·背書轉讓（14題）",g:"商事法",sys:"票據·背書轉讓"},
+       {t:"刑罰論·記憶（沒收／保安處分）",g:"刑法",sys:"刑罰論·記憶"},
+       {t:"民法·民總",g:"民法",sys:"民總"},
+       {t:"刑訴·強制處分",g:"刑訴",sys:"all"},
+       {t:"憲法·政府組織與釋憲",g:"憲法",sys:"all"},
+       "把最不熟的 10 題加星 ★，明早只看它們"
+     ]},
+     {d:"2026-08-01",wd:"六",sub:"🎯 司律一試上場",exam:1,tasks:["早上只看：📖考場速讀 ＋ 昨晚加星的 10 題","深呼吸——你準備過了，剩下的交給考場"],heart:"You have no choice — 你會考得不錯。"}
     ];
     function iso(dt){return dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");}
     var today=iso(new Date());
@@ -279,16 +318,34 @@
         h+='</div>';
         h+='<div style="font-size:13px;color:var(--mut);margin-bottom:8px">📚 '+day.sub+'</div>';
         day.tasks.forEach(function(t,ti){
+          var task=(typeof t==="string")?{t:t}:t;
           var on=!!st[di+"_"+ti];
-          h+='<div class="fptask" data-k="'+di+"_"+ti+'" style="display:flex;gap:9px;align-items:flex-start;padding:6px 4px;cursor:pointer;font-size:13.5px;line-height:1.5;'+(on?"opacity:.55;text-decoration:line-through":"")+'"><span style="font-size:16px;line-height:1.3">'+(on?"✅":"⬜")+'</span><span>'+t+'</span></div>';
+          var jattr=task.g?' data-g="'+task.g+'" data-sys="'+(task.sys||"all")+'"':'';
+          h+='<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 4px;font-size:13.5px;line-height:1.5;'+(on?"opacity:.5;text-decoration:line-through":"")+'">'
+            +'<span class="fpchk" data-k="'+di+"_"+ti+'" style="font-size:16px;line-height:1.3;cursor:pointer">'+(on?"✅":"⬜")+'</span>'
+            +'<span class="fpjump"'+jattr+' style="flex:1;'+(task.g?"cursor:pointer;color:#ffe79c":"")+'">'+task.t
+            +(task.g?' <span style="color:var(--gold);font-size:11.5px;font-weight:800;white-space:nowrap">▶ 進這區</span>':'')+'</span>'
+            +'</div>';
         });
         h+='<div class="mini" style="text-align:left;margin:6px 0 0;color:'+(day.exam?"#ff9e8a":"#8fbf8f")+'">💛 '+day.heart+'</div>';
         h+='</div>';
       });
       host.innerHTML=h;
-      Array.prototype.forEach.call(host.querySelectorAll(".fptask"),function(el){
+      Array.prototype.forEach.call(host.querySelectorAll(".fpchk"),function(el){
         el.onclick=function(){var st=get(),k=el.dataset.k;if(st[k])delete st[k];else st[k]=1;set(st);render();};
       });
+      Array.prototype.forEach.call(host.querySelectorAll(".fpjump[data-g]"),function(el){
+        el.onclick=function(){jumpRegion(el.dataset.g,el.dataset.sys);};
+      });
+    }
+    function jumpRegion(g,sys){
+      try{
+        if(typeof srSys!=="undefined")srSys=sys;
+        if(typeof srFilter!=="undefined")srFilter="all";
+        renderSpeed(g);
+        var c=document.getElementById("srCard");
+        if(c)c.scrollIntoView({behavior:"smooth",block:"start"});
+      }catch(e){}
     }
     render();
   })();</script>
