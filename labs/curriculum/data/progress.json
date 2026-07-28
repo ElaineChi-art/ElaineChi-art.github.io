@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-27",
+  "updated": "2026-07-28",
   "lessons": [
     {
       "id": 1,
@@ -51,10 +51,10 @@
       "category": "genai",
       "topic": "ChatGPT 介紹與實作",
       "title": "Prompt Engineering不是玄學：拆解一個好prompt的五個必要元素",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-07-28",
+      "url": "posts/daily/2026-07-28.html",
+      "slides": 1
     },
     {
       "id": 6,

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Engineering不是玄學：拆解一個好prompt的五個必要元素｜技能實驗室・每日課程</title>
+<meta name="description" content="好的 prompt 不是找神奇咒語，而是把需求寫成模型看得懂的規格。一個穩定的 prompt 通常有五個必要元素：角色、任務、脈絡、輸出格式、範例——缺哪一個，輸出就從哪裡壞掉。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-07-28</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・生成式AI應用開發</div>
+  <h1>Prompt Engineering不是玄學：拆解一個好prompt的五個必要元素</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-07-28</span>
+    <span>約 6 分鐘</span>
+    <span>對應真專案主題：ChatGPT 介紹與實作</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>Prompt Engineering（提示工程，把給 AI 的指令設計好的功夫）不是在找一句神奇咒語，而是把你要的東西講清楚到不留模糊空間。一個穩定、可重複的 prompt 通常有五個必要元素：角色（要它站在誰的立場）、任務（一次一件、具體要它做什麼）、脈絡（把它需要的背景資料餵進去）、輸出格式（結果長什麼樣、有哪些限制）、範例（給一兩個示範讓它抓到你要的樣子）。缺哪一個，輸出就從哪裡開始壞。所以面試時的正確講法不是「我很會下 prompt」，而是「我把一句模糊的自然語言請求，寫成了一份模型看得懂、還能驗收的規格」。</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260728" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260728" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260728" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260728)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260728)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M2 · 生成式AI應用開發  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">好 prompt 不是咒語，<tspan fill="#4D9FFF">是一份寫清楚的規格</tspan></text>
+
+      <!-- 卡1：為什麼要工程化 -->
+      <rect x="64" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <rect x="64" y="140" width="336" height="5" rx="2.5" fill="url(#topbarD20260728)"/>
+      <text x="88" y="184" font-size="20" font-weight="800" fill="#4D9FFF">■ 壞 prompt vs 好 prompt</text>
+      <text x="88" y="224" font-size="17" fill="#8FA1C0">壞的（模糊）</text>
+      <text x="88" y="250" font-size="17" fill="#C7D2E4">「幫我看一下這份保單。」</text>
+      <text x="88" y="274" font-size="17" fill="#C7D2E4">→ 它只能用猜的，每次都不一樣。</text>
+      <text x="88" y="318" font-size="17" fill="#8FA1C0">好的（把該講的講清楚）</text>
+      <text x="88" y="344" font-size="17" fill="#C7D2E4">角色 ＋ 任務 ＋ 脈絡</text>
+      <text x="88" y="368" font-size="17" fill="#C7D2E4">＋ 輸出格式 ＋ 範例</text>
+      <text x="88" y="392" font-size="17" fill="#C7D2E4">→ 可重複、可驗收、可交接。</text>
+      <text x="88" y="436" font-size="17" fill="#8FA1C0">差別在哪</text>
+      <text x="88" y="462" font-size="17" fill="#C7D2E4">不是模型更強，是你把要的</text>
+      <text x="88" y="486" font-size="17" fill="#C7D2E4">東西講到不留模糊空間。</text>
+      <text x="88" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ prompt 是介面，不是碰運氣。</text>
+
+      <line x1="404" y1="340" x2="466" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260728)"/>
+
+      <!-- 卡2：五個必要元素 -->
+      <rect x="472" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="472" y="140" width="336" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="496" y="184" font-size="20" font-weight="800" fill="#F2A33C">■ 五個必要元素</text>
+      <text x="496" y="224" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">1 角色</tspan>　站在誰的立場講話</text>
+      <text x="496" y="268" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">2 任務</tspan>　一次一件、具體動作</text>
+      <text x="496" y="312" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">3 脈絡</tspan>　把需要的背景餵進去</text>
+      <text x="496" y="356" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">4 格式</tspan>　輸出長什麼樣、限制</text>
+      <text x="496" y="400" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">5 範例</tspan>　給示範讓它抓到樣子</text>
+      <text x="496" y="452" font-size="17" fill="#8FA1C0">記法</text>
+      <text x="496" y="478" font-size="17" fill="#C7D2E4">先想「我要交出什麼」，</text>
+      <text x="496" y="502" font-size="17" fill="#C7D2E4">再倒推每個元素要寫什麼。</text>
+      <text x="496" y="524" font-size="16" font-weight="700" fill="#7E8CA8">→ 從輸出反推，不是隨手打字。</text>
+
+      <line x1="812" y1="340" x2="874" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260728)"/>
+
+      <!-- 卡3：缺了會怎樣 -->
+      <rect x="880" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="880" y="140" width="336" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="904" y="184" font-size="20" font-weight="800" fill="#35C08E">■ 缺了會怎樣</text>
+      <text x="904" y="224" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">缺角色</tspan>：語氣、深淺會飄</text>
+      <text x="904" y="268" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">缺任務</tspan>：答非所問</text>
+      <text x="904" y="312" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">缺脈絡</tspan>：沒依據就亂編（幻覺）</text>
+      <text x="904" y="356" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">缺格式</tspan>：難接進後端程式</text>
+      <text x="904" y="400" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">缺範例</tspan>：抓不到你要的樣子</text>
+      <text x="904" y="452" font-size="17" fill="#8FA1C0">所以</text>
+      <text x="904" y="478" font-size="17" fill="#C7D2E4">品質不穩，通常不是模型爛，</text>
+      <text x="904" y="502" font-size="17" fill="#C7D2E4">是規格漏寫了某一項。</text>
+      <text x="904" y="524" font-size="16" font-weight="700" fill="#7E8CA8">→ 從壞掉的地方回頭補元素。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：Prompt Engineering 是把模糊的請求，寫成模型看得懂、還能驗收的規格。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">五個元素——角色、任務、脈絡、格式、範例——缺哪一個，輸出就從哪裡開始壞；穩定度是設計出來的，不是碰運氣。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>Prompt Engineering 就是「把需求寫成模型看得懂的規格」的功夫，跟找咒語沒有關係。所謂 prompt（提示詞），就是你丟給 ChatGPT 這類大型語言模型的那段輸入文字；prompt engineering 則是有系統地去設計這段文字，讓模型的輸出穩定、可預期、能被驗收。它之所以常被誤會成玄學，是因為新手看到「同一個問題換個講法答案就變好」，以為關鍵在某個神奇字眼。其實關鍵不在字眼，在你有沒有把該交代的都交代清楚。</p>
+  <p>一個講清楚的 prompt，通常包含五個必要元素。第一是角色：要模型站在誰的立場回答（例如「你是一位熟悉台灣保險法規的核保人員」），這會定住它的語氣和專業深淺。第二是任務：一次講清楚要它做的一件具體動作（「摘要這份條款的三個理賠限制」），而不是含糊地說「看一下」。第三是脈絡：把它需要的背景和輸入資料直接餵進去（那份條款原文、客戶的狀況），沒有脈絡它只能用訓練時的記憶去猜。第四是輸出格式：指定結果長什麼樣、有哪些限制（「用條列、每條不超過兩句、不確定的地方標註『需人工確認』」）。第五是範例：給一兩個示範輸入與輸出，讓它抓到你要的風格，這在業界叫 few-shot（少量範例提示，用幾個例子示範而不用重新訓練模型）。這五項不是死板的填空表，而是一份檢查清單——寫完回頭看少了哪一項。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎 prompt engineering，是因為它是調整 LLM 輸出最便宜、最快的那根槓桿。要讓模型的輸出變好，理論上你可以重新訓練或微調（fine-tuning，用你自己的資料再訓練一次模型），但那要資料、要算力、要時間；而改 prompt 不用改一行模型程式碼、幾分鐘就能試一輪。同一個 ChatGPT，一個隨手打的 prompt 和一個把五元素寫齊的 prompt，輸出品質可以差一大截。對做產品的團隊來說，這代表「先把 prompt 調到極限，真的不夠了再考慮微調」幾乎是預設的工作順序。</p>
+  <p>更重要的是，prompt 是整個 LLM 應用的「介面層」，而不是一個孤立的小技巧。它往上接使用者的需求，往下串接程式：之後會學到的 API 串接要靠 prompt 下指令、function calling（讓模型回傳結構化資料去呼叫外部功能）要靠 prompt 描述工具、RAG（先檢索你自己的文件再回答）要把找到的資料塞進 prompt 的脈絡裡。所以 prompt engineering 不是學一個花招，而是打通完整應用情境的入口——這正呼應 104 人力銀行《AI 人才趨勢報告》給求職者的建議：培養端到端的應用能力，而不是零散地學單一技能。面試時只會說「我會下 prompt」是不夠的，能講清楚「prompt 怎麼往上接需求、往下接程式」才是完整的脈絡。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到金融場景，五元素的差別馬上看得出來。假設我在國泰或玉山，要做一個給客服用的小工具：把一段冗長的保單條款丟進去，請模型整理出對客戶不利的限制。一個壞 prompt 是「幫我看一下這份保單」——它不知道你是誰、要幹嘛、輸出要什麼樣，只能自由發揮，每次結果都不一樣，也沒辦法接進系統。好 prompt 則是把五元素寫齊：<b>角色</b>「你是熟悉台灣保險條款的核保助理」、<b>任務</b>「找出這份條款中對被保險人不利的除外與限制」、<b>脈絡</b>是貼上的條款原文、<b>格式</b>「用 JSON 陣列回傳，每項含『條款編號、白話說明、風險等級』，找不到明確依據就標註『原文未載明』」、<b>範例</b>給一條示範輸出。這樣模型的回答就變成一份可以直接被程式接住、也能被人複核的結構化資料。</p>
+  <p>對我這種法律金融跨域背景的人，這一課的加分點很明確：我知道怎麼把「法遵要求」翻譯進 prompt 的格式與限制裡。一般工程師可能只想到「輸出成 JSON 方便串接」，但我會多想一層——要求模型對每一項標註「原文依據」而不是讓它自由詮釋，遇到條款沒寫清楚的地方要它明確回「原文未載明」而不是自己補一個看似合理的答案。這其實就是把「AI 起草、人工複核」的合規精神，寫進 prompt 的每一個字裡。能把監理與風控的要求，落地成一段別人也能重用的 prompt 規格，這比單純會用工具更難被取代。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易答錯的地方，是以為 prompt「越長越詳細越好」。不是。塞進一堆不相關的說明，反而會稀釋掉真正重要的指令，也讓模型抓不到重點。五元素的目的是「該講的講清楚」，不是「把所有能想到的都寫進去」。一個常見的坑是範例給太多或給偏了——few-shot 的範例會被模型當成強烈的模仿對象，如果你的三個範例剛好都是某種格式，它可能會死板地照抄那個格式，連不適合的情況也硬套。所以範例要具代表性，不是越多越好。判斷 prompt 好不好，標準永遠是「輸出穩不穩、對不對」，不是「prompt 長不長」。</p>
+  <p>另一個要小心的追問，是「找到一個好 prompt 是不是就一勞永逸」。不是。同一段 prompt 在不同模型、甚至同一個模型的不同版本上，表現可能不一樣，所以正式產品裡 prompt 要當成程式碼一樣做版本控管，換模型時要重新測試。還有一個容易混淆的點：影響輸出穩定度的不只有 prompt 本身，還有像 temperature（一個控制回答隨機性的參數，越低越保守一致、越高越發散）這種呼叫時的設定——它不是寫在 prompt 文字裡，但同樣決定了輸出穩不穩，這在做需要一致性的金融應用時特別重要。至於各家模型對 prompt 的細微偏好、以及大規模的 prompt 評測該怎麼建，我目前是理解到原理與方法層次、還沒有實際上線大量調校過，被追問細節我會誠實說明我懂的主線，而不是硬掰。</p>
+
+  <p>好 prompt 不是唸對咒語，是把你要的東西講到不留模糊空間——記住這句，你就不會再問「有沒有什麼神奇的一句話」，而是回頭檢查五個元素少寫了哪一項。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「你會怎麼跟同事解釋，什麼是 prompt engineering？」</span>
+        <span class="hint">👉 這題其實在問：你把它當成一門功夫，還是當成玄學。</span>
+        <span class="a">她可以怎麼答：我會說它就是「把需求寫成模型看得懂的規格」。重點不在找某句神奇咒語，而是把該交代的講清楚。我通常會檢查五個元素有沒有寫齊：角色、任務、脈絡、輸出格式、範例。同一個 ChatGPT，隨手打的 prompt 跟五元素寫齊的 prompt，輸出品質差很多，差的不是模型，是我有沒有把要的東西講到不留模糊空間。</span>
+      </li>
+      <li>
+        <span class="q">「一個好的 prompt 你覺得要包含哪些東西？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有一套可重複的方法，還是每次都憑感覺。</span>
+        <span class="a">她可以怎麼答：我會用五個元素當檢查清單。角色，讓它站在對的立場講話；任務，一次一件、具體動作；脈絡，把它需要的背景和輸入資料直接餵進去，不要讓它用猜的；輸出格式，指定結果長什麼樣、有哪些限制；範例，給一兩個示範讓它抓到樣子，也就是 few-shot。我的習慣是先想「我最後要交出什麼」，再倒推每個元素該寫什麼，而不是想到哪打到哪。</span>
+      </li>
+      <li>
+        <span class="q">「如果模型輸出品質不穩，你會怎麼 debug？」</span>
+        <span class="hint">👉 這題其實在問：你能不能把問題定位到具體某個元素。</span>
+        <span class="a">她可以怎麼答：我會從壞掉的地方回頭對照五元素。如果它答非所問，通常是任務沒講清楚或一次塞太多件；如果它憑空編（幻覺），多半是缺脈絡、沒給它依據；如果輸出格式亂、接不進程式，就是格式沒指定；如果風格總是不對，就補一兩個範例。品質不穩很多時候不是模型爛，是我的規格漏寫了某一項，所以我會一項一項補、每次只改一個變因去看差別。</span>
+      </li>
+      <li>
+        <span class="q">「假設要做一個摘要保單條款的功能，你的 prompt 大概會長怎樣？」</span>
+        <span class="hint">👉 這題其實在問：你能不能把方法落地到一個具體、貼近業務的情境。</span>
+        <span class="a">她可以怎麼答：我會把五元素寫齊。角色設「熟悉台灣保險條款的核保助理」，任務是「找出對被保險人不利的除外與限制」，脈絡就是貼上的條款原文，格式要求用 JSON 回傳、每項含條款編號、白話說明、風險等級，而且找不到明確依據就標註『原文未載明』、不要自己補，最後給一條示範輸出。這樣結果能被程式接住，也能被人複核。這裡我會特別把法遵的『不得自由詮釋』寫進格式限制，這是我跨域背景比較能想到的一層。</span>
+      </li>
+      <li>
+        <span class="q">「找到一個好 prompt 之後，是不是就一勞永逸了？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道 prompt 要維護、要隨模型迭代。</span>
+        <span class="a">她可以怎麼答（誠實的答法）：不是。同一段 prompt 在不同模型、甚至同一模型的不同版本表現可能不一樣，所以正式產品裡我會把 prompt 當程式碼做版本控管，換模型時重新測。另外影響穩定度的不只 prompt 文字，還有像 temperature 這種呼叫參數，越低越一致，做金融這種需要一致性的場景我會調低。至於大規模的 prompt 評測系統怎麼建、各家模型的細微偏好，我目前是懂原理跟方法、還沒實際上線大量調校過，被問細節我會誠實說明我懂的主線。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-07-27.html"><span class="dir">上一課</span>← 大型語言模型的能力邊界</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>
