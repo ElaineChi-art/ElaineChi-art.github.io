@@ -303,7 +303,8 @@
          {t:"證交·交易防弊（內線／短線／財報）",g:"商事法",sys:"證交·交易防弊"},
          {t:"公司·股東會（決議／召集／表決權）",g:"商事法",sys:"公司·股東會"},
          {t:"公司·資本股份（特別股／增減資）",g:"商事法",sys:"公司·資本股份"},
-         {t:"保險·代位利益（19題）",g:"商事法",sys:"保險·代位利益"}]}
+         {t:"保險·代位利益（19題）",g:"商事法",sys:"保險·代位利益"},
+         {t:"法學英文·侵權Torts（必拿基本盤·反射術語）",g:"國際法+法學英文",sys:"法英·侵權Torts"}]}
      ]},
      {d:"2026-07-31",wd:"四",sub:"每天跑一遍考試 4 時段 · 今天：背科＋剩餘＋冷門＋弱點",heart:"最後一天求穩不求多。清完＋加星就早點睡，明天狀態最重要。",blocks:[
        {tm:"09:00–10:30 · 刑事（刑法＋刑訴）",tasks:[
@@ -771,7 +772,7 @@ const REGSUBS={
  "民訴":["數字門檻·價額","管轄·當事人·共同訴訟","訴訟標的·既判力","訴之聲明·變更合併","審理·證據·調解","上訴·抗告·再審","保全·督促·假執行","家事事件","民訴·其他"],
  "行政法":["數字時效門檻","行政處分·作用","總論·法源原則·命令","行政程序","行政罰","行政執行","行政救濟·訴訟","組織·公物·公務員","行政法·其他"],
  "刑訴":["刑訴·強制處分","刑訴·證據法則","刑訴·偵查與起訴","刑訴·審判程序","刑訴·救濟程序","刑訴·其他","倫理·律師利益衝突後酬","倫理·律師業務保密廣告","倫理·司法官職務外·行為規範","倫理·檢察一體與監督","倫理·旋轉門(3年條款)","倫理·其他"],
- "國際法+法學英文":["國私·總則(定性反致公序)","國私·方式","國私·身分屬人法","國私·財產物權債","國私·其他","國際公法","法學英文"],
+ "國際法+法學英文":["國私·總則(定性反致公序)","國私·方式","國私·身分屬人法","國私·財產物權債","國私·其他","國際公法","法英·侵權Torts","法英·契約Contracts","法英·公司證交","法英·憲法ConLaw","法英·刑事證據程序","法英·其他"],
  "商事法":["公司·設立登記","公司·行為限制","公司·治理負責人","公司·股東會","公司·資本股份","公司·有限閉鎖","公司·關係企業重整","公司·其他",
    "保險·計算比例","保險·業務監理","保險·代位利益","保險·關鍵反射","保險·其他",
    "票據·效力基礎","票據·背書轉讓","票據·偽造變造喪失","票據·匯本支","票據·其他",
@@ -859,7 +860,14 @@ function regionOf(g,r){
   }
   if(g==="國際法+法學英文"){
     var isub=(r&&r.sub)||"";
-    if(isub==="法學英文") return "法學英文";
+    if(isub==="法學英文"){
+      if(has(/侵權|妨害|nuisance|vicarious|代負責任|strict liability|無過失責任|negligence per se|當然過失|assumption|危險之承擔|defamation|誹謗|trespass|越界|侵入者|punitive|懲罰性|compensatory|填補性|nominal|名目|reasonable person|合理人|高度危險|民事不法|joint|連帶|過失|tort/i)) return "法英·侵權Torts";
+      if(has(/契約|contract|void|novation|契約更新|liquidated|違約金|condition|條件|adhesion|附合|consideration|good faith|誠信|NDA|保密協議|要約|承諾|offer|acceptance|breach|force majeure|不可抗力|自始不能|危險負擔|更改|行為能力|power of attorney|授權書/i)) return "法英·契約Contracts";
+      if(has(/公司|company|corporate|securities|證券|private placement|私募|cumulative|累積投票|prospectus|appraisal|short.swing|短線|insider|內線|股東|shareholder|director|董事|代表訴訟/i)) return "法英·公司證交";
+      if(has(/scrutiny|審查|res judicata|既判力|equal protection|平等|due process|prior restraint|事前限制|amicus|法庭之友|concurring|協同意見|precedent|遵循先例|宣告違憲|裁判憲法審查|性別分類|州際商業|class action|集體訴訟|recall|罷免|徵用|appropriates|incorporation|權利納入|clear and present|明顯而立即|緊急命令|政府權力|州/i)) return "法英·憲法ConLaw";
+      if(has(/exclusionary|證據排除|confrontation|對質|詰問|self.incrimination|不自證己罪|circumstantial|間接證據|自白|補強|搜索|search|rape|強制性交|arson|放火|smuggling|走私|directed verdict|指示裁決|被害人影響|時效抗辯|搜索票|財產犯罪|刑罰|量刑/i)) return "法英·刑事證據程序";
+      return "法英·其他";
+    }
     if(isub==="國際公法") return "國際公法";
     if(has(/定性|反致|公序良俗|國籍|涉外因素|一國數法|先決問題|法庭地法|§8|§6\b|§5\b|§2\b|§3\b|§4\b|本國法之認定/)) return "國私·總則(定性反致公序)";
     if(has(/法律行為方式|§16|遺囑.*方式|撤回之方式/)) return "國私·方式";
