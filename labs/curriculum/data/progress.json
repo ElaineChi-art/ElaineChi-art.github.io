@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-28",
+  "updated": "2026-07-29",
   "lessons": [
     {
       "id": 1,
@@ -62,10 +62,10 @@
       "category": "genai",
       "topic": "ChatGPT API串接及實作",
       "title": "從Playground到生產環境：ChatGPT API串接的第一個真實應用",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-07-29",
+      "url": "posts/daily/2026-07-29.html",
+      "slides": 1
     },
     {
       "id": 7,

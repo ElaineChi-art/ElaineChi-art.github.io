@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>從Playground到生產環境：ChatGPT API串接的第一個真實應用｜技能實驗室・每日課程</title>
+<meta name="description" content="在 Playground 玩得通，不等於能放進生產環境。這一課拆解一次 ChatGPT API 呼叫的組成，以及要從玩具變成天天穩定跑的服務，還得補上錯誤處理、成本控制、金鑰保護與紀錄。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-07-29</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・生成式AI應用開發</div>
+  <h1>從Playground到生產環境：ChatGPT API串接的第一個真實應用</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-07-29</span>
+    <span>約 6 分鐘</span>
+    <span>對應真專案主題：ChatGPT API串接及實作</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>串接 ChatGPT API（用程式呼叫 OpenAI 的服務，而不是在網頁上手動打字）的核心，就是把「在 Playground 手動玩」變成「寫進程式自動跑」。一次 API 呼叫其實很單純：你的程式送一個 HTTP 請求過去，帶著金鑰、對話訊息和幾個參數，模型回一段文字，你的系統接著用。真正難的不是讓它「跑一次成功」，而是讓它「天天穩定跑」——要補上錯誤處理與重試、算好每次燒多少 token 控制成本、把金鑰藏在後端不外洩、還要把每次請求記錄下來方便查。所以面試時的正確講法不是「我會呼叫 API」，而是「我知道從能跑起來，到能上生產，中間還差哪幾件事」。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-6-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260729" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260729" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260729" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260729)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260729)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M2 · 生成式AI應用開發  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">能在 Playground 跑，<tspan fill="#4D9FFF">不等於能上生產</tspan></text>
+
+      <!-- 卡1：Playground vs API -->
+      <rect x="64" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <rect x="64" y="140" width="336" height="5" rx="2.5" fill="url(#topbarD20260729)"/>
+      <text x="88" y="184" font-size="20" font-weight="800" fill="#4D9FFF">■ Playground vs API</text>
+      <text x="88" y="224" font-size="17" fill="#8FA1C0">Playground（手動玩）</text>
+      <text x="88" y="250" font-size="17" fill="#C7D2E4">在瀏覽器打字、看結果，</text>
+      <text x="88" y="274" font-size="17" fill="#C7D2E4">一次一次手動來。試想法用。</text>
+      <text x="88" y="318" font-size="17" fill="#8FA1C0">API（寫進程式）</text>
+      <text x="88" y="344" font-size="17" fill="#C7D2E4">同一句話改成用程式送出，</text>
+      <text x="88" y="368" font-size="17" fill="#C7D2E4">自動、可重複、能接進系統。</text>
+      <text x="88" y="412" font-size="17" fill="#8FA1C0">差別</text>
+      <text x="88" y="438" font-size="17" fill="#C7D2E4">不是換工具，是從「人在按」</text>
+      <text x="88" y="462" font-size="17" fill="#C7D2E4">變成「程式自己在跑」。</text>
+      <text x="88" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ API 是把 AI 變成產品的接口。</text>
+
+      <line x1="404" y1="340" x2="466" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260729)"/>
+
+      <!-- 卡2：一次呼叫的組成 -->
+      <rect x="472" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="472" y="140" width="336" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="496" y="184" font-size="20" font-weight="800" fill="#F2A33C">■ 一次呼叫帶什麼</text>
+      <text x="496" y="224" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">金鑰</tspan>　證明是你、用來計費</text>
+      <text x="496" y="268" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">model</tspan>　挑哪個模型回答</text>
+      <text x="496" y="312" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">messages</tspan>　對話訊息（含角色）</text>
+      <text x="496" y="356" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">參數</tspan>　temperature 等旋鈕</text>
+      <text x="496" y="400" font-size="17" fill="#8FA1C0">回傳</text>
+      <text x="496" y="426" font-size="17" fill="#C7D2E4">一段文字 ＋ 用掉的 token 數，</text>
+      <text x="496" y="450" font-size="17" fill="#C7D2E4">token 就是計費與長度的單位。</text>
+      <text x="496" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 就是一個 HTTP 請求跟回應。</text>
+
+      <line x1="812" y1="340" x2="874" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260729)"/>
+
+      <!-- 卡3：上生產要補什麼 -->
+      <rect x="880" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="880" y="140" width="336" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="904" y="184" font-size="20" font-weight="800" fill="#35C08E">■ 上生產還要補</text>
+      <text x="904" y="224" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">錯誤處理</tspan>　逾時、被限流要重試</text>
+      <text x="904" y="268" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">成本控制</tspan>　算 token、設上限</text>
+      <text x="904" y="312" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">金鑰保護</tspan>　藏後端、絕不進前端</text>
+      <text x="904" y="356" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">紀錄</tspan>　留請求與回應好查帳</text>
+      <text x="904" y="400" font-size="17" fill="#8FA1C0">為什麼</text>
+      <text x="904" y="426" font-size="17" fill="#C7D2E4">跑一次成功很容易，</text>
+      <text x="904" y="450" font-size="17" fill="#C7D2E4">天天穩定跑才是工程。</text>
+      <text x="904" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 這四項才是面試想聽的深度。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：串 API 只是入場券，把一次成功的呼叫變成穩定的服務才是功夫。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">錯誤處理、成本、金鑰、紀錄——這四件事，決定你的 AI 功能是玩具還是產品。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-6-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-07-29-1.mp3"></audio>
+    <p>這張圖在講的是，把 ChatGPT 從「在網頁上手動玩」變成「寫進程式自動跑」，中間到底跨過了什麼。左邊的 Playground 是你在瀏覽器裡打字、看結果，一次一次手動來，適合試想法。中間這張是 API 串接：同樣一句話，改成用程式送一個 HTTP 請求過去，帶著你的金鑰、對話訊息跟參數，模型回一段文字，你的系統再接著用。真正的重點在右邊：能在自己電腦跑起來，跟能放進生產環境，是兩件事。生產環境你得補上錯誤處理跟重試、算好每次呼叫燒多少 token 控制成本、把金鑰藏在後端不要外洩、還要把每次請求記錄下來方便查。面試時記住這句：串 API 只是入場券，真正的功夫是把一次會成功的呼叫，變成一個天天穩定跑的服務。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>串接 ChatGPT API，就是「用程式去呼叫 OpenAI 的模型服務，而不是靠人在網頁上手動打字」。所謂 API（應用程式介面，讓兩個程式互相溝通的約定好的接口），在這裡就是一個網址：你的程式把一個 HTTP 請求送到那個網址，OpenAI 的伺服器把模型的回答傳回來。Playground 是官方給你手動試玩的網頁，好處是快、直覺，缺點是「只有人坐在那裡按，它才會動」。要讓 AI 變成產品的一部分——每天自動處理上千筆客戶訊息、自動摘要文件——就得改用 API，讓程式自己去呼叫。</p>
+  <p>一次呼叫要帶的東西其實很固定，四樣就講完了。第一是 API 金鑰（一串祕密字串，用來證明「這次呼叫是你發的」，也是計費的依據），這東西等於你的信用卡，絕對不能外流。第二是 model，指定要用哪個模型回答。第三是 messages，也就是對話訊息陣列，每一則會標明角色（system 設定它的身分與規則、user 是使用者說的話、assistant 是模型先前的回答），這正是把前一課的 prompt 五元素放進程式的地方。第四是幾個參數，例如 temperature（控制回答隨機性，越低越穩定一致）。伺服器回傳的除了那段文字，還會附上這次用掉多少 token（把文字切成的計費最小單位），token 數同時決定了你被收多少錢、以及一次能塞多長。搞懂這四樣加一個回傳，你就掌握了整個串接的骨架。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎 API 串接，是因為這是「把 AI 從展示變成能賺錢的功能」的那道門。老闆在 Playground 看過 demo 覺得很神，但那沒有任何商業價值——真正有價值的是它能自動接進公司既有的系統：客服後台、對帳流程、內部文件搜尋。這一步做不出來，前面學的模型概念和 prompt 技巧就只停在紙上。這也呼應 104 人力銀行《AI 人才趨勢報告》給求職者的建議：不要零散地學單一技能，而要打通「從需求到能上線的完整應用情境」。API 串接就是這條情境裡最關鍵的接合點，把「懂 AI」和「會做產品」連起來。</p>
+  <p>更重要的是，面試官幾乎都能一眼分辨「只跑過一次」和「真的懂上生產」的差別，而這個差別就藏在 API 串接的細節裡。呼叫一次成功、拿到回答，這是每個教學影片都會的入門；但把它放進生產環境要多想四件事：錯誤處理（網路逾時、被限流 rate limit、模型偶爾回傳壞格式，都要能重試或退場，不能整個服務掛掉）、成本控制（每次呼叫都在燒 token 也就是燒錢，要能估算、設上限、別讓一個迴圈把預算跑爆）、金鑰保護（金鑰只能放後端伺服器，一旦寫進前端網頁或 commit 進 git 就等於公開你的信用卡）、以及紀錄（把每次的請求與回應存下來，出事才查得到、也才有資料去優化）。能講出這四件事，你在面試裡的層級就跟只會貼範例程式的人分開了。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到金融場景，這一課的樣子很具體。假設我在玉山或國泰，要做一個「自動初步分類客訴信件」的小服務：信件進來，呼叫 ChatGPT API 判斷它屬於哪一類、急不急，再分派給對的窗口。串接本身不難——把信件內容放進 messages 的 user 訊息、用 system 訊息設定「你是銀行客服分類助理，只能回傳我指定的類別」、指定 model、把 temperature 調低讓分類穩定。難的是把它做成敢上線的服務：我會在外面包一層重試（遇到逾時或限流時等一下再試，而不是直接把錯誤丟給客戶）、設每日 token 用量上限並記錄每一筆花費、把金鑰放在後端環境變數而不是程式碼裡、每封信的請求與模型判斷都寫進 log 方便日後稽核。</p>
+  <p>對我這種法律金融跨域背景的人，加分點在於我會特別看重「紀錄」和「金鑰保護」這兩件別人容易輕忽的事。一般工程師可能覺得 log 是可有可無的，但在受監理的金融業，「每一個自動決策都要能事後追溯、能交代依據」幾乎是硬性要求——所以我從一開始就會把請求、模型回應、時間戳都完整留存，而不是等出事才補。金鑰保護也一樣，我很清楚一把外流的金鑰在金融公司代表的不只是帳單暴增，而是資安事故。能把合規與風控的直覺，落地成串接時的具體工程決定，這是我比純技術背景的人更能提早想到的一層。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易答錯的地方，是以為「API 會自動記得上一輪的對話」。它不會。ChatGPT API 是無狀態的（stateless，每次呼叫都是獨立的、伺服器不幫你保存前面聊了什麼），你在 Playground 或 App 裡感覺它「記得」，其實是那個介面每次都偷偷把整段歷史對話重新塞進 messages 一起送出去。所以你自己串接時，要有「上下文管理」的意識：如果要延續對話，得由你的程式負責把先前的訊息一起帶上；而且對話越長、每次送的 token 越多、越貴，這也是為什麼實務上常要做「只保留最近幾輪」或「先摘要再送」的取捨。把這件事講清楚，通常能讓面試官確認你不是只跑過玩具範例。</p>
+  <p>另一個常見的坑，是把 API 金鑰不小心暴露出去。最典型的錯誤有兩種：一是為了圖方便，直接在前端 JavaScript 裡呼叫 API，這等於把金鑰印在網頁原始碼上給全世界看；二是把金鑰寫死在程式碼裡然後 commit 進 git，就算之後刪掉，它仍留在版本歷史裡被翻得到。正確做法是金鑰只放後端、用環境變數讀取，前端一律透過自家後端中轉。還有一個容易混淆的追問是「串了 API 就代表模型會用我公司的資料回答嗎」——不會，API 呼叫本身只帶你這次送進去的訊息，模型不會自動知道你資料庫裡的東西，要它根據公司資料回答得另外做檢索再塞進 prompt（也就是之後會學的 RAG）。至於各家模型細部的限流策略、大規模串接的重試與快取設計，我目前是懂到原理與該注意的點、還沒有實際扛過線上大流量，被追問細節我會誠實說明我掌握的主線，而不是硬掰數字。</p>
+
+  <p>串 API 的入門一小時就學得會，但把一次成功的呼叫養成一個天天穩定跑的服務，才是真正把你和「跑過範例的人」分開的地方——記住這句，你就會從第一天起就去想錯誤、成本、金鑰和紀錄。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「用 API 串 ChatGPT，跟直接在 Playground 上用，差在哪裡？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得清「玩過」和「能做成產品」。</span>
+        <span class="a">她可以怎麼答：Playground 是人坐在瀏覽器前手動打字、手動看結果，適合試想法。API 是用程式送一個 HTTP 請求過去，讓它自動、可重複地跑，才能接進系統。差別不是換工具，是從「人在按」變成「程式自己在跑」。也因為變成程式在跑，我就得多顧錯誤處理、成本、金鑰這些 Playground 上不用管的事，這才是 API 串接真正的重點。</span>
+      </li>
+      <li>
+        <span class="q">「一次 API 呼叫大概帶哪些東西？回傳又是什麼？」</span>
+        <span class="hint">👉 這題其實在問：你是不是真的動手串過，還是只聽過名詞。</span>
+        <span class="a">她可以怎麼答：核心就四樣。API 金鑰，用來證明是我、也拿來計費；model，指定用哪個模型；messages，也就是對話訊息陣列，每則標角色，system 設定身分規則、user 是使用者的話、assistant 是模型先前回答；還有像 temperature 這種參數，越低越穩定。回傳除了那段文字，還會附上這次用掉多少 token，token 同時決定收費和長度。搞懂這四樣加一個回傳，整個骨架就清楚了。</span>
+      </li>
+      <li>
+        <span class="q">「你怎麼保管 API 金鑰？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有基本的資安意識，會不會犯低級錯誤。</span>
+        <span class="a">她可以怎麼答：金鑰等於我的信用卡，只能放後端。我會用環境變數讀取，絕不寫死在程式碼裡、也絕不 commit 進 git，因為就算之後刪掉，它還留在版本歷史裡。前端一律不直接呼叫 API，而是透過自家後端中轉，避免金鑰印在網頁原始碼上被人翻到。在金融業，一把外流的金鑰不只是帳單暴增，是資安事故，所以我從第一天就會這樣做。</span>
+      </li>
+      <li>
+        <span class="q">「API 會自動記得前面聊過的內容嗎？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂它是無狀態的、上下文要自己管。</span>
+        <span class="a">她可以怎麼答：不會，它是無狀態的，每次呼叫都是獨立的。你在 App 裡覺得它記得，其實是那個介面每次都偷偷把整段歷史重新塞進 messages 一起送。所以我自己串接時，要延續對話就得由我的程式把先前訊息一起帶上。而且對話越長、每次送的 token 越多、越貴，所以實務上常要做取捨，例如只保留最近幾輪，或先把舊對話摘要再送。</span>
+      </li>
+      <li>
+        <span class="q">「同樣是呼叫 API，你覺得能跑起來跟能上生產差在哪？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有工程成熟度，還是只跑過範例。</span>
+        <span class="a">她可以怎麼答（誠實的答法）：能跑一次成功很容易，難的是天天穩定跑。我會多顧四件事：錯誤處理，網路逾時或被限流要能重試、別讓服務整個掛掉；成本控制，每次呼叫都在燒 token，要能估算、設上限；金鑰保護，只放後端；還有紀錄，把每次請求與回應存下來方便查帳和優化。做金融我會特別重視紀錄，因為自動決策要能事後追溯。不過大規模線上流量的重試與快取設計，我目前是懂原理、還沒實際扛過大流量，被問細節我會誠實講我掌握的主線。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-07-28.html"><span class="dir">上一課</span>← Prompt Engineering不是玄學</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>
