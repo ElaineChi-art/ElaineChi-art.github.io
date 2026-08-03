@@ -144,7 +144,7 @@ const SUBS=["行政法","刑法","刑訴","商事法"];
 let cur="行政法", kw="";
 function esc(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
 function md(s){return esc(s).replace(/==(.+?)==/g,'<mark>$1</mark>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
-function tplMd(s){return md(s).replace(/\[([^\]]*)\]/g,'<span class="blank">[$1]</span>').replace(/^([一二三四五（）\d\.、]+)/,'<b>$1</b>');}
+function tplMd(s){return md(s).replace(/\[(.*?)\]/g,'<span class="blank">[$1]</span>').replace(/^([一二三四五（）\d\.、]+)/,'<b>$1</b>');}
 // ---- 語音（切短句修Chrome長句中斷 + keep-alive）----
 function pickVoice(){const vs=speechSynthesis.getVoices();let b=null,bs=-1;vs.forEach(v=>{const l=(v.lang||"").toLowerCase(),n=(v.name||"");let s=l.startsWith("zh-tw")||l.startsWith("zh-hant")?100:l.startsWith("zh-hk")?60:l.startsWith("zh")?40:-1;if(s<0)return;if(/premium|enhanced|neural|siri|美佳|婷婷|Mei|Ting/i.test(n))s+=20;if(v.localService)s+=3;if(s>bs){bs=s;b=v;}});return b;}
 function rate(){return parseFloat(document.getElementById("rate").value)||1;}
