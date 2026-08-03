@@ -36,6 +36,13 @@
   .card .play{flex:none;background:rgba(127,224,192,.14);border:1px solid var(--teal);color:var(--teal);border-radius:8px;font-size:12px;padding:2px 7px;cursor:pointer;line-height:1.5}
   .card .play.on{background:var(--teal);color:#0b0d12;font-weight:bold}
   mark{background:rgba(255,216,107,.3);color:inherit;border-radius:3px;padding:0 2px}
+  .tplbox{background:#12161f;border:1px solid #2c3647;border-radius:12px;margin:8px 0 4px}
+  .tplbox summary{cursor:pointer;padding:11px 14px;font-size:14px;font-weight:800;color:var(--gold);list-style:none}
+  .tplbox summary::-webkit-details-marker{display:none}
+  .tpl{border-top:1px solid var(--line);padding:9px 14px}
+  .tpl-name{font-size:13.5px;font-weight:700;color:var(--teal);margin-bottom:5px}
+  .tpl-line{font-size:13px;line-height:1.95;color:var(--txt)}
+  .blank{color:var(--gold);background:rgba(255,216,107,.14);border-radius:3px;padding:0 3px;font-weight:600}
 </style>
 </head>
 <body>
@@ -72,17 +79,72 @@
   <input id="search" placeholder="🔍 搜爭點/條文">
   <select id="rate" title="語速"><option value="1">正常</option><option value="1.3">🐇快</option><option value="1.6">很快</option><option value="2">超快</option><option value="0.85">🐢慢</option></select>
 </div>
+<div id="tpl"></div>
 <div class="cnt" id="cnt"></div>
 <div id="list"></div>
 </div>
 
 <script src="shenlun-data.js"></script>
 <script>
+// 📋 考場照填模板（標準三段論：按→查→準此；空格[__]照填）
+const TPL={
+"刑法":[
+ {n:"成立犯罪（三階層 · 最常用）",s:["一、甲之[行為]，是否成立刑法§[__]之[__]罪？",
+   "（一）構成要件該當性：","　1. 客觀：行為主體、[行為]、[結果]、因果關係與客觀歸責。查[事實]，該當。",
+   "　2. 主觀：行為時有無故意(§13)／過失(§14)。查[__]。",
+   "（二）違法性：有無阻卻違法事由（正當防衛§23／緊急避難§24／依法令§21／業務§22）？查[__]，無→具違法性。",
+   "（三）有責性：責任能力(§18、§19)、不法意識、期待可能性。查[__]。",
+   "（四）小結：故甲[成立／不成立]刑法§[__]之[__]罪。"]},
+ {n:"未遂（§25-27）",s:["一、甲已著手於[__]之實行而不遂，是否成立未遂？",
+   "（一）著手：依主客觀混合說，甲[__]已密接於構成要件行為→已著手。",
+   "（二）類型：障礙未遂(§26,得減)／中止未遂(§27,己意中止且防果，減免)／不能未遂(§26但書,不罰)。查[__]。",
+   "（三）結論：甲成立§[__]之[__]未遂。"]},
+ {n:"正犯與共犯（§28-31）",s:["一、乙就甲之犯行如何論處？",
+   "（一）共同正犯(§28)：有無犯意聯絡＋行為分擔？查[__]。",
+   "（二）教唆(§29)／幫助(§30)：查[__]。","（三）身分犯(§31)：查[__]。","（四）結論：乙成立§[__]之[__]。"]},
+],
+"行政法":[
+ {n:"行政處分合法性 ＋ 救濟（最常用）",s:["一、[系爭措施]是否為行政處分？（行程§92）",
+   "　→ ①行政機關 ②公權力 ③單方 ④具體事件 ⑤對外 ⑥直接發生法律效果。查[__]，是／否。",
+   "二、該處分是否合法？","　（一）形式：管轄權、法定程序（給予陳述意見§102、記明理由§96）、方式。查[__]。",
+   "　（二）實質：法律保留、授權明確性、構成要件涵攝、有無裁量濫用/逾越(§10)、比例原則(§7)、平等、信賴保護(§8)。查[__]。",
+   "三、人民如何救濟？→ 訴願(訴願法§1)→ 撤銷訴訟(行訴§4)／課予義務訴訟(§5)；得聲請停止執行(§116)。"]},
+ {n:"國家賠償",s:["一、人民得否請求國家賠償？",
+   "（一）§2Ⅱ 公務員：①執行職務行使公權力 ②故意過失 ③不法 ④侵害人民自由權利 ⑤因果。查[__]。",
+   "（二）§3 公共設施：設置或管理有欠缺致人民受損（無過失）。查[__]。",
+   "（三）程序：應先以書面向賠償義務機關請求協議(§10)。","（四）結論。"]},
+ {n:"法規命令／行政罰",s:["一、[系爭規定]之性質？（法規命令§150／行政規則§159）",
+   "二、是否有法律授權且授權明確（授權明確性原則）？查[__]。",
+   "三、（行政罰）有無責任條件(§7)、一事不二罰(§24、§26)、裁處權時效(§27)？查[__]。"]},
+],
+"刑訴":[
+ {n:"強制處分合法性 ＋ 證據能力",s:["一、[搜索／扣押／羈押／監聽]之發動是否合法？",
+   "　→ 法定要件、令狀原則(§128)、法官保留、比例原則、有無例外（附帶/逕行/同意搜索）。查[__]。",
+   "二、違法取得之證據有無證據能力？","　→ 自白：任意性法則(§156)、不正訊問(§156Ⅰ)。",
+   "　→ 非供述證據：權衡理論(§158-4)；毒樹果實。查[__]。","三、程序效果與結論。"]},
+ {n:"傳聞法則（§159）",s:["一、[某陳述]是否為傳聞證據而無證據能力？（§159Ⅰ）",
+   "二、有無傳聞例外？→ §159-1(向法官/檢察官)、§159-2、§159-3、§159-4(文書)、§159-5(同意)。查[__]。",
+   "三、結論。"]},
+],
+"商事法":[
+ {n:"公司法爭點通用",s:["一、[系爭行為]之效力／責任？",
+   "（一）定性：屬股東會或董事會職權？(§185/§202)　公司能力限制(§13轉投資/§15貸放/§16保證)。查[__]。",
+   "（二）程序：召集權、通知、決議門檻（普通/特別決議）。查[__]。",
+   "（三）負責人責任(§23)、忠實義務。","（四）結論。"]},
+ {n:"票據法爭點通用",s:["一、[票據行為]之效力？",
+   "（一）票據行為獨立性、無因性、文義性。","（二）票據抗辯之切斷(§13)、善意取得(§14)。查[__]。",
+   "（三）背書連續、付款提示、追索權(§85)。","（四）結論。"]},
+ {n:"保險法爭點通用",s:["一、保險人應否理賠？",
+   "（一）保險利益(§14-20)、保險契約成立。","（二）據實說明義務(§64)、複保險(§35-38)、危險增加通知(§59)。查[__]。",
+   "（三）代位(§53，人身保險不代位§103)。","（四）結論。"]},
+],
+};
 const D=window.SHENLUN||{};
 const SUBS=["行政法","刑法","刑訴","商事法"];
 let cur="行政法", kw="";
 function esc(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
 function md(s){return esc(s).replace(/==(.+?)==/g,'<mark>$1</mark>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
+function tplMd(s){return md(s).replace(/\[([^\]]*)\]/g,'<span class="blank">[$1]</span>').replace(/^([一二三四五（）\d\.、]+)/,'<b>$1</b>');}
 // ---- 語音（切短句修Chrome長句中斷 + keep-alive）----
 function pickVoice(){const vs=speechSynthesis.getVoices();let b=null,bs=-1;vs.forEach(v=>{const l=(v.lang||"").toLowerCase(),n=(v.name||"");let s=l.startsWith("zh-tw")||l.startsWith("zh-hant")?100:l.startsWith("zh-hk")?60:l.startsWith("zh")?40:-1;if(s<0)return;if(/premium|enhanced|neural|siri|美佳|婷婷|Mei|Ting/i.test(n))s+=20;if(v.localService)s+=3;if(s>bs){bs=s;b=v;}});return b;}
 function rate(){return parseFloat(document.getElementById("rate").value)||1;}
@@ -103,6 +165,8 @@ function items(){const a=D[cur]||[];if(!kw)return a;const k=kw;return a.filter(x
 function render(){
   document.getElementById("chips").innerHTML=SUBS.map(s=>`<button class="chip${s===cur?" on":""}" data-s="${s}">${s}<span style="opacity:.6;font-size:12px">(${(D[s]||[]).length})</span></button>`).join("");
   document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{stopAll();cur=b.dataset.s;render();window.scrollTo(0,0);});
+  const tpls=TPL[cur]||[];
+  document.getElementById("tpl").innerHTML=tpls.length?`<details class="tplbox" open><summary>📋 ${cur}·考場照填模板（${tpls.length}式，點展開直接套 [__] 填空）</summary>`+tpls.map(t=>`<div class="tpl"><div class="tpl-name">📝 ${esc(t.n)}</div>${t.s.map(l=>`<div class="tpl-line">${tplMd(l)}</div>`).join("")}</div>`).join("")+`</details>`:"";
   const list=items();
   document.getElementById("cnt").textContent=cur+"："+list.length+" 個爭點"+(kw?"（搜尋中）":"")+" · 點某題 ▶ 可從那裡自動念到底";
   document.getElementById("list").innerHTML=list.map((it,i)=>`
