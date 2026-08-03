@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📝 調查局申論作戰卡</title>
+<style>
+  :root{--bg:#0b0d12;--card:#141922;--line:#242b38;--txt:#e6e9ef;--mut:#8a93a3;--gold:#ffd86b;--teal:#7fe0c0;--coral:#ff8f8f;--ok:#7fd0a0;--blue:#9fb8ff;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.6}
+  .topnav{display:flex;gap:6px;background:#080a0e;padding:8px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:60;overflow-x:auto}
+  .topnav a{color:#9aa4b2;text-decoration:none;font-size:13px;font-weight:600;padding:6px 12px;border-radius:8px;white-space:nowrap}
+  .topnav a.active{background:#1f2e3a;color:#7fb5ff}
+  header{padding:14px 16px 6px}
+  header h1{font-size:20px;margin:0 0 2px}
+  header .sub{color:var(--mut);font-size:13px}
+  .wrap{max-width:820px;margin:0 auto;padding:0 14px 60px}
+  .method{background:linear-gradient(180deg,#1a2130,#141922);border:1px solid #2c3647;border-radius:14px;padding:14px 16px;margin:12px 0}
+  .method h2{font-size:15px;margin:0 0 8px;color:var(--gold)}
+  .method ol{margin:6px 0 0;padding-left:20px} .method li{margin:5px 0;font-size:14px}
+  .skel{background:#0f141c;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:13.5px;line-height:1.9}
+  .skel b{color:var(--teal)}
+  .bar{position:sticky;top:41px;z-index:50;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .chip{background:#1a2130;border:1px solid var(--line);color:var(--txt);border-radius:20px;padding:6px 14px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:600}
+  .chip.on{background:#26324a;border-color:var(--gold);color:var(--gold)}
+  #search{background:#0f141c;border:1px solid var(--line);color:var(--txt);border-radius:18px;padding:7px 13px;font-size:14px;flex:1;min-width:130px;outline:none}
+  select{background:#1a2130;color:var(--txt);border:1px solid var(--line);border-radius:8px;font-size:13px;padding:5px 6px;font-family:inherit}
+  .cnt{color:var(--mut);font-size:12.5px;margin:8px 2px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin:9px 0;display:flex;gap:9px;align-items:flex-start}
+  .card .no{flex:none;color:var(--mut);font-size:12px;font-weight:700;min-width:26px;padding-top:2px}
+  .card .body{flex:1}
+  .card .cpt{font-size:15px;font-weight:700;color:var(--txt)}
+  .card .k{display:block;font-size:13.5px;color:#ffeab0;margin-top:3px}
+  .card .law{display:block;font-size:12.5px;color:var(--blue);margin-top:3px}
+  .card .trap{display:block;font-size:12.5px;color:var(--coral);margin-top:3px}
+  .card .play{flex:none;background:rgba(127,224,192,.14);border:1px solid var(--teal);color:var(--teal);border-radius:8px;font-size:12px;padding:2px 7px;cursor:pointer;line-height:1.5}
+  .card .play.on{background:var(--teal);color:#0b0d12;font-weight:bold}
+  mark{background:rgba(255,216,107,.3);color:inherit;border-radius:3px;padding:0 2px}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="https://elainechi-art.github.io/judicial/">📚 複習首頁</a>
+  <a href="sprint.html">🤖 機器人</a>
+  <a href="graph.html">🕸️ 關聯圖</a>
+  <a class="active" href="shenlun.html">📝 申論作戰卡</a>
+</nav>
+<div class="wrap">
+<header>
+  <h1>📝 調查局申論作戰卡</h1>
+  <div class="sub">刑法 · 行政法 · 刑訴 · 商事法（純申論）｜考前把每個爭點濃縮成一句，照結構寫完</div>
+</header>
+
+<div class="method">
+  <h2>🎯 「寫完」鐵則</h2>
+  <ol>
+    <li><b>先寫骨架</b>：一看到題目，先把每題「①爭點 ②依據 ③要件 ④涵攝 ⑤結論」標題列出來占版面，就不會空白。</li>
+    <li><b>時間硬切</b>：2小時2題 → 每題 <b>55 分</b>，剩 10 分檢查。時間到就換題。</li>
+    <li><b>一定寫結論</b>：改題看結論給分，沒結論=沒寫完。</li>
+  </ol>
+  <div class="skel">
+    <b>【爭點】</b> 本題爭點為……<br>
+    <b>【依據】</b> 按 §X 規定……（先寫條文）<br>
+    <b>【要件／學說】</b> 其要件為……（實務／通說）<br>
+    <b>【涵攝】</b> 本題中，甲之行為……（把事實套進要件）<br>
+    <b>【結論】</b> 故……
+  </div>
+</div>
+
+<div class="bar">
+  <div id="chips"></div>
+  <input id="search" placeholder="🔍 搜爭點/條文">
+  <select id="rate" title="語速"><option value="1">正常</option><option value="1.3">🐇快</option><option value="1.6">很快</option><option value="2">超快</option><option value="0.85">🐢慢</option></select>
+</div>
+<div class="cnt" id="cnt"></div>
+<div id="list"></div>
+</div>
+
+<script src="shenlun-data.js"></script>
+<script>
+const D=window.SHENLUN||{};
+const SUBS=["行政法","刑法","刑訴","商事法"];
+let cur="行政法", kw="";
+function esc(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+function md(s){return esc(s).replace(/==(.+?)==/g,'<mark>$1</mark>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
+// ---- 語音（切短句修Chrome長句中斷 + keep-alive）----
+function pickVoice(){const vs=speechSynthesis.getVoices();let b=null,bs=-1;vs.forEach(v=>{const l=(v.lang||"").toLowerCase(),n=(v.name||"");let s=l.startsWith("zh-tw")||l.startsWith("zh-hant")?100:l.startsWith("zh-hk")?60:l.startsWith("zh")?40:-1;if(s<0)return;if(/premium|enhanced|neural|siri|美佳|婷婷|Mei|Ting/i.test(n))s+=20;if(v.localService)s+=3;if(s>bs){bs=s;b=v;}});return b;}
+function rate(){return parseFloat(document.getElementById("rate").value)||1;}
+function chunks(t){return String(t||"").split(/(?<=[。！？；!?;\n])/).reduce((a,s)=>{s=s.trim();if(!s)return a;if(a.length&&a[a.length-1].length+s.length<=150)a[a.length-1]+=s;else a.push(s);return a;},[]);}
+try{setInterval(()=>{try{if(speechSynthesis.speaking)speechSynthesis.resume();}catch(e){}},7000);}catch(e){}
+let _auto={on:false,items:[],i:0};
+function stopAll(){_auto.on=false;try{speechSynthesis.cancel();}catch(e){}document.querySelectorAll(".play.on").forEach(b=>b.classList.remove("on"));}
+function itemSpeak(it){return (it.c.replace(/§.*/,"")+"。"+(it.k||it.c)).replace(/§/g,"第").replace(/[「」『』]/g,"");}
+function playFrom(items,start){stopAll();_auto={on:true,items:items,i:start};step();}
+function step(){if(!_auto.on||_auto.i>=_auto.items.length){_auto.on=false;return;}
+  const it=_auto.items[_auto.i];
+  document.querySelectorAll(".play").forEach(b=>b.classList.toggle("on",+b.dataset.i===_auto.i&&b.dataset.sub===cur));
+  const el=document.querySelector('.play[data-i="'+_auto.i+'"]');if(el)el.closest(".card").scrollIntoView({behavior:"smooth",block:"center"});
+  const cs=chunks(itemSpeak(it));let j=0;try{speechSynthesis.cancel();}catch(e){}
+  const nx=()=>{if(!_auto.on)return;if(j>=cs.length){_auto.i++;step();return;}const u=new SpeechSynthesisUtterance(cs[j]);u.lang="zh-TW";u.rate=rate();const v=pickVoice();if(v){u.voice=v;u.lang=v.lang||"zh-TW";}u.onend=()=>{j++;nx();};speechSynthesis.speak(u);speechSynthesis.resume();};nx();}
+// ---- 渲染 ----
+function items(){const a=D[cur]||[];if(!kw)return a;const k=kw;return a.filter(x=>(x.c+x.k+x.law+x.trap).indexOf(k)>=0);}
+function render(){
+  document.getElementById("chips").innerHTML=SUBS.map(s=>`<button class="chip${s===cur?" on":""}" data-s="${s}">${s}<span style="opacity:.6;font-size:12px">(${(D[s]||[]).length})</span></button>`).join("");
+  document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{stopAll();cur=b.dataset.s;render();window.scrollTo(0,0);});
+  const list=items();
+  document.getElementById("cnt").textContent=cur+"："+list.length+" 個爭點"+(kw?"（搜尋中）":"")+" · 點某題 ▶ 可從那裡自動念到底";
+  document.getElementById("list").innerHTML=list.map((it,i)=>`
+    <div class="card">
+      <div class="no">${i+1}</div>
+      <div class="body">
+        <div class="cpt">${md(it.c)}</div>
+        ${it.k?`<span class="k">🔑 ${md(it.k)}</span>`:""}
+        ${it.law?`<span class="law">📜 ${md(it.law)}</span>`:""}
+        ${it.trap?`<span class="trap">⚠️ ${md(it.trap)}</span>`:""}
+      </div>
+      <button class="play" data-i="${i}" data-sub="${cur}" title="從這題開始自動念">▶</button>
+    </div>`).join("")||`<div class="cnt">找不到符合的爭點。</div>`;
+  document.querySelectorAll(".play").forEach(b=>b.onclick=()=>{const arr=items();playFrom(arr,+b.dataset.i);});
+}
+document.getElementById("search").addEventListener("input",e=>{kw=e.target.value.trim();render();});
+render();
+// 自動更新（破快取）
+(function(){var V="1";function ck(){fetch("ver.json?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.v)return;var u=new URL(location.href);if(String(j.v)!==V&&u.searchParams.get("_v")!==String(j.v)){u.searchParams.set("_v",j.v);location.replace(u.toString());}}).catch(function(){});}ck();setInterval(ck,60000);})();
+</script>
+</body>
+</html>
