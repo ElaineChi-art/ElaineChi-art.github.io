@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>function calling與結構化輸出：讓LLM乖乖回傳你要的JSON｜技能實驗室・每日課程</title>
+<meta name="description" content="LLM 天生愛回一段給人看的文字，但程式要的是能直接解析的 JSON。這一課拆解 function calling 與結構化輸出怎麼強迫模型照格式回答，以及一個最容易答錯的重點：schema 保證格式對，不保證內容對。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-03</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・生成式AI應用開發</div>
+  <h1>function calling與結構化輸出：讓LLM乖乖回傳你要的JSON</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-03</span>
+    <span>約 6 分鐘</span>
+    <span>對應真專案主題：OpenAI API 開發與實務（python）</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>LLM 天生會回一段「給人看」的文字，但你的程式要的是「能直接讀」的資料。function calling（函式呼叫）和結構化輸出（structured output）就是強迫模型別再囉嗦、乖乖回一包固定格式 JSON 的兩種做法：你先用 JSON Schema（一份描述資料長相的規格）告訴它欄位有哪些、型別是什麼，模型就照著填。這解決的是「解析問題」——讓後面的程式不用再用一堆字串處理去猜它到底想說什麼。但最關鍵的一句是：schema 只保證「格式對」，不保證「內容對」。欄位型別會照填，可是金額算錯、幣別填錯，它不會幫你擋。所以面試時要講的不是「我會叫它回 JSON」，而是「我知道拿到 JSON 之後，還得自己驗一次業務規則」。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-7-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260803" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260803" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260803" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260803)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260803)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M2 · 生成式AI應用開發  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">讓模型回「程式能吃」的 JSON，<tspan fill="#4D9FFF">而不是一段話</tspan></text>
+
+      <!-- 卡1：痛點 -->
+      <rect x="64" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <rect x="64" y="140" width="336" height="5" rx="2.5" fill="url(#topbarD20260803)"/>
+      <text x="88" y="184" font-size="20" font-weight="800" fill="#4D9FFF">■ 痛點：它太愛講話</text>
+      <text x="88" y="224" font-size="17" fill="#8FA1C0">你問：這筆訂單多少錢？</text>
+      <text x="88" y="252" font-size="17" fill="#C7D2E4">它回：「這筆大約一千兩</text>
+      <text x="88" y="276" font-size="17" fill="#C7D2E4">百元喔，含運費～」</text>
+      <text x="88" y="320" font-size="17" fill="#8FA1C0">問題</text>
+      <text x="88" y="346" font-size="17" fill="#C7D2E4">程式沒辦法穩定解析</text>
+      <text x="88" y="370" font-size="17" fill="#C7D2E4">一句自然語言。今天回這樣、</text>
+      <text x="88" y="394" font-size="17" fill="#C7D2E4">明天換句話，就爆了。</text>
+      <text x="88" y="452" font-size="17" fill="#C7D2E4">要的是：<tspan font-weight="700" fill="#F5F8FF">{"amount":1200}</tspan></text>
+      <text x="88" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 解析問題，不是聰不聰明。</text>
+
+      <line x1="404" y1="340" x2="466" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260803)"/>
+
+      <!-- 卡2：兩種做法 -->
+      <rect x="472" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="472" y="140" width="336" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="496" y="184" font-size="20" font-weight="800" fill="#F2A33C">■ 兩種正解</text>
+      <text x="496" y="222" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">function calling</tspan></text>
+      <text x="496" y="248" font-size="17" fill="#C7D2E4">用 JSON Schema 描述一個函式，</text>
+      <text x="496" y="272" font-size="17" fill="#C7D2E4">模型回「該帶什麼參數」，</text>
+      <text x="496" y="296" font-size="17" fill="#C7D2E4">你的程式接手去執行。</text>
+      <text x="496" y="340" font-size="17" fill="#C7D2E4"><tspan font-weight="700" fill="#F5F8FF">結構化輸出</tspan></text>
+      <text x="496" y="366" font-size="17" fill="#C7D2E4">直接指定回應格式＝某 schema，</text>
+      <text x="496" y="390" font-size="17" fill="#C7D2E4">模型保證照著欄位填。</text>
+      <text x="496" y="440" font-size="17" fill="#8FA1C0">共同點</text>
+      <text x="496" y="466" font-size="17" fill="#C7D2E4">先講清楚格式，再讓它填。</text>
+      <text x="496" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 把「約定」寫在 schema 裡。</text>
+
+      <line x1="812" y1="340" x2="874" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260803)"/>
+
+      <!-- 卡3：陷阱 -->
+      <rect x="880" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="880" y="140" width="336" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="904" y="184" font-size="20" font-weight="800" fill="#35C08E">■ 最容易忽略的一句</text>
+      <text x="904" y="226" font-size="17" fill="#C7D2E4">schema 保證的是</text>
+      <text x="904" y="252" font-size="18" font-weight="800" fill="#F5F8FF">「格式對」</text>
+      <text x="904" y="290" font-size="17" fill="#C7D2E4">不保證</text>
+      <text x="904" y="316" font-size="18" font-weight="800" fill="#F5F8FF">「內容對」</text>
+      <text x="904" y="360" font-size="17" fill="#C7D2E4">型別、欄位會照填，</text>
+      <text x="904" y="384" font-size="17" fill="#C7D2E4">但金額算錯、幣別填錯，</text>
+      <text x="904" y="408" font-size="17" fill="#C7D2E4">它不會幫你擋。</text>
+      <text x="904" y="452" font-size="17" fill="#8FA1C0">所以</text>
+      <text x="904" y="478" font-size="17" fill="#C7D2E4">拿到 JSON 仍要自己</text>
+      <text x="904" y="502" font-size="17" fill="#C7D2E4">驗一次業務規則。</text>
+      <text x="904" y="520" font-size="16" font-weight="700" fill="#7E8CA8"></text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：結構化輸出解決的是「解析問題」，不是「正確性問題」。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">它讓程式讀得懂模型的回答，但內容對不對，還是得你自己驗。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-7-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-03-1.mp3"></audio>
+    <p>這張圖在講的是，怎麼讓大型語言模型不要回一段給人看的文字，而是回一包程式能直接讀的 JSON。左邊是痛點：模型天生愛講話，你問它訂單金額，它回「這筆訂單大約是一千兩百元喔」，這種句子程式沒辦法穩定解析。中間是兩種正解。第一種 function calling，你先用 JSON Schema 描述一個函式的參數長什麼樣，模型就會回傳一包符合這個格式的參數，讓你的程式接手去執行。第二種是結構化輸出，直接指定回應格式是某個 JSON Schema，模型保證照著填。右邊是最容易被忽略的重點：schema 保證的是「格式對」，不保證「內容對」，欄位型別會照填，但金額填錯、幣別填錯它不會擋。所以拿到 JSON 還是要自己驗一次業務規則。面試記住這句：結構化輸出解決的是解析問題，不是正確性問題。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>function calling 和結構化輸出，都是「強迫 LLM 按照你指定的格式回答」的機制。LLM 預設會回一段自然語言，就像有人跟你講話一樣——你問它「這封信要分到哪一類、急不急」，它可能回「這看起來是一則帳單查詢，建議儘快處理喔」。人看得懂，但你的程式看不懂：它沒辦法穩定地從這句話裡摳出「類別＝帳單查詢、急迫度＝高」這兩個值。結構化輸出要做的，就是叫模型別再用一整句話，而是直接回一包固定欄位的 JSON（一種鍵值成對、程式最好讀的資料格式），例如 <code>{"category":"帳單","urgency":"high"}</code>。</p>
+  <p>兩者的差別在「用途」，不在「難不難」。結構化輸出（有些平台叫 structured outputs、或用 response_format 指定 JSON Schema）的重點是：我要一份乾淨的資料，你照這個規格填給我就好。function calling 則多一層：我先用 JSON Schema 描述「我這邊有一個函式，它需要哪些參數」，模型判斷「這時候該呼叫這個函式」，於是回傳一包符合規格的參數，我的程式再拿這包參數去真的執行那個函式（查資料庫、寄信、下單）。所以 function calling 常被說成「讓 LLM 會用工具」——但拆開來看，它底層還是同一件事：用 JSON Schema 事先講好格式，讓模型乖乖照著填。JSON Schema 在這裡就是那份「約定」：欄位叫什麼、是字串還是數字、哪些必填、只能從哪幾個選項挑，全寫在裡面。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎這件事，是因為它是「把 LLM 接進既有系統」的那顆螺絲。一個只會回自然語言的模型，是個很會聊天的黑盒子；但真正的產品需要它的輸出能被下一段程式接住——分類結果要寫進資料庫、抽取出的欄位要填進表單、判斷出的意圖要觸發不同流程。這中間如果每次都要用一堆字串處理、正規表達式去「猜」模型到底回了什麼，系統會非常脆弱：模型今天多講一句客套話、明天換個說法，你的解析就整條斷掉。結構化輸出把這段從「猜」變成「約定」，是讓 AI 功能能穩定上生產的關鍵一步。</p>
+  <p>這也正好對上 104 人力銀行《AI 人才趨勢報告》給求職者的提醒：不要零散地學單一技能，要打通「從需求到能上線」的完整應用情境。結構化輸出就是這條情境裡把「模型」和「系統」焊起來的接點——它接續前幾課的 prompt 與 API 串接，讓模型的回答第一次真正變成「資料」而不只是「文字」，也是再往下 RAG、自動化流程能站得住的地基。順帶一提，這裡我講的是常識性的技術概念（結構化輸出、JSON Schema、工具呼叫），各家平台的參數名稱和保證程度會有差異，實作時要以當下官方文件為準，這點我不會憑記憶硬背版本細節。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到金融場景，這一課的樣子很具體。假設我在玉山或國泰，要做一個「自動從客戶 email 抽出報帳資訊」的小服務：信件進來，我要模型回一包固定格式的 JSON，欄位包含金額（數字）、幣別（只能是 TWD／USD／其他這幾個選項之一）、日期、以及分類。我會用 JSON Schema 把這幾個欄位、型別、和「幣別只能從清單挑」的限制寫死，讓模型只能照這個規格填，而不是回一段「這位客戶想報銷一筆美金餐費」的漂亮句子。這樣後端就能直接把這包 JSON 寫進報帳系統，不用再寫一堆解析邏輯去拆它的話。</p>
+  <p>對我這種法律金融跨域背景的人，加分點在於我會很自然地想到「schema 是一種契約」。在受監理的金融業，欄位定義、允許值、必填與否，本來就是要白紙黑字講清楚、不能各自解讀的東西——這跟我讀法條、寫合約時「把權利義務逐條界定清楚」的直覺完全一致。所以我設計 schema 時會特別去限制允許值（例如幣別只能從固定清單挑、金額必須是數字且非負），而不是給一個鬆散的字串欄位讓模型自由發揮。把「限制輸入的可能性」當成第一優先，這是我比純技術背景的人更早會想到的一層防線。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易答錯的地方，是以為「用了結構化輸出，模型就不會出錯了」。不是。schema 保證的是「格式對」，不保證「內容對」——這兩件事差很多。格式對的意思是：它一定會回一包合法的 JSON、欄位齊全、型別正確（該是數字的地方不會塞一句話）。但內容對不對，它管不到：金額欄位它會乖乖填一個數字，可是那個數字是不是真的等於信裡的金額、幣別有沒有搞錯，schema 一律照收。換句話說，結構化輸出解決的是「解析」，不是「正確性」。所以我拿到 JSON 之後，一定還要用自己的程式再驗一次業務規則（金額不能是負的、日期要合理、抽出的值要跟原文對得起來），把它當成「一份還沒查核的草稿」，而不是「已經正確的答案」。能講清楚這條界線，通常最能讓面試官確認你不是只照抄範例。</p>
+  <p>另一個常見的坑，是把 function calling 想成「模型自己去執行了那個函式」。它沒有。模型做的只是「判斷該呼叫哪個函式、並產生一包符合格式的參數」，真正去查資料庫、去下單、去寄信的，永遠是你的程式。這個界線在金融業特別重要：模型只負責「提議」，實際動作要不要放行、要不要加人工覆核，是我這邊的程式決定的——你絕對不會想讓一個模型「直接」就把轉帳執行下去。還有一個容易混淆的追問是「schema 寫得越嚴，模型就一定越聽話嗎」——大方向是限制越明確、模型越不容易亂填，但把 schema 塞得過度複雜（幾十層巢狀、一堆條件），模型照填的穩定度反而可能下降，實務上要在「約束夠嚴」和「別複雜到它填不好」之間取捨。至於各平台對結構化輸出的保證強度、失敗時怎麼回退（retry 或改用純文字再解析）這些細節，我目前是懂原理與該注意的點、還沒有實際扛過大量線上請求，被追問細節我會誠實講我掌握的主線，而不是硬掰。</p>
+
+  <p>結構化輸出讓模型的回答第一次變成「資料」而不只是「文字」——但別忘了那句界線：它保證格式對、不保證內容對，拿到 JSON 的下一步永遠是自己再驗一次。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「為什麼不能直接讓 LLM 回一段文字，自己再去解析就好？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂結構化輸出到底在解決什麼問題。</span>
+        <span class="a">她可以怎麼答：因為解析自然語言非常脆弱。模型今天回「大約一千兩百元喔」、明天換句話說，我用字串處理或正規表達式去摳值，很容易整條斷掉。結構化輸出是叫它直接回一包固定欄位的 JSON，例如 {"amount":1200}，把這段從「我去猜它想說什麼」變成「我們事先約定好格式」。這解決的是解析問題，讓後面的程式能穩定接住它的輸出，而不是每次都在賭它這次的講法。</span>
+      </li>
+      <li>
+        <span class="q">「function calling 跟結構化輸出差在哪？」</span>
+        <span class="hint">👉 這題其實在問：你是真的用過，還是只把兩個名詞混著講。</span>
+        <span class="a">她可以怎麼答：底層是同一件事——都用 JSON Schema 事先講好格式，讓模型照著填。差別在用途。結構化輸出是「我要一份乾淨的資料，你照這規格填給我」。function calling 多一層：我先描述「我這邊有個函式、需要哪些參數」，模型判斷該呼叫它、並回傳一包符合格式的參數，然後由我的程式拿這包參數去真的執行。所以常說 function calling 是「讓模型會用工具」，但要強調，執行的是我的程式，不是模型自己。</span>
+      </li>
+      <li>
+        <span class="q">「用了結構化輸出，是不是模型就不會回錯了？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得清「格式對」和「內容對」。</span>
+        <span class="a">她可以怎麼答：不是。schema 只保證格式對——一定回合法 JSON、欄位齊、型別正確；但不保證內容對。金額欄位它會乖乖填一個數字，可是那個數字對不對、幣別有沒有搞錯，它一律照收。所以結構化輸出解決的是解析，不是正確性。我拿到 JSON 後一定會再用程式驗一次業務規則，把它當成一份還沒查核的草稿，而不是已經正確的答案。這條界線我覺得是這個主題最容易被忽略、也最該講清楚的一點。</span>
+      </li>
+      <li>
+        <span class="q">「你會怎麼設計一個抽取資訊用的 JSON Schema？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂用 schema 去「限制」模型，而不只是描述。</span>
+        <span class="a">她可以怎麼答：我會把重點放在「限制可能性」。以從客戶信抽報帳資訊為例，金額我會限定是數字且非負、幣別限定只能從固定清單挑、必填欄位標清楚、能列舉的就用列舉不要留成自由字串。因為 schema 對我來說像一份契約，欄位定義和允許值要白紙黑字講死，模型才不容易亂填。這其實跟我法律背景寫合約的直覺一樣——把每個欄位的界線先界定清楚，比事後去收拾一個鬆散的輸出省事得多。</span>
+      </li>
+      <li>
+        <span class="q">「如果模型偶爾還是回了不符規格或不合理的內容，你怎麼辦？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有想過失敗情況，還是只想過快樂路徑。</span>
+        <span class="a">她可以怎麼答（誠實的答法）：我會分兩層處理。格式層面，靠結構化輸出把回應綁在 schema 上，萬一還是拿到壞格式，就重試或退回純文字再解析、並記錄下來。內容層面，一定加一段自己的業務規則驗證，金額非負、日期合理、抽出的值要跟原文對得起來，不通過就攔下來或轉人工覆核，在金融場景我尤其不會讓它直接放行。不過各平台保證強度和失敗退回的最佳實務，我目前是懂原理、還沒扛過大量線上請求，被問更細我會誠實講我掌握的主線。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-07-29.html"><span class="dir">上一課</span>← 從Playground到生產環境</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

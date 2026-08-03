@@ -56,7 +56,7 @@
       "category": "genai",
       "topic": "OpenAI API 開發與實務（python）",
       "t": "function calling與結構化輸出：讓LLM乖乖回傳你要的JSON",
-      "status": "todo"
+      "status": "done 2026-08-03"
     },
     {
       "id": 8,

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-29",
+  "updated": "2026-08-03",
   "lessons": [
     {
       "id": 1,
@@ -73,10 +73,10 @@
       "category": "genai",
       "topic": "OpenAI API 開發與實務（python）",
       "title": "function calling與結構化輸出：讓LLM乖乖回傳你要的JSON",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-03",
+      "url": "posts/daily/2026-08-03.html",
+      "slides": 1
     },
     {
       "id": 8,
