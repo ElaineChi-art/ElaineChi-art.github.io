@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAG是什麼：用LangChain讓ChatGPT讀懂你自己的文件｜技能實驗室・每日課程</title>
+<meta name="description" content="ChatGPT 只認得它訓練時看過的東西，你公司內部的規章、最新的合約它根本不知道。RAG（檢索增強生成）就是讓模型答題前先去翻你自己的文件、再根據翻到的內容回答。這一課拆解 RAG 的四個步驟、LangChain 扮演的角色，以及最容易答錯的一句：RAG 沒有改動模型，它是開書考試不是重新受訓。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-04</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・生成式AI應用開發</div>
+  <h1>RAG是什麼：用LangChain讓ChatGPT讀懂你自己的文件</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-04</span>
+    <span>約 6 分鐘</span>
+    <span>對應真專案主題：整合 LangChain 與 OpenAI 打造自己的 ChatGPT</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>RAG（檢索增強生成，Retrieval-Augmented Generation）就是「讓 ChatGPT 答題前先去翻你自己的文件、再根據翻到的內容回答」，而不是靠它腦袋裡背過的東西硬掰。做法四步：把文件切成小段、每段轉成向量（一串代表語意的數字）存進資料庫、問題來時撈出最相關的幾段、把這幾段連同問題一起塞給模型生成答案。LangChain（把這一整串步驟接起來的框架）就是負責串這條流程的膠水。最關鍵的一句：RAG 沒有改動模型本身，它是「開書考試」不是「重新受訓」——所以答得準不準，一大半取決於你「翻到的那幾頁」對不對。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-8-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260804" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260804" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260804" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260804)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260804)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M2 · 生成式AI應用開發  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">讓模型先翻你的文件再回答，<tspan fill="#4D9FFF">而不是憑記憶硬掰</tspan></text>
+
+      <!-- 卡1：痛點 -->
+      <rect x="64" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <rect x="64" y="140" width="336" height="5" rx="2.5" fill="url(#topbarD20260804)"/>
+      <text x="88" y="184" font-size="20" font-weight="800" fill="#4D9FFF">■ 痛點：它不認識你的文件</text>
+      <text x="88" y="224" font-size="17" fill="#8FA1C0">你問：我們公司的請假</text>
+      <text x="88" y="248" font-size="17" fill="#8FA1C0">規定第幾條怎麼寫？</text>
+      <text x="88" y="286" font-size="17" fill="#C7D2E4">模型只認得訓練時看過的</text>
+      <text x="88" y="310" font-size="17" fill="#C7D2E4">東西，你的內規、最新合約</text>
+      <text x="88" y="334" font-size="17" fill="#C7D2E4">它根本沒看過。</text>
+      <text x="88" y="380" font-size="17" fill="#8FA1C0">結果</text>
+      <text x="88" y="406" font-size="17" fill="#C7D2E4">要嘛說不知道，要嘛</text>
+      <text x="88" y="430" font-size="18" font-weight="800" fill="#F5F8FF">一本正經地編一個。</text>
+      <text x="88" y="520" font-size="16" font-weight="700" fill="#7E8CA8">→ 缺的是「資料」，不是「腦袋」。</text>
+
+      <line x1="404" y1="340" x2="466" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260804)"/>
+
+      <!-- 卡2：RAG 四步驟 -->
+      <rect x="472" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="472" y="140" width="336" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="496" y="184" font-size="20" font-weight="800" fill="#F2A33C">■ RAG 四步驟</text>
+      <text x="496" y="224" font-size="17" fill="#C7D2E4"><tspan font-weight="800" fill="#F5F8FF">1 切塊</tspan>　把文件切成一段段</text>
+      <text x="496" y="266" font-size="17" fill="#C7D2E4"><tspan font-weight="800" fill="#F5F8FF">2 向量化</tspan>　每段轉成向量，</text>
+      <text x="520" y="290" font-size="17" fill="#C7D2E4">存進向量資料庫</text>
+      <text x="496" y="332" font-size="17" fill="#C7D2E4"><tspan font-weight="800" fill="#F5F8FF">3 檢索</tspan>　問題來時撈出</text>
+      <text x="520" y="356" font-size="17" fill="#C7D2E4">最相關的幾段</text>
+      <text x="496" y="398" font-size="17" fill="#C7D2E4"><tspan font-weight="800" fill="#F5F8FF">4 生成</tspan>　把那幾段連同問題</text>
+      <text x="520" y="422" font-size="17" fill="#C7D2E4">一起塞給模型作答</text>
+      <text x="496" y="478" font-size="17" fill="#8FA1C0">＝把模型從「閉卷」</text>
+      <text x="496" y="502" font-size="17" fill="#8FA1C0">變成「開書考試」</text>
+      <text x="496" y="524" font-size="16" font-weight="700" fill="#7E8CA8"></text>
+
+      <line x1="812" y1="340" x2="874" y2="340" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260804)"/>
+
+      <!-- 卡3：LangChain 的角色＋誤區 -->
+      <rect x="880" y="140" width="336" height="400" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="880" y="140" width="336" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="904" y="184" font-size="20" font-weight="800" fill="#35C08E">■ LangChain 是膠水</text>
+      <text x="904" y="224" font-size="17" fill="#C7D2E4">它把載入、切塊、向量化、</text>
+      <text x="904" y="248" font-size="17" fill="#C7D2E4">檢索、生成這一整串</text>
+      <text x="904" y="272" font-size="17" fill="#C7D2E4">用統一介面接起來，</text>
+      <text x="904" y="296" font-size="17" fill="#C7D2E4">你不用每段自己黏。</text>
+      <text x="904" y="352" font-size="18" font-weight="800" fill="#F5F8FF">最容易答錯的一句</text>
+      <text x="904" y="392" font-size="17" fill="#C7D2E4">RAG 沒有改動模型參數，</text>
+      <text x="904" y="416" font-size="17" fill="#C7D2E4">是把資料塞進 prompt。</text>
+      <text x="904" y="456" font-size="17" fill="#C7D2E4">所以答得準不準，</text>
+      <text x="904" y="480" font-size="17" fill="#C7D2E4">看你<tspan font-weight="800" fill="#F5F8FF">「翻到的那幾頁」</tspan></text>
+      <text x="904" y="504" font-size="17" fill="#C7D2E4">對不對。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：RAG 是「開書考試」，不是「重新受訓」。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">它不改模型，只把對的資料放進 context——所以檢索品質，幾乎等於答案品質。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-8-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-04-1.mp3"></audio>
+    <p>這張圖在講的是 RAG，也就是檢索增強生成，怎麼讓 ChatGPT 讀懂你自己的文件。左邊是痛點：模型只認得它訓練時看過的東西，你公司內部的規章、最新的合約它根本沒看過，硬問就容易一本正經地編一個。中間是 RAG 的四個步驟：先把文件切成一段一段，每段轉成向量存進向量資料庫；使用者問問題時，先撈出最相關的幾段，再把這幾段連同問題一起塞給模型去生成答案。右邊是 LangChain 扮演的角色，它是把載入、切塊、向量化、檢索、生成這一整串接起來的膠水框架。最容易誤會的一句放在最下面：RAG 沒有動到模型本身，它是開書考試不是重新受訓，所以答得準不準，一大半取決於你翻到的那幾頁對不對。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>RAG 就是「讓模型答題前先去查你給它的資料」。它的全名是檢索增強生成（Retrieval-Augmented Generation）——把「檢索（去資料裡找）」這件事，加在「生成（模型寫答案）」的前面。預設的 ChatGPT 像一個很會講話、但只憑記憶答題的考生：它腦袋裡裝的是訓練時看過的公開資料，你公司的內部規章、上週剛簽的合約、產品的最新規格，它從來沒看過，硬問它就只能說不知道，或更糟——一本正經地編一個看起來很像的答案出來。RAG 要做的，就是在它開口之前，先幫它把「相關的那幾頁」翻出來、攤在桌上，讓它照著眼前的資料回答。</p>
+  <p>拆開來看，RAG 就是四個步驟。第一步「切塊」：把一份長文件切成一段一段（因為一次塞不下整本，也因為檢索要精準到段落）。第二步「向量化」：用一個 embedding 模型把每一段文字轉成一串代表語意的數字（叫向量），存進向量資料庫——語意越接近的段落，向量的位置就越靠近。第三步「檢索」：使用者問問題時，把問題也轉成向量，去資料庫裡撈出「離它最近」的幾段。第四步「生成」：把撈到的這幾段，連同使用者的問題，一起組成一個 prompt 丟給模型，請它「根據以下資料回答」。LangChain 在這裡的角色，是把這四步的每個環節（文件載入、切塊、接 embedding、接向量資料庫、組 prompt、呼叫模型）用一套統一介面串成一條 pipeline，讓你不用自己一段一段手工黏。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎 RAG，是因為它同時解掉了「模型不知道你的私有資料」和「模型會亂編」這兩個把 LLM 擋在企業門外的大問題。企業真正想要的，通常不是一個會聊天的通用模型，而是一個「懂我們公司的東西」的助手：能回答內部規章、能查到最新的產品文件、能根據我們自己的知識庫作答。RAG 讓你不用花大錢重新訓練模型，就能把這些私有、且會不斷更新的資料接進去——文件改了，重新切塊、重新入庫就好，模型本身不用動。更關鍵的是，因為答案是「根據撈出來的段落」生成的，你可以要求它附上引用來源，讓使用者點回原文查證，這對「不能亂講」的場景是決定性的。</p>
+  <p>這也正對上 104 人力銀行《AI 人才趨勢報告》給求職者的提醒：不要零散地學單一技能，要打通「從需求到能上線」的完整應用情境。RAG 剛好是這條情境裡把「模型」「你的資料」「可查證的答案」焊在一起的那一段——它接續前幾課的 prompt 設計、API 串接、結構化輸出，第一次讓模型的回答建立在「你自己的知識」之上，而不只是它訓練時的通用記憶。我要補一句誠實話：這裡我講的是常識性的技術概念（切塊、embedding、向量檢索、把資料塞進 context），至於各家向量資料庫、embedding 模型的效能差異與具體選型，我會以當下的官方文件與實測為準，不憑記憶硬背數字。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到金融場景，RAG 的樣子很具體。假設我在國泰或玉山，要做一個「法遵知識問答」的內部工具：把公司的內規、主管機關的函釋、產品條款全部切塊、向量化，存成一個知識庫。同仁問「這個新商品的告知義務，內規要求怎麼做？」，系統先去知識庫撈出最相關的幾條規定，再連同問題丟給模型，請它根據這幾條作答、並標出是引用哪一份文件的哪一條。這樣同仁拿到的不是一段「聽起來很合理但不知道哪來的」回答，而是一段「有出處、可以點回原文核對」的答案——在受監理的金融業，這個「可查證」比「答得漂亮」重要得多。</p>
+  <p>對我這種法律金融跨域背景的人，RAG 幾乎是我最能講出差異化的一課。因為做 RAG 最容易被工程師忽略、卻最吃專業的一環，是「文件到底該怎麼切塊」。法律文件不能像切散文那樣按字數硬切——一條條文的但書、一個定義的適用範圍，如果被從中間切斷，檢索時就會撈到半條規定，答案自然殘缺。我讀法條的直覺會讓我很自然地想到：切塊要沿著條、項、款的結構走，讓每一塊都是一個語意完整的單位；引用來源要精確到條號，才站得住腳。這種「怎麼把專業文件拆成檢索得到的乾淨單位」的判斷，是純技術背景的人比較不會第一時間想到的一層。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易答錯的地方，是把 RAG 跟 fine-tuning（微調，用你的資料去再訓練模型、改動它的參數）混為一談。這兩件事解決的問題不一樣。RAG 完全沒有動到模型的參數，它只是在提問當下，把相關資料「塞進 prompt」讓模型讀——就像考試時允許你翻課本，但你這個人的腦袋沒有變。fine-tuning 則是真的去改模型的權重，比較適合「改變模型的風格、格式、或它處理任務的方式」，而不是「灌進大量會一直更新的知識」。實務上，要讓模型知道「你公司最新的、常變動的資料」，答案幾乎都是 RAG 而不是 fine-tuning——因為資料一更新，RAG 只要重新入庫，fine-tuning 卻得重新訓練一輪。能把這條界線講清楚，通常最能讓面試官確認你不是只會喊名詞。</p>
+  <p>另一個常見的坑，是以為「用了 RAG，模型就不會幻覺了」。不會完全消失。RAG 大幅降低幻覺，但它把品質瓶頸從「模型的記憶」搬到了「檢索的準度」——如果第三步撈錯了段落、或根本沒撈到相關內容，模型還是會拿著錯的、或不相干的資料去硬答，一樣可能講錯。所以 RAG 系統的成敗，一大半是在「檢索」這一段：切塊切得好不好、embedding 選得對不對、要撈幾段、撈回來要不要再排序過濾。還有一個容易被追問的細節是「塞進去的資料越多越好嗎」——不是，context（模型一次能讀的上下文）有長度上限，塞太多不相關的段落反而會稀釋重點、增加成本，甚至讓模型抓錯重點。至於各家向量資料庫、切塊策略、重排（re-ranking）的實務取捨，我目前是懂原理與該注意的點、還沒有實際扛過大規模的線上知識庫，被追問細節我會誠實講我掌握的主線，而不是硬掰。</p>
+
+  <p>RAG 讓模型第一次能「根據你自己的文件」回答，而不只是憑通用記憶——但別忘了那句界線：它是開書考試不是重新受訓，答得準不準，一大半取決於你翻到的那幾頁對不對。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「可以用一句話解釋什麼是 RAG 嗎？」</span>
+        <span class="hint">👉 這題其實在問：你能不能把一個技術詞講成人話。</span>
+        <span class="a">她可以怎麼答：RAG 就是讓模型答題前先去翻你給它的文件、再根據翻到的內容回答，而不是靠它腦袋裡背過的通用知識硬掰。做法是把文件切成小段、轉成向量存進資料庫，問題來時撈出最相關的幾段，連同問題一起丟給模型生成答案。我最喜歡的比喻是：它把模型從閉卷考試變成開書考試——模型這個人沒變聰明，只是允許它翻對的那幾頁。</span>
+      </li>
+      <li>
+        <span class="q">「RAG 跟 fine-tuning 差在哪？什麼時候該用哪個？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得清「給它資料」和「改造它本身」。</span>
+        <span class="a">她可以怎麼答：RAG 沒有動模型參數，只是在提問當下把相關資料塞進 prompt 讓它讀；fine-tuning 是真的去改模型權重。所以要灌進「大量、會一直更新的知識」，用 RAG——資料改了重新入庫就好；要改變模型的「風格、格式、處理任務的方式」，才考慮 fine-tuning。企業內部知識問答這種需求幾乎都是 RAG，因為資料天天變，你不會想每次都重訓一輪。</span>
+      </li>
+      <li>
+        <span class="q">「用了 RAG，模型是不是就不會亂講（幻覺）了？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道 RAG 的品質瓶頸在哪。</span>
+        <span class="a">她可以怎麼答：會大幅降低，但不會完全消失。RAG 把瓶頸從「模型的記憶」搬到了「檢索的準度」——如果撈錯段落或根本沒撈到相關內容，模型還是會拿著不對的資料硬答。所以 RAG 系統的成敗一大半在檢索這段：切塊切得好不好、embedding 選得對不對、撈幾段、要不要再排序過濾。我會把「檢索品質幾乎等於答案品質」當成設計時的第一原則。</span>
+      </li>
+      <li>
+        <span class="q">「如果讓你做一個法規或合約的問答系統，你會特別注意什麼？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有把領域知識帶進 RAG 的設計。</span>
+        <span class="a">她可以怎麼答：我會最先注意「切塊」。法律文件不能按字數硬切，一條條文的但書、一個定義的適用範圍被從中間切斷，檢索就會撈到半條規定，答案自然殘缺。我會沿著條、項、款的結構切，讓每一塊都是語意完整的單位，引用來源精確到條號。這其實是我法律背景的直覺——讀法條本來就要抓一個規範的完整邊界。再來我會要求答案一定附出處、能點回原文，因為在受監理場景，可查證比答得漂亮重要。</span>
+      </li>
+      <li>
+        <span class="q">「LangChain 在這裡到底幫你做了什麼？沒有它不行嗎？」</span>
+        <span class="hint">👉 這題其實在問：你是懂原理、還是只會照抄框架。</span>
+        <span class="a">她可以怎麼答（誠實的答法）：LangChain 是把 RAG 這一整串——文件載入、切塊、接 embedding、接向量資料庫、組 prompt、呼叫模型——用統一介面串起來的膠水框架，讓我不用每段自己手工黏，換元件也比較快。但它不是必需品，RAG 的原理跟 LangChain 無關，我自己用基本套件把這四步接起來也做得到。我目前是能把流程串通、理解每一步在幹嘛，還沒扛過大規模線上知識庫，所以被問到向量庫選型、重排這些細節，我會誠實講我掌握的主線與會怎麼上手驗證，而不是硬掰。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-03.html"><span class="dir">上一課</span>← function calling與結構化輸出</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

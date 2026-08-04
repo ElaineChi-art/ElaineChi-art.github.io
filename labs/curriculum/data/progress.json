@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-03",
+  "updated": "2026-08-04",
   "lessons": [
     {
       "id": 1,
@@ -84,10 +84,10 @@
       "category": "genai",
       "topic": "整合 LangChain 與 OpenAI 打造自己的 ChatGPT",
       "title": "RAG是什麼：用LangChain讓ChatGPT讀懂你自己的文件",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-04",
+      "url": "posts/daily/2026-08-04.html",
+      "slides": 1
     },
     {
       "id": 9,

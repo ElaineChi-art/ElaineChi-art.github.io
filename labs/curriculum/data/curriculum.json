@@ -64,7 +64,7 @@
       "category": "genai",
       "topic": "整合 LangChain 與 OpenAI 打造自己的 ChatGPT",
       "t": "RAG是什麼：用LangChain讓ChatGPT讀懂你自己的文件",
-      "status": "todo"
+      "status": "done 2026-08-04"
     },
     {
       "id": 9,
