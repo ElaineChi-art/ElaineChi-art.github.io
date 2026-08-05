@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智慧客服系統的產品拆解：意圖辨識、對話狀態、何時該轉真人｜技能實驗室・每日課程</title>
+<meta name="description" content="智慧客服不是一個聊天機器人，而是三個零件組出來的產品：意圖辨識判斷使用者想幹嘛、對話狀態記住這場對話缺什麼、轉真人門檻決定何時放手交給人。這一課拆解這三個零件、為什麼業界在乎（呼應104報告NLP需求5年成長147%），以及最容易答錯的一句：一個肯乾脆轉真人的系統，往往比硬答到底的更好用。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-05</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・深度學習應用實戰</div>
+  <h1>智慧客服系統的產品拆解：意圖辨識、對話狀態、何時該轉真人</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-05</span>
+    <span>約 6 分鐘</span>
+    <span>對應真專案主題：智慧客服</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>智慧客服不是「一個很會聊天的機器人」，而是三個零件組出來的產品：<b>意圖辨識</b>（判斷使用者這句話到底想幹嘛）、<b>對話狀態</b>（記住這場對話進行到哪、還缺哪些資訊）、以及<b>轉真人的門檻</b>（什麼情況該放手交給人）。做這種系統的價值，不在於讓 AI 什麼都能答，而在於把「能自動處理的」和「該交給人的」切乾淨。最容易答錯的一句：智慧客服的成敗，有一半在它「知道自己不知道」——一個肯乾脆承認搞不定、乾脆轉真人的系統，往往比一個硬答到底的系統更好用。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-9-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260805" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260805" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260805" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260805)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260805)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M3 · 深度學習應用實戰  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">智慧客服＝三個零件，<tspan fill="#4D9FFF">不是一個萬能聊天機器人</tspan></text>
+
+      <!-- 卡1：意圖辨識 -->
+      <rect x="64" y="140" width="360" height="400" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="64" y="140" width="360" height="5" rx="2.5" fill="url(#topbarD20260805)"/>
+      <text x="88" y="184" font-size="20" font-weight="800" fill="#4D9FFF">① 意圖辨識</text>
+      <text x="88" y="216" font-size="16" fill="#8FA1C0">這句話到底想幹嘛？</text>
+      <text x="88" y="260" font-size="17" fill="#C7D2E4">把使用者的話對應到</text>
+      <text x="88" y="284" font-size="17" fill="#C7D2E4">一個可處理的意圖：</text>
+      <text x="88" y="320" font-size="17" fill="#C7D2E4">「卡刷不過」→ 刷卡問題</text>
+      <text x="88" y="348" font-size="17" fill="#C7D2E4">「要改地址」→ 資料變更</text>
+      <text x="88" y="376" font-size="17" fill="#C7D2E4">「我要申訴」→ 客訴</text>
+      <text x="88" y="430" font-size="16" fill="#8FA1C0">先分類，才知道要</text>
+      <text x="88" y="454" font-size="16" fill="#8FA1C0">走哪一條處理流程。</text>
+      <text x="88" y="512" font-size="16" font-weight="700" fill="#7E8CA8">→ 沒分對，後面全錯。</text>
+
+      <!-- 卡2：對話狀態 -->
+      <rect x="448" y="140" width="360" height="400" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="448" y="140" width="360" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="472" y="184" font-size="20" font-weight="800" fill="#F2A33C">② 對話狀態</text>
+      <text x="472" y="216" font-size="16" fill="#8FA1C0">這場對話進行到哪了？</text>
+      <text x="472" y="260" font-size="17" fill="#C7D2E4">記住已知道什麼、</text>
+      <text x="472" y="284" font-size="17" fill="#C7D2E4">還缺什麼才能辦事：</text>
+      <text x="472" y="320" font-size="17" fill="#C7D2E4">意圖＝改地址 ✓</text>
+      <text x="472" y="348" font-size="17" fill="#C7D2E4">身分驗證 ✓</text>
+      <text x="472" y="376" font-size="17" fill="#C7D2E4">新地址 ✗ ← 還要問</text>
+      <text x="472" y="430" font-size="16" fill="#8FA1C0">沒有它，機器人會忘記</text>
+      <text x="472" y="454" font-size="16" fill="#8FA1C0">上一句、每句重問。</text>
+      <text x="472" y="512" font-size="16" font-weight="700" fill="#7E8CA8">→ 客服是多輪，不是一問一答。</text>
+
+      <!-- 卡3：何時轉真人 -->
+      <rect x="832" y="140" width="384" height="400" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="832" y="140" width="384" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="856" y="184" font-size="20" font-weight="800" fill="#35C08E">③ 何時轉真人</text>
+      <text x="856" y="216" font-size="16" fill="#8FA1C0">什麼時候該放手？</text>
+      <text x="856" y="260" font-size="17" fill="#C7D2E4">觸發轉接的訊號：</text>
+      <text x="856" y="296" font-size="17" fill="#C7D2E4">・意圖信心太低</text>
+      <text x="856" y="324" font-size="17" fill="#C7D2E4">・同個問題卡兩三輪</text>
+      <text x="856" y="352" font-size="17" fill="#C7D2E4">・情緒字眼／要申訴</text>
+      <text x="856" y="380" font-size="17" fill="#C7D2E4">・涉及金額、身分變更</text>
+      <text x="856" y="434" font-size="16" fill="#8FA1C0">轉真人不是失敗，</text>
+      <text x="856" y="458" font-size="16" fill="#8FA1C0">是把風險交回給人。</text>
+      <text x="856" y="512" font-size="16" font-weight="700" fill="#7E8CA8">→ 知道自己不知道，才安全。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：智慧客服的價值，是把「能自動的」和「該交給人的」切乾淨。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">意圖辨識決定走哪條路、對話狀態撐住多輪、轉真人門檻守住風險——三者缺一，就只是個很會聊天的機器人。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-9-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-05-1.mp3"></audio>
+    <p>這張圖在講的是，一套能上線的智慧客服其實是三個零件組出來的，不是一個萬能聊天機器人。左邊第一個是意圖辨識，先判斷使用者這句話到底想幹嘛，把「卡刷不過」對應到刷卡問題、「要改地址」對應到資料變更，分對了才知道要走哪條處理流程。中間第二個是對話狀態，它記住這場對話已經知道什麼、還缺什麼才能辦事，因為客服是多輪對話，沒有它機器人就會忘記上一句、每句重問。右邊第三個是何時轉真人，當意圖信心太低、同個問題卡了兩三輪、出現情緒字眼要申訴、或涉及金額和身分變更，就該把對話交回給人。重點是轉真人不是失敗，而是把風險交回給人；一個知道自己不知道的系統，才是安全的系統。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-9-2').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bg2D20260805" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbar2D20260805" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bg2D20260805)"/>
+      <rect width="1280" height="6" fill="url(#topbar2D20260805)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M3 · 深度學習應用實戰  ›  SLIDE 1-數據</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">為什麼客服值得學：<tspan fill="#4D9FFF">NLP 需求五年成長 147%</tspan></text>
+
+      <text x="90" y="146" font-size="17" fill="#8FA1C0">104《AI人才趨勢報告》：四項成長最快的 AI 硬技能・5年需求成長率（智慧客服＝NLP的典型完整應用情境）</text>
+
+      <!-- 長條圖：四項硬技能成長率 -->
+      <!-- 基準線 x=430；1% = 3px；最長233% -> 699px -->
+      <!-- 流程自動化 233% -->
+      <text x="410" y="214" font-size="18" font-weight="700" fill="#C7D2E4" text-anchor="end">流程自動化</text>
+      <rect x="430" y="192" width="699" height="34" rx="6" fill="#3A5578"/>
+      <text x="1141" y="215" font-size="18" font-weight="800" fill="#F5F8FF">+233%</text>
+
+      <!-- 預測分析 168% -->
+      <text x="410" y="286" font-size="18" font-weight="700" fill="#C7D2E4" text-anchor="end">預測分析</text>
+      <rect x="430" y="264" width="504" height="34" rx="6" fill="#3A5578"/>
+      <text x="946" y="287" font-size="18" font-weight="800" fill="#F5F8FF">+168%</text>
+
+      <!-- NLP 147% (highlight) -->
+      <text x="410" y="358" font-size="18" font-weight="800" fill="#F5F8FF" text-anchor="end">NLP／自然語言</text>
+      <rect x="430" y="336" width="441" height="34" rx="6" fill="url(#topbar2D20260805)"/>
+      <text x="883" y="359" font-size="18" font-weight="900" fill="#6FBBFF">+147%</text>
+      <text x="430" y="392" font-size="15" fill="#8FA1C0">← 智慧客服（意圖辨識、對話理解）就長在這一項上</text>
+
+      <!-- 機器學習演算法 64% -->
+      <text x="410" y="446" font-size="18" font-weight="700" fill="#C7D2E4" text-anchor="end">機器學習演算法</text>
+      <rect x="430" y="424" width="192" height="34" rx="6" fill="#3A5578"/>
+      <text x="634" y="447" font-size="18" font-weight="800" fill="#F5F8FF">+64%</text>
+
+      <!-- 座標輔助 -->
+      <line x1="430" y1="480" x2="1180" y2="480" stroke="#263B5C" stroke-width="1"/>
+      <text x="430" y="502" font-size="15" fill="#55668A">0%</text>
+      <text x="1129" y="502" font-size="15" fill="#55668A" text-anchor="middle">233%</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：學智慧客服，等於一次練到需求成長 147% 的 NLP 完整情境。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">報告的提醒是「打通完整應用情境」，客服正好把意圖、對話、風險交接串成一條可上線的線。</text>
+
+      <text x="64" y="704" font-size="14.5" fill="#55668A">資料來源：104人力銀行《AI人才趨勢報告》（2026）所列成長最快的 AI 硬技能 5 年需求成長率；長條長度依各項百分比等比例繪製。</text>
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1-數據</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-9-2">
+    <div class="lbl">SLIDE 1-數據 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-05-2.mp3"></audio>
+    <p>這張圖在講的是，為什麼智慧客服值得花時間學。這是 104 人力銀行 AI 人才趨勢報告裡，四項成長最快的 AI 硬技能、五年的需求成長率：流程自動化成長百分之兩百三十三最猛，預測分析百分之一百六十八，接著就是我用亮藍色標起來的自然語言處理、也就是 NLP，五年成長百分之一百四十七，最後是機器學習演算法百分之六十四。我把 NLP 這條特別標出來，是因為智慧客服的核心，意圖辨識和對話理解，就長在這一項上面。更重要的是報告給求職者的提醒：不要零散地學單一技能，要打通完整的應用情境。智慧客服剛好把意圖辨識、對話狀態、什麼時候交給真人這幾段，串成一條可以真正上線的線，所以學它等於一次練到一個高需求的完整情境。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>智慧客服是「一套把自動對話拆成可管理零件的系統」，不是一個什麼都能聊的機器人。很多人第一次想到智慧客服，會以為就是「接一個 ChatGPT 進來，讓它跟客人聊天」。真正能上線的客服不是這樣做的——它把一場對話拆成三個各司其職的零件：意圖辨識、對話狀態、轉真人門檻。把這三塊分開，是因為客服的目標不是「聊得開心」，而是「把事情辦成、或安全地交給該辦的人」。</p>
+  <p>第一個零件是意圖辨識（把使用者這句話對應到一個系統能處理的類別）。使用者說「我的卡刷不過」，系統要先判斷這屬於「刷卡問題」而不是「掛失」或「查帳單」，因為分類決定了接下來走哪一條處理流程。第二個零件是對話狀態（記住這場對話已經知道什麼、還缺什麼）。辦一件事往往要好幾輪：改地址要先確認身分、再問新地址，系統得記住「身分已驗證、新地址還沒拿到」，否則就會像金魚一樣每句話重問。第三個零件是轉真人門檻（判斷什麼時候該把對話交回給人）。當系統對意圖沒把握、同個問題卡了好幾輪、或使用者情緒上來要申訴，它要能乾脆承認搞不定、把人接給專員，而不是硬撐著亂答。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎智慧客服，是因為它同時壓低了「人力成本」和「回應延遲」這兩個客服中心最痛的數字。客服是典型的高流量、高重複性工作：大量問題其實都是「怎麼改密碼」「帳單為什麼多這筆」這類重複詢問。把這些標準問題交給系統自動處理，人力就能省下來、專心處理真正複雜的個案，而且系統不會下班，半夜的簡單問題也有人接。這件事之所以現在特別熱，是因為語言模型讓「聽懂人話」這一關的門檻大幅降低——過去意圖辨識要靠大量人工標註和規則，現在模型對自然語言的理解好很多，讓客服系統第一次真的堪用。</p>
+  <p>這也正對上 104 人力銀行《AI 人才趨勢報告》的觀察：NLP（自然語言處理）的人才需求在五年間成長了 147%，是成長最快的 AI 硬技能之一。而報告給求職者的核心提醒是——不要零散地學單一技能，要打通「從需求到能上線」的完整應用情境。智慧客服剛好是 NLP 最典型的完整情境：它不是孤立地做一個「意圖分類模型」，而是把意圖辨識、對話管理、風險交接串成一條真的能服務客人的線。學會拆解它，等於一次練到這個高需求領域裡「能講出整體怎麼運作」的那一層，而不只是會訓練一個分類器。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到金融場景，這三個零件的樣子非常具體。假設我在國泰或玉山做一個信用卡客服機器人：使用者打字進來「我這個月帳單怎麼多了一筆兩百塊」，意圖辨識先把它歸到「帳單爭議」，而不是「一般帳單查詢」——因為爭議要走的流程完全不同。對話狀態接手，記錄下「意圖＝帳單爭議、卡號已提供、爭議款項還沒問清楚」，一輪一輪把缺的資訊補齊。等到使用者說出「我要申訴，這筆我根本沒刷」，轉真人門檻立刻被觸發：涉及爭議款項、又出現申訴意圖，這種案子有法遵和後續責任，系統不該自己拍板，要帶著已經蒐集好的資訊把人轉給專員。</p>
+  <p>對我這種法律金融跨域背景的人，最能講出差異化的，是「轉真人門檻該畫在哪」這件事。純技術的人容易把它當成一個「信心分數低於某個值就轉」的工程參數，但在受監理的金融業，有些情況是不管模型多有把握都必須轉人的——例如涉及爭議款項、身分或聯絡方式變更、任何帶有客訴或申訴性質的對話。這些不是「模型答不出來」，而是「這件事在合規上就不該由系統決定」。我讀過金融消費者保護、個資這些規範的直覺，會讓我很自然地想到：門檻不能只看模型信心，還要疊一層「法遵紅線清單」，把「一碰到就強制轉人」的情境明確列出來。這種把合規要求翻譯成系統規則的判斷，是純工程背景的人比較不會第一時間想到的一層。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易答錯的地方，是以為「有了大型語言模型，意圖辨識這種老東西就不用了」。剛好相反。就算最後是用 LLM 來生成回覆，你通常還是需要一個明確的意圖層，因為意圖決定了「這通對話要不要走特定的業務流程、要不要驗證身分、要不要記錄成工單」。一個直接讓 LLM 自由發揮、沒有意圖層的客服，好處是很會聊，壞處是你根本無法控制它在什麼情況做什麼事——它可能對一個該轉人的爭議案，自顧自地給了一段聽起來很體貼、卻沒有任何處置的安慰。在金融場景，「可控、可稽核」比「回得漂亮」重要得多，所以意圖層不但沒消失，反而是把 LLM 關進安全籠子裡的那道欄杆。</p>
+  <p>另一個常被追問的坑，是把「轉真人」當成系統的失敗指標，想盡辦法壓低轉接率。這是搞錯了目標。轉真人本身不是失敗，硬答一個該轉的案子才是失敗——後者可能造成客訴、甚至合規事故。健康的做法是分開看兩個數字：一個是「自動處理成功率」（能自己辦完的比例），一個是「錯誤轉接／該轉沒轉」的比例，後者才是真正要壓低的。還有一個容易被追問的細節是「意圖分類要切多細」——不是越細越好，類別切太細會彼此重疊、模型分不清也難維護，實務上通常從最高頻的幾個意圖開始，再慢慢長出來。這些偏產品與維運的取捨，我目前是理解原理與該權衡的點、還沒有實際營運過一個線上客服系統，被追問細節我會誠實講我掌握的主線，而不是硬掰數字。</p>
+
+  <p>智慧客服的真正難點，從來不是「讓 AI 會講話」，而是「畫清楚哪些交給 AI、哪些必須交還給人」——一個肯乾脆說「這我處理不了，幫您轉專員」的系統，往往比一個什麼都硬答的系統更值得信任。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「可以簡單講一下智慧客服系統大概是怎麼組成的嗎？」</span>
+        <span class="hint">👉 這題其實在問：你是把它當一個聊天機器人，還是懂它的產品結構。</span>
+        <span class="a">她可以怎麼答：我會把它拆成三個零件。第一是意圖辨識，判斷使用者這句話想幹嘛、對應到哪個可處理的類別，這決定接下來走哪條流程。第二是對話狀態，記住這場對話已經知道什麼、還缺什麼，因為辦一件事常常要好幾輪。第三是轉真人門檻，判斷什麼時候該把對話交回給人。核心觀念是：客服的目標不是聊得開心，而是把事情辦成、或安全地交給該辦的人，所以價值在於把「能自動的」和「該交給人的」切乾淨。</span>
+      </li>
+      <li>
+        <span class="q">「都有 LLM 了，還需要做意圖辨識嗎？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂為什麼要有一個可控的意圖層。</span>
+        <span class="a">她可以怎麼答：需要，而且更重要。就算最後用 LLM 生成回覆，通常還是要一個明確的意圖層，因為意圖決定了這通對話要不要走特定業務流程、要不要驗證身分、要不要開工單。一個沒有意圖層、讓 LLM 自由發揮的客服很會聊，但你無法控制它在什麼情況做什麼事——它可能對一個該轉人的爭議案，自顧自給一段很體貼卻沒有任何處置的話。在金融這種要可控、可稽核的場景，意圖層是把 LLM 關進安全籠子的那道欄杆。</span>
+      </li>
+      <li>
+        <span class="q">「你會怎麼決定什麼時候把對話轉給真人？」</span>
+        <span class="hint">👉 這題其實在問：你只會設信心門檻，還是懂業務與合規風險。</span>
+        <span class="a">她可以怎麼答：我會疊兩層。第一層是技術訊號：意圖信心太低、同個問題卡了兩三輪、出現情緒或申訴字眼，就轉。第二層、也是我背景會特別強調的，是一份「法遵紅線清單」——涉及爭議款項、身分或聯絡方式變更、任何客訴性質的對話，不管模型多有把握都強制轉人，因為這些在合規上就不該由系統拍板。轉的時候要把已蒐集的資訊一起帶給專員，不要讓客人重講一遍。</span>
+      </li>
+      <li>
+        <span class="q">「智慧客服上線後，你會看哪些指標判斷它做得好不好？」</span>
+        <span class="hint">👉 這題其實在問：你會不會把「轉真人」誤當成失敗。</span>
+        <span class="a">她可以怎麼答：我會分開看兩個數字，不會一味壓低轉接率。一個是自動處理成功率，也就是系統能自己辦完的比例；另一個是「錯誤轉接、或該轉沒轉」的比例，這個才是真正要壓低的。轉真人本身不是失敗，硬答一個該轉的案子才是失敗，後者可能造成客訴甚至合規事故。誠實說，這偏產品維運，我目前是懂該看哪些指標與為什麼，還沒實際營運過線上客服，所以細節我會講我掌握的主線、再從實際數據去調。</span>
+      </li>
+      <li>
+        <span class="q">「意圖的類別應該切多細比較好？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有實務上的取捨感，還是只想追求完整。</span>
+        <span class="a">她可以怎麼答（誠實的答法）：不是越細越好。類別切太細會彼此重疊，模型分不清、也很難維護。我理解的做法是先從最高頻的幾個意圖開始，把量最大的問題先自動化掉，再從實際對話裡長出新的類別。這部分我是懂原理跟權衡點，還沒有親手調過一個上線系統的意圖體系，所以我會先看真實對話資料的分布再決定，而不是一開始就設計一堆用不到的分類。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-04.html"><span class="dir">上一課</span>← RAG是什麼：用LangChain讓ChatGPT讀懂你自己的文件</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

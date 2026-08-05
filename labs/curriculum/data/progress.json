@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-04",
+  "updated": "2026-08-05",
   "lessons": [
     {
       "id": 1,
@@ -95,10 +95,10 @@
       "category": "dl-apps",
       "topic": "智慧客服",
       "title": "智慧客服系統的產品拆解：意圖辨識、對話狀態、何時該轉真人",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-05",
+      "url": "posts/daily/2026-08-05.html",
+      "slides": 2
     },
     {
       "id": 10,
