@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-05",
+  "updated": "2026-08-06",
   "lessons": [
     {
       "id": 1,
@@ -106,10 +106,10 @@
       "category": "dl-apps",
       "topic": "AI 高效自動化應用",
       "title": "流程自動化的真實案例：把一個重複性工作交給AI的完整拆解",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-06",
+      "url": "posts/daily/2026-08-06.html",
+      "slides": 2
     },
     {
       "id": 11,

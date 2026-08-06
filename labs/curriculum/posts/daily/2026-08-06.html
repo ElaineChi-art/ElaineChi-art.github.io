@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>流程自動化的真實案例：把一個重複性工作交給AI的完整拆解｜技能實驗室・每日課程</title>
+<meta name="description" content="把一個重複性工作交給AI，不是丟給一個萬能機器人，而是把它拆成四段：觸發、讀取理解、判斷動作、例外交回人。這一課用「自動處理請款單」的具體例子拆解這四段，說明為什麼業界在乎（呼應104報告流程自動化需求5年成長233%），以及最容易答錯的一句：自動化的成敗不在自動掉多少，而在例外處理有沒有畫乾淨。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-06</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・深度學習應用實戰</div>
+  <h1>流程自動化的真實案例：把一個重複性工作交給AI的完整拆解</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-06</span>
+    <span>約 6 分鐘</span>
+    <span>對應真專案主題：AI 高效自動化應用</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>把一個重複性工作交給 AI，不是「丟給一個萬能機器人」，而是把這件事拆成四段：<b>觸發</b>（什麼事件啟動它）、<b>讀取與理解</b>（把 PDF、email 這種亂七八糟的輸入抽成結構化資料，這段最需要 AI）、<b>判斷與動作</b>（照規則做決定、寫回系統）、<b>例外處理</b>（看不懂或對不上的，乾脆交回給人）。做這種系統的價值，不在於「自動掉了多少」，而在於把「能放心交給機器的」和「必須留給人盯的」切乾淨。最容易答錯的一句：自動化的成敗，一半在那條「例外交回人」的線畫得好不好——一個遇到不確定會停下來喊人的流程，比一個什麼都硬做完的流程安全得多。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-10-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260806" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260806" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260806" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260806)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260806)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M3 · 深度學習應用實戰  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">把重複工作交給AI＝拆成四段，<tspan fill="#4D9FFF">不是一個萬能機器人</tspan></text>
+
+      <!-- 卡1：觸發 -->
+      <rect x="64" y="140" width="276" height="392" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="64" y="140" width="276" height="5" rx="2.5" fill="url(#topbarD20260806)"/>
+      <text x="86" y="184" font-size="19" font-weight="800" fill="#4D9FFF">① 觸發</text>
+      <text x="86" y="214" font-size="16" fill="#8FA1C0">什麼事件啟動它？</text>
+      <text x="86" y="258" font-size="17" fill="#C7D2E4">・收到一封請款信</text>
+      <text x="86" y="288" font-size="17" fill="#C7D2E4">・資料夾出現新檔案</text>
+      <text x="86" y="318" font-size="17" fill="#C7D2E4">・每天早上定時跑</text>
+      <text x="86" y="374" font-size="16" fill="#8FA1C0">先講清楚「什麼時候</text>
+      <text x="86" y="398" font-size="16" fill="#8FA1C0">該動」，流程才有起點。</text>
+      <text x="86" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 沒有觸發＝沒人按開關。</text>
+
+      <!-- 卡2：讀取與理解 -->
+      <rect x="356" y="140" width="276" height="392" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="356" y="140" width="276" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="378" y="184" font-size="19" font-weight="800" fill="#F2A33C">② 讀取與理解</text>
+      <text x="378" y="214" font-size="16" fill="#8FA1C0">AI 最幫得上忙這段</text>
+      <text x="378" y="258" font-size="17" fill="#C7D2E4">PDF、掃描檔、email</text>
+      <text x="378" y="288" font-size="17" fill="#C7D2E4">→ 抽成結構化欄位：</text>
+      <text x="378" y="322" font-size="17" fill="#C7D2E4">廠商、金額、日期、</text>
+      <text x="378" y="350" font-size="17" fill="#C7D2E4">發票號碼、品項</text>
+      <text x="378" y="406" font-size="16" fill="#8FA1C0">把「人才看得懂的」</text>
+      <text x="378" y="430" font-size="16" fill="#8FA1C0">變成「系統吃得下的」。</text>
+      <text x="378" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 抽錯，後面全錯。</text>
+
+      <!-- 卡3：判斷與動作 -->
+      <rect x="648" y="140" width="276" height="392" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="648" y="140" width="276" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="670" y="184" font-size="19" font-weight="800" fill="#35C08E">③ 判斷與動作</text>
+      <text x="670" y="214" font-size="16" fill="#8FA1C0">照規則做決定</text>
+      <text x="670" y="258" font-size="17" fill="#C7D2E4">・金額對得上訂單嗎？</text>
+      <text x="670" y="288" font-size="17" fill="#C7D2E4">・格式、稅額正確嗎？</text>
+      <text x="670" y="322" font-size="17" fill="#C7D2E4">通過 → 寫進 ERP</text>
+      <text x="670" y="350" font-size="17" fill="#C7D2E4">排入付款、產生工單</text>
+      <text x="670" y="406" font-size="16" fill="#8FA1C0">這段多半是明確規則，</text>
+      <text x="670" y="430" font-size="16" fill="#8FA1C0">不一定要動用 AI。</text>
+      <text x="670" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 規則能做的，別硬塞AI。</text>
+
+      <!-- 卡4：例外處理 -->
+      <rect x="940" y="140" width="276" height="392" rx="14" fill="#131D2E" stroke="#E85D75" stroke-width="2"/>
+      <rect x="940" y="140" width="276" height="5" rx="2.5" fill="#E85D75"/>
+      <text x="962" y="184" font-size="19" font-weight="800" fill="#E85D75">④ 例外處理</text>
+      <text x="962" y="214" font-size="16" fill="#8FA1C0">看不懂就交回給人</text>
+      <text x="962" y="258" font-size="17" fill="#C7D2E4">・抽取信心太低</text>
+      <text x="962" y="288" font-size="17" fill="#C7D2E4">・金額對不上訂單</text>
+      <text x="962" y="322" font-size="17" fill="#C7D2E4">・沒見過的新格式</text>
+      <text x="962" y="350" font-size="17" fill="#C7D2E4">→ 停下、標記、通知人</text>
+      <text x="962" y="406" font-size="16" fill="#8FA1C0">最容易被忽略、</text>
+      <text x="962" y="430" font-size="16" fill="#8FA1C0">卻決定敢不敢上線。</text>
+      <text x="962" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 會喊人的流程才安全。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：自動化的價值，是把「能放心交給機器的」和「必須留給人盯的」切乾淨。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">觸發起頭、AI 讀懂輸入、規則做動作、例外喊人——這條線接完整，才叫真的把一件事自動化。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-10-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-06-1.mp3"></audio>
+    <p>這張圖在講的是，把一個重複性工作交給 AI，其實是把它拆成四個環節，不是丟給一個萬能機器人就好。第一個環節是觸發，也就是什麼事件會啟動這個流程，可能是收到一封信、來了一個新檔案、或每天固定時間跑。第二個是讀取與理解，把 PDF、email 這種非結構化的東西，抽成系統看得懂的欄位，這一段正是 AI 最幫得上忙的地方。第三個是判斷與動作，照既定規則做決定、把結果寫回系統，這段其實常常用簡單規則就夠、不一定要動 AI。第四個、也最容易被忽略，是例外處理：遇到看不懂或金額對不上的，要乾脆交回給人，而不是硬猜。把這四段切清楚，才知道哪一段真的該交給 AI、哪一段用規則就好。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-10-2').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bg2D20260806" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbar2D20260806" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bg2D20260806)"/>
+      <rect width="1280" height="6" fill="url(#topbar2D20260806)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M3 · 深度學習應用實戰  ›  SLIDE 1-數據</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">為什麼先學這個：<tspan fill="#4D9FFF">流程自動化需求五年成長 233%</tspan></text>
+
+      <text x="90" y="146" font-size="17" fill="#8FA1C0">104《AI人才趨勢報告》：四項成長最快的 AI 硬技能・5年需求成長率（流程自動化＝四項裡最高）</text>
+
+      <!-- 長條圖：四項硬技能成長率  基準線 x=430；1% = 3px；最長233% -> 699px -->
+      <!-- 流程自動化 233% (highlight) -->
+      <text x="410" y="214" font-size="18" font-weight="800" fill="#F5F8FF" text-anchor="end">流程自動化</text>
+      <rect x="430" y="192" width="699" height="34" rx="6" fill="url(#topbar2D20260806)"/>
+      <text x="1141" y="215" font-size="18" font-weight="900" fill="#6FBBFF">+233%</text>
+      <text x="430" y="248" font-size="15" fill="#8FA1C0">← 今天這一課，就長在這一項上</text>
+
+      <!-- 預測分析 168% -->
+      <text x="410" y="300" font-size="18" font-weight="700" fill="#C7D2E4" text-anchor="end">預測分析</text>
+      <rect x="430" y="278" width="504" height="34" rx="6" fill="#3A5578"/>
+      <text x="946" y="301" font-size="18" font-weight="800" fill="#F5F8FF">+168%</text>
+
+      <!-- NLP 147% -->
+      <text x="410" y="372" font-size="18" font-weight="700" fill="#C7D2E4" text-anchor="end">NLP／自然語言</text>
+      <rect x="430" y="350" width="441" height="34" rx="6" fill="#3A5578"/>
+      <text x="883" y="373" font-size="18" font-weight="800" fill="#F5F8FF">+147%</text>
+
+      <!-- 機器學習演算法 64% -->
+      <text x="410" y="444" font-size="18" font-weight="700" fill="#C7D2E4" text-anchor="end">機器學習演算法</text>
+      <rect x="430" y="422" width="192" height="34" rx="6" fill="#3A5578"/>
+      <text x="634" y="445" font-size="18" font-weight="800" fill="#F5F8FF">+64%</text>
+
+      <!-- 座標輔助 -->
+      <line x1="430" y1="478" x2="1180" y2="478" stroke="#263B5C" stroke-width="1"/>
+      <text x="430" y="500" font-size="15" fill="#55668A">0%</text>
+      <text x="1129" y="500" font-size="15" fill="#55668A" text-anchor="middle">233%</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：流程自動化是四項裡需求成長最猛的，而且每家公司都有一堆重複工作等著它。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">報告要的是「打通完整情境」——自動化剛好逼你把觸發、抽取、判斷、例外交接整條線想清楚。</text>
+
+      <text x="64" y="704" font-size="14.5" fill="#55668A">資料來源：104人力銀行《AI人才趨勢報告》（2026）所列成長最快的 AI 硬技能 5 年需求成長率；長條長度依各項百分比等比例繪製。</text>
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1-數據</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-10-2">
+    <div class="lbl">SLIDE 1-數據 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-06-2.mp3"></audio>
+    <p>這張圖在講的是，為什麼流程自動化值得優先學。這是 104 人力銀行 AI 人才趨勢報告裡，四項成長最快的 AI 硬技能、五年的需求成長率。流程自動化用亮藍色標起來，五年成長百分之兩百三十三，是四項裡最高的；接著是預測分析百分之一百六十八、自然語言處理百分之一百四十七，最後是機器學習演算法百分之六十四。我把流程自動化特別標出來，是因為它是需求成長最猛的一項，而且不像單一模型那麼抽象，是每家公司都有一堆重複工作等著被自動化。報告給求職者的提醒是打通完整的應用情境，流程自動化剛好逼你把觸發、抽取、判斷、例外交接整條線都想清楚。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>流程自動化就是「把一件有固定輸入、固定判斷、固定輸出的重複工作，拆成程式能一步步執行的環節」，而不是「叫一個 AI 幫我把事情做完」。很多人第一次聽到「用 AI 自動化」，腦中的畫面是丟一句話給機器人，它就把整件事辦好。真正能上線的自動化不是這樣長的——它把一件事拆成四段：觸發、讀取與理解、判斷與動作、例外處理。會這樣拆，是因為每一段的難度和該用的工具都不一樣，混在一起想就會什麼都想不清楚。</p>
+  <p>第一段是觸發（什麼事件啟動這個流程），可能是收到一封請款信、共用資料夾多了一個新檔案，或單純每天早上定時跑一次。第二段是讀取與理解（把非結構化的輸入抽成結構化資料），這一段最需要 AI：一張 PDF 請款單或掃描檔，人看得懂，但系統要的是「廠商是誰、金額多少、發票號碼幾號」這種欄位，把前者變成後者正是 AI 現在最擅長的事。第三段是判斷與動作（照既定規則做決定、把結果寫回系統），例如金額有沒有對上採購訂單、稅額算得對不對，通過就寫進 ERP、排進付款——這段多半是明確規則，不一定要動用 AI。第四段是例外處理（遇到不確定就交回給人），抽取信心太低、金額對不上、或碰到沒見過的新格式，就停下來、標記、通知人。這四段接成一條線，才叫真的把一件事自動化。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎流程自動化，是因為它直接省掉「大量重複、又不需要創意」的人工，而且這種工作在每家公司都成堆存在。對帳、把發票 key 進系統、每天整理報表、比對名單——這些工作量大、規則明確、錯了還很煩，正是自動化最甜的目標。把它交給系統，人力就能挪去做真正需要判斷的事，而且系統不會累、不會半夜漏做。這也是為什麼「會不會把一個流程自動化」，慢慢從加分項變成很多職缺的基本要求。</p>
+  <p>這一點在數據上非常明顯。根據 104 人力銀行《AI 人才趨勢報告》，流程自動化的人才需求在五年間成長了 233%，是報告裡成長最快的 AI 硬技能——比預測分析（168%）、自然語言處理（147%）、機器學習演算法（64%）都高。而報告給求職者的核心提醒是：不要零散地學單一技能，要打通「從需求到能上線」的完整應用情境。流程自動化剛好逼你練這件事：你沒辦法只會「用 AI 抽個欄位」就交差，你必須把觸發怎麼設、抽出來的資料怎麼判斷、對不上的怎麼交回人，整條線都想清楚，否則這個流程根本不敢真的上線去動別人的錢和資料。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到金融或企業內部場景，這四段的樣子非常具體。假設我在玉山或 91APP 做一個「自動處理供應商請款單」的流程：觸發是「財務信箱收到主旨含『請款』的信」；讀取與理解這段，用 AI 把附件 PDF 裡的廠商名稱、統一編號、金額、發票號碼、品項抽成欄位；判斷與動作這段，拿抽出的金額去比對系統裡對應的採購訂單，金額一致、發票格式正確就寫進 ERP、排入下一批付款；例外處理這段，只要抽取信心不夠、金額和訂單對不上、或出現一張沒見過的新版發票格式，就不自動放行，改成標記起來、通知財務同仁人工確認。原本一個人一天 key 幾十張的活，變成人只需要看被標記出來的那幾張例外。</p>
+  <p>對我這種法律金融跨域背景的人，最能講出差異化的，是「例外那條線要畫在哪、以及留不留得下軌跡」這件事。純工程的直覺容易把重點放在「抽取準不準、能自動掉幾成」，但在碰錢、碰個資的流程裡，更關鍵的是兩件事：一是哪些情況不管系統多有把握都必須攔下來給人看（例如金額異常放大、廠商是第一次出現、涉及退款）；二是每一筆自動放行的決定，都要留下「當時抽到什麼、依哪條規則放行」的紀錄，之後被稽核或客訴時查得回去。我看過內控、個資這類規範的直覺，會讓我很自然地想到：自動化不能只追求「跑得快」，還要能「說得清楚每一筆為什麼這樣處理」。把合規要求翻譯成「哪些強制轉人、哪些必須留痕」的系統規則，是純技術背景的人比較不會第一時間想到的一層。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易答錯的地方，是把「自動化率」當成唯一的成績單，拼命想把「自動處理掉的比例」衝高。這其實很危險。一個把 99% 都自動放行、卻在該攔的異常件上出錯的流程，遠不如一個只自動掉 70%、但把可疑的都乾脆攔下來給人看的流程。真正該分開看的是兩個數字：一個是「自動處理成功率」（能自己正確辦完的比例），一個是「該攔沒攔」的比例（放行了本來該給人看的件），後者才是要死守的紅線。把例外處理當成「等之後有空再補的收尾」，是新手最常見、也最傷的誤判——恰恰是那條例外交回人的線，決定了這個流程敢不敢真的上線。</p>
+  <p>另一個常被追問的坑，是以為「既然 AI 這麼強，整條流程都交給它端到端做就好，不用拆這麼多段」。在展示情境也許可以，但在要負責任的正式流程裡，把判斷與動作這種明確規則的事也硬塞給 AI，反而更糟：它讓整個流程變得難以預測、難以稽核，出錯了你甚至講不清楚它為什麼那樣做。實務上的取捨通常是「AI 做它擅長的讀取與理解，規則做它擅長的判斷與動作」，各司其職。還有一個容易被追問的細節是「這流程要先自動化哪一段」——不是一次全包，而是先挑「量最大、規則最清楚、出錯代價可控」的那一段先做，跑穩了再往外長。這些偏產品與維運的取捨，我目前是懂原理與該權衡的點、還沒有實際營運過一條線上自動化流程，被追問細節我會誠實講我掌握的主線，而不是硬掰數字。</p>
+
+  <p>流程自動化的真正難點，從來不是「讓 AI 把事情做完」，而是「畫清楚哪一段放心交給機器、哪一段必須留給人盯」——一個遇到不確定會停下來喊人、還留得下軌跡的流程，比一個把什麼都自動做完的流程，更值得託付去動別人的錢。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「如果要你把一個重複性工作自動化，你會怎麼拆解這件事？」</span>
+        <span class="hint">👉 這題其實在問：你是把它當一句咒語，還是有結構化的做法。</span>
+        <span class="a">她可以怎麼答：我會拆成四段。第一是觸發，什麼事件啟動它，可能是收到信、來了新檔案、或定時跑。第二是讀取與理解，把 PDF、email 這種非結構化輸入抽成結構化欄位，這段最需要 AI。第三是判斷與動作，照規則做決定、寫回系統，這段常常用明確規則就夠、不一定要 AI。第四是例外處理，遇到看不懂或對不上的就停下來交回給人。核心觀念是：自動化的價值不在「自動掉多少」，而在把「能放心交給機器的」和「必須留給人盯的」切乾淨。</span>
+      </li>
+      <li>
+        <span class="q">「整條流程都用一個大型語言模型端到端做，不是更省事嗎？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂什麼該用 AI、什麼該用規則。</span>
+        <span class="a">她可以怎麼答：展示可以，但要負責任的正式流程我不會這樣做。判斷與動作那種明確規則的事，硬塞給 AI 會讓整個流程變得難預測、難稽核，出錯了你講不清楚它為什麼那樣做。我的做法是各司其職：AI 做它擅長的讀取與理解，把亂七八糟的輸入抽成欄位；規則做它擅長的判斷與動作，例如金額對不對得上訂單。在碰錢的場景，可控、可稽核比「一個模型全包」重要得多。</span>
+      </li>
+      <li>
+        <span class="q">「你會怎麼決定一件案子要不要停下來、交給人處理？」</span>
+        <span class="hint">👉 這題其實在問：你只會設信心門檻，還是懂業務與合規風險。</span>
+        <span class="a">她可以怎麼答：我會疊兩層。第一層是技術訊號：抽取信心太低、金額對不上訂單、碰到沒見過的新格式，就攔下來。第二層、也是我背景會特別強調的，是一份強制轉人的清單——金額異常放大、廠商第一次出現、涉及退款這類，不管系統多有把握都要人看。而且每一筆自動放行都要留下當時抽到什麼、依哪條規則放行的紀錄，之後稽核或客訴查得回去。自動化不能只追求跑得快，還要說得清楚每一筆為什麼這樣處理。</span>
+      </li>
+      <li>
+        <span class="q">「這種自動化系統上線後，你會看哪些指標判斷它好不好？」</span>
+        <span class="hint">👉 這題其實在問：你會不會把「自動化率」當成唯一成績單。</span>
+        <span class="a">她可以怎麼答：我不會只衝自動化率。我會分開看兩個數字：一個是自動處理成功率，也就是系統能自己正確辦完的比例；另一個是「該攔沒攔」的比例，就是放行了本來該給人看的件，這個才是要死守的紅線。一個把 99% 都自動放行、卻在該攔的異常件上出錯的流程，遠不如一個只自動掉七成、但把可疑的都攔下來的流程。誠實說，這偏產品維運，我目前懂該看哪些指標與為什麼，還沒實際營運過線上流程，所以細節我會講主線、再從真實數據去調。</span>
+      </li>
+      <li>
+        <span class="q">「如果一次沒辦法全部自動化，你會先做哪一段？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有實務上的優先順序感。</span>
+        <span class="a">她可以怎麼答（誠實的答法）：不是一次全包。我會先挑「量最大、規則最清楚、出錯代價可控」的那一段先自動化，把最花人力、最不需要判斷的部分先卸下來，跑穩了再往外長到比較模糊的環節。這樣風險小、也能很快看到成效。這部分我是懂原理跟優先順序的邏輯，還沒有親手上線過一整條流程，所以我會先看實際的工作量分布和出錯成本再決定從哪切，而不是一開始就想把整條線全部自動化。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-05.html"><span class="dir">上一課</span>← 智慧客服系統的產品拆解：意圖辨識、對話狀態、何時該轉真人</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>
