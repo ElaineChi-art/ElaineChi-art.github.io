@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>非同步JavaScript：Promise/async-await到底在解決什麼問題｜技能實驗室・每日課程</title>
+<meta name="description" content="JavaScript 只有一條執行緒，一次只能做一件事，所以「要等的操作」不能用同步硬等，否則整個畫面卡死。這一課從 callback 地獄講到 Promise 這個『未來會裝進結果的盒子』，再到 async/await 讓非同步寫得像同步，並拆解最容易答錯的一句：await 不會凍結整個瀏覽器、也別把能並行的請求排成一條線白白多等。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-09</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・前端開發</div>
+  <h1>非同步JavaScript：Promise/async-await到底在解決什麼問題</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-09</span>
+    <span>約 6 分鐘</span>
+    <span>對應真專案主題：JavaScript 進階觀念與應用</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>JavaScript 天生只有<b>一條執行緒</b>（一次只能做一件事），所以碰到「要等的操作」——打 API、讀檔案、等計時器——絕對不能用同步方式站在原地等，不然整個畫面就會卡死不能動。Promise 和 async/await 要解決的就是這件事：讓「等」這個動作交出去、不擋住畫面，等結果回來再繼續。<b>Promise</b> 是一個「未來才會裝進結果的盒子」，有等待中、成功、失敗三種狀態，把早期一層套一層的 callback 巢狀改寫成一條可讀的鏈；<b>async/await</b> 再進一步，是 Promise 的語法糖，讓你用幾乎跟同步一樣的寫法寫非同步。最容易答錯的一句：await 不會凍結整個瀏覽器，它只暫停「這個函式」，別把能同時發的請求排成一條線白白多等。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-12-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260809" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260809" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260809)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260809)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M4 · 前端開發  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">一條執行緒的世界：<tspan fill="#4D9FFF">怎麼一邊等、一邊不卡畫面</tspan></text>
+
+      <!-- 卡1：問題 -->
+      <rect x="64" y="140" width="368" height="392" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="64" y="140" width="368" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="86" y="184" font-size="19" font-weight="800" fill="#F2A33C">① 痛點：同步硬等會卡死</text>
+      <text x="86" y="216" font-size="16" fill="#8FA1C0">JS 只有一條執行緒</text>
+      <text x="86" y="240" font-size="16" fill="#8FA1C0">一次只能做一件事</text>
+      <text x="86" y="284" font-size="17" fill="#C7D2E4">打 API／讀檔案要「等」</text>
+      <text x="86" y="314" font-size="17" fill="#C7D2E4">同步等 → 畫面凍住</text>
+      <text x="86" y="344" font-size="17" fill="#C7D2E4">按鈕點不動、捲不動</text>
+      <text x="86" y="398" font-size="16" fill="#8FA1C0">早期解法：callback</text>
+      <text x="86" y="422" font-size="16" fill="#8FA1C0">但一層套一層 →</text>
+      <text x="86" y="446" font-size="16" fill="#8FA1C0">巢狀「回呼地獄」難讀</text>
+      <text x="86" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 需要一個「等」的乾淨寫法。</text>
+
+      <!-- 卡2：Promise -->
+      <rect x="456" y="140" width="368" height="392" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="456" y="140" width="368" height="5" rx="2.5" fill="url(#topbarD20260809)"/>
+      <text x="478" y="184" font-size="19" font-weight="800" fill="#4D9FFF">② Promise：未來的盒子</text>
+      <text x="478" y="216" font-size="16" fill="#8FA1C0">一個「之後才裝進結果」的物件</text>
+      <text x="478" y="260" font-size="17" fill="#C7D2E4">三種狀態：</text>
+      <text x="478" y="290" font-size="17" fill="#C7D2E4">・pending 等待中</text>
+      <text x="478" y="320" font-size="17" fill="#C7D2E4">・fulfilled 成功 → .then()</text>
+      <text x="478" y="350" font-size="17" fill="#C7D2E4">・rejected 失敗 → .catch()</text>
+      <text x="478" y="404" font-size="16" fill="#8FA1C0">把巢狀 callback 改寫成</text>
+      <text x="478" y="428" font-size="16" fill="#8FA1C0">一條「.then 接 .then」的鏈</text>
+      <text x="478" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 可讀、錯誤集中處理。</text>
+
+      <!-- 卡3：async/await -->
+      <rect x="848" y="140" width="368" height="392" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="848" y="140" width="368" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="870" y="184" font-size="19" font-weight="800" fill="#35C08E">③ async / await</text>
+      <text x="870" y="216" font-size="16" fill="#8FA1C0">Promise 的語法糖</text>
+      <text x="870" y="260" font-size="17" fill="#C7D2E4">用同步的寫法寫非同步</text>
+      <text x="870" y="290" font-size="17" fill="#C7D2E4">await 這行等結果回來</text>
+      <text x="870" y="320" font-size="17" fill="#C7D2E4">再往下走</text>
+      <text x="870" y="350" font-size="17" fill="#C7D2E4">try/catch 接錯誤</text>
+      <text x="870" y="404" font-size="16" fill="#8FA1C0">但 await 只暫停「這個函式」</text>
+      <text x="870" y="428" font-size="16" fill="#8FA1C0">不會凍住整個瀏覽器</text>
+      <text x="870" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 好讀，但別把並行排成一條線。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：JS 只有一條執行緒，非同步就是為了「等的時候不卡畫面」而生。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">callback → Promise → async/await 是同一件事的演進：把「等結果」寫得越來越好讀，卻不擋住主執行緒。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-12-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-09-1.mp3"></audio>
+    <p>這張圖在講的是，JavaScript 天生只有一條執行緒，一次只能做一件事，所以只要遇到要等的操作，像是打 API、讀檔案，如果用同步的方式硬等，整個畫面就會卡住不能動。左邊這張卡就是這個痛點，早期大家用 callback 來解，但一層套一層就變成很難讀的巢狀地獄。中間是 Promise，你可以把它想成一個未來才會裝進結果的盒子，它有三種狀態：等待中、成功、失敗，你用 then 接成功、catch 接失敗，把巢狀改寫成一條鏈。右邊是 async 和 await，它其實是 Promise 的語法糖，讓你用幾乎跟同步一樣的寫法去寫非同步，await 那一行會等結果回來再往下走，但它等的時候不會卡住整個瀏覽器。重點是，這三層是同一件事的演進，不是三個各自獨立的東西。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>非同步 JavaScript，是為了解決「JS 只有一條執行緒、卻常常需要等」這個先天矛盾而生的一套寫法。先講那個先天限制：瀏覽器裡跑你程式碼的那條主執行緒，同一時間只能做一件事，而且這條執行緒還要負責畫面反應——按鈕點擊、捲動、動畫都靠它。問題是，很多操作本質上要「等」：跟後端要一筆資料、讀一個檔案、等一個計時器。如果你用「同步」的方式站在原地等這些結果回來，這條唯一的執行緒就被你佔住了，在等的那幾百毫秒甚至幾秒裡，畫面完全凍住，使用者點什麼都沒反應。這就是非同步要解決的核心痛點。</p>
+  <p>Promise 和 async/await 是這個痛點的兩代解法，本質是同一件事。Promise 是一個物件，你可以把它想成「一個現在還空著、未來才會裝進結果的盒子」——它有三種狀態：pending（等待中）、fulfilled（成功拿到結果）、rejected（失敗）。你不用站在那裡等盒子裝好，而是先跟它預約「裝好之後請幫我做這件事」：成功接 <code>.then()</code>，失敗接 <code>.catch()</code>。這讓早期那種一層 callback 套一層 callback 的巢狀寫法（俗稱回呼地獄，因為括號越縮越深、幾乎沒法讀）被拉平成一條由上往下的鏈。async/await 則是更上一層的語法糖：在函式前面加 <code>async</code>，就能在裡面用 <code>await</code> 去「等」一個 Promise，寫起來幾乎跟同步程式一模一樣——一行 await 拿資料、下一行就用它，錯誤用熟悉的 try/catch 接。它底層還是 Promise，只是把可讀性再往上拉一階。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎這件事，是因為前端幾乎每一個有意義的功能都是非同步的，寫不好就同時傷到體驗和穩定性。104 人力銀行《AI 人才趨勢報告》一再強調的重點，是求職者要能打通「從需求到能上線」的完整應用情境，而不是只會背零散語法。放到前端，這個「完整情境」最基本的一塊，就是「使用者按下按鈕、資料在路上、畫面要怎麼表現」這一整段——而這整段的骨架就是非同步。你不可能只會寫一個 UI 版面就交差，因為真實頁面一載入就要打好幾支 API、要處理「還在載入」的轉圈狀態、要處理「請求失敗」的錯誤畫面，這些全是非同步在管。</p>
+  <p>更實際的是，非同步寫得好不好，直接決定兩件面試官很在意的事：一是<b>畫面會不會卡</b>。同步硬等會凍住整條主執行緒，使用者體感就是「這網站好慢好爛」，而正確用非同步，等的時候主執行緒還能回應點擊與捲動，體感天差地別。二是<b>錯誤有沒有被接住</b>。網路請求本來就會失敗——逾時、斷線、後端回 500，如果你的非同步程式沒有好好處理 rejected 狀態，輕則畫面卡在轉圈圈永遠轉不完，重則整頁報錯白屏。能不能把「載入中／成功／失敗」這三種狀態都想清楚並寫對，是區分「會寫 demo」和「能交付上線」的分水嶺，這正是報告說的完整情境。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到金融場景，最貼近的例子是玉山或國泰的網銀轉帳頁面。使用者按下「確認轉帳」的那一刻，前端要做的事幾乎全是非同步：發一支請求到後端執行轉帳，這中間可能要等一到數秒。這時候如果我用同步硬等，整個頁面凍住，使用者會以為當機而狂點按鈕，最糟的情況是重複送出、變成轉了兩次帳——這在金融場景是嚴重事故。正確的寫法是用 async/await：按鈕一按下先把它設成 disabled 並顯示「處理中」的轉圈，然後 <code>await</code> 那支轉帳請求；在等的期間主執行緒沒被佔住，使用者不會覺得當機，也因為按鈕被鎖住而不會重複送。請求回來後，用 try/catch 分別處理「成功 → 顯示成功並導到明細」和「失敗 → 顯示明確錯誤、把按鈕解鎖讓他重試」。這一整段「鎖按鈕、顯示狀態、await、分流成功與失敗」就是非同步在真實金流頁面的標準骨架。</p>
+  <p>對我這種法律金融跨域背景的人，最能講出差異化的一點，是把「非同步的狀態管理」連到<b>交易的冪等與可稽核</b>。純前端直覺容易只想到「畫面不要卡」，但在金融流程裡，非同步請求「送出後、結果還沒回來」的那段空窗期，本身就是風險：使用者可能已經離開、可能重整、可能網路斷在半路，導致前端不知道那筆轉帳到底成沒成。所以我會多想一層——除了鎖按鈕，還要求後端這支請求要能用一個交易識別碼做冪等（同一筆重送不會重複扣款），前端則設計「若結果不確定，導去查詢明細確認而不是盲目重送」。這種把「非同步的不確定性」翻譯成「交易安全規則」的思考，是我背景比較能第一時間想到的一層。換到 91APP 這種電商場景，同一組觀念就變成結帳頁：下單請求非同步送出時鎖住按鈕、庫存與付款狀態各自有載入與失敗處理，避免使用者連點兩次變成重複下單。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易答錯的地方，是以為「await 會讓整個瀏覽器停住等結果」。這是把「非同步」和「同步」搞混了。await 暫停的只是「它所在的那個 async 函式」的往下執行，並不是凍結整條主執行緒——在它等的期間，瀏覽器照樣能回應其他點擊、捲動、以及別的正在跑的程式。這正是它跟「同步硬等」最關鍵的差別：同步等會佔住主執行緒讓畫面卡死，await 只是把「這個函式後面的部分」排到結果回來之後再繼續，主執行緒是自由的。如果面試時把這點講反了，會顯得沒真正理解非同步的意義。</p>
+  <p>另一個常被追問、也很容易露餡的坑，是<b>把本來能同時發的請求，用 await 一個一個串起來白等</b>。很多人一學會 await 就每支請求前面都加，寫成「await 第一支、await 第二支、await 第三支」，如果這三支彼此不相干、可以同時發，那你就是白白把總等待時間變成三支相加，而不是三支之中最久的那一支。正確做法是用 <code>Promise.all()</code> 把它們一起發出去、一起等，總時間就壓到最慢那支。這裡我要誠實：這些觀念的原理和寫法我搞懂了、也能講清楚為什麼要這樣，但我目前是從教學專案和小型 side project 上練的，還沒有在一個高流量的正式產品裡處理過複雜的請求相依與競態問題（例如使用者快速切換分頁導致舊請求比新請求晚回來、蓋掉正確結果），被追問到這種實戰細節時，我會講清楚我掌握的主線並說明我會怎麼查證，而不是硬掰經驗。</p>
+
+  <p>非同步 JavaScript 的第一個判斷，從來不是「該用 then 還是 await」，而是「這件事要不要等、等的時候畫面能不能還活著」——想清楚這一點，你就抓到了 Promise 與 async/await 存在的全部理由：讓一條執行緒的世界，也能一邊等、一邊不卡。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「Promise 和 async/await 到底在解決什麼問題？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂非同步存在的根本理由，還是只會背語法。</span>
+        <span class="a">她可以怎麼答：它們解決的是「JS 只有一條執行緒、卻常常需要等」這個矛盾。主執行緒同一時間只能做一件事，還要負責畫面反應，所以碰到打 API、讀檔案這種要等的操作，如果同步硬等，畫面就會卡死。Promise 是一個「未來才裝進結果的盒子」，有等待、成功、失敗三種狀態，讓你先預約結果回來後要做什麼，把巢狀 callback 拉平成一條鏈。async/await 是 Promise 的語法糖，讓你用幾乎跟同步一樣的寫法寫非同步。核心目的都是同一個：等的時候不擋住主執行緒。</span>
+      </li>
+      <li>
+        <span class="q">「await 的時候，整個瀏覽器會停住嗎？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得清 await 暫停的是誰。</span>
+        <span class="a">她可以怎麼答：不會。await 暫停的只是它所在的那個 async 函式的往下執行，不是凍結整條主執行緒。在它等的期間，瀏覽器照樣能回應點擊、捲動，也照樣能跑別的程式。這正是它跟同步硬等最關鍵的差別——同步等會佔住主執行緒讓畫面卡死，await 只是把這個函式後面的部分排到結果回來之後再繼續，主執行緒是自由的。把這點講反是很常見的誤解。</span>
+      </li>
+      <li>
+        <span class="q">「你有三支互不相干的 API 要打，你會怎麼寫？」</span>
+        <span class="hint">👉 這題其實在問：你會不會把能並行的請求誤排成一條線白等。</span>
+        <span class="a">她可以怎麼答：如果這三支彼此不相干、可以同時發，我不會一支一支 await，那樣總等待時間會變成三支相加。我會用 Promise.all 把它們一起發出去、一起等，總時間就壓到最慢那一支。只有在後一支請求需要前一支的結果、有相依關係時，我才會用 await 一支接一支串起來。判斷準則就是：先問這幾支之間有沒有相依，沒有就並行、有才串接。</span>
+      </li>
+      <li>
+        <span class="q">「網銀轉帳按下確認後，前端你會怎麼處理？」</span>
+        <span class="hint">👉 這題其實在問：你能不能把非同步接回完整的業務情境與風險。</span>
+        <span class="a">她可以怎麼答：按下確認後我會先把按鈕設成 disabled 並顯示「處理中」的轉圈，然後 await 那支轉帳請求，這樣等的期間畫面不會卡、使用者也不會因為以為當機而重複點。請求回來用 try/catch 分流：成功就顯示成功並導到明細，失敗就顯示明確錯誤、解鎖按鈕讓他重試。因為我有金融背景，我還會多想一層——送出後結果還沒回來的空窗期是風險，所以後端要用交易識別碼做冪等避免重複扣款，前端遇到結果不確定時導去查明細確認，而不是盲目重送。</span>
+      </li>
+      <li>
+        <span class="q">「callback、Promise、async/await 三者是什麼關係？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道它們是演進，不是三個獨立東西。</span>
+        <span class="a">她可以怎麼答：它們是同一件事的三代演進，不是三個各自獨立的工具。最早用 callback，把「結果好了要做什麼」當函式傳進去，但一層套一層就變成難讀的巢狀地獄。Promise 出來把它拉平成一條 .then 接 .then 的鏈，還把成功和失敗分開處理。async/await 再進一步，底層其實還是 Promise，只是讓你用同步的寫法去寫，可讀性最高。所以我理解它們的方式是：目的一直沒變，都是讓「等結果」不擋住主執行緒，只是把寫法越改越好讀。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-08.html"><span class="dir">上一課</span>← CNN在真實場景怎麼用：從分類到偵測的產品差異</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>
