@@ -31,15 +31,15 @@ html,body{background:#050506;overflow:hidden}
 
 /* ── 標題 ─────────────────────────────────────── */
 .cap-top{
-  position:absolute;left:0;right:0;top:86px;text-align:center;z-index:3;
+  position:absolute;left:0;right:0;top:58px;text-align:center;z-index:3;
 }
 .cap-top .kicker{
-  font-size:15px;letter-spacing:.42em;text-transform:uppercase;
+  font-size:13px;letter-spacing:.40em;text-transform:uppercase;
   color:#C8A96E;font-weight:500;
 }
 .cap-top h1{
   font-family:"Playfair Display",serif;font-weight:400;
-  font-size:56px;color:#fff;margin-top:18px;letter-spacing:.01em;
+  font-size:43px;color:#fff;margin-top:15px;letter-spacing:.01em;
 }
 .cap-top .sub{
   margin-top:18px;font-size:19px;font-weight:300;color:#9a958c;letter-spacing:.06em;
@@ -47,16 +47,16 @@ html,body{background:#050506;overflow:hidden}
 
 /* ── 筆電 ─────────────────────────────────────── */
 #rig{
-  position:absolute;left:50%;top:412px;
+  position:absolute;left:50%;top:196px;
   transform:translateX(-50%);
-  perspective:2400px;perspective-origin:50% 34%;
+  perspective:3000px;perspective-origin:50% 30%;
   z-index:2;
 }
-#laptop{transform-style:preserve-3d;transform:rotateX(9deg) rotateY(-13deg)}
+#laptop{transform-style:preserve-3d;transform:rotateX(7deg) rotateY(-9deg)}
 
 .lid{
   position:relative;
-  width:820px;padding:14px 14px 32px;
+  width:1152px;padding:16px 16px 36px;
   border-radius:20px 20px 8px 8px;
   background:linear-gradient(155deg,#4a4a50 0%,#2a2a30 22%,#1a1a1e 60%,#333338 100%);
   box-shadow:
@@ -66,13 +66,13 @@ html,body{background:#050506;overflow:hidden}
 }
 .screen{
   position:relative;
-  width:792px;height:495px;
+  width:1120px;height:700px;
   overflow:hidden;border-radius:5px;background:#000;
   box-shadow:0 0 0 1px rgba(0,0,0,.9), 0 0 40px rgba(0,0,0,.6) inset;
 }
 .screen iframe{
   width:1440px;height:900px;border:0;display:block;
-  transform:scale(.55);transform-origin:top left;
+  transform:scale(.7778);transform-origin:top left;
 }
 /* 螢幕玻璃反光 */
 .glare{
@@ -84,16 +84,16 @@ html,body{background:#050506;overflow:hidden}
 }
 .notch{
   position:absolute;left:50%;top:-1px;transform:translateX(-50%);
-  width:140px;height:10px;border-radius:0 0 7px 7px;background:#111114;
+  width:172px;height:12px;border-radius:0 0 7px 7px;background:#111114;
 }
 .chin{
   position:absolute;left:0;right:0;bottom:9px;text-align:center;
-  font-size:11px;letter-spacing:.32em;color:#6f6f77;font-weight:500;
+  font-size:13px;letter-spacing:.32em;color:#6f6f77;font-weight:500;
 }
 
 /* 下半部：鍵盤面，往後躺 */
 .base{
-  width:820px;height:230px;margin:0 auto;
+  width:1152px;height:250px;margin:0 auto;
   transform-origin:top center;transform:rotateX(75deg);
   border-radius:0 0 26px 26px;
   background:linear-gradient(180deg,#3a3a40 0%,#232327 30%,#17171a 100%);
@@ -102,13 +102,13 @@ html,body{background:#050506;overflow:hidden}
 }
 .base::before{  /* 觸控板 */
   content:"";position:absolute;left:50%;top:86px;transform:translateX(-50%);
-  width:230px;height:106px;border-radius:8px;
+  width:300px;height:130px;border-radius:9px;
   background:linear-gradient(180deg,#1d1d21,#26262b);
   box-shadow:0 1px 0 rgba(255,255,255,.06) inset;
 }
 .base::after{   /* 鍵盤區 */
   content:"";position:absolute;left:50%;top:12px;transform:translateX(-50%);
-  width:590px;height:68px;border-radius:5px;
+  width:800px;height:84px;border-radius:6px;
   background:
     repeating-linear-gradient(90deg,#101013 0 26px,#2b2b31 26px 30px),
     repeating-linear-gradient(0deg,#101013 0 12px,#2b2b31 12px 15px);
@@ -117,30 +117,33 @@ html,body{background:#050506;overflow:hidden}
 
 /* 桌面上的落地陰影與反光 */
 .floor{
-  position:absolute;left:50%;top:1012px;transform:translateX(-50%);
-  width:1100px;height:170px;z-index:1;
+  position:absolute;left:50%;top:986px;transform:translateX(-50%);
+  width:1300px;height:190px;z-index:1;
   background:radial-gradient(50% 50% at 50% 50%,rgba(0,0,0,.85) 0%,transparent 72%);
   filter:blur(6px);
 }
 .spill{  /* 螢幕打在桌面上的光 */
-  position:absolute;left:50%;top:986px;transform:translateX(-50%);
-  width:760px;height:140px;z-index:1;
+  position:absolute;left:50%;top:958px;transform:translateX(-50%);
+  width:1020px;height:150px;z-index:1;
   background:radial-gradient(50% 50% at 50% 0%,rgba(200,169,110,.10) 0%,transparent 70%);
   filter:blur(14px);
 }
 
 /* ── 頁尾 ─────────────────────────────────────── */
 .cap-bot{
-  position:absolute;left:0;right:0;bottom:94px;text-align:center;z-index:3;
+  position:absolute;left:0;right:0;bottom:74px;text-align:center;z-index:3;
 }
 .cap-bot .line{
-  width:52px;height:1px;background:rgba(200,169,110,.55);margin:0 auto 30px;
+  width:46px;height:1px;background:rgba(200,169,110,.55);margin:0 auto 26px;
 }
-.cap-bot .url{
-  font-size:20px;letter-spacing:.2em;color:#C8A96E;font-weight:500;
+.cap-bot .brand{
+  font-size:25px;letter-spacing:.40em;color:#C8A96E;font-weight:400;
+  text-indent:.40em;   /* 補回字距造成的視覺偏移 */
 }
-.cap-bot .made{
-  margin-top:16px;font-size:16px;font-weight:300;color:#77736c;letter-spacing:.1em;
+.cap-bot .tag{
+  margin-top:17px;font-size:13px;font-weight:300;color:#6e6a63;
+  letter-spacing:.26em;text-transform:uppercase;
+  text-indent:.26em;
 }
 </style>
 </head>
@@ -151,7 +154,6 @@ html,body{background:#050506;overflow:hidden}
   <div class="cap-top">
     <div class="kicker">Scroll-Driven 3D</div>
     <h1>Aurelis Perpetual 40</h1>
-    <div class="sub">零素材 · 整只錶由 WebGL 即時算圖</div>
   </div>
 
   <div class="spill"></div>
@@ -173,8 +175,8 @@ html,body{background:#050506;overflow:hidden}
 
   <div class="cap-bot">
     <div class="line"></div>
-    <div class="url">elainechi-art.github.io/atelier</div>
-    <div class="made">Claude Code × three.js</div>
+    <div class="brand">ATELIER&nbsp;CHI</div>
+    <div class="tag">Digital Craft · Taipei</div>
   </div>
 
 </div>
