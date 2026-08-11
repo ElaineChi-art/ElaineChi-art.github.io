@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course 01 — Maison Volte</title>
+<meta name="description" content="Course 01 knit runner. A scroll-driven exploded view, rendered live in WebGL.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#000000;
+  --ink:#ffffff;
+  --body:#E5E5E5;
+  --accent:#A8B0A2;
+  --accent-hi:#CBD3C4;
+  --dim:#8a8a8a;
+  --hairline:rgba(168,176,162,.22);
+  --rule:rgba(255,255,255,.07);
+  --display:"Playfair Display",Georgia,"Songti TC",serif;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;
+}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:300;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+.label{font-family:var(--sans);font-size:.65rem;font-weight:500;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--accent)}
+h1,h2{font-family:var(--display);font-weight:400;line-height:1.08}
+
+.btn{display:inline-block;font-family:var(--sans);font-size:.7rem;font-weight:500;
+  letter-spacing:.18em;text-transform:uppercase;text-decoration:none;
+  padding:.9rem 2.6rem;background:var(--accent);color:#000;border:1px solid var(--accent);
+  transition:background .35s ease,color .35s ease,border-color .35s ease;pointer-events:auto}
+.btn:hover{background:var(--accent-hi);border-color:var(--accent-hi)}
+.btn--ghost{background:transparent;color:var(--accent)}
+.btn--ghost:hover{background:var(--accent);color:#000}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(1.5rem,5vw,4rem)}
+
+#hero{position:relative;height:360vh}
+.hero-sticky{position:sticky;top:0;width:100vw;height:100vh;height:100svh;overflow:hidden;background:#000}
+#stage,#overlay{position:absolute;inset:0;display:block;width:100%;height:100%}
+#overlay{pointer-events:none}
+
+.hero-copy{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 clamp(1.5rem,5vw,4rem) clamp(3rem,8vh,6rem);pointer-events:none;
+  background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.35) 46%,transparent 100%)}
+.hero-inner{max-width:1180px;margin:0 auto;width:100%}
+.hero-copy h1{font-size:clamp(2.4rem,6vw,5.5rem);margin:.7rem 0 1.1rem}
+.hero-copy p{color:var(--body);font-size:clamp(.95rem,1.5vw,1.06rem);line-height:1.65;
+  max-width:min(460px,100%);margin-bottom:2.2rem}
+.scroll-cue{position:absolute;left:50%;bottom:1.6rem;transform:translateX(-50%);
+  font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);
+  pointer-events:none;transition:opacity .6s ease}
+
+.rise{opacity:0;transform:translateY(24px);
+  transition:opacity .9s cubic-bezier(.25,0,0,1),transform .9s cubic-bezier(.25,0,0,1)}
+.rise.in{opacity:1;transform:none}
+
+section.block{padding:clamp(6rem,14vh,11rem) 0}
+.block h2{font-size:clamp(2rem,4vw,3.5rem);margin:1.1rem 0 0}
+.lede{color:var(--body);max-width:520px;margin-top:1.4rem;line-height:1.7;font-size:.98rem}
+
+.grid{display:grid;gap:1px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  margin-top:clamp(3rem,7vh,5rem)}
+.card{padding:2.1rem 2rem 2.4rem 0;border-top:1px solid var(--hairline)}
+.card svg{width:26px;height:26px;stroke:var(--accent);fill:none;stroke-width:1.1;
+  stroke-linecap:round;stroke-linejoin:round}
+.card h3{font-family:var(--sans);font-size:.72rem;font-weight:500;letter-spacing:.2em;
+  text-transform:uppercase;margin:1.4rem 0 .8rem;color:var(--ink)}
+.card p{color:var(--dim);font-size:.9rem;line-height:1.7}
+
+.specs{margin-top:clamp(3rem,7vh,5rem);max-width:820px}
+.spec-row{display:flex;justify-content:space-between;gap:2rem;padding:1.15rem 0;
+  border-bottom:1px solid var(--rule)}
+.spec-row dt{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:500;flex:0 0 auto;padding-top:.15rem}
+.spec-row dd{color:var(--body);font-size:.98rem;text-align:right}
+
+#closing{text-align:center;padding:clamp(7rem,18vh,13rem) 0}
+#closing h2{font-size:clamp(2.2rem,5vw,4.5rem)}
+#closing h2 em{font-style:italic;color:var(--body);display:block}
+#closing .lede{margin:1.8rem auto 0;max-width:480px}
+.cta-glow{position:relative;display:inline-block;margin-top:2.8rem}
+.cta-glow::before{content:"";position:absolute;left:50%;top:50%;width:520px;height:280px;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse,rgba(168,176,162,.10) 0%,transparent 70%);pointer-events:none}
+.cta-glow .btn{position:relative}
+
+@media (max-width:768px){
+  .grid{grid-template-columns:1fr}
+  .card{padding-right:0}
+  .spec-row{flex-direction:column;gap:.45rem}
+  .spec-row dd{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){.rise{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+
+<div id="hero">
+  <div class="hero-sticky">
+    <canvas id="stage"></canvas>
+    <canvas id="overlay"></canvas>
+    <div class="hero-copy">
+      <div class="hero-inner">
+        <span class="label rise" data-delay="0">Maison Volte · Paris</span>
+        <h1 class="rise" data-delay="120">Course 01</h1>
+        <p class="rise" data-delay="240">One knitted upper with no seams, a supercritical foam midsole, and a rubber outsole you can have replaced four times before the shoe is finished.</p>
+        <a href="#closing" class="btn rise" data-delay="360">Find Your Size</a>
+      </div>
+    </div>
+    <span class="scroll-cue" id="cue">Scroll to deconstruct</span>
+  </div>
+</div>
+
+<main style="background:#000">
+
+<section class="block" id="features">
+  <div class="wrap">
+    <span class="label rise">Fewer Parts, Better Parts</span>
+    <h2 class="rise" data-delay="100">A running shoe is mostly glue.</h2>
+    <p class="lede rise" data-delay="200">A typical performance runner is thirty-odd pieces bonded together, which is why it cannot be repaired and will not be recycled. Course 01 is six, and every joint is mechanical.</p>
+
+    <div class="grid">
+      <div class="card rise">
+        <svg viewBox="0 0 24 24"><path d="M3 8h18M3 12h18M3 16h18"/><path d="M7 6v12M12 6v12M17 6v12"/></svg>
+        <h3>Seamless Knit</h3>
+        <p>The upper leaves the machine as one tube. No cut panels, no stitching, no offcuts — which also means no seam to abrade against the fifth metatarsal.</p>
+      </div>
+      <div class="card rise" data-delay="80">
+        <svg viewBox="0 0 24 24"><path d="M4 15c3-4 13-4 16 0"/><path d="M4 15v2.5c0 1 .8 1.5 2 1.5h12c1.2 0 2-.5 2-1.5V15"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="10" r="1"/><circle cx="16" cy="11" r="1"/></svg>
+        <h3>Supercritical Foam</h3>
+        <p>Nitrogen forced into the polymer under pressure, then released. The cells come out uniform, which is why the rebound is still 78 % after six hundred kilometres.</p>
+      </div>
+      <div class="card rise" data-delay="160">
+        <svg viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="7" rx="2"/><path d="M7 9v7M11 9v7M15 9v7"/></svg>
+        <h3>Replaceable Outsole</h3>
+        <p>Held on by a mechanical lap joint, not adhesive. Send the shoe back, we press a new outsole on and return it. Four times, then the foam is done anyway.</p>
+      </div>
+      <div class="card rise" data-delay="240">
+        <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 6l8 4M16 6l-8 4M8 12l8 4M16 12l-8 4"/></svg>
+        <h3>Floating Lace Cage</h3>
+        <p>The eyelets sit on a webbing cradle that is anchored to the midsole, not the knit. Pull the laces and the shoe tightens around the foot instead of crushing it.</p>
+      </div>
+      <div class="card rise" data-delay="320">
+        <svg viewBox="0 0 24 24"><path d="M5 18c0-6 3-11 7-13 4 2 7 7 7 13"/><path d="M5 18h14"/></svg>
+        <h3>Moulded Heel Counter</h3>
+        <p>A thermoplastic cup laminated inside the knit, so the heel is held without a stiff external clip. It is the only part of the shoe that is not soft to the touch.</p>
+      </div>
+      <div class="card rise" data-delay="400">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>
+        <h3>Six Hundred Kilometres</h3>
+        <p>Not a marketing figure. Every batch is run to failure on a mechanical gait rig, and the number we print is the tenth percentile, not the average.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="specs">
+  <div class="wrap">
+    <span class="label rise">Specification</span>
+    <h2 class="rise" data-delay="100">What you are standing on.</h2>
+    <dl class="specs">
+      <div class="spec-row rise"><dt>Reference</dt><dd>VC‑01 · Sage</dd></div>
+      <div class="spec-row rise" data-delay="60"><dt>Upper</dt><dd>Circular-knit polyester, one piece</dd></div>
+      <div class="spec-row rise" data-delay="120"><dt>Midsole</dt><dd>Supercritical PEBA foam, 34 mm heel</dd></div>
+      <div class="spec-row rise" data-delay="180"><dt>Drop</dt><dd>8 mm</dd></div>
+      <div class="spec-row rise" data-delay="240"><dt>Outsole</dt><dd>Abrasion rubber, mechanically joined</dd></div>
+      <div class="spec-row rise" data-delay="300"><dt>Mass</dt><dd>241 g, UK 8</dd></div>
+      <div class="spec-row rise" data-delay="360"><dt>Rebound</dt><dd>78 % at 600 km</dd></div>
+      <div class="spec-row rise" data-delay="420"><dt>Sizes</dt><dd>UK 3 – 13, half sizes throughout</dd></div>
+      <div class="spec-row rise" data-delay="480"><dt>Assembly</dt><dd>Six parts, no structural adhesive</dd></div>
+      <div class="spec-row rise" data-delay="540"><dt>End of Life</dt><dd>Returnable, ground and re-foamed</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section id="closing">
+  <div class="wrap">
+    <span class="label rise">Try Them Wet</span>
+    <h2 class="rise" data-delay="100">Run in them.<em>Then send them back if you want.</em></h2>
+    <p class="lede rise" data-delay="200">A hundred kilometres, any weather, any surface. If they are not right, the return is free and the shoes go back into the foam.</p>
+    <div class="cta-glow rise" data-delay="300">
+      <a href="#hero" class="btn btn--ghost">Find Your Size</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script type="importmap">
+{ "imports": { "three": "../vendor/three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* ═══════════════════════════════════════════════════════════
+   COURSE 01 — fourth product, and the one that does NOT fit
+   the lathe. A shoe has no axis of revolution, so the upper is
+   built by LOFTING: walk along the last from heel to toe, and
+   at each station define a cross-section, then stitch the
+   stations into one surface. Everything else — studio, camera,
+   exploded view — is the same rig as the watch.
+   ═══════════════════════════════════════════════════════════ */
+
+const TAU   = Math.PI * 2;
+const clamp = (v,a,b) => v<a?a:v>b?b:v;
+const lerp  = (a,b,t) => a + (b-a)*t;
+const easeInOut = t => t<.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+const easeOut   = t => 1 - Math.pow(1-t,3);
+
+const stage   = document.getElementById('stage');
+const overlay = document.getElementById('overlay');
+const octx    = overlay.getContext('2d');
+const heroEl  = document.getElementById('hero');
+const cueEl   = document.getElementById('cue');
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const renderer = new THREE.WebGLRenderer({ canvas: stage, antialias: true });
+renderer.setClearColor(0x000000, 1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.95;
+
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(26, 1, 1, 900);
+
+function buildStudio(){
+  const s = new THREE.Scene();
+  const roomGeo = new THREE.BoxGeometry(1,1,1);
+  roomGeo.deleteAttribute('uv');
+  const room = new THREE.Mesh(roomGeo,
+    new THREE.MeshStandardMaterial({ side: THREE.BackSide, color: 0x121216, roughness: 1 }));
+  room.scale.setScalar(760);
+  s.add(room);
+  const box = new THREE.BoxGeometry(1,1,1);
+  const light = (w,h,d, x,y,z, rx,ry,rz, i) => {
+    const m = new THREE.MeshBasicMaterial(); m.color.setScalar(i);
+    const mesh = new THREE.Mesh(box, m);
+    mesh.scale.set(w,h,d); mesh.position.set(x,y,z); mesh.rotation.set(rx,ry,rz);
+    s.add(mesh);
+  };
+  /* 布料不反光，靠的是大面積柔光把絨毛的方向性打出來 */
+  light(360,  4, 360,   0, 170,   0,  0, 0,    0, 2.6);
+  light(  6, 280, 260,-170,  60,  20,  0, 0.34, 0, 4.0);
+  light(  6, 280, 260, 175,  70, -20,  0,-0.30, 0, 2.6);
+  light(  5, 100, 170,-125, 120,  60,  0, 0.30, 0,10);
+  light(320, 150,   5,   0,  40,-210,  0, 0,    0, 2.2);
+  light(240, 110,   5,   0, -50, 200,  0, 0,    0, 0.8);
+  return s;
+}
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(buildStudio(), 0.03, 1, 2000).texture;
+
+const key = new THREE.DirectionalLight(0xfff6ec, 1.0);
+key.position.set(-60, 90, 70); scene.add(key);
+const rim = new THREE.DirectionalLight(0xd8e0d0, 0.5);
+rim.position.set(70, 30, -80); scene.add(rim);
+
+/* ── materials ──────────────────────────────────────────── */
+/* 針織：橫向的針目紋，做成 roughness 貼圖；sheen 是布料的關鍵，
+   沒有它布會看起來像塑膠 */
+function knitMap(){
+  const N = 512, c = document.createElement('canvas'); c.width = c.height = N;
+  const x = c.getContext('2d');
+  x.fillStyle = '#8a8a8a'; x.fillRect(0,0,N,N);
+  for (let row = 0; row < 46; row++){
+    const y = row * (N/46);
+    for (let i = 0; i < 64; i++){
+      const cx = (i + (row%2 ? 0.5 : 0)) * (N/64);
+      const g = x.createRadialGradient(cx, y+4, 0.5, cx, y+4, 7);
+      g.addColorStop(0, '#b6b6b6'); g.addColorStop(1, '#6a6a6a');
+      x.fillStyle = g;
+      x.beginPath(); x.ellipse(cx, y+4, 5.2, 3.4, 0, 0, TAU); x.fill();
+    }
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(9, 5); t.anisotropy = 8;
+  return t;
+}
+const knit = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.138, 0.163, 0.122), metalness: 0, roughness: 0.94,
+  roughnessMap: knitMap(),
+  sheen: 1, sheenRoughness: 0.55,
+  sheenColor: new THREE.Color(0.62, 0.68, 0.58),
+  envMapIntensity: 0.85, side: THREE.DoubleSide,
+});
+const knitDark = knit.clone();
+knitDark.color = new THREE.Color(0.075, 0.085, 0.070);
+const foamMat = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.86, 0.845, 0.79), metalness: 0, roughness: 0.88,
+  envMapIntensity: 0.75,
+});
+const rubber = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.055, 0.058, 0.055), metalness: 0, roughness: 0.62,
+  envMapIntensity: 0.55,
+});
+const insoleMat = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.30, 0.28, 0.24), metalness: 0, roughness: 0.9,
+  sheen: 0.6, sheenColor: new THREE.Color(0.5,0.48,0.42), envMapIntensity: 0.5,
+});
+const tpuMat = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.10, 0.115, 0.10), metalness: 0, roughness: 0.28,
+  clearcoat: 0.7, clearcoatRoughness: 0.25, envMapIntensity: 1.0,
+});
+const eyeletMat = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.66, 0.60, 0.46), metalness: 1, roughness: 0.28,
+  envMapIntensity: 1.1,
+});
+const laceMat = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.52, 0.55, 0.48), metalness: 0, roughness: 0.92,
+  sheen: 0.9, sheenColor: new THREE.Color(0.75,0.78,0.7), envMapIntensity: 0.6,
+});
+
+/* ── the last: everything is measured off these two curves ── */
+/* 平滑插值（smoothstep），用來描述鞋楦沿長度方向的寬與高 */
+function along(pts, u){
+  for (let i = 0; i < pts.length - 1; i++){
+    if (u <= pts[i+1][0]){
+      const t = (u - pts[i][0]) / (pts[i+1][0] - pts[i][0]);
+      const s = t*t*(3 - 2*t);
+      return pts[i][1] + (pts[i+1][1] - pts[i][1]) * s;
+    }
+  }
+  return pts[pts.length-1][1];
+}
+const HEEL = -64, TOE = 68;
+const zAt = u => lerp(HEEL, TOE, u);
+
+/* 半寬 */
+const WIDTH = [[0,12],[0.10,16.8],[0.22,17.6],[0.38,16.4],[0.55,20.8],
+               [0.70,22.0],[0.84,19.4],[0.94,13.0],[1,3.0]];
+/* 鞋面拱起的高度（相對中底上緣） */
+const HEIGHT = [[0,24],[0.09,40],[0.20,43],[0.33,35],[0.48,27],
+                [0.64,21],[0.80,15],[0.92,9],[1,3]];
+
+const SOLE_TOP = 15;     // 中底上緣
+
+/* 通用放樣：把 (u,v) 的網格縫成一張曲面 */
+function loft(nU, nV, fn){
+  const pos = [], uv = [], idx = [];
+  for (let i = 0; i <= nU; i++){
+    for (let j = 0; j <= nV; j++){
+      const p = fn(i/nU, j/nV);
+      pos.push(p.x, p.y, p.z);
+      uv.push(j/nV, i/nU);
+    }
+  }
+  for (let i = 0; i < nU; i++){
+    for (let j = 0; j < nV; j++){
+      const a = i*(nV+1)+j, b = a+nV+1;
+      idx.push(a, b, a+1, a+1, b, b+1);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+
+/* 鞋底外框（俯視），中底與大底都從這個輪廓擠出 */
+function soleShape(inset = 0){
+  const s = new THREE.Shape();
+  const k = 1 - inset;
+  s.moveTo(0, TOE - inset*2);
+  s.bezierCurveTo(11*k, (TOE-3), 21*k, 52, 22.6*k, 34);
+  s.bezierCurveTo(24*k, 14, 18*k, 4, 17.4*k, -10);
+  s.bezierCurveTo(16.6*k, -28, 19*k, -44, 15*k, -55);
+  s.bezierCurveTo(11*k, -64, -11*k, -64, -15*k, -55);
+  s.bezierCurveTo(-19*k, -44, -16.6*k, -28, -17.4*k, -10);
+  s.bezierCurveTo(-18*k, 4, -24*k, 14, -22.6*k, 34);
+  s.bezierCurveTo(-21*k, 52, -11*k, (TOE-3), 0, TOE - inset*2);
+  return s;
+}
+
+/* ── the shoe ───────────────────────────────────────────── */
+const product = new THREE.Group();
+scene.add(product);
+
+const parts = {};
+function part(name, ey, ez){
+  const g = new THREE.Group();
+  product.add(g);
+  parts[name] = { group: g, ey, ez, label: name.toUpperCase() };
+  return g;
+}
+
+/* — 大底 — */
+{
+  const g = part('outsole', -46, 0);
+  const geo = new THREE.ExtrudeGeometry(soleShape(0.02), {
+    depth: 7, bevelEnabled: true, bevelSize: 1.6, bevelThickness: 1.4,
+    bevelSegments: 3, curveSegments: 26,
+  });
+  geo.rotateX(-Math.PI/2);
+  const m = new THREE.Mesh(geo, rubber);
+  m.position.y = 0;
+  g.add(m);
+  /* 橫向溝紋 */
+  for (let i = 0; i < 16; i++){
+    const z = lerp(HEEL + 6, TOE - 8, i / 15);
+    const w = along(WIDTH, i/15) * 2.05;
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(w, 1.8, 3.2), rubber);
+    bar.position.set(0, -0.9, z);
+    g.add(bar);
+  }
+}
+
+/* — 中底 — */
+{
+  const g = part('midsole', -20, 0);
+  const geo = new THREE.ExtrudeGeometry(soleShape(0), {
+    depth: 20, bevelEnabled: true, bevelSize: 2.6, bevelThickness: 2.2,
+    bevelSegments: 4, curveSegments: 26,
+  });
+  geo.rotateX(-Math.PI/2);
+  /* 後跟厚、前掌薄：8 mm drop */
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++){
+    const z = p.getZ(i), y = p.getY(i);
+    const t = clamp((z - HEEL) / (TOE - HEEL), 0, 1);
+    if (y > 2) p.setY(i, y - t * 7.5);
+  }
+  geo.computeVertexNormals();
+  const m = new THREE.Mesh(geo, foamMat);
+  m.position.y = 7;
+  g.add(m);
+}
+
+/* — 鞋墊 — */
+{
+  const g = part('insole', 16, 0);
+  const geo = new THREE.ExtrudeGeometry(soleShape(0.10), {
+    depth: 2.4, bevelEnabled: true, bevelSize: 0.8, bevelThickness: 0.8,
+    bevelSegments: 2, curveSegments: 22,
+  });
+  geo.rotateX(-Math.PI/2);
+  const m = new THREE.Mesh(geo, insoleMat);
+  m.position.y = SOLE_TOP - 1.5;
+  g.add(m);
+}
+
+/* — 鞋面：放樣出來的一體針織 — */
+{
+  const g = part('upper', 46, 0);
+
+  const surface = loft(64, 40, (u, v) => {
+    const w = along(WIDTH, u);
+    const h = along(HEIGHT, u);
+    const t = v * Math.PI;                       // 0 = 右側鞋口, π = 左側
+    /* 斷面用超橢圓：側面接近垂直，頂面平緩，才像鞋不像香腸 */
+    const ct = Math.cos(t), st = Math.sin(t);
+    const x = w * Math.sign(ct) * Math.pow(Math.abs(ct), 0.78);
+    const y = SOLE_TOP + h * Math.pow(st, 0.62);
+    return { x, y, z: zAt(u) };
+  });
+  g.add(new THREE.Mesh(surface, knit));
+
+  /* 鞋口：沿橢圓掃出的一圈填充環（不能用 TorusGeometry 再非等比縮放，
+     管徑會跟著變形成一片刀狀團塊） */
+  class Ellipse extends THREE.Curve {
+    constructor(a, b){ super(); this.a = a; this.b = b; }
+    getPoint(t, target = new THREE.Vector3()){
+      const th = t * TAU;
+      return target.set(Math.cos(th) * this.a, 0, Math.sin(th) * this.b);
+    }
+  }
+  const collar = new THREE.Mesh(
+    new THREE.TubeGeometry(new Ellipse(15.2, 20), 140, 4.0, 14, true), knitDark);
+  collar.rotation.x = 0.34;
+  collar.position.set(0, SOLE_TOP + 35.5, -30);
+  g.add(collar);
+  const mouth = new THREE.Mesh(new THREE.CircleGeometry(1, 64),
+    new THREE.MeshBasicMaterial({ color: 0x07080a }));
+  mouth.scale.set(15.2, 20, 1);
+  mouth.rotation.x = -Math.PI/2 + 0.34;
+  mouth.position.set(0, SOLE_TOP + 34.6, -30);
+  g.add(mouth);
+
+  /* 後跟穩定片 */
+  const counter = loft(20, 24, (u, v) => {
+    const uu = 0.02 + u * 0.20;
+    const w = along(WIDTH, uu) + 0.7;
+    const h = along(HEIGHT, uu) * (0.42 + 0.30*u);
+    const t = 0.10*Math.PI + v * 0.80*Math.PI;
+    const ct = Math.cos(t), st = Math.sin(t);
+    return {
+      x: w * Math.sign(ct) * Math.pow(Math.abs(ct), 0.78),
+      y: SOLE_TOP + h * Math.pow(st, 0.62),
+      z: zAt(uu),
+    };
+  });
+  const cm = new THREE.Mesh(counter, tpuMat);
+  g.add(cm);
+}
+
+/* — 鞋舌 — */
+{
+  const g = part('tongue', 66, 0);
+  const geo = loft(18, 14, (u, v) => {
+    const uu = 0.26 + u * 0.26;
+    const w = (11 - u*2.2);
+    const h = along(HEIGHT, uu) + 3.2 - u*3;
+    return {
+      x: (v - 0.5) * 2 * w,
+      y: SOLE_TOP + h - Math.pow(Math.abs(v-0.5)*2, 2) * 3,
+      z: zAt(uu),
+    };
+  });
+  const m = new THREE.Mesh(geo, knitDark);
+  g.add(m);
+}
+
+/* — 鞋帶與鞋眼 — */
+{
+  const g = part('lacing', 86, 0);
+  const rows = 5;
+  const pts = [];
+  for (let i = 0; i < rows; i++){
+    const uu = 0.30 + i * 0.055;
+    const w = along(WIDTH, uu) * 0.62;
+    const h = SOLE_TOP + along(HEIGHT, uu) + 1.4;
+    for (const s of [-1, 1]){
+      const e = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.42, 8, 24), eyeletMat);
+      e.position.set(s * w, h, zAt(uu));
+      e.rotation.x = Math.PI/2 - 0.5;
+      g.add(e);
+    }
+    pts.push([w, h, zAt(uu)]);
+  }
+  /* 交叉綁法：右下 → 左上 → 右上 → … */
+  const path = [];
+  for (let i = 0; i < rows - 1; i++){
+    const a = pts[i], b = pts[i+1];
+    const s = i % 2 ? 1 : -1;
+    path.push(new THREE.Vector3( s*a[0], a[1]+0.6, a[2]));
+    path.push(new THREE.Vector3(0, a[1] + 3.4, (a[2]+b[2])/2));
+    path.push(new THREE.Vector3(-s*b[0], b[1]+0.6, b[2]));
+    path.push(new THREE.Vector3(0, b[1] + 3.4, (b[2]+ (i+2<rows?pts[i+2][2]:b[2]))/2));
+  }
+  if (path.length > 3){
+    const curve = new THREE.CatmullRomCurve3(path, false, 'catmullrom', 0.3);
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 220, 1.25, 8, false), laceMat));
+  }
+}
+
+const PART_ORDER = ['lacing','tongue','upper','insole','midsole','outsole'];
+const ANCHOR = {
+  lacing:  [0, SOLE_TOP + 46, 6],
+  tongue:  [0, SOLE_TOP + 42, -4],
+  upper:   [0, SOLE_TOP + 30, -20],
+  insole:  [0, SOLE_TOP + 2,  0],
+  midsole: [0, 14, 0],
+  outsole: [0, 2,  0],
+};
+
+/* ── frame ──────────────────────────────────────────────── */
+let W = 0, H = 0, lastP = -1;
+
+function resize(){
+  const r = stage.getBoundingClientRect();
+  W = Math.max(1, r.width); H = Math.max(1, r.height);
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.9);
+  renderer.setPixelRatio(dpr);
+  renderer.setSize(W, H, false);
+  overlay.width = Math.round(W*dpr); overlay.height = Math.round(H*dpr);
+  camera.aspect = W/H;
+  camera.fov = W < 760 ? 34 : 26;
+  camera.updateProjectionMatrix();
+  draw(lastP < 0 ? 0 : lastP);
+}
+
+const tmpV = new THREE.Vector3();
+
+function drawCallouts(ex, dpr){
+  octx.setTransform(dpr,0,0,dpr,0,0);
+  octx.clearRect(0,0,W,H);
+  if (ex < 0.20 || W < 1000) return;
+  const a = clamp((ex - 0.20)/0.30, 0, 1);
+  const colX = W/2 + Math.min(392, W*0.33);
+  octx.font = '500 10px Inter, sans-serif';
+  if ('letterSpacing' in octx) octx.letterSpacing = '2.4px';
+  octx.textBaseline = 'middle';
+  for (const name of PART_ORDER){
+    const p = parts[name], A = ANCHOR[name];
+    tmpV.set(A[0], A[1] + p.ey*ex, A[2] + p.ez*ex);
+    product.localToWorld(tmpV);
+    tmpV.project(camera);
+    const y = (-tmpV.y*0.5 + 0.5) * H;
+    const x = ( tmpV.x*0.5 + 0.5) * W + 40;
+    octx.strokeStyle = `rgba(168,176,162,${(a*0.26).toFixed(3)})`;
+    octx.lineWidth = 1;
+    octx.beginPath();
+    octx.moveTo(x, y); octx.lineTo(colX - 14, y); octx.lineTo(colX, y);
+    octx.stroke();
+    octx.fillStyle = `rgba(168,176,162,${(a*0.82).toFixed(3)})`;
+    octx.fillText(p.label, colX + 8, y);
+  }
+}
+
+function draw(p){
+  lastP = p;
+  const orbit = easeOut(clamp((p - 0.03)/0.42, 0, 1));
+  const ex    = easeInOut(clamp((p - 0.46)/0.50, 0, 1));
+
+  for (const name of PART_ORDER){
+    const q = parts[name];
+    q.group.position.set(0, q.ey*ex, q.ez*ex);
+  }
+
+  const az   = lerp(-1.20, -0.10, orbit) - ex*0.62;   // 拆解時轉回側 3/4 角
+  const el   = lerp(0.19, 0.27, ex);
+  const dist = lerp(408, 612, ex);
+  const ty   = lerp(20, 46, ex);
+
+  camera.position.set(
+    dist*Math.cos(el)*Math.sin(az),
+    dist*Math.sin(el) + ty,
+    dist*Math.cos(el)*Math.cos(az));
+  camera.lookAt(0, ty, 0);
+
+  product.rotation.y = lerp(0.30, 0.06, orbit) + ex*0.06;
+
+  renderer.render(scene, camera);
+  drawCallouts(ex, renderer.getPixelRatio());
+  if (cueEl) cueEl.style.opacity = String(clamp(1 - p*8, 0, 1));
+}
+
+function progress(){
+  const top = heroEl.getBoundingClientRect().top;
+  const range = heroEl.offsetHeight - window.innerHeight;
+  return range <= 0 ? 0 : clamp(-top/range, 0, 1);
+}
+let prev = -1;
+function tick(){
+  const p = REDUCED ? 0.92 : progress();
+  if (Math.abs(p - prev) > 0.0004){ prev = p; draw(p); }
+  requestAnimationFrame(tick);
+}
+
+window.addEventListener('resize', resize, { passive: true });
+resize();
+draw(REDUCED ? 0.92 : progress());
+if (!REDUCED) tick();
+
+const io = new IntersectionObserver((entries) => {
+  for (const e of entries){
+    if (!e.isIntersecting) continue;
+    const d = Number(e.target.dataset.delay || 0);
+    setTimeout(() => e.target.classList.add('in'), d);
+    io.unobserve(e.target);
+  }
+}, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+document.querySelectorAll('.rise').forEach(el => io.observe(el));
+document.querySelectorAll('.hero-copy .rise').forEach(el => {
+  io.unobserve(el);
+  setTimeout(() => el.classList.add('in'), 900 + Number(el.dataset.delay || 0));
+});
+</script>
+</body>
+</html>
