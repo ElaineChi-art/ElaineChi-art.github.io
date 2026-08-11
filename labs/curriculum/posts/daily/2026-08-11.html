@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>React的資料流向：從useState到跟後端API溝通的完整路徑｜技能實驗室・每日課程</title>
+<meta name="description" content="React 的資料是單向流動的：畫面照著狀態畫，你想改畫面就得改狀態、讓 React 重畫，永遠不自己碰 DOM。useState 給你一筆狀態和一個改它的函式；跟後端串接時，在 useEffect 裡發 fetch 打 API，拿到資料一樣用 setState 放進狀態，畫面就自動更新。這一課把使用者操作和 API 資料收攏到同一條路徑，並拆解最容易答錯的地方：狀態更新是非同步的、不能改完馬上讀舊變數。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-11</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・前端開發</div>
+  <h1>React的資料流向：從useState到跟後端API溝通的完整路徑</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-11</span>
+    <span>約 7 分鐘</span>
+    <span>對應真專案主題：React 資料串接與應用</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>React 的核心規矩只有一句：<b>畫面是照著狀態畫出來的，你想改畫面，就去改狀態，不要自己去動畫面。</b><code>useState</code> 給你兩樣東西——一筆「狀態」（會影響畫面的資料）和一個「專門改它的函式」（一般叫 <code>setXxx</code>）。你不能直接改那筆資料，一定要透過這個函式改，React 才知道「資料變了、該重畫了」。這條資料流是<b>單向</b>的：狀態流向畫面，使用者的操作（例如點按鈕）觸發事件、事件回頭呼叫函式去改狀態，繞成一個循環。跟後端串接也走同一條路：畫面一載入，你在 <code>useEffect</code>（負責處理「渲染之後要做的事」的鉤子）裡發出 <code>fetch</code> 去打 API，拿到資料後<b>一樣</b>用 <code>setState</code> 把它塞進狀態，畫面就自動更新。最容易答錯的一句：狀態更新是<b>非同步</b>的，你呼叫 <code>setCount</code> 後馬上去讀那個變數，讀到的還是舊值。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-14-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260811" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260811" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260811" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+        <marker id="arrGD20260811" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#35C08E"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260811)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260811)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M4 · 前端開發  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">改狀態、讓它重畫：<tspan fill="#4D9FFF">React 的單向資料流</tspan></text>
+
+      <!-- 卡1：useState 核心 -->
+      <rect x="64" y="140" width="352" height="392" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="64" y="140" width="352" height="5" rx="2.5" fill="url(#topbarD20260811)"/>
+      <text x="86" y="184" font-size="19" font-weight="800" fill="#4D9FFF">① useState：狀態＋改它的函式</text>
+      <text x="86" y="216" font-size="16" fill="#8FA1C0">畫面照著狀態畫出來</text>
+      <text x="86" y="262" font-size="17" fill="#C7D2E4">const [count, setCount]</text>
+      <text x="86" y="288" font-size="17" fill="#C7D2E4">　　= useState(0)</text>
+      <text x="86" y="336" font-size="17" fill="#C7D2E4">・count＝現在的狀態值</text>
+      <text x="86" y="366" font-size="17" fill="#C7D2E4">・setCount＝唯一能改它的門</text>
+      <text x="86" y="418" font-size="16" fill="#8FA1C0">規矩：不直接改 count，</text>
+      <text x="86" y="442" font-size="16" fill="#8FA1C0">一律走 setCount</text>
+      <text x="86" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ setCount 一呼叫，React 就重畫。</text>
+
+      <!-- 卡2：單向循環 -->
+      <rect x="440" y="140" width="400" height="392" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="462" y="184" font-size="19" font-weight="800" fill="#F5F8FF">② 單向資料流：繞一個圈</text>
+
+      <!-- 狀態 -->
+      <rect x="470" y="212" width="150" height="60" rx="10" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <text x="545" y="240" font-size="16" font-weight="800" fill="#4D9FFF" text-anchor="middle">狀態 state</text>
+      <text x="545" y="260" font-size="14" fill="#8FA1C0" text-anchor="middle">count = 現在的值</text>
+      <!-- 畫面 -->
+      <rect x="660" y="212" width="150" height="60" rx="10" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <text x="735" y="240" font-size="16" font-weight="800" fill="#35C08E" text-anchor="middle">畫面 UI</text>
+      <text x="735" y="260" font-size="14" fill="#8FA1C0" text-anchor="middle">照狀態渲染</text>
+      <!-- 狀態→畫面 -->
+      <line x1="620" y1="242" x2="654" y2="242" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260811)"/>
+      <text x="637" y="204" font-size="13" fill="#7E8CA8" text-anchor="middle">渲染</text>
+
+      <!-- 事件 -->
+      <rect x="660" y="336" width="150" height="60" rx="10" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <text x="735" y="364" font-size="16" font-weight="800" fill="#F2A33C" text-anchor="middle">事件 event</text>
+      <text x="735" y="384" font-size="14" fill="#8FA1C0" text-anchor="middle">使用者點按鈕</text>
+      <!-- 畫面→事件 -->
+      <line x1="735" y1="272" x2="735" y2="330" stroke="#7E8CA8" stroke-width="2.5" marker-end="url(#arrGD20260811)"/>
+      <text x="770" y="306" font-size="13" fill="#7E8CA8" text-anchor="middle">操作</text>
+      <!-- 事件→狀態（setState） -->
+      <line x1="660" y1="366" x2="545" y2="278" stroke="#F2A33C" stroke-width="2.5" marker-end="url(#arrBD20260811)"/>
+      <text x="560" y="330" font-size="13" fill="#F2A33C" text-anchor="middle">setCount()</text>
+
+      <text x="462" y="440" font-size="16" fill="#C7D2E4">資料只往一個方向流：</text>
+      <text x="462" y="466" font-size="16" fill="#C7D2E4">狀態 → 畫面；事件回頭改狀態。</text>
+      <text x="462" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 你永遠不自己去動畫面。</text>
+
+      <!-- 卡3：串後端 -->
+      <rect x="864" y="140" width="352" height="392" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="864" y="140" width="352" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="886" y="184" font-size="19" font-weight="800" fill="#35C08E">③ 串後端：同一條路</text>
+      <text x="886" y="216" font-size="16" fill="#8FA1C0">API 資料也塞進狀態</text>
+      <text x="886" y="262" font-size="17" fill="#C7D2E4">畫面一載入 → useEffect</text>
+      <text x="886" y="292" font-size="17" fill="#C7D2E4">↓ 發 fetch 打 API</text>
+      <text x="886" y="322" font-size="17" fill="#C7D2E4">↓ 拿到回傳的資料</text>
+      <text x="886" y="352" font-size="17" fill="#C7D2E4">↓ setData(資料)</text>
+      <text x="886" y="382" font-size="17" fill="#C7D2E4">→ 畫面自動更新</text>
+      <text x="886" y="434" font-size="16" fill="#8FA1C0">通常還要三個狀態：</text>
+      <text x="886" y="458" font-size="16" fill="#8FA1C0">載入中／資料／錯誤</text>
+      <text x="886" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 不管資料哪來，終點都是 setState。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：畫面照狀態畫，你只改狀態、讓 React 重畫，永遠不自己碰畫面。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">使用者操作和後端 API 走同一條路：最後都用 setState 更新狀態，畫面自己跟上。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-14-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-11-1.mp3"></audio>
+    <p>這張圖在講的是，React 裡資料是怎麼流動的。左邊是核心：useState 給你一個狀態，還有一個專門用來改它的函式。畫面是照著狀態畫出來的，所以你想改畫面，不能直接去動畫面，而是呼叫那個函式去改狀態，React 才會重新渲染。中間這條線很重要：資料是單向流動的，從狀態流到畫面，使用者的事件再回頭呼叫函式去改狀態，繞成一個循環。右邊是跟後端串接：畫面一載入，你在 useEffect 裡發出 fetch 去打 API，拿到回傳的資料後，一樣是呼叫那個函式把它放進狀態，畫面就自動更新。所以整張圖的主張是，不管資料是來自使用者操作，還是後端 API，最後都要走同一條路：改狀態、讓 React 重畫，你永遠不自己去碰畫面。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>React 的資料流，是一套「畫面照著狀態畫、你只管改狀態」的運作方式。先講最基礎的零件：<code>useState</code>。當你在元件裡寫 <code>const [count, setCount] = useState(0)</code>，你其實一次拿到兩樣東西——第一個 <code>count</code> 是「現在的狀態值」（會影響畫面的一筆資料，初始是 0），第二個 <code>setCount</code> 是「唯一能合法改它的那扇門」。這裡有一條不能破的規矩：你<b>不可以</b>直接寫 <code>count = 5</code> 去改它，一定要呼叫 <code>setCount(5)</code>。原因是 React 要靠這個函式被呼叫，才知道「狀態變了、這塊畫面該重畫了」；你偷偷改變數，它根本不知道發生過什麼，畫面就不會更新。</p>
+  <p>把零件組起來，就是 React 最重要的一句話：<b>資料是單向流動的</b>。畫面（UI）永遠是「當前狀態」長出來的結果——狀態是 3，畫面就顯示 3。使用者在畫面上做操作（點按鈕、打字）會觸發<b>事件</b>，事件裡你去呼叫 <code>setCount</code> 改狀態，狀態一變，React 就拿新狀態重新算一次畫面該長怎樣、再把變動的部分畫上去。整個過程繞成一個固定方向的圈：<b>狀態 → 畫面 → 事件 → 改狀態 → 新畫面</b>，資料只往一個方向走，你從頭到尾都不會、也不該自己伸手去改畫面上的元素。這和上一課 Vue 的響應式其實是同一個大方向（都讓你只描述資料、畫面自動跟上），差別在 React 要你<b>明確地</b>透過 <code>setState</code> 宣告「我要改狀態」，而不是像 Vue 那樣改個變數就自動追蹤。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎這條單向資料流，是因為它讓「畫面為什麼變成這樣」變得<b>可預測、可追查</b>。104 人力銀行《AI 人才趨勢報告》一再強調，求職者要能打通「從需求到上線」的完整應用情境，而不是只會零散語法。前端的完整情境裡，最常見的一段就是「畫面載入 → 跟後端要資料 → 顯示出來 → 使用者操作 → 再改資料」。React 的價值，是把這一整段都收攏成同一個規則：不管資料是使用者敲出來的、還是後端 API 回傳的，<b>最後都得走 <code>setState</code> 這一扇門</b>，畫面才會更新。這代表當畫面出錯時，你只要回頭看「是哪一次 setState 把狀態設成了這個值」，而不必在滿地的手動改畫面程式碼裡大海撈針。</p>
+  <p>把資料流限制成單向，換來的是團隊層級的兩個實際好處。第一是<b>可維護</b>：狀態是畫面的唯一真實來源，畫面只是它的投影，所以除錯時你追的是「資料怎麼變的」這一條線，而不是四散各處的畫面操作。第二是<b>可協作</b>：一個大頁面拆成很多小元件，每個元件各自管好自己的狀態、或從上層接收資料往下傳，資料流向清楚，多人同時改才不會互相踩到。這也是為什麼 React 在台灣中大型企業和國際遠端職缺裡幾乎是前端的預設選項——它不是語法比較短，而是它把「資料怎麼流」這件事訂成一條所有人都遵守的規矩，專案大起來才不會亂。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到 91APP 這類電商、或玉山網銀的場景，最典型的例子是一個「訂單列表頁」。這種頁面的資料不是寫死的，是要跟後端 API 要的，所以標準做法是：我用 <code>useState</code> 準備<b>三筆狀態</b>——一筆放「訂單資料」、一筆放「是否載入中」、一筆放「有沒有出錯」。畫面一載入，我在 <code>useEffect</code> 裡發出 <code>fetch</code> 去打訂單 API；打之前先把「載入中」設成 true，讓畫面顯示轉圈圈；資料回來了，就 <code>setOrders(資料)</code> 並把「載入中」設回 false，畫面自動換成訂單列表；如果 API 掛了，就 <code>setError(錯誤)</code>，畫面改顯示「載入失敗，請重試」。使用者若按了「只看已出貨」的篩選鈕，我不是自己去改畫面上的清單，而是改一筆「篩選條件」狀態，讓畫面照新條件重畫。你會發現，不管資料來自 API 還是使用者操作，我從頭到尾做的都是同一件事：<b>改狀態，剩下的交給 React 重畫。</b></p>
+  <p>對我這種法律金融跨域背景的人，最能講出差異化的一點，是把「單向資料流」連到<b>狀態的三種樣貌</b>：載入中、成功、失敗。很多初學者只想著「拿到資料、顯示出來」，卻忘了資料還沒回來、或根本要不到的那兩種狀態——在金融產品裡，這正是最不能漏的地方。使用者查詢交易明細時，如果 API 慢了三秒卻沒有任何「載入中」的提示，他會以為當掉、重複點擊；如果查詢失敗卻默默顯示空白，他會誤以為「我這個月沒有交易」，這在金融情境是會出事的誤導。我的合規直覺讓我習慣先問「這件事會怎麼失敗、失敗時該怎麼誠實告訴使用者」，剛好對上 React 這套「每種狀態都要顯式處理」的資料流設計。放到國際遠端全端職缺，同一組觀念會往後端延伸：前端這三種狀態，對應的是後端 API 該回什麼狀態碼、該怎麼設計錯誤訊息，這是我接下來要打通的下一段。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易答錯、也最容易在實作踩到的地方，是以為「我呼叫了 <code>setCount(count + 1)</code>，下一行就能讀到新的 count」。這是把狀態更新當成「立刻生效」，但真相是<b>狀態更新是非同步的</b>：你呼叫 <code>setCount</code> 只是「預約」一次更新，React 會安排在稍後、重新渲染這個元件時才真正套用新值。所以你在同一個函式裡呼叫完 <code>setCount</code>、下一行馬上去讀 <code>count</code>，讀到的<b>還是舊值</b>。更經典的坑是「連續加三次」：如果你寫三行 <code>setCount(count + 1)</code>，你以為會加 3，實際上因為這三行讀到的 <code>count</code> 都是同一個舊值，結果只加了 1。正確做法是用「函式式更新」——<code>setCount(prev => prev + 1)</code>，讓 React 保證每次都拿到上一次的最新值。面試官很愛用這題確認你是「真的懂渲染時機」，還是把 setState 當成普通賦值。這裡我要誠實：這個原理和踩雷情境我搞懂了、也能講清楚為什麼，但我目前是從教學專案和小型 side project 練的，還沒在大型 React 產品裡處理過複雜的狀態管理（例如跨很多元件共享狀態、或用 Redux 這類工具管理全域狀態）；被追問到這種實戰細節時，我會講清楚我掌握的主線並說明我會怎麼查證，而不是硬掰經驗。</p>
+  <p>另一個值得先想清楚的追問，是<b>「state」和「props」不是同一件事</b>。state 是元件<b>自己擁有、自己能改</b>的資料（用 <code>setState</code> 改）；props 是<b>父元件傳進來的</b>資料，子元件<b>只能讀、不能改</b>。這條界線是單向資料流的延伸：資料從上往下傳（父傳子用 props），子元件想影響上層，就呼叫父元件傳下來的函式回報，而不是直接去改 props。把這兩者分清楚，才不會在被問到「資料該放在哪個元件」時答得含糊——一筆資料只有一個元件是它的「主人」，其他元件要嘛透過 props 拿到它、要嘛透過回呼函式請主人去改它。</p>
+
+  <p>React 的資料流，從來不是一堆要背的 API，而是一句可以貫穿全部的規矩：<b>畫面照狀態畫，你只改狀態、讓它重畫，永遠不自己碰畫面。</b>把這句話記牢，useState、useEffect、串 API、state 與 props 的分界，全都只是它的不同側面。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「講一下 React 的資料流是怎麼運作的？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂單向資料流這個核心心智模型，還是只會拼 API。</span>
+        <span class="a">她可以怎麼答：React 的核心規矩是畫面照著狀態畫出來的，資料是單向流動的。我用 useState 拿到一筆狀態和一個改它的函式，畫面就是這筆狀態長出來的結果。使用者操作會觸發事件，我在事件裡呼叫那個函式去改狀態，狀態一變，React 就拿新狀態重新算畫面、只更新變動的部分。整個過程繞成一個圈：狀態到畫面、事件回頭改狀態。重點是我從頭到尾都不自己去動畫面，只改狀態、讓 React 重畫。</span>
+      </li>
+      <li>
+        <span class="q">「useState 回傳的那兩個東西分別是什麼？為什麼不能直接改狀態變數？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道 setState 是 React 感知變化的唯一入口。</span>
+        <span class="a">她可以怎麼答：useState 回傳一個陣列，第一個是現在的狀態值，第二個是專門用來改它的函式，習慣命名成 setXxx。我不能直接改那個變數，因為 React 要靠這個函式被呼叫，才知道狀態變了、該重新渲染了。如果我偷偷改變數，React 根本不知道發生過事，畫面就不會更新。所以那個函式是 React 感知變化的唯一入口，一定要走它。</span>
+      </li>
+      <li>
+        <span class="q">「你呼叫 setCount 之後，下一行馬上讀 count，會讀到新值嗎？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂狀態更新是非同步的、有渲染時機。</span>
+        <span class="a">她可以怎麼答：不會，讀到的還是舊值。因為狀態更新是非同步的，呼叫 setCount 只是預約一次更新，React 會安排在稍後重新渲染時才真正套上新值，所以同一個函式裡下一行讀到的仍是這次渲染的舊 count。最經典的坑是連續寫三次 setCount(count + 1)，因為三次讀到的都是同一個舊值，結果只加了一。正確做法是用函式式更新 setCount(prev => prev + 1)，讓 React 保證每次都拿到上一次的最新值。</span>
+      </li>
+      <li>
+        <span class="q">「一個頁面要跟後端 API 拿資料，你會怎麼設計狀態？」</span>
+        <span class="hint">👉 這題其實在問：你會不會處理載入中和錯誤，而不只是拿到資料。</span>
+        <span class="a">她可以怎麼答：我至少會準備三筆狀態：資料本身、是否載入中、有沒有出錯。畫面一載入，我在 useEffect 裡發 fetch 打 API，打之前先把載入中設成 true 讓畫面顯示轉圈圈；資料回來就把它放進狀態、載入中設回 false，畫面自動換成內容；如果失敗就設錯誤狀態，畫面改顯示載入失敗請重試。我特別在意載入中和失敗這兩種狀態，尤其在金融產品裡，API 慢了沒提示、或失敗卻默默空白，都會誤導使用者。</span>
+      </li>
+      <li>
+        <span class="q">「state 和 props 有什麼不一樣？一筆資料該放哪？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得清資料的擁有權和單向傳遞。</span>
+        <span class="a">她可以怎麼答：state 是元件自己擁有、自己能用 setState 改的資料；props 是父元件傳進來的，子元件只能讀、不能改。這是單向資料流的延伸：資料從上往下用 props 傳，子元件想影響上層就呼叫父元件傳下來的函式去回報，而不是直接改 props。決定一筆資料放哪，我會看誰是它的主人——只有一個元件真正擁有它，其他元件要嘛透過 props 拿到、要嘛請主人去改。如果好幾個元件都要用，我就把它提到共同的父元件上。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-10.html"><span class="dir">上一課</span>← 為什麼要用框架：Vue的響應式系統怎麼讓畫面自己更新</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

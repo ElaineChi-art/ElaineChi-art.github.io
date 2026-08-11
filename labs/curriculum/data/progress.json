@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-10",
+  "updated": "2026-08-11",
   "lessons": [
     {
       "id": 1,
@@ -150,10 +150,10 @@
       "category": "frontend",
       "topic": "React 資料串接與應用",
       "title": "React的資料流向：從useState到跟後端API溝通的完整路徑",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-11",
+      "url": "posts/daily/2026-08-11.html",
+      "slides": 1
     },
     {
       "id": 15,
