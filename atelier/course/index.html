@@ -15,10 +15,10 @@
   --bg:#000000;
   --ink:#ffffff;
   --body:#E5E5E5;
-  --accent:#A8B0A2;
-  --accent-hi:#CBD3C4;
+  --accent:#9DB6C2;
+  --accent-hi:#C4D7E0;
   --dim:#8a8a8a;
-  --hairline:rgba(168,176,162,.22);
+  --hairline:rgba(157,182,194,.22);
   --rule:rgba(255,255,255,.07);
   --display:"Playfair Display",Georgia,"Songti TC",serif;
   --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;
@@ -53,6 +53,12 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.08}
 .hero-copy h1{font-size:clamp(2.4rem,6vw,5.5rem);margin:.7rem 0 1.1rem}
 .hero-copy p{color:var(--body);font-size:clamp(.95rem,1.5vw,1.06rem);line-height:1.65;
   max-width:min(460px,100%);margin-bottom:2.2rem}
+#loading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:#4a5046;
+  transition:opacity .8s ease}
+.credit{margin-top:5rem;text-align:center;font-size:.62rem;letter-spacing:.16em;
+  color:#4e4e4e;line-height:1.9}
+.credit a{color:#6d6d6d}
 .scroll-cue{position:absolute;left:50%;bottom:1.6rem;transform:translateX(-50%);
   font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);
   pointer-events:none;transition:opacity .6s ease}
@@ -88,7 +94,7 @@ section.block{padding:clamp(6rem,14vh,11rem) 0}
 .cta-glow{position:relative;display:inline-block;margin-top:2.8rem}
 .cta-glow::before{content:"";position:absolute;left:50%;top:50%;width:520px;height:280px;
   transform:translate(-50%,-50%);
-  background:radial-gradient(ellipse,rgba(168,176,162,.10) 0%,transparent 70%);pointer-events:none}
+  background:radial-gradient(ellipse,rgba(157,182,194,.10) 0%,transparent 70%);pointer-events:none}
 .cta-glow .btn{position:relative}
 
 @media (max-width:768px){
@@ -114,6 +120,7 @@ section.block{padding:clamp(6rem,14vh,11rem) 0}
         <a href="#closing" class="btn rise" data-delay="360">Find Your Size</a>
       </div>
     </div>
+    <span id="loading">Loading model</span>
     <span class="scroll-cue" id="cue">Scroll to deconstruct</span>
   </div>
 </div>
@@ -188,6 +195,8 @@ section.block{padding:clamp(6rem,14vh,11rem) 0}
     <div class="cta-glow rise" data-delay="300">
       <a href="#hero" class="btn btn--ghost">Find Your Size</a>
     </div>
+    <p class="credit">3D model &ldquo;Materials Variants Shoe&rdquo; &copy; 2021 Shopify, Inc. —
+      <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></p>
   </div>
 </section>
 
@@ -199,14 +208,22 @@ section.block{padding:clamp(6rem,14vh,11rem) 0}
 
 <script type="module">
 import * as THREE from 'three';
+import { GLTFLoader } from '../vendor/jsm/loaders/GLTFLoader.js';
 
 /* ═══════════════════════════════════════════════════════════
-   COURSE 01 — fourth product, and the one that does NOT fit
-   the lathe. A shoe has no axis of revolution, so the upper is
-   built by LOFTING: walk along the last from heel to toe, and
-   at each station define a cross-section, then stitch the
-   stations into one surface. Everything else — studio, camera,
-   exploded view — is the same rig as the watch.
+   COURSE 01 — the one product that is NOT generated in code.
+
+   A watch, a flacon and an earcup are solids of revolution, so
+   maths draws them exactly. A shoe is a sculpted organic form:
+   its beauty lives in a few hundred curves a designer pulled by
+   hand, and procedural geometry will always read as a sock.
+   So this page loads a real model and keeps everything else —
+   studio, scroll camera, exploded view, callouts — identical.
+
+   The model arrives as ONE mesh, so the exploded view is built
+   at load time: walk the index buffer, union-find the shells
+   (83 of them), then bucket those shells by height into the
+   five layers of a shoe.
    ═══════════════════════════════════════════════════════════ */
 
 const TAU   = Math.PI * 2;
@@ -220,22 +237,24 @@ const overlay = document.getElementById('overlay');
 const octx    = overlay.getContext('2d');
 const heroEl  = document.getElementById('hero');
 const cueEl   = document.getElementById('cue');
+const loadEl  = document.getElementById('loading');
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const renderer = new THREE.WebGLRenderer({ canvas: stage, antialias: true });
 renderer.setClearColor(0x000000, 1);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.95;
+renderer.toneMappingExposure = 1.05;
 
 const scene  = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(26, 1, 1, 900);
 
+/* ── studio ─────────────────────────────────────────────── */
 function buildStudio(){
   const s = new THREE.Scene();
   const roomGeo = new THREE.BoxGeometry(1,1,1);
   roomGeo.deleteAttribute('uv');
   const room = new THREE.Mesh(roomGeo,
-    new THREE.MeshStandardMaterial({ side: THREE.BackSide, color: 0x121216, roughness: 1 }));
+    new THREE.MeshStandardMaterial({ side: THREE.BackSide, color: 0x14141a, roughness: 1 }));
   room.scale.setScalar(760);
   s.add(room);
   const box = new THREE.BoxGeometry(1,1,1);
@@ -245,428 +264,124 @@ function buildStudio(){
     mesh.scale.set(w,h,d); mesh.position.set(x,y,z); mesh.rotation.set(rx,ry,rz);
     s.add(mesh);
   };
-  /* 布料不反光，靠的是大面積柔光把絨毛的方向性打出來 */
-  light(360,  4, 360,   0, 170,   0,  0, 0,    0, 2.6);
-  light(  6, 280, 260,-170,  60,  20,  0, 0.34, 0, 4.0);
-  light(  6, 280, 260, 175,  70, -20,  0,-0.30, 0, 2.6);
-  light(  5, 100, 170,-125, 120,  60,  0, 0.30, 0,10);
-  light(320, 150,   5,   0,  40,-210,  0, 0,    0, 2.2);
-  light(240, 110,   5,   0, -50, 200,  0, 0,    0, 0.8);
+  light(360,  4, 360,   0, 175,   0,  0, 0,    0, 3.0);
+  light(  6, 280, 260,-175,  60,  20,  0, 0.34, 0, 4.4);
+  light(  6, 280, 260, 180,  70, -20,  0,-0.30, 0, 2.8);
+  light(  5, 110, 175,-130, 125,  60,  0, 0.30, 0,11);
+  light(320, 150,   5,   0,  45,-215,  0, 0,    0, 2.6);
+  light(240, 110,   5,   0, -50, 205,  0, 0,    0, 1.0);
   return s;
 }
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(buildStudio(), 0.03, 1, 2000).texture;
 
-const key = new THREE.DirectionalLight(0xfff6ec, 1.0);
-key.position.set(-60, 90, 70); scene.add(key);
-const rim = new THREE.DirectionalLight(0xd8e0d0, 0.5);
-rim.position.set(70, 30, -80); scene.add(rim);
+const key = new THREE.DirectionalLight(0xfff6ec, 1.1);
+key.position.set(-60, 95, 70); scene.add(key);
+const rim = new THREE.DirectionalLight(0xdfe4dc, 0.55);
+rim.position.set(70, 30, -85); scene.add(rim);
 
-/* ── materials ──────────────────────────────────────────── */
-/* 針織：橫向的針目紋，做成 roughness 貼圖；sheen 是布料的關鍵，
-   沒有它布會看起來像塑膠 */
-function knitMap(){
-  const N = 512, c = document.createElement('canvas'); c.width = c.height = N;
-  const x = c.getContext('2d');
-  x.fillStyle = '#8a8a8a'; x.fillRect(0,0,N,N);
-  for (let row = 0; row < 46; row++){
-    const y = row * (N/46);
-    for (let i = 0; i < 64; i++){
-      const cx = (i + (row%2 ? 0.5 : 0)) * (N/64);
-      const g = x.createRadialGradient(cx, y+4, 0.5, cx, y+4, 7);
-      g.addColorStop(0, '#b6b6b6'); g.addColorStop(1, '#6a6a6a');
-      x.fillStyle = g;
-      x.beginPath(); x.ellipse(cx, y+4, 5.2, 3.4, 0, 0, TAU); x.fill();
-    }
-  }
-  const t = new THREE.CanvasTexture(c);
-  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(9, 5); t.anisotropy = 8;
-  return t;
-}
-/* 透氣孔：用 alphaTest 真的挖穿，不是畫上去的深色點。
-   放樣的 uv 是 (斷面, 長度)，所以孔只開在前掌到腰身那一段——
-   後跟要撐住、貼底那一圈要車縫，都不開孔。 */
-function perforationMap(){
-  const N = 1024;
-  const c = document.createElement('canvas'); c.width = c.height = N;
-  const x = c.getContext('2d');
-  x.fillStyle = '#ffffff'; x.fillRect(0, 0, N, N);
-  x.fillStyle = '#000000';
-  const u0 = 0.28, u1 = 0.92;
-  const ASPECT = 3.8;                 // 長度方向 : 斷面方向的世界尺度比
-  const stepX = 34, stepY = stepX / ASPECT;
-  let row = 0;
-  for (let py = 0; py < N; py += stepY, row++){
-    const u = py / N;
-    if (u < u0 || u > u1) continue;
-    const fade = Math.min(1, Math.min(u - u0, u1 - u) / 0.09);
-    for (let px = (row % 2 ? stepX/2 : 0); px < N; px += stepX){
-      const v = px / N;
-      if (v < 0.14 || v > 0.88) continue;
-      const rx = 6.2 * fade;
-      if (rx < 1.6) continue;
-      x.beginPath();
-      x.ellipse(px, py, rx, rx / ASPECT, 0, 0, TAU);   // 壓扁 → 世界裡是正圓
-      x.fill();
-    }
-  }
-  const t = new THREE.CanvasTexture(c);
-  t.anisotropy = 8;
-  return t;
-}
-
-const meshKnit = new THREE.MeshPhysicalMaterial({
-  color: new THREE.Color(0.152, 0.185, 0.132), metalness: 0, roughness: 0.95,
-  roughnessMap: knitMap(),
-  alphaMap: perforationMap(), alphaTest: 0.5,
-  sheen: 1, sheenRoughness: 0.5,
-  sheenColor: new THREE.Color(0.60, 0.66, 0.56),
-  envMapIntensity: 0.8, side: THREE.DoubleSide,
-});
-/* 內裡：從透氣孔與鞋口看進去看到的是這一層，不是鞋底 */
-const linerMat = new THREE.MeshPhysicalMaterial({
-  color: new THREE.Color(0.030, 0.034, 0.028), metalness: 0, roughness: 0.98,
-  sheen: 0.5, sheenColor: new THREE.Color(0.24,0.27,0.22),
-  envMapIntensity: 0.35, side: THREE.DoubleSide,
-});
-/* 鞋口滾邊 */
-const bindingMat = new THREE.MeshPhysicalMaterial({
-  color: new THREE.Color(0.055, 0.065, 0.050), metalness: 0, roughness: 0.72,
-  sheen: 0.9, sheenColor: new THREE.Color(0.42,0.46,0.40), envMapIntensity: 0.6,
-});
-/* 麂皮：後跟片與防撞條 */
-const suede = new THREE.MeshPhysicalMaterial({
-  color: new THREE.Color(0.028, 0.032, 0.026), metalness: 0, roughness: 0.99,
-  sheen: 1, sheenRoughness: 0.85,
-  sheenColor: new THREE.Color(0.52, 0.56, 0.48), envMapIntensity: 0.45,
-});
-const tongueMat = new THREE.MeshPhysicalMaterial({
-  color: new THREE.Color(0.062, 0.072, 0.056), metalness: 0, roughness: 0.96,
-  sheen: 0.8, sheenColor: new THREE.Color(0.44,0.48,0.42),
-  envMapIntensity: 0.5, side: THREE.DoubleSide,
-});
-const foamMat = new THREE.MeshPhysicalMaterial({
-  color: new THREE.Color(0.895, 0.880, 0.825), metalness: 0, roughness: 0.86,
-  envMapIntensity: 0.75,
-});
-const rubber = new THREE.MeshPhysicalMaterial({
-  color: new THREE.Color(0.030, 0.032, 0.030), metalness: 0, roughness: 0.60,
-  envMapIntensity: 0.55,
-});
-const insoleMat = new THREE.MeshPhysicalMaterial({
-  color: new THREE.Color(0.30, 0.28, 0.24), metalness: 0, roughness: 0.9,
-  sheen: 0.6, sheenColor: new THREE.Color(0.5,0.48,0.42), envMapIntensity: 0.5,
-});
-const tpuMat = new THREE.MeshPhysicalMaterial({
-  color: new THREE.Color(0.035, 0.040, 0.034), metalness: 0, roughness: 0.26,
-  clearcoat: 0.7, clearcoatRoughness: 0.25, envMapIntensity: 1.0,
-});
-const eyeletMat = new THREE.MeshPhysicalMaterial({
-  color: new THREE.Color(0.66, 0.60, 0.46), metalness: 1, roughness: 0.28,
-  envMapIntensity: 1.1,
-});
-const laceMat = new THREE.MeshPhysicalMaterial({
-  color: new THREE.Color(0.52, 0.55, 0.48), metalness: 0, roughness: 0.92,
-  sheen: 0.9, sheenColor: new THREE.Color(0.75,0.78,0.7), envMapIntensity: 0.6,
-});
-
-/* ── the last ─────────────────────────────────────────────
-   A shoe is not a tube. It is TWO open surfaces that stop
-   short of the centreline, leaving the throat open — that gap,
-   its bound edge, and the tongue sitting inside it are what
-   make a shoe read as a shoe instead of a sock.            */
-
-function along(pts, u){
-  for (let i = 0; i < pts.length - 1; i++){
-    if (u <= pts[i+1][0]){
-      const t = (u - pts[i][0]) / (pts[i+1][0] - pts[i][0]);
-      const s = t*t*(3 - 2*t);
-      return pts[i][1] + (pts[i+1][1] - pts[i][1]) * s;
-    }
-  }
-  return pts[pts.length-1][1];
-}
-
-const HEEL = -64, TOE = 70;
-const zAt = u => lerp(HEEL, TOE, u);
-const SOLE_TOP = 15;
-
-/* 半寬 */
-const WIDTH  = [[0,11.5],[0.09,16.2],[0.20,17.2],[0.36,15.8],[0.54,20.4],
-                [0.70,21.6],[0.84,18.6],[0.94,11.8],[1,2.4]];
-/* 鞋面拱高 */
-const HEIGHT = [[0,25],[0.08,42],[0.18,44],[0.30,35],[0.44,27],
-                [0.60,21],[0.78,15],[0.92,9],[1,3.5]];
-/* 楦頭上翹：鞋尖離地，後跟微翹 */
-const LIFT   = [[0,2.6],[0.12,0.3],[0.45,0],[0.72,0.7],[0.88,3.4],[1,7.6]];
-/* 鞋喉開口的半角。0 = 完全包覆；愈大開口愈寬。
-   後跟包死 → 鞋口張開 → 綁帶區最寬 → 到鞋背再合起來 */
-const GAP    = [[0,0],[0.06,0.08],[0.13,0.50],[0.26,0.72],[0.40,0.70],
-                [0.52,0.58],[0.62,0.32],[0.70,0],[1,0]];
-
-/* 鞋面上任一點：u 沿長度，phi 沿斷面（0 = 右側貼底，π = 左側貼底） */
-function skin(u, phi, out = 0){
-  const w = along(WIDTH, u) + out;
-  const h = along(HEIGHT, u) + out;
-  const c = Math.cos(phi), s = Math.max(Math.sin(phi), 0);
-  return {
-    x: w * Math.sign(c) * Math.pow(Math.abs(c), 0.72),
-    y: SOLE_TOP + along(LIFT, u) + h * Math.pow(s, 0.58),
-    z: zAt(u),
-  };
-}
-
-function loft(nU, nV, fn){
-  const pos = [], uv = [], idx = [];
-  for (let i = 0; i <= nU; i++){
-    for (let j = 0; j <= nV; j++){
-      const p = fn(i/nU, j/nV);
-      pos.push(p.x, p.y, p.z);
-      uv.push(j/nV, i/nU);
-    }
-  }
-  for (let i = 0; i < nU; i++){
-    for (let j = 0; j < nV; j++){
-      const a = i*(nV+1)+j, b = a+nV+1;
-      idx.push(a, b, a+1, a+1, b, b+1);
-    }
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-  g.setIndex(idx);
-  g.computeVertexNormals();
-  return g;
-}
-
-/* 鞋底輪廓（俯視） */
-function soleShape(inset = 0){
-  const s = new THREE.Shape();
-  const k = 1 - inset;
-  s.moveTo(0, TOE - inset*3);
-  s.bezierCurveTo(10*k, TOE-4, 20*k, 54, 21.8*k, 34);
-  s.bezierCurveTo(23.4*k, 14, 17.4*k, 4, 16.6*k, -10);
-  s.bezierCurveTo(15.8*k, -28, 18.4*k, -44, 14.4*k, -55);
-  s.bezierCurveTo(10.6*k, -64, -10.6*k, -64, -14.4*k, -55);
-  s.bezierCurveTo(-18.4*k, -44, -15.8*k, -28, -16.6*k, -10);
-  s.bezierCurveTo(-17.4*k, 4, -23.4*k, 14, -21.8*k, 34);
-  s.bezierCurveTo(-20*k, 54, -10*k, TOE-4, 0, TOE - inset*3);
-  return s;
-}
-/* 鞋底也要跟著楦頭上翹 */
-function applyLift(geo, scale = 1){
-  const p = geo.attributes.position;
-  for (let i = 0; i < p.count; i++){
-    const u = clamp((p.getZ(i) - HEEL) / (TOE - HEEL), 0, 1);
-    p.setY(i, p.getY(i) + along(LIFT, u) * scale);
-  }
-  geo.computeVertexNormals();
-}
-
-/* ── the shoe ───────────────────────────────────────────── */
+/* ── the exploded view, derived from the mesh itself ────── */
 const product = new THREE.Group();
 scene.add(product);
+const holder = new THREE.Group();
+product.add(holder);
 
+/* 依高度把殼體分成鞋的五層。cy 是該殼體在模型座標裡的重心高度 */
+const LAYERS = [
+  { name: 'laces',   test: cy => cy >=  0.18, ey:  0.86 },
+  { name: 'collar',  test: cy => cy >=  0.02, ey:  0.42 },
+  { name: 'upper',   test: cy => cy >= -0.22, ey:  0.00 },
+  { name: 'midsole', test: cy => cy >= -0.36, ey: -0.40 },
+  { name: 'outsole', test: cy => true,        ey: -0.78 },
+];
 const parts = {};
-function part(name, ey, ez){
-  const g = new THREE.Group();
-  product.add(g);
-  parts[name] = { group: g, ey, ez, label: name.toUpperCase() };
-  return g;
+const PART_ORDER = LAYERS.map(l => l.name);
+let ready = false;
+
+/* union-find：把共用頂點的三角形歸成同一個殼體 */
+function shellOf(index, vertCount){
+  const parent = new Int32Array(vertCount);
+  for (let i = 0; i < vertCount; i++) parent[i] = i;
+  const find = a => { while (parent[a] !== a){ parent[a] = parent[parent[a]]; a = parent[a]; } return a; };
+  for (let i = 0; i < index.length; i += 3){
+    const a = find(index[i]), b = find(index[i+1]), c = find(index[i+2]);
+    if (a !== b) parent[b] = a;
+    if (a !== c) parent[c] = a;
+  }
+  return find;
 }
 
-/* — 大底：橫向刀溝 + 顆粒 — */
-{
-  const g = part('outsole', -46, 0);
-  const geo = new THREE.ExtrudeGeometry(soleShape(0.015), {
-    depth: 7, bevelEnabled: true, bevelSize: 1.5, bevelThickness: 1.3,
-    bevelSegments: 3, curveSegments: 26,
-  });
-  geo.rotateX(-Math.PI/2);
-  applyLift(geo);
-  g.add(new THREE.Mesh(geo, rubber));
+function buildParts(mesh){
+  const geo = mesh.geometry;
+  const index = geo.index.array;
+  const pos = geo.attributes.position;
+  const find = shellOf(index, pos.count);
 
-  const lug = new THREE.BoxGeometry(6.4, 2.1, 8.2);
-  for (let i = 0; i < 13; i++){
-    const u = 0.06 + i * 0.068;
-    const halfW = along(WIDTH, u) * 0.86;
-    const cols = Math.max(1, Math.round(halfW / 5.6));
-    for (let c = -cols; c <= cols; c++){
-      const m = new THREE.Mesh(lug, rubber);
-      m.position.set(c * (halfW/(cols+0.25)), -1.0 + along(LIFT,u), zAt(u));
-      m.rotation.y = (i % 2 ? 1 : -1) * 0.30;
-      g.add(m);
+  /* 每個殼體的重心高度 */
+  const sumY = new Map(), cnt = new Map();
+  for (let i = 0; i < pos.count; i++){
+    const r = find(i);
+    sumY.set(r, (sumY.get(r) || 0) + pos.getY(i));
+    cnt.set(r, (cnt.get(r) || 0) + 1);
+  }
+  const layerOfRoot = new Map();
+  for (const r of sumY.keys()){
+    const cy = sumY.get(r) / cnt.get(r);
+    layerOfRoot.set(r, LAYERS.findIndex(l => l.test(cy)));
+  }
+
+  /* 依層別重建索引 */
+  const buckets = LAYERS.map(() => []);
+  for (let i = 0; i < index.length; i += 3){
+    buckets[layerOfRoot.get(find(index[i]))].push(index[i], index[i+1], index[i+2]);
+  }
+
+  LAYERS.forEach((layer, li) => {
+    const g = new THREE.Group();
+    holder.add(g);
+    const idx = buckets[li];
+    const bg = new THREE.BufferGeometry();
+    /* 屬性緩衝直接共用，只有索引是各自的 */
+    for (const k of ['position','normal','uv','tangent']){
+      if (geo.attributes[k]) bg.setAttribute(k, geo.attributes[k]);
     }
-  }
-}
-
-/* — 中底：側牆 + 貼合線 — */
-{
-  const g = part('midsole', -20, 0);
-  const geo = new THREE.ExtrudeGeometry(soleShape(0), {
-    depth: 17.5, bevelEnabled: true, bevelSize: 2.2, bevelThickness: 1.9,
-    bevelSegments: 4, curveSegments: 28,
+    bg.setIndex(new THREE.BufferAttribute(new Uint32Array(idx), 1));
+    bg.computeBoundingBox();
+    const m = new THREE.Mesh(bg, mesh.material);
+    g.add(m);
+    const c = new THREE.Vector3();
+    bg.boundingBox.getCenter(c);
+    parts[layer.name] = { group: g, ey: layer.ey, anchor: c, label: layer.name.toUpperCase() };
   });
-  geo.rotateX(-Math.PI/2);
-  /* 8 mm 前後落差 */
-  const p = geo.attributes.position;
-  for (let i = 0; i < p.count; i++){
-    const y = p.getY(i);
-    const t = clamp((p.getZ(i) - HEEL) / (TOE - HEEL), 0, 1);
-    if (y > 2) p.setY(i, y - t * 7.5);
-  }
-  geo.computeVertexNormals();
-  applyLift(geo);
-  const m = new THREE.Mesh(geo, foamMat);
-  m.position.y = 6;
-  g.add(m);
-
-  /* 中底與鞋面之間那條貼合線 —— 沒有它，鞋面像直接長在泡棉上 */
-  const pts = soleShape(0.012).getPoints(180).map(q => {
-    const u = clamp((q.y - HEEL) / (TOE - HEEL), 0, 1);
-    return new THREE.Vector3(q.x, SOLE_TOP - 1.4 + along(LIFT,u) - u*3.2, q.y);
-  });
-  const foxing = new THREE.Mesh(
-    new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 220, 1.15, 8, true), tpuMat);
-  g.add(foxing);
 }
 
-/* — 鞋墊 — */
-{
-  const g = part('insole', 16, 0);
-  const geo = new THREE.ExtrudeGeometry(soleShape(0.11), {
-    depth: 2.4, bevelEnabled: true, bevelSize: 0.8, bevelThickness: 0.8,
-    bevelSegments: 2, curveSegments: 22,
-  });
-  geo.rotateX(-Math.PI/2);
-  applyLift(geo);
-  const m = new THREE.Mesh(geo, insoleMat);
-  m.position.y = SOLE_TOP - 2.2;
-  g.add(m);
-}
+new GLTFLoader().load('model/shoe.glb', (gltf) => {
+  let mesh = null;
+  gltf.scene.traverse(o => { if (o.isMesh && !mesh) mesh = o; });
+  if (!mesh) return;
 
-/* — 鞋面 — */
-{
-  const g = part('upper', 46, 0);
-  const NU = 84, NV = 26;
+  mesh.material.envMapIntensity = 1.0;
+  mesh.material.side = THREE.FrontSide;
 
-  /* 右片：從貼底一路往上，停在鞋喉開口邊 */
-  const right = loft(NU, NV, (u, v) => skin(u, v * (Math.PI/2 - along(GAP,u))));
-  /* 左片：鏡射 */
-  const left  = loft(NU, NV, (u, v) =>
-    skin(u, Math.PI/2 + along(GAP,u) + v * (Math.PI/2 - along(GAP,u))));
-  g.add(new THREE.Mesh(right, meshKnit), new THREE.Mesh(left, meshKnit));
+  buildParts(mesh);
 
-  /* 內裡：從開口看進去要有東西，不能看穿到鞋底 */
-  const linerR = loft(48, 20, (u, v) => skin(u, v * (Math.PI/2 - along(GAP,u)) * 0.995, -1.6));
-  const linerL = loft(48, 20, (u, v) =>
-    skin(u, Math.PI/2 + along(GAP,u) + v * (Math.PI/2 - along(GAP,u)) * 0.995, -1.6));
-  g.add(new THREE.Mesh(linerR, linerMat), new THREE.Mesh(linerL, linerMat));
+  /* 鞋長沿 X，轉成沿 Z；縮放到跟其他三個產品同一個量級 */
+  holder.rotation.y = -Math.PI / 2;
+  const raw = new THREE.Box3().setFromObject(holder);
+  const size = raw.getSize(new THREE.Vector3());
+  const S = 150 / Math.max(size.x, size.z);
+  holder.scale.setScalar(S);
 
-  /* 鞋口／鞋喉的滾邊：沿著開口邊緣掃一圈 */
-  {
-    const edge = [];
-    for (let i = 0; i <= 60; i++){
-      const u = 0.095 + (0.655 - 0.095) * (i/60);
-      const p = skin(u, Math.PI/2 - along(GAP,u), 0.5);
-      edge.push(new THREE.Vector3(p.x, p.y, p.z));
-    }
-    for (let i = 60; i >= 0; i--){
-      const u = 0.095 + (0.655 - 0.095) * (i/60);
-      const p = skin(u, Math.PI/2 + along(GAP,u), 0.5);
-      edge.push(new THREE.Vector3(p.x, p.y, p.z));
-    }
-    const binding = new THREE.Mesh(
-      new THREE.TubeGeometry(new THREE.CatmullRomCurve3(edge, true, 'catmullrom', 0.2),
-        400, 2.0, 10, true), bindingMat);
-    g.add(binding);
-  }
+  const box = new THREE.Box3().setFromObject(holder);
+  const c = box.getCenter(new THREE.Vector3());
+  holder.position.x -= c.x;
+  holder.position.z -= c.z;
+  holder.position.y -= box.min.y;          // 鞋底落在 y = 0
 
-  /* 鞋頭包片 */
-  const toeCap = loft(26, 34, (u, v) => skin(0.80 + u*0.165, v * Math.PI, 0.28));
-  g.add(new THREE.Mesh(toeCap, tpuMat));
-
-  /* 兩側防撞條（貼底那一圈） */
-  const mudR = loft(52, 6, (u, v) => skin(0.07 + u*0.74, v * 0.26, 0.28));
-  const mudL = loft(52, 6, (u, v) => skin(0.07 + u*0.74, Math.PI - v*0.26, 0.28));
-  g.add(new THREE.Mesh(mudR, suede), new THREE.Mesh(mudL, suede));
-
-  /* 後跟片 */
-  const counter = loft(22, 30, (u, v) => {
-    const uu = u * 0.175;
-    return skin(uu, 0.16 + v * (Math.PI - 0.32), 0.32);
-  });
-  g.add(new THREE.Mesh(counter, suede));
-
-  /* 後跟中線的補強條（貼著鞋身，不外翹） */
-  {
-    const spine = loft(16, 5, (u, v) => {
-      const uu = 0.005 + u * 0.085;
-      return skin(uu, Math.PI/2 + (v - 0.5) * 0.34, 0.34);
-    });
-    g.add(new THREE.Mesh(spine, suede));
-  }
-}
-
-/* — 鞋舌：坐在開口裡 — */
-{
-  const g = part('tongue', 66, 0);
-  const geo = loft(26, 18, (u, v) => {
-    const uu = 0.16 + u * 0.44;
-    const gap = along(GAP, uu);
-    const w = Math.max(2, Math.sin(gap) * along(WIDTH, uu) * 0.94);
-    const top = skin(uu, Math.PI/2, -2.4);
-    const bow = Math.pow(Math.abs(v - 0.5) * 2, 2) * 3.2;
-    return { x: (v - 0.5) * 2 * w, y: top.y - 1.5 - bow, z: top.z };
-  });
-  g.add(new THREE.Mesh(geo, tongueMat));
-}
-
-/* — 鞋帶與鞋眼 — */
-{
-  const g = part('lacing', 86, 0);
-  const rows = 6;
-  const pts = [];
-  for (let i = 0; i < rows; i++){
-    const uu = 0.235 + i * 0.070;
-    const gap = along(GAP, uu);
-    const e = skin(uu, Math.PI/2 - gap * 0.72, 0.9);
-    for (const s of [-1, 1]){
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(1.7, 0.44, 8, 24), eyeletMat);
-      ring.position.set(s * Math.abs(e.x), e.y, e.z);
-      ring.rotation.x = Math.PI/2 - 0.55;
-      ring.rotation.z = s * 0.22;
-      g.add(ring);
-    }
-    pts.push([Math.abs(e.x), e.y, e.z]);
-  }
-  const path = [];
-  for (let i = 0; i < rows - 1; i++){
-    const a = pts[i], b = pts[i+1];
-    const s = i % 2 ? 1 : -1;
-    path.push(new THREE.Vector3( s*a[0], a[1] + 0.7, a[2]));
-    path.push(new THREE.Vector3( s*a[0]*0.35, (a[1]+b[1])/2 + 2.4, (a[2]+b[2])/2));
-    path.push(new THREE.Vector3(-s*b[0], b[1] + 0.7, b[2]));
-    if (i + 2 < rows){
-      const c = pts[i+2];
-      path.push(new THREE.Vector3(-s*b[0]*0.35, (b[1]+c[1])/2 + 2.4, (b[2]+c[2])/2));
-    }
-  }
-  if (path.length > 3){
-    const curve = new THREE.CatmullRomCurve3(path, false, 'catmullrom', 0.25);
-    g.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 300, 1.35, 8, false), laceMat));
-  }
-}
-
-const PART_ORDER = ['lacing','tongue','upper','insole','midsole','outsole'];
-const ANCHOR = {
-  lacing:  [0, SOLE_TOP + 46, 6],
-  tongue:  [0, SOLE_TOP + 42, -4],
-  upper:   [0, SOLE_TOP + 30, -20],
-  insole:  [0, SOLE_TOP + 2,  0],
-  midsole: [0, 14, 0],
-  outsole: [0, 2,  0],
-};
+  ready = true;
+  if (loadEl){ loadEl.style.opacity = '0'; setTimeout(() => loadEl.remove(), 800); }
+  draw(REDUCED ? 0.92 : progress());
+});
 
 /* ── frame ──────────────────────────────────────────────── */
 let W = 0, H = 0, lastP = -1;
@@ -689,26 +404,33 @@ const tmpV = new THREE.Vector3();
 function drawCallouts(ex, dpr){
   octx.setTransform(dpr,0,0,dpr,0,0);
   octx.clearRect(0,0,W,H);
-  if (ex < 0.20 || W < 1000) return;
+  if (!ready || ex < 0.20 || W < 1000) return;
   const a = clamp((ex - 0.20)/0.30, 0, 1);
   const colX = W/2 + Math.min(392, W*0.33);
   octx.font = '500 10px Inter, sans-serif';
   if ('letterSpacing' in octx) octx.letterSpacing = '2.4px';
   octx.textBaseline = 'middle';
+  const rows = [];
   for (const name of PART_ORDER){
-    const p = parts[name], A = ANCHOR[name];
-    tmpV.set(A[0], A[1] + p.ey*ex, A[2] + p.ez*ex);
-    product.localToWorld(tmpV);
+    const p = parts[name];
+    tmpV.copy(p.anchor);
+    p.group.localToWorld(tmpV);
     tmpV.project(camera);
-    const y = (-tmpV.y*0.5 + 0.5) * H;
-    const x = ( tmpV.x*0.5 + 0.5) * W + 40;
-    octx.strokeStyle = `rgba(168,176,162,${(a*0.26).toFixed(3)})`;
+    rows.push({ name: p.label,
+                x: ( tmpV.x*0.5 + 0.5) * W,
+                y: (-tmpV.y*0.5 + 0.5) * H });
+  }
+  rows.sort((u,v) => u.y - v.y);
+  let last = -1e9;
+  for (const r of rows){
+    const y = Math.max(r.y, last + 30); last = y;
+    octx.strokeStyle = `rgba(157,182,194,${(a*0.26).toFixed(3)})`;
     octx.lineWidth = 1;
     octx.beginPath();
-    octx.moveTo(x, y); octx.lineTo(colX - 14, y); octx.lineTo(colX, y);
+    octx.moveTo(r.x + 30, r.y); octx.lineTo(colX - 14, y); octx.lineTo(colX, y);
     octx.stroke();
-    octx.fillStyle = `rgba(168,176,162,${(a*0.82).toFixed(3)})`;
-    octx.fillText(p.label, colX + 8, y);
+    octx.fillStyle = `rgba(157,182,194,${(a*0.82).toFixed(3)})`;
+    octx.fillText(r.name, colX + 8, y);
   }
 }
 
@@ -717,15 +439,17 @@ function draw(p){
   const orbit = easeOut(clamp((p - 0.03)/0.42, 0, 1));
   const ex    = easeInOut(clamp((p - 0.46)/0.50, 0, 1));
 
-  for (const name of PART_ORDER){
-    const q = parts[name];
-    q.group.position.set(0, q.ey*ex, q.ez*ex);
+  if (ready){
+    for (const name of PART_ORDER){
+      const q = parts[name];
+      q.group.position.y = q.ey * ex;
+    }
   }
 
-  const az   = lerp(-1.20, -0.10, orbit) - ex*0.62;   // 拆解時轉回側 3/4 角
-  const el   = lerp(0.19, 0.27, ex);
-  const dist = lerp(408, 612, ex);
-  const ty   = lerp(20, 46, ex);
+  const az   = lerp(-1.25, -0.16, orbit) - ex*0.55;
+  const el   = lerp(0.17, 0.25, ex);
+  const dist = lerp(392, 560, ex);
+  const ty   = lerp(30, 48, ex);
 
   camera.position.set(
     dist*Math.cos(el)*Math.sin(az),
@@ -733,7 +457,7 @@ function draw(p){
     dist*Math.cos(el)*Math.cos(az));
   camera.lookAt(0, ty, 0);
 
-  product.rotation.y = lerp(0.30, 0.06, orbit) + ex*0.06;
+  product.rotation.y = lerp(0.26, 0.02, orbit) + ex*0.05;
 
   renderer.render(scene, camera);
   drawCallouts(ex, renderer.getPixelRatio());
@@ -754,9 +478,9 @@ function tick(){
 
 window.addEventListener('resize', resize, { passive: true });
 resize();
-draw(REDUCED ? 0.92 : progress());
 if (!REDUCED) tick();
 
+/* ── fade-ins ───────────────────────────────────────────── */
 const io = new IntersectionObserver((entries) => {
   for (const e of entries){
     if (!e.isIntersecting) continue;
