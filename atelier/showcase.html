@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurelis — 展示片</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#050506;overflow:hidden}
+
+/* 1080 × 1350 — Instagram 直式貼文 4:5 */
+#stage{
+  position:absolute;left:50%;top:50%;
+  width:1080px;height:1350px;
+  transform:translate(-50%,-50%) scale(var(--fit,1));
+  transform-origin:center center;
+  background:
+    radial-gradient(120% 85% at 50% 8%, #191a1f 0%, #0b0b0d 45%, #050506 100%);
+  overflow:hidden;
+  font-family:"Inter",-apple-system,"PingFang TC",sans-serif;
+}
+
+/* 頂／底的柔和暈影 */
+#stage::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 70% at 50% 45%, transparent 40%, rgba(0,0,0,.72) 100%);
+}
+
+/* ── 標題 ─────────────────────────────────────── */
+.cap-top{
+  position:absolute;left:0;right:0;top:86px;text-align:center;z-index:3;
+}
+.cap-top .kicker{
+  font-size:15px;letter-spacing:.42em;text-transform:uppercase;
+  color:#C8A96E;font-weight:500;
+}
+.cap-top h1{
+  font-family:"Playfair Display",serif;font-weight:400;
+  font-size:56px;color:#fff;margin-top:18px;letter-spacing:.01em;
+}
+.cap-top .sub{
+  margin-top:18px;font-size:19px;font-weight:300;color:#9a958c;letter-spacing:.06em;
+}
+
+/* ── 筆電 ─────────────────────────────────────── */
+#rig{
+  position:absolute;left:50%;top:412px;
+  transform:translateX(-50%);
+  perspective:2400px;perspective-origin:50% 34%;
+  z-index:2;
+}
+#laptop{transform-style:preserve-3d;transform:rotateX(9deg) rotateY(-13deg)}
+
+.lid{
+  position:relative;
+  width:820px;padding:14px 14px 32px;
+  border-radius:20px 20px 8px 8px;
+  background:linear-gradient(155deg,#4a4a50 0%,#2a2a30 22%,#1a1a1e 60%,#333338 100%);
+  box-shadow:
+    0 2px 0 rgba(255,255,255,.10) inset,
+    0 -1px 0 rgba(0,0,0,.6) inset,
+    0 70px 90px -40px rgba(0,0,0,.95);
+}
+.screen{
+  position:relative;
+  width:792px;height:495px;
+  overflow:hidden;border-radius:5px;background:#000;
+  box-shadow:0 0 0 1px rgba(0,0,0,.9), 0 0 40px rgba(0,0,0,.6) inset;
+}
+.screen iframe{
+  width:1440px;height:900px;border:0;display:block;
+  transform:scale(.55);transform-origin:top left;
+}
+/* 螢幕玻璃反光 */
+.glare{
+  position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(112deg,
+    rgba(255,255,255,.085) 0%,
+    rgba(255,255,255,.025) 18%,
+    transparent 42%);
+}
+.notch{
+  position:absolute;left:50%;top:-1px;transform:translateX(-50%);
+  width:140px;height:10px;border-radius:0 0 7px 7px;background:#111114;
+}
+.chin{
+  position:absolute;left:0;right:0;bottom:9px;text-align:center;
+  font-size:11px;letter-spacing:.32em;color:#6f6f77;font-weight:500;
+}
+
+/* 下半部：鍵盤面，往後躺 */
+.base{
+  width:820px;height:230px;margin:0 auto;
+  transform-origin:top center;transform:rotateX(75deg);
+  border-radius:0 0 26px 26px;
+  background:linear-gradient(180deg,#3a3a40 0%,#232327 30%,#17171a 100%);
+  box-shadow:0 -2px 0 rgba(255,255,255,.09) inset;
+  position:relative;
+}
+.base::before{  /* 觸控板 */
+  content:"";position:absolute;left:50%;top:86px;transform:translateX(-50%);
+  width:230px;height:106px;border-radius:8px;
+  background:linear-gradient(180deg,#1d1d21,#26262b);
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset;
+}
+.base::after{   /* 鍵盤區 */
+  content:"";position:absolute;left:50%;top:12px;transform:translateX(-50%);
+  width:590px;height:68px;border-radius:5px;
+  background:
+    repeating-linear-gradient(90deg,#101013 0 26px,#2b2b31 26px 30px),
+    repeating-linear-gradient(0deg,#101013 0 12px,#2b2b31 12px 15px);
+  opacity:.85;
+}
+
+/* 桌面上的落地陰影與反光 */
+.floor{
+  position:absolute;left:50%;top:1012px;transform:translateX(-50%);
+  width:1100px;height:170px;z-index:1;
+  background:radial-gradient(50% 50% at 50% 50%,rgba(0,0,0,.85) 0%,transparent 72%);
+  filter:blur(6px);
+}
+.spill{  /* 螢幕打在桌面上的光 */
+  position:absolute;left:50%;top:986px;transform:translateX(-50%);
+  width:760px;height:140px;z-index:1;
+  background:radial-gradient(50% 50% at 50% 0%,rgba(200,169,110,.10) 0%,transparent 70%);
+  filter:blur(14px);
+}
+
+/* ── 頁尾 ─────────────────────────────────────── */
+.cap-bot{
+  position:absolute;left:0;right:0;bottom:94px;text-align:center;z-index:3;
+}
+.cap-bot .line{
+  width:52px;height:1px;background:rgba(200,169,110,.55);margin:0 auto 30px;
+}
+.cap-bot .url{
+  font-size:20px;letter-spacing:.2em;color:#C8A96E;font-weight:500;
+}
+.cap-bot .made{
+  margin-top:16px;font-size:16px;font-weight:300;color:#77736c;letter-spacing:.1em;
+}
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+  <div class="cap-top">
+    <div class="kicker">Scroll-Driven 3D</div>
+    <h1>Aurelis Perpetual 40</h1>
+    <div class="sub">零素材 · 整只錶由 WebGL 即時算圖</div>
+  </div>
+
+  <div class="spill"></div>
+  <div class="floor"></div>
+
+  <div id="rig">
+    <div id="laptop">
+      <div class="lid">
+        <div class="notch"></div>
+        <div class="screen">
+          <iframe id="site" src="index.html" scrolling="no" title="Aurelis"></iframe>
+          <div class="glare"></div>
+        </div>
+        <div class="chin">ATELIER</div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </div>
+
+  <div class="cap-bot">
+    <div class="line"></div>
+    <div class="url">elainechi-art.github.io/atelier</div>
+    <div class="made">Claude Code × three.js</div>
+  </div>
+
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ═══════════════════════════════════════════════════════════
+   自動播放時間軸。整段 12 秒無縫循環：
+     0.0 – 1.4  停在首屏（錶組裝完成）
+     1.4 – 7.2  捲過 hero，錶環繞後逐層拆解
+     7.2 – 9.8  繼續捲過 Features / Specs
+     9.8 –11.2  停在結尾 CTA
+    11.2 –12.0  淡出後回到頂端
+   加上 ?t=3.5 可以凍結在任一秒，用來逐格輸出影片。
+   ═══════════════════════════════════════════════════════════ */
+
+const LOOP = 12.0;
+const KEYS = [
+  [0.0,  0.00], [1.4,  0.00],
+  [7.2,  0.46],                 // hero 走完
+  [9.8,  0.93],
+  [11.2, 1.00], [12.0, 1.00],
+];
+
+const stage = document.getElementById('stage');
+const frame = document.getElementById('site');
+
+/* 讓 1080×1350 的畫布縮到視窗裡（輸出影片時是 1:1） */
+function fit(){
+  const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1350);
+  stage.style.setProperty('--fit', s);
+}
+window.addEventListener('resize', fit, { passive:true });
+fit();
+
+const clamp = (v,a,b) => v<a?a:v>b?b:v;
+const easeInOut = t => t<.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+
+function scrollFraction(t){
+  t = ((t % LOOP) + LOOP) % LOOP;
+  for (let i = 0; i < KEYS.length - 1; i++){
+    const [t0,f0] = KEYS[i], [t1,f1] = KEYS[i+1];
+    if (t >= t0 && t <= t1){
+      const k = t1 === t0 ? 0 : (t - t0) / (t1 - t0);
+      return f0 + (f1 - f0) * easeInOut(k);
+    }
+  }
+  return 1;
+}
+
+/* 12 秒的最後 0.8 秒淡出，讓循環接得順 */
+function fadeAt(t){
+  t = ((t % LOOP) + LOOP) % LOOP;
+  if (t > LOOP - 0.8) return 1 - (t - (LOOP - 0.8)) / 0.8;
+  if (t < 0.25) return t / 0.25;
+  return 1;
+}
+
+let doc = null, range = 0;
+
+function bind(){
+  try {
+    doc = frame.contentDocument;
+    range = Math.max(1, doc.documentElement.scrollHeight - frame.clientHeight);
+  } catch (e) { doc = null; }
+}
+
+function apply(t){
+  if (!doc) bind();
+  if (!doc) return;
+  frame.contentWindow.scrollTo(0, scrollFraction(t) * range);
+  stage.style.opacity = fadeAt(t).toFixed(3);
+}
+
+const q = new URLSearchParams(location.search);
+
+frame.addEventListener('load', () => {
+  bind();
+  if (q.has('t')){
+    /* 靜止在指定秒數 —— 逐格輸出用 */
+    const t = parseFloat(q.get('t'));
+    apply(t);
+    setTimeout(() => apply(t), 260);   // 等 WebGL 畫完第一張
+    setTimeout(() => apply(t), 700);
+  } else {
+    const t0 = performance.now();
+    (function loop(){
+      apply((performance.now() - t0) / 1000);
+      requestAnimationFrame(loop);
+    })();
+  }
+});
+})();
+</script>
+</body>
+</html>

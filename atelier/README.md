@@ -50,6 +50,27 @@ Higgsfield AI 生影片 → `ffmpeg` 抽 300+ 張 JPEG → canvas 依捲動進�
 4. **材質** — `MeshPhysicalMaterial`。玫瑰金 `metalness:1, roughness:0.11`；藍寶石 `transmission:1, ior:1.77`；面盤用一張程式生成的放射狀 roughness map 做出旭日紋（光澤來自環境，不是畫上去的顏色）。
 5. **運鏡** — 捲動進度 → 方位角、仰角、鏡頭距離、零件 Y 位移。前半段環繞，後半段爆炸＋鏡頭下降後退。
 
+## IG 展示片
+
+`showcase.html` — 1080×1350（IG 直式 4:5）的自動播放版面：以人看電腦的視角擺一台筆電，螢幕裡是**真的 `index.html`**（同源 iframe），12 秒無縫循環自動捲動。
+
+- 直接開 `http://localhost:8777/showcase.html` 就會自動播，可以直接螢幕錄影。
+- 加 `?t=3.5` 會凍結在第 3.5 秒 —— 逐格輸出影片就是靠這個。
+- 成品影片：`media/atelier-reel-4x5.mp4`
+
+輸出流程（12 秒 × 24fps = 288 格）：
+
+```
+# 1. 起本機伺服器
+python3 -m http.server 8777
+
+# 2. 逐格截圖 + 編碼（腳本在 scratchpad，可自行改 FPS/秒數）
+#    每格用 Chrome headless 截 showcase.html?t=<秒>
+#    再用 OpenCV 串成 mp4
+```
+
+改標題文案：`showcase.html` 裡的 `.cap-top` / `.cap-bot`。改節奏：`KEYS` 陣列（時間 → 捲動比例）。
+
 ## 換給客戶用
 
 - **金屬顏色** — `roseGold` 的 `color`。黃金 `(1.0,0.77,0.34)`、白金／不鏽鋼 `(0.95,0.94,0.92)`。

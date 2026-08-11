@@ -259,7 +259,7 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const renderer = new THREE.WebGLRenderer({ canvas: stage, antialias: true, alpha: false });
 renderer.setClearColor(0x000000, 1);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
+renderer.toneMappingExposure = 0.80;
 
 const scene  = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(26, 1, 1, 800);
@@ -290,10 +290,10 @@ function buildStudio(){
     s.add(mesh);
   };
 
-  light(320,  4, 320,   0, 160,   0,  0, 0,    0, 1.25); // broad key overhead
-  light(  6, 250, 230,-165,  50,  20,  0, 0.35, 0, 4.2); // left softbox
+  light(320,  4, 320,   0, 160,   0,  0, 0,    0, 0.62); // broad key overhead
+  light(  6, 250, 230,-165,  50,  20,  0, 0.35, 0, 3.4); // left softbox
   light(  6, 250, 230, 170,  60, -20,  0,-0.30, 0, 2.2); // right softbox
-  light(  5,  80, 150,-115, 115,  55,  0, 0.30, 0,16);   // hard streak, upper left
+  light(  5,  80, 150,-115, 115,  55,  0, 0.30, 0,12);   // hard streak, upper left
   light(  5,  60, 120, 125, 100, -45,  0,-0.35, 0,10);   // hard streak, upper right
   light(320, 130,   5,   0,  35,-200,  0, 0,    0, 1.4); // kicker behind
   light(220, 100,   5,   0, -55, 200,  0, 0,    0, 0.5); // bounce in front
@@ -317,7 +317,7 @@ scene.add(rim);
 
 /* ── materials ──────────────────────────────────────────── */
 const roseGold = new THREE.MeshPhysicalMaterial({
-  color: new THREE.Color(0.95, 0.62, 0.44),
+  color: new THREE.Color(0.96, 0.575, 0.375),
   metalness: 1, roughness: 0.11,
   envMapIntensity: 1.15,
 });
@@ -403,7 +403,7 @@ const rubyMat = new THREE.MeshPhysicalMaterial({
 const sapphire = new THREE.MeshPhysicalMaterial({
   color: 0xffffff, metalness: 0, roughness: 0.015,
   transmission: 1, thickness: 0.8, ior: 1.77,
-  envMapIntensity: 0.9, transparent: true, opacity: 1,
+  envMapIntensity: 0.22, transparent: true, opacity: 1,
   specularIntensity: 1, attenuationDistance: 40,
 });
 const apertureMat = new THREE.MeshStandardMaterial({
@@ -946,8 +946,8 @@ function draw(p){
   layout(ex);
 
   const az   = lerp(-1.15, 0.02, orbit) + ex * 0.34;
-  const el   = lerp(0.56, 0.30, ex);
-  const dist = lerp(152, 238, ex);
+  const el   = lerp(0.95, 0.30, ex);
+  const dist = lerp(158, 238, ex);
   const ty   = lerp(-6, -9, ex);
 
   camera.position.set(
