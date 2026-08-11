@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aurelis Perpetual 40 — Genève</title>
-<meta name="description" content="The Aurelis Perpetual 40 in 18ct rose gold. A scroll-driven exploded view of a mechanical movement, rendered live in the browser.">
+<meta name="description" content="The Aurelis Perpetual 40 in 18ct rose gold. A scroll-driven exploded view, rendered live in WebGL.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -24,7 +24,6 @@
   --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;
 }
 
-html{scroll-behavior:auto}
 body{
   background:var(--bg);
   color:var(--ink);
@@ -36,27 +35,18 @@ body{
 
 .label{
   font-family:var(--sans);
-  font-size:.65rem;
-  font-weight:500;
-  letter-spacing:.25em;
-  text-transform:uppercase;
+  font-size:.65rem;font-weight:500;
+  letter-spacing:.25em;text-transform:uppercase;
   color:var(--accent);
 }
-
 h1,h2{font-family:var(--display);font-weight:400;line-height:1.08}
 
 .btn{
-  display:inline-block;
-  font-family:var(--sans);
-  font-size:.7rem;
-  font-weight:500;
-  letter-spacing:.18em;
-  text-transform:uppercase;
-  text-decoration:none;
+  display:inline-block;font-family:var(--sans);
+  font-size:.7rem;font-weight:500;letter-spacing:.18em;
+  text-transform:uppercase;text-decoration:none;
   padding:.9rem 2.6rem;
-  background:var(--accent);
-  color:#000;
-  border:1px solid var(--accent);
+  background:var(--accent);color:#000;border:1px solid var(--accent);
   transition:background .35s ease,color .35s ease,border-color .35s ease;
   pointer-events:auto;
 }
@@ -67,42 +57,35 @@ h1,h2{font-family:var(--display);font-weight:400;line-height:1.08}
 .wrap{max-width:1180px;margin:0 auto;padding:0 clamp(1.5rem,5vw,4rem)}
 
 /* ── HERO ───────────────────────────────────────────── */
-#hero{position:relative;height:340vh}
-.hero-sticky{
-  position:sticky;top:0;
-  width:100vw;height:100vh;height:100svh;
-  overflow:hidden;background:#000;
-}
-#stage{display:block;width:100%;height:100%}
+#hero{position:relative;height:360vh}
+.hero-sticky{position:sticky;top:0;width:100vw;height:100vh;height:100svh;overflow:hidden;background:#000}
+#stage,#overlay{position:absolute;inset:0;display:block;width:100%;height:100%}
+#overlay{pointer-events:none}
 
-.hero-overlay{
+.hero-copy{
   position:absolute;inset:0;
   display:flex;flex-direction:column;justify-content:flex-end;
   padding:0 clamp(1.5rem,5vw,4rem) clamp(3rem,8vh,6rem);
   pointer-events:none;
-  background:linear-gradient(to top,
-    rgba(0,0,0,.88) 0%,
-    rgba(0,0,0,.35) 50%,
-    transparent 100%);
+  background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.35) 46%,transparent 100%);
 }
 .hero-inner{max-width:1180px;margin:0 auto;width:100%}
-.hero-overlay h1{
-  font-size:clamp(2.4rem,6vw,5.5rem);
-  margin:.7rem 0 1.1rem;
-}
-.hero-overlay p{
+.hero-copy h1{font-size:clamp(2.4rem,6vw,5.5rem);margin:.7rem 0 1.1rem}
+.hero-copy p{
   color:var(--body);font-size:clamp(.95rem,1.5vw,1.06rem);
   line-height:1.65;max-width:min(460px,100%);margin-bottom:2.2rem;
 }
-
 .scroll-cue{
   position:absolute;left:50%;bottom:1.6rem;transform:translateX(-50%);
   font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;
-  color:var(--dim);pointer-events:none;
-  transition:opacity .6s ease;
+  color:var(--dim);pointer-events:none;transition:opacity .6s ease;
+}
+#loading{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:#4a4438;
+  transition:opacity .8s ease;
 }
 
-/* fade-in primitives */
 .rise{opacity:0;transform:translateY(24px);
   transition:opacity .9s cubic-bezier(.25,0,0,1),transform .9s cubic-bezier(.25,0,0,1)}
 .rise.in{opacity:1;transform:none}
@@ -112,45 +95,31 @@ section.block{padding:clamp(6rem,14vh,11rem) 0}
 .block h2{font-size:clamp(2rem,4vw,3.5rem);margin:1.1rem 0 0}
 .lede{color:var(--body);max-width:520px;margin-top:1.4rem;line-height:1.7;font-size:.98rem}
 
-.grid{
-  display:grid;gap:1px;
-  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
-  margin-top:clamp(3rem,7vh,5rem);
-}
-.card{padding:2.1rem 0 2.4rem;border-top:1px solid var(--hairline);padding-right:2rem}
+.grid{display:grid;gap:1px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  margin-top:clamp(3rem,7vh,5rem)}
+.card{padding:2.1rem 2rem 2.4rem 0;border-top:1px solid var(--hairline)}
 .card svg{width:26px;height:26px;stroke:var(--accent);fill:none;stroke-width:1.1;
   stroke-linecap:round;stroke-linejoin:round}
-.card h3{
-  font-family:var(--sans);font-size:.72rem;font-weight:500;
-  letter-spacing:.2em;text-transform:uppercase;
-  margin:1.4rem 0 .8rem;color:var(--ink);
-}
+.card h3{font-family:var(--sans);font-size:.72rem;font-weight:500;letter-spacing:.2em;
+  text-transform:uppercase;margin:1.4rem 0 .8rem;color:var(--ink)}
 .card p{color:var(--dim);font-size:.9rem;line-height:1.7}
 
-/* specs */
 .specs{margin-top:clamp(3rem,7vh,5rem);max-width:820px}
-.spec-row{
-  display:flex;justify-content:space-between;gap:2rem;
-  padding:1.15rem 0;border-bottom:1px solid var(--rule);
-}
-.spec-row dt{
-  font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--accent);font-weight:500;flex:0 0 auto;padding-top:.15rem;
-}
+.spec-row{display:flex;justify-content:space-between;gap:2rem;padding:1.15rem 0;
+  border-bottom:1px solid var(--rule)}
+.spec-row dt{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:500;flex:0 0 auto;padding-top:.15rem}
 .spec-row dd{color:var(--body);font-size:.98rem;text-align:right}
 
-/* closing */
 #closing{text-align:center;padding:clamp(7rem,18vh,13rem) 0}
 #closing h2{font-size:clamp(2.2rem,5vw,4.5rem)}
 #closing h2 em{font-style:italic;color:var(--body);display:block}
 #closing .lede{margin:1.8rem auto 0;max-width:480px}
 .cta-glow{position:relative;display:inline-block;margin-top:2.8rem}
-.cta-glow::before{
-  content:"";position:absolute;left:50%;top:50%;
+.cta-glow::before{content:"";position:absolute;left:50%;top:50%;
   width:520px;height:280px;transform:translate(-50%,-50%);
   background:radial-gradient(ellipse,rgba(200,169,110,.10) 0%,transparent 70%);
-  pointer-events:none;
-}
+  pointer-events:none}
 .cta-glow .btn{position:relative}
 
 @media (max-width:768px){
@@ -170,7 +139,9 @@ section.block{padding:clamp(6rem,14vh,11rem) 0}
 <div id="hero">
   <div class="hero-sticky">
     <canvas id="stage"></canvas>
-    <div class="hero-overlay">
+    <canvas id="overlay"></canvas>
+    <span id="loading">Rendering</span>
+    <div class="hero-copy">
       <div class="hero-inner">
         <span class="label rise" data-delay="0">Est. 1904 · Genève</span>
         <h1 class="rise" data-delay="120">Aurelis Perpetual 40</h1>
@@ -184,7 +155,6 @@ section.block{padding:clamp(6rem,14vh,11rem) 0}
 
 <main style="background:#000">
 
-<!-- ════════ FEATURES ════════ -->
 <section class="block" id="features">
   <div class="wrap">
     <span class="label rise">Crafted Without Compromise</span>
@@ -226,12 +196,10 @@ section.block{padding:clamp(6rem,14vh,11rem) 0}
   </div>
 </section>
 
-<!-- ════════ SPECS ════════ -->
 <section class="block" id="specs">
   <div class="wrap">
     <span class="label rise">Technical Specifications</span>
     <h2 class="rise" data-delay="100">The architecture of precision.</h2>
-
     <dl class="specs">
       <div class="spec-row rise"><dt>Reference No.</dt><dd>AUR 228345 · Chocolat</dd></div>
       <div class="spec-row rise" data-delay="60"><dt>Case Diameter</dt><dd>40 mm, 12.1 mm thick</dd></div>
@@ -247,7 +215,6 @@ section.block{padding:clamp(6rem,14vh,11rem) 0}
   </div>
 </section>
 
-<!-- ════════ CLOSING ════════ -->
 <section id="closing">
   <div class="wrap">
     <span class="label rise">Yours to Command</span>
@@ -261,433 +228,526 @@ section.block{padding:clamp(6rem,14vh,11rem) 0}
 
 </main>
 
-<script>
-(() => {
-'use strict';
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
 
 /* ═══════════════════════════════════════════════════════════
-   SCROLL-DRIVEN EXPLODED VIEW
-   No <video>, no image sequence, no scroll listener.
-   Every frame is drawn procedurally on <canvas>, driven by a
-   rAF loop reading getBoundingClientRect().
+   AURELIS PERPETUAL 40 — real-time WebGL product render.
+   Every part is procedural geometry with physically-based
+   rose-gold and sapphire materials, lit by a procedurally
+   built studio environment. No models, no textures, no video.
    ═══════════════════════════════════════════════════════════ */
 
-const cv   = document.getElementById('stage');
-const ctx  = cv.getContext('2d');
-const hero = document.getElementById('hero');
-const cue  = document.getElementById('cue');
+const TAU   = Math.PI * 2;
+const clamp = (v,a,b) => v < a ? a : v > b ? b : v;
+const lerp  = (a,b,t) => a + (b - a) * t;
+const easeInOut = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+const easeOut   = t => 1 - Math.pow(1-t,3);
+
+const stage   = document.getElementById('stage');
+const overlay = document.getElementById('overlay');
+const octx    = overlay.getContext('2d');
+const heroEl  = document.getElementById('hero');
+const cueEl   = document.getElementById('cue');
+const loadEl  = document.getElementById('loading');
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-let W = 0, H = 0, DPR = 1;
+const renderer = new THREE.WebGLRenderer({ canvas: stage, antialias: true, alpha: false });
+renderer.setClearColor(0x000000, 1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
 
-function resize(){
-  DPR = Math.min(window.devicePixelRatio || 1, 2);
-  const r = cv.getBoundingClientRect();
-  W = r.width; H = r.height;
-  cv.width  = Math.max(1, Math.round(W * DPR));
-  cv.height = Math.max(1, Math.round(H * DPR));
-  render(lastP);
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(26, 1, 1, 800);
+
+/* ── studio environment ───────────────────────────────────
+   Softbox strips arranged the way a watch photographer would
+   place them: one broad key overhead, two tall narrow strips
+   raking the flanks, one low kicker behind. These are what
+   produce the moving highlights across the gold.            */
+function buildStudio(){
+  const s = new THREE.Scene();
+
+  const roomGeo = new THREE.BoxGeometry(1,1,1);
+  roomGeo.deleteAttribute('uv');
+  const room = new THREE.Mesh(roomGeo,
+    new THREE.MeshStandardMaterial({ side: THREE.BackSide, color: 0x0c0c11, roughness: 1 }));
+  room.scale.setScalar(760);   // must enclose every softbox below
+  s.add(room);
+
+  const box = new THREE.BoxGeometry(1,1,1);
+  const light = (w,h,d, x,y,z, rx,ry,rz, intensity) => {
+    const m = new THREE.MeshBasicMaterial();
+    m.color.setScalar(intensity);
+    const mesh = new THREE.Mesh(box, m);
+    mesh.scale.set(w,h,d);
+    mesh.position.set(x,y,z);
+    mesh.rotation.set(rx,ry,rz);
+    s.add(mesh);
+  };
+
+  light(320,  4, 320,   0, 160,   0,  0, 0,    0, 2.2);  // broad key overhead
+  light(  6, 250, 230,-165,  50,  20,  0, 0.35, 0, 3.6); // left softbox
+  light(  6, 250, 230, 170,  60, -20,  0,-0.30, 0, 2.2); // right softbox
+  light(  5,  80, 150,-115, 115,  55,  0, 0.30, 0,16);   // hard streak, upper left
+  light(  5,  60, 120, 125, 100, -45,  0,-0.35, 0,10);   // hard streak, upper right
+  light(320, 130,   5,   0,  35,-200,  0, 0,    0, 1.4); // kicker behind
+  light(220, 100,   5,   0, -55, 200,  0, 0,    0, 0.5); // bounce in front
+
+  return s;
 }
 
-/* ── math helpers ─────────────────────────────────────── */
-const TAU   = Math.PI * 2;
-const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
-const lerp  = (a, b, t) => a + (b - a) * t;
-const ease  = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;   // easeInOutCubic
-const easeOut = t => 1 - Math.pow(1 - t, 3);
+const pmrem  = new THREE.PMREMGenerator(renderer);
+/* near/far must be given explicitly — the default far plane is 100,
+   which would clip this whole studio away and leave a black env map */
+const envRT  = pmrem.fromScene(buildStudio(), 0.03, 1, 2000);
+scene.environment = envRT.texture;
 
-/* gold ramp */
-const GOLD_LO = '#4a3a20', GOLD_MID = '#C8A96E', GOLD_HI = '#F2E0B4';
+/* a touch of directional light for crisp edge definition */
+const key = new THREE.DirectionalLight(0xfff2dd, 1.6);
+key.position.set(-40, 70, 45);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xffd9a8, 0.8);
+rim.position.set(50, 20, -60);
+scene.add(rim);
 
-/* A metallic gradient whose highlight stays fixed in world space
-   even while the part rotates with the camera. */
-function metal(r, theta, lo, mid, hi){
-  const dx = Math.cos(-theta) * r, dy = Math.sin(-theta) * r;
-  const g = ctx.createLinearGradient(-dx, -dy, dx, dy);
-  g.addColorStop(0,   lo);
-  g.addColorStop(.30, mid);
-  g.addColorStop(.48, hi);
-  g.addColorStop(.66, mid);
-  g.addColorStop(1,   lo);
+/* ── materials ──────────────────────────────────────────── */
+const roseGold = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.95, 0.62, 0.44),
+  metalness: 1, roughness: 0.11,
+  envMapIntensity: 1.15,
+});
+const roseGoldBrushed = roseGold.clone();
+roseGoldBrushed.roughness = 0.30;
+roseGoldBrushed.envMapIntensity = 1.0;
+
+const steelDark = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.30, 0.28, 0.24),
+  metalness: 1, roughness: 0.42, envMapIntensity: 0.7,
+});
+const movementMat = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.22, 0.19, 0.13),
+  metalness: 1, roughness: 0.52, envMapIntensity: 0.65,
+});
+const rubyMat = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.62, 0.06, 0.11),
+  metalness: 0, roughness: 0.05, transmission: 0.6, thickness: 0.6,
+  ior: 1.76, envMapIntensity: 1.6,
+});
+const sapphire = new THREE.MeshPhysicalMaterial({
+  color: 0xffffff, metalness: 0, roughness: 0.015,
+  transmission: 1, thickness: 0.8, ior: 1.77,
+  envMapIntensity: 0.9, transparent: true, opacity: 1,
+  specularIntensity: 1, attenuationDistance: 40,
+});
+const apertureMat = new THREE.MeshStandardMaterial({
+  color: 0xcfc7b6, metalness: 0, roughness: 0.55,
+});
+
+/* dial: chocolate sunburst. The streaks live in a roughness
+   map, so the shine comes from the environment, not paint. */
+function sunburstMaps(){
+  const N = 1024;
+  const rough = document.createElement('canvas'); rough.width = rough.height = N;
+  const rc = rough.getContext('2d');
+  rc.fillStyle = '#6a6a6a'; rc.fillRect(0,0,N,N);
+  rc.translate(N/2, N/2);
+  for (let i = 0; i < 2600; i++){
+    const a = Math.random() * TAU;
+    const v = 78 + Math.random() * 90;
+    rc.strokeStyle = `rgb(${v},${v},${v})`;
+    rc.lineWidth = 0.6 + Math.random() * 1.6;
+    rc.beginPath();
+    rc.moveTo(Math.cos(a)*30, Math.sin(a)*30);
+    rc.lineTo(Math.cos(a)*N/2, Math.sin(a)*N/2);
+    rc.stroke();
+  }
+  const t = new THREE.CanvasTexture(rough);
+  t.anisotropy = 8;
+  return t;
+}
+const dialMat = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.155, 0.082, 0.038),
+  metalness: 0.9, roughness: 0.33,
+  roughnessMap: sunburstMaps(),
+  envMapIntensity: 0.62,
+});
+
+/* ── geometry helpers ───────────────────────────────────── */
+const V2 = (x,y) => new THREE.Vector2(x,y);
+
+/* radial ridges (bezel fluting, caseback knurling, crown) */
+function flute(geo, count, amp, yMin, yMax){
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++){
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    if (y < yMin || y > yMax) continue;
+    const r = Math.hypot(x, z);
+    if (r < 1e-4) continue;
+    const s = 1 + amp * Math.cos(count * Math.atan2(z, x));
+    p.setX(i, x * s); p.setZ(i, z * s);
+  }
+  geo.computeVertexNormals();
+}
+
+function lathe(pts, seg = 256){
+  const g = new THREE.LatheGeometry(pts, seg);
+  g.computeVertexNormals();
   return g;
 }
 
-/* Establish a drawing plane at height `zpx` above the anchor.
-   Projection = rotate in-plane, then squash vertically by K.
-   Canvas applies the last transform first, so scale(1,K) is
-   written before rotate(theta). */
-function plane(cx, cy, zpx, K, theta, S){
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.translate(cx, cy - zpx);
-  ctx.scale(1, K);
-  ctx.rotate(theta);
-  ctx.scale(S, S);
+/* ── the watch ──────────────────────────────────────────── */
+const watch = new THREE.Group();
+scene.add(watch);
+
+const R = 20;            // case radius, i.e. a 40 mm watch
+const parts = {};        // name → { group, explode }
+
+function part(name, explode){
+  const g = new THREE.Group();
+  watch.add(g);
+  parts[name] = { group: g, explode, label: name.toUpperCase() };
+  return g;
 }
 
-function ring(rOuter, rInner){
-  ctx.beginPath();
-  ctx.arc(0, 0, rOuter, 0, TAU);
-  ctx.arc(0, 0, rInner, 0, TAU, true);
-  ctx.closePath();
+/* — caseback — */
+{
+  const g = part('caseback', -32);
+  const body = new THREE.Mesh(lathe([
+    V2(0.01,-6.6), V2(9,-6.6), V2(14,-6.3), V2(17.4,-5.6),
+    V2(19.2,-5.0), V2(20,-4.4), V2(20,-3.9), V2(18.6,-3.9), V2(0.01,-3.9),
+  ], 224), roseGoldBrushed);
+  flute(body.geometry, 72, 0.008, -5.2, -4.2);
+  g.add(body);
+  const grooves = new THREE.Mesh(lathe([
+    V2(4,-6.66), V2(4.6,-6.66), V2(4.6,-6.63), V2(4,-6.63),
+  ], 96), steelDark);
+  g.add(grooves);
 }
 
-/* ── the parts ────────────────────────────────────────── */
-/* z is in "stack units"; 0 is the case, positive is toward the
-   crystal. Drawn back-to-front by ascending z. */
+/* — middle case + lugs + crown — */
+{
+  const g = part('case', -21);
+  const body = new THREE.Mesh(lathe([
+    V2(16.6,-4.2), V2(18.4,-4.0), V2(19.6,-2.6), V2(20.0, 0.0),
+    V2(19.6, 2.2), V2(18.5, 3.1), V2(17.0, 3.3), V2(16.4, 3.0),
+    V2(16.4,-3.9), V2(16.6,-4.2),
+  ], 224), roseGold);
+  g.add(body);
 
-function drawCaseback(th){
-  ctx.fillStyle = metal(104, th, GOLD_LO, GOLD_MID, '#DCC493');
-  ctx.beginPath(); ctx.arc(0, 0, 104, 0, TAU); ctx.fill();
+  /* four lugs, projecting from the case flanks along ±Z */
+  const lugShape = new THREE.Shape();
+  lugShape.moveTo(-2.3, -4.0);
+  lugShape.lineTo( 2.3, -4.0);
+  lugShape.lineTo( 2.3,  3.4);
+  lugShape.quadraticCurveTo(2.3, 5.4, 0.4, 5.6);
+  lugShape.lineTo(-2.3, 5.0);
+  lugShape.closePath();
+  const lugGeo = new THREE.ExtrudeGeometry(lugShape, {
+    depth: 4.6, bevelEnabled: true, bevelSize: 0.55,
+    bevelThickness: 0.55, bevelSegments: 3, curveSegments: 10,
+  });
+  lugGeo.rotateY(Math.PI / 2);          // width now runs along X
+  lugGeo.rotateX(Math.PI / 2);          // lie flat, length along Z
+  lugGeo.translate(0, 0, 0);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]){
+    const lug = new THREE.Mesh(lugGeo, roseGold);
+    lug.position.set(sx * 7.2, -0.9, sz * 18.4);
+    lug.rotation.y = sz > 0 ? 0 : Math.PI;
+    g.add(lug);
+  }
 
-  ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 1.2;
-  for (const r of [92, 78, 64, 48]){
-    ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke();
-  }
-  /* knurled rim notches for the caseback key */
-  ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 2.4;
-  for (let i = 0; i < 24; i++){
-    const a = i / 24 * TAU;
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(a) * 104, Math.sin(a) * 104);
-    ctx.lineTo(Math.cos(a) * 96,  Math.sin(a) * 96);
-    ctx.stroke();
-  }
-  ctx.fillStyle = 'rgba(0,0,0,.5)';
-  ctx.beginPath(); ctx.arc(0, 0, 26, 0, TAU); ctx.fill();
+  /* crown at 3 o'clock */
+  const crown = new THREE.Group();
+  const cg = lathe([
+    V2(0.01,0), V2(3.0,0), V2(3.4,0.5), V2(3.4,2.6), V2(3.0,3.1), V2(0.01,3.1),
+  ], 96);
+  flute(cg, 22, 0.05, 0.4, 2.7);
+  const cm = new THREE.Mesh(cg, roseGold);
+  cm.rotation.z = -Math.PI / 2;
+  cm.position.x = 19.4;
+  crown.add(cm);
+  crown.name = 'crown';
+  g.add(crown);
+  parts.case.crown = crown;
 }
 
-function drawCase(th){
-  /* lugs first, behind the middle case */
-  ctx.fillStyle = metal(150, th, GOLD_LO, '#B79A63', '#E0C795');
-  for (const a of [-2.30, -0.84, 0.84, 2.30]){
-    ctx.save();
-    ctx.rotate(a);
-    ctx.beginPath();
-    ctx.moveTo(96, -26); ctx.lineTo(150, -17);
-    ctx.lineTo(150,  17); ctx.lineTo(96,  26);
-    ctx.closePath(); ctx.fill();
-    ctx.restore();
-  }
-  ctx.fillStyle = metal(118, th, GOLD_LO, GOLD_MID, GOLD_HI);
-  ring(118, 99); ctx.fill('evenodd');
-
-  ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.arc(0, 0, 99, 0, TAU); ctx.stroke();
-  ctx.beginPath(); ctx.arc(0, 0, 118, 0, TAU); ctx.stroke();
+/* — rotor — */
+{
+  const g = part('rotor', -10);
+  const ring = new THREE.Mesh(
+    new THREE.CylinderGeometry(15.2, 15.2, 1.5, 128, 1, false, 0, Math.PI * 1.06),
+    roseGold);
+  ring.position.y = 0;
+  g.add(ring);
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 4.2, 1.9, 48), roseGoldBrushed);
+  hub.position.y = 0; g.add(hub);
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(26, 1.4, 5.5), roseGold);
+  arm.position.y = 0; g.add(arm);
 }
 
-function drawCrown(th, ex){
-  const x = 122 + 96 * ex;
-  ctx.save();
-  ctx.translate(x, 0);
-  ctx.fillStyle = metal(20, th, GOLD_LO, GOLD_MID, GOLD_HI);
-  ctx.beginPath();
-  ctx.moveTo(-16, -19); ctx.lineTo(15, -22);
-  ctx.lineTo(15, 22);   ctx.lineTo(-16, 19);
-  ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 1.4;
-  for (let i = -3; i <= 3; i++){
-    ctx.beginPath(); ctx.moveTo(-13, i * 5.6); ctx.lineTo(14, i * 6.2); ctx.stroke();
-  }
-  ctx.restore();
-}
+/* — movement — */
+{
+  const g = part('movement', 0);
+  const plate = new THREE.Mesh(lathe([
+    V2(0.01,-1.6), V2(14.4,-1.6), V2(15.0,-1.0), V2(15.0,1.0),
+    V2(14.4,1.6), V2(0.01,1.6),
+  ], 160), movementMat);
+  plate.position.y = -1.9;
+  g.add(plate);
 
-function drawRotor(th){
-  ctx.fillStyle = metal(88, th, GOLD_LO, GOLD_MID, GOLD_HI);
-  ctx.beginPath();
-  ctx.arc(0, 0, 88, -0.22, Math.PI + 0.22);
-  ctx.arc(0, 0, 34, Math.PI + 0.22, -0.22, true);
-  ctx.closePath(); ctx.fill();
-
-  ctx.strokeStyle = 'rgba(0,0,0,.42)'; ctx.lineWidth = 1.6;
-  ctx.beginPath(); ctx.arc(0, 0, 78, -0.18, Math.PI + 0.18); ctx.stroke();
-  ctx.beginPath(); ctx.arc(0, 0, 34, 0, TAU); ctx.stroke();
-  /* côtes de Genève */
-  ctx.strokeStyle = 'rgba(0,0,0,.16)'; ctx.lineWidth = 3;
-  for (let r = 42; r < 86; r += 8){
-    ctx.beginPath(); ctx.arc(0, 0, r, 0.1, Math.PI - 0.1); ctx.stroke();
-  }
-}
-
-function gear(x, y, r, teeth){
-  ctx.save(); ctx.translate(x, y);
-  ctx.fillStyle = '#8a7448';
-  ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill();
-  ctx.strokeStyle = '#c2a973'; ctx.lineWidth = 1.6;
-  for (let i = 0; i < teeth; i++){
-    const a = i / teeth * TAU;
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
-    ctx.lineTo(Math.cos(a) * (r + 4), Math.sin(a) * (r + 4));
-    ctx.stroke();
-  }
-  ctx.fillStyle = '#1a160e';
-  ctx.beginPath(); ctx.arc(0, 0, r * .34, 0, TAU); ctx.fill();
-  ctx.restore();
-}
-
-function drawMovement(th){
-  ctx.fillStyle = '#191509';
-  ctx.beginPath(); ctx.arc(0, 0, 92, 0, TAU); ctx.fill();
-  ctx.strokeStyle = metal(92, th, GOLD_LO, '#A98F5C', '#D8C08E');
-  ctx.lineWidth = 4;
-  ctx.beginPath(); ctx.arc(0, 0, 90, 0, TAU); ctx.stroke();
-
-  /* perlage */
-  ctx.strokeStyle = 'rgba(200,169,110,.10)'; ctx.lineWidth = 1;
-  for (let r = 16; r < 88; r += 11){
-    ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke();
-  }
-
-  gear(28, -22, 27, 22);
-  gear(-36, 16, 21, 18);
-  gear(6, 44, 15, 14);
-
-  /* balance wheel */
-  ctx.save(); ctx.translate(-24, -44);
-  ctx.strokeStyle = '#C8A96E'; ctx.lineWidth = 3.4;
-  ctx.beginPath(); ctx.arc(0, 0, 22, 0, TAU); ctx.stroke();
-  ctx.lineWidth = 1.6;
-  for (let i = 0; i < 3; i++){
-    const a = i / 3 * Math.PI;
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(a) * 21, Math.sin(a) * 21);
-    ctx.lineTo(-Math.cos(a) * 21, -Math.sin(a) * 21);
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  /* ruby jewels */
-  ctx.fillStyle = '#9e2b3a';
-  for (const [x, y] of [[28,-22],[-36,16],[6,44],[-24,-44],[52,26],[-58,-14],[0,-72]]){
-    ctx.beginPath(); ctx.arc(x, y, 4.4, 0, TAU); ctx.fill();
-  }
-}
-
-function drawDial(th){
-  const g = ctx.createRadialGradient(-24, -24, 8, 0, 0, 100);
-  g.addColorStop(0, '#4a3524'); g.addColorStop(.55, '#2a1d12'); g.addColorStop(1, '#0d0906');
-  ctx.fillStyle = g;
-  ctx.beginPath(); ctx.arc(0, 0, 97, 0, TAU); ctx.fill();
-
-  /* sunburst */
-  ctx.lineWidth = .8;
-  for (let i = 0; i < 180; i++){
-    const a = i / 180 * TAU;
-    const lit = (Math.cos(a + th) + 1) / 2;
-    ctx.strokeStyle = 'rgba(232,201,142,' + (0.03 + lit * 0.09).toFixed(3) + ')';
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(a) * 14, Math.sin(a) * 14);
-    ctx.lineTo(Math.cos(a) * 95, Math.sin(a) * 95);
-    ctx.stroke();
-  }
-
-  /* applied indices — skipped at 3 (date) and 12 (day) */
-  ctx.fillStyle = '#E8C98E';
-  for (let h = 0; h < 12; h++){
-    if (h === 3 || h === 0) continue;
-    const a = h / 12 * TAU - Math.PI / 2;
-    ctx.save();
-    ctx.rotate(a);
-    ctx.fillRect(62, -4.4, 22, 8.8);
-    ctx.restore();
-  }
-  /* apertures */
-  ctx.fillStyle = '#0b0805';
-  ctx.fillRect(56, -13, 34, 26);          // date at 3
-  ctx.fillRect(-40, -86, 80, 26);         // day at 12
-  ctx.strokeStyle = '#C8A96E'; ctx.lineWidth = 1.4;
-  ctx.strokeRect(56, -13, 34, 26);
-  ctx.strokeRect(-40, -86, 80, 26);
-  ctx.fillStyle = '#E5E5E5';
-  ctx.font = '500 17px Inter, sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('28', 73, 1);
-  ctx.font = '500 15px Inter, sans-serif';
-  ctx.fillText('MONDAY', 0, -72);
-
-  /* hands at 10:10 */
-  ctx.fillStyle = '#F2E0B4';
-  const hand = (angle, len, w) => {
-    ctx.save(); ctx.rotate(angle - Math.PI / 2);
-    ctx.beginPath();
-    ctx.moveTo(-8, -w); ctx.lineTo(len, -w * .5);
-    ctx.lineTo(len, w * .5); ctx.lineTo(-8, w);
-    ctx.closePath(); ctx.fill();
-    ctx.restore();
+  /* going train */
+  const gearGeo = (r, teeth, h) => {
+    const gg = new THREE.CylinderGeometry(r, r, h, Math.max(64, teeth * 6));
+    flute(gg, teeth, 0.055, -h, h);
+    return gg;
   };
-  hand(10 / 12 * TAU, 52, 6.5);   // hour
-  hand(2 / 12 * TAU, 78, 5);      // minute
-  ctx.strokeStyle = '#C8A96E'; ctx.lineWidth = 2;
-  ctx.save(); ctx.rotate(32 / 60 * TAU - Math.PI / 2);
-  ctx.beginPath(); ctx.moveTo(-20, 0); ctx.lineTo(86, 0); ctx.stroke();
-  ctx.restore();
-  ctx.fillStyle = '#C8A96E';
-  ctx.beginPath(); ctx.arc(0, 0, 6, 0, TAU); ctx.fill();
-}
-
-function drawBezel(th){
-  ctx.fillStyle = metal(112, th, GOLD_LO, GOLD_MID, GOLD_HI);
-  ring(112, 95); ctx.fill('evenodd');
-  /* fluting */
-  ctx.strokeStyle = 'rgba(0,0,0,.42)'; ctx.lineWidth = 1.5;
-  for (let i = 0; i < 56; i++){
-    const a = i / 56 * TAU;
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(a) * 112, Math.sin(a) * 112);
-    ctx.lineTo(Math.cos(a) * 95,  Math.sin(a) * 95);
-    ctx.stroke();
+  const gears = [[5.6,42,-0.24,4.5,-3.6],[4.2,34,-0.24,-5.8,2.6],[3.0,26,-0.26,1.0,6.6]];
+  for (const [r,t,y,x,z] of gears){
+    const m = new THREE.Mesh(gearGeo(r,t,0.34), roseGoldBrushed);
+    m.position.set(x, y, z); g.add(m);
   }
-  ctx.strokeStyle = 'rgba(242,224,180,.35)'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.arc(0, 0, 95, 0, TAU); ctx.stroke();
+  /* balance wheel */
+  const bal = new THREE.Group();
+  const rimM = new THREE.Mesh(new THREE.TorusGeometry(4.0, 0.30, 12, 72), roseGold);
+  rimM.rotation.x = Math.PI/2; bal.add(rimM);
+  for (let i = 0; i < 3; i++){
+    const sp = new THREE.Mesh(new THREE.BoxGeometry(8, 0.3, 0.5), roseGold);
+    sp.rotation.y = i / 3 * Math.PI; bal.add(sp);
+  }
+  bal.position.set(-4.0, -0.55, -6.4);
+  g.add(bal);
+  /* jewels */
+  const jewelGeo = new THREE.CylinderGeometry(0.85, 0.85, 0.35, 20);
+  for (const [x,z] of [[4.5,-3.6],[-5.8,2.6],[1.0,6.6],[-4.0,-6.4],[8.6,4.4],[-9.4,-2.2],[0,-11.4],[10.6,-6.2]]){
+    const j = new THREE.Mesh(jewelGeo, rubyMat);
+    j.position.set(x, -0.34, z); g.add(j);
+  }
 }
 
-function drawCrystal(th){
-  ctx.fillStyle = 'rgba(198,222,255,.05)';
-  ctx.beginPath(); ctx.arc(0, 0, 96, 0, TAU); ctx.fill();
-  ctx.strokeStyle = 'rgba(226,242,255,.34)'; ctx.lineWidth = 1.6;
-  ctx.beginPath(); ctx.arc(0, 0, 96, 0, TAU); ctx.stroke();
-  /* sweep highlight, anchored to world light */
-  ctx.strokeStyle = 'rgba(255,255,255,.30)'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.arc(0, 0, 88, -th - 2.5, -th - 1.1); ctx.stroke();
-  /* cyclops lens over the date */
-  ctx.fillStyle = 'rgba(198,222,255,.09)';
-  ctx.beginPath(); ctx.arc(73, 0, 21, 0, TAU); ctx.fill();
-  ctx.strokeStyle = 'rgba(226,242,255,.5)'; ctx.lineWidth = 1.4;
-  ctx.beginPath(); ctx.arc(73, 0, 21, 0, TAU); ctx.stroke();
+/* — dial, indices, hands — */
+{
+  const g = part('dial', 10);
+  const face = new THREE.Mesh(lathe([
+    V2(0.01,0), V2(15.4,0), V2(15.8,0.35), V2(15.8,0.75), V2(0.01,0.75),
+  ], 192), dialMat);
+  g.add(face);
+
+  const idxGeo = new THREE.BoxGeometry(1.5, 0.55, 4.0);
+  for (let h = 0; h < 12; h++){
+    if (h === 0 || h === 3) continue;               // day and date apertures
+    const th = h / 12 * TAU;
+    const m = new THREE.Mesh(idxGeo, roseGold);
+    m.position.set(Math.sin(th) * 11.6, 1.02, -Math.cos(th) * 11.6);
+    m.rotation.y = -th;
+    g.add(m);
+  }
+
+  const dateWin = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.5, 3.0), apertureMat);
+  dateWin.position.set(11.7, 0.78, 0); g.add(dateWin);
+  const dateRing = new THREE.Mesh(lathe([V2(2.5,0),V2(2.9,0),V2(2.9,0.28),V2(2.5,0.28)], 4), roseGold);
+  dateRing.position.set(11.7, 0.76, 0); dateRing.rotation.y = Math.PI/4; g.add(dateRing);
+
+  const dayWin = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.5, 3.0), apertureMat);
+  dayWin.position.set(0, 0.78, -10.4); g.add(dayWin);
+
+  /* hands, set to ten past ten */
+  const hand = (len, w, thick, y, tailLen) => {
+    const grp = new THREE.Group();
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, thick, len), roseGold);
+    m.position.set(0, y, -len/2);
+    grp.add(m);
+    if (tailLen){
+      const t = new THREE.Mesh(new THREE.BoxGeometry(w*0.8, thick, tailLen), roseGold);
+      t.position.set(0, y, tailLen/2); grp.add(t);
+    }
+    return grp;
+  };
+  const hourH = hand(7.6, 1.5, 0.42, 1.5, 0);   hourH.rotation.y = -(10/12) * TAU;
+  const minH  = hand(11.6, 1.2, 0.42, 2.0, 0);  minH.rotation.y  = -(2/12)  * TAU;
+  const secH  = hand(13.2, 0.34, 0.3, 2.5, 3.4); secH.rotation.y = -(33/60) * TAU;
+  g.add(hourH, minH, secH);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.7, 24), roseGold);
+  cap.position.y = 2.5; g.add(cap);
 }
 
-function drawBracelet(th, ex){
-  /* two arms along the 12 ↔ 6 axis, unfurling outward */
+/* — bezel — */
+{
+  const g = part('bezel', 20);
+  const geo = lathe([
+    V2(15.4, 3.0), V2(16.0, 4.4), V2(17.6, 5.4), V2(19.4, 5.0),
+    V2(20.1, 3.6), V2(20.1, 2.6), V2(18.4, 2.4), V2(15.4, 2.4), V2(15.4, 3.0),
+  ], 384);
+  flute(geo, 56, 0.022, 2.6, 5.4);
+  g.add(new THREE.Mesh(geo, roseGold));
+}
+
+/* — crystal — */
+{
+  const g = part('crystal', 30);
+  const glass = new THREE.Mesh(lathe([
+    V2(0.01, 5.9), V2(11.0, 5.85), V2(14.8, 5.5), V2(16.1, 4.6),
+    V2(16.1, 3.2), V2(0.01, 3.2),
+  ], 192), sapphire);
+  g.add(glass);
+  const cyclops = new THREE.Mesh(
+    new THREE.SphereGeometry(3.1, 40, 24, 0, TAU, 0, Math.PI * 0.42), sapphire);
+  cyclops.position.set(11.7, 5.2, 0);
+  cyclops.scale.set(1, 0.40, 1);
+  g.add(cyclops);
+}
+
+/* — bracelet: two arms of three-piece links — */
+const braceletMid  = roseGold.clone();
+const braceletSide = roseGoldBrushed.clone();
+for (const m of [braceletMid, braceletSide]){ m.transparent = true; m.depthWrite = true; }
+const braceletLinks = [];
+{
+  const g = parts.case.group;
+  const LINKS = 6;
   for (const dir of [-1, 1]){
-    for (let i = 0; i < 5; i++){
-      const d = (152 + i * 46) + ex * (26 + i * 34);
-      const w = 84 - i * 6, h = 34;
-      ctx.save();
-      ctx.translate(0, dir * d);
-      ctx.fillStyle = metal(w, th, GOLD_LO, '#BFA268', '#E4CC9B');
-      ctx.beginPath();
-      ctx.moveTo(-w/2, -h/2); ctx.lineTo(w/2, -h/2);
-      ctx.lineTo(w/2 - 4, h/2); ctx.lineTo(-w/2 + 4, h/2);
-      ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,.42)'; ctx.lineWidth = 1.4;
-      ctx.beginPath(); ctx.moveTo(-w/6, -h/2); ctx.lineTo(-w/6, h/2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(w/6, -h/2);  ctx.lineTo(w/6, h/2);  ctx.stroke();
-      ctx.restore();
+    for (let i = 0; i < LINKS; i++){
+      const link = new THREE.Group();
+      const w = 15.2 - i * 0.75;
+      const centre = new THREE.Mesh(new THREE.BoxGeometry(w * 0.42, 2.3, 6.2), braceletMid);
+      link.add(centre);
+      for (const s of [-1, 1]){
+        const side = new THREE.Mesh(new THREE.BoxGeometry(w * 0.27, 2.0, 6.2), braceletSide);
+        side.position.x = s * w * 0.35;
+        link.add(side);
+      }
+      link.userData = { dir, i };
+      braceletLinks.push(link);
+      g.add(link);
     }
   }
 }
 
-const PARTS = [
-  { z: -1, r: 104, name: 'Caseback',  draw: drawCaseback },
-  { z:  0, r: 118, name: 'Case',      draw: drawCase, extra: drawCrown, bracelet: true },
-  { z:  1, r:  88, name: 'Rotor',     draw: drawRotor },
-  { z:  2, r:  92, name: 'Movement',  draw: drawMovement },
-  { z:  3, r:  97, name: 'Dial',      draw: drawDial },
-  { z:  4, r: 112, name: 'Bezel',     draw: drawBezel },
-  { z:  5, r:  96, name: 'Crystal',   draw: drawCrystal },
-];
-const Z_MID = 2;   // keep the stack vertically centred as it opens
+/* ── the exploded-view drive ────────────────────────────── */
+const PART_ORDER = ['crystal','bezel','dial','movement','rotor','case','caseback'];
+const tmpV = new THREE.Vector3();
 
-/* ── the frame ────────────────────────────────────────── */
+function layout(ex){
+  for (const name of PART_ORDER){
+    parts[name].group.position.y = parts[name].explode * ex;
+  }
+  parts.case.crown.position.x = 8 * ex;
+
+  const braceletFade = clamp(1 - (ex - 0.30) / 0.34, 0, 1);
+  braceletMid.opacity = braceletSide.opacity = braceletFade;
+  for (const link of braceletLinks){
+    link.visible = braceletFade > 0.02;
+    const { dir, i } = link.userData;
+    const t = i + 1;
+    const spread = 1 + 0.34 * ex;
+    const z = dir * (18.5 + t * 6.6 * spread);
+    const droop = -(t * t) * 0.30 * (1 - ex * 0.85);
+    link.position.set(0, droop, z);
+    link.rotation.x = dir * (t * 0.10) * (1 - ex * 0.9);
+    link.rotation.z = ex * dir * 0.06 * t;
+  }
+}
+
+/* ── camera + frame ─────────────────────────────────────── */
+let W = 0, H = 0;
+
+function resize(){
+  const r = stage.getBoundingClientRect();
+  W = Math.max(1, r.width); H = Math.max(1, r.height);
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.9);
+  renderer.setPixelRatio(dpr);
+  renderer.setSize(W, H, false);
+  overlay.width = Math.round(W * dpr);
+  overlay.height = Math.round(H * dpr);
+  camera.aspect = W / H;
+  camera.fov = W < 760 ? 34 : 26;
+  camera.updateProjectionMatrix();
+  draw(lastP < 0 ? 0 : lastP);
+}
+
+function drawCallouts(ex, dpr){
+  octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  octx.clearRect(0, 0, W, H);
+  if (ex < 0.18 || W < 940) return;
+
+  const a = clamp((ex - 0.18) / 0.30, 0, 1);
+  const colX = W / 2 + Math.min(392, W * 0.33);
+  octx.font = '500 10px Inter, sans-serif';
+  if ('letterSpacing' in octx) octx.letterSpacing = '2.4px';
+  octx.textBaseline = 'middle';
+
+  for (const name of PART_ORDER){
+    const p = parts[name];
+    tmpV.set(0, p.group.position.y, 0).project(camera);
+    const y = (-tmpV.y * 0.5 + 0.5) * H;
+    const x = ( tmpV.x * 0.5 + 0.5) * W + 24;
+    octx.strokeStyle = `rgba(200,169,110,${(a * 0.28).toFixed(3)})`;
+    octx.lineWidth = 1;
+    octx.beginPath();
+    octx.moveTo(x, y);
+    octx.lineTo(colX - 14, y);
+    octx.lineTo(colX, y);
+    octx.stroke();
+    octx.fillStyle = `rgba(200,169,110,${(a * 0.82).toFixed(3)})`;
+    octx.fillText(p.label, colX + 8, y);
+  }
+}
+
 let lastP = -1;
 
-function render(p){
-  if (!W || !H) return;
+function draw(p){
   lastP = p;
 
-  /* Phase map, straight from the brief:
-     orbit from front-right to front-facing over the first half,
-     then deconstruct along each part's natural axis. */
-  const orbit = easeOut(clamp((p - 0.05) / 0.40, 0, 1));
-  const ex    = ease(clamp((p - 0.46) / 0.48, 0, 1));
+  const orbit = easeOut(clamp((p - 0.03) / 0.42, 0, 1));
+  const ex    = easeInOut(clamp((p - 0.46) / 0.50, 0, 1));
 
-  const theta = lerp(-0.95, 0, orbit) + ex * 0.42;
-  const K     = lerp(0.58, 0.26, ex);          // camera drops as it explodes
-  const zUnit = 3 + 54 * ex;
-  const S     = Math.min(W / 560, H / 860) * lerp(1, 0.82, ex);
-  const zOf   = z => (z - Z_MID * ex) * zUnit;
+  layout(ex);
 
-  const cx = W / 2;
-  const cy = H * (0.40 - 0.02 * ex);
+  const az   = lerp(-1.15, 0.02, orbit) + ex * 0.34;
+  const el   = lerp(0.56, 0.30, ex);
+  const dist = lerp(152, 238, ex);
+  const ty   = lerp(-6, -9, ex);
 
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, W, H);
+  camera.position.set(
+    dist * Math.cos(el) * Math.sin(az),
+    dist * Math.sin(el) + ty,
+    dist * Math.cos(el) * Math.cos(az)
+  );
+  camera.lookAt(0, ty, 0);
 
-  /* the axis the parts separate along */
-  if (ex > 0.04){
-    ctx.save();
-    ctx.strokeStyle = 'rgba(200,169,110,' + (ex * 0.22).toFixed(3) + ')';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([2, 7]);
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - zOf(5) - 30);
-    ctx.lineTo(cx, cy - zOf(-1) + 30);
-    ctx.stroke();
-    ctx.restore();
-  }
+  watch.rotation.y = lerp(0.22, 0, orbit) + ex * 0.12;
 
-  for (const part of PARTS){
-    const zpx = zOf(part.z);
-    plane(cx, cy, zpx, K, theta, S);
-    if (part.bracelet) drawBracelet(theta, ex);
-    part.draw(theta, ex);
-    if (part.extra) part.extra(theta, ex);
-  }
+  renderer.render(scene, camera);
+  drawCallouts(ex, renderer.getPixelRatio());
 
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
-  /* technical-illustration callouts, once the stack opens up */
-  if (ex > 0.12 && W > 900){
-    const a = clamp((ex - 0.12) / 0.35, 0, 1);
-    const colX = cx + Math.min(300, W * 0.26);
-    ctx.save();
-    ctx.font = '500 10px Inter, sans-serif';
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '2.4px';
-    ctx.textBaseline = 'middle';
-    ctx.textAlign = 'left';
-    for (const part of PARTS){
-      const y  = cy - zOf(part.z);
-      const ax = cx + part.r * S * Math.cos(theta);
-      const ay = y + part.r * S * Math.sin(theta) * K;
-      ctx.strokeStyle = 'rgba(200,169,110,' + (a * 0.30).toFixed(3) + ')';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(ax + 10, ay);
-      ctx.lineTo(colX - 12, y);
-      ctx.lineTo(colX, y);
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(200,169,110,' + (a * 0.85).toFixed(3) + ')';
-      ctx.fillText(part.name.toUpperCase(), colX + 8, y);
-    }
-    ctx.restore();
-  }
-
-  if (cue) cue.style.opacity = String(clamp(1 - p * 8, 0, 1));
+  if (cueEl) cueEl.style.opacity = String(clamp(1 - p * 8, 0, 1));
 }
 
-/* ── the loop: rAF + getBoundingClientRect, no scroll events ── */
+/* rAF loop reading getBoundingClientRect — no scroll listener */
 function progress(){
-  const top   = hero.getBoundingClientRect().top;
-  const range = hero.offsetHeight - window.innerHeight;
+  const top   = heroEl.getBoundingClientRect().top;
+  const range = heroEl.offsetHeight - window.innerHeight;
   return range <= 0 ? 0 : clamp(-top / range, 0, 1);
 }
 
-let raf = 0, prev = -1;
+let prev = -1;
 function tick(){
   const p = REDUCED ? 0.92 : progress();
-  if (Math.abs(p - prev) > 0.0004){ prev = p; render(p); }
-  raf = requestAnimationFrame(tick);
+  if (Math.abs(p - prev) > 0.0004){ prev = p; draw(p); }
+  requestAnimationFrame(tick);
 }
 
 window.addEventListener('resize', resize, { passive: true });
 resize();
-if (REDUCED) render(0.92); else tick();
+draw(REDUCED ? 0.92 : progress());
+if (!REDUCED) tick();
+if (loadEl){ loadEl.style.opacity = '0'; setTimeout(() => loadEl.remove(), 900); }
 
-/* ═══════════════════════════════════════════════════════════
-   SCROLL-TRIGGERED FADE-INS
-   ═══════════════════════════════════════════════════════════ */
+/* ── scroll-triggered fade-ins ──────────────────────────── */
 const io = new IntersectionObserver((entries) => {
   for (const e of entries){
     if (!e.isIntersecting) continue;
@@ -698,13 +758,10 @@ const io = new IntersectionObserver((entries) => {
 }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
 
 document.querySelectorAll('.rise').forEach(el => io.observe(el));
-
-/* hero copy is already on screen — stagger it in on load */
-document.querySelectorAll('.hero-overlay .rise').forEach(el => {
+document.querySelectorAll('.hero-copy .rise').forEach(el => {
   io.unobserve(el);
-  setTimeout(() => el.classList.add('in'), 800 + Number(el.dataset.delay || 0));
+  setTimeout(() => el.classList.add('in'), 900 + Number(el.dataset.delay || 0));
 });
-})();
 </script>
 </body>
 </html>

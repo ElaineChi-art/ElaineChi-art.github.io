@@ -2,53 +2,67 @@
 
 線上：`https://elainechi-art.github.io/atelier/`
 
-一支 `index.html`，零相依、零素材、零建置。整支動畫由 canvas 程式即時繪製。
+`index.html` + `vendor/three.module.js`。整只錶是 **WebGL 即時 3D 算圖**，沒有任何模型檔、貼圖檔或影片。
+
+## ⚠️ 本機怎麼開
+
+這頁用 ES modules + importmap，**不能直接雙擊開啟**（`file://` 會被瀏覽器的 CORS 擋掉）。本機要跑一個伺服器：
+
+```
+cd "/Users/elaine/Desktop/🎓 學習中心與專案/ElaineChi-art.github.io/atelier"
+python3 -m http.server 8777
+```
+
+然後開 `http://localhost:8777/`。上到 GitHub Pages 就沒這個問題，直接開網址即可。
 
 ## 這頁在賣什麼（給客戶的話術）
 
-滑動頁面時，一只機械錶會先繞著鏡頭轉，轉到正面後開始逐層拆解 —— 錶鏡、錶圈、面盤、機芯、自動盤、錶殼、底蓋沿著各自的軸線分開，浮在黑色虛空中，旁邊浮出技術製圖式的零件標註。
+滑動頁面時，一只 18ct 玫瑰金機械錶先繞著鏡頭轉，轉到正面後開始逐層拆解 —— 錶鏡、錶圈、面盤、機芯、自動盤、錶殼、底蓋沿各自的軸線分離，錶帶同時淡出，旁邊浮出技術製圖式的零件標註。
 
-這是精品品牌官網的標準語言（Apple、Rolex、Zenith 都在用）。一般做法是拍片或 3D 建模再抽成幾百張圖，成本高、載入慢。
+金屬上的高光會隨鏡頭移動而流動，因為那是**真的環境反射**，不是畫上去的漸層。
 
 ## 技術上跟原版教學的差別
 
 參考的教學（*Build $5K Websites Using Claude Code*）流程是：
 Higgsfield AI 生影片 → `ffmpeg` 抽 300+ 張 JPEG → canvas 依捲動進度切換第 N 張。
 
-這裡改成**程式即時算圖**，同樣的視覺，但：
+這裡改成 **three.js 即時 3D 算圖**：
 
 | | 抽幀版 | 這一版 |
 |---|---|---|
-| 素材 | 300+ 張 JPEG，20–60 MB | 0 bytes |
+| 素材 | 300+ 張 JPEG，20–60 MB | 0（three.js 函式庫 687 KB） |
 | 首次載入 | 要預載完才能滑 | 立即 |
-| 螢幕解析度 | 固定，Retina 會糊 | 任何 DPR 都銳利 |
-| 改顏色／改零件 | 要重生影片 | 改幾個常數 |
+| 解析度 | 固定，Retina 會糊 | 任何螢幕都銳利 |
+| 改顏色／改材質 | 要重生影片 | 改一行材質參數 |
+| 換角度／換運鏡 | 重拍 | 改相機曲線 |
 | 生成成本 | Higgsfield 訂閱 | 無 |
 
-保留了教學裡兩條關鍵規則：**不用 `<video>`**、**不掛 scroll listener**（只用 `requestAnimationFrame` + `getBoundingClientRect`）。這兩點是捲動不卡的原因。
+保留了教學裡兩條關鍵規則：**不掛 scroll listener**（只用 `requestAnimationFrame` + `getBoundingClientRect`）、**不用 `<video>`**。
 
-## 動畫怎麼運作
+## 3D 是怎麼做出來的
 
-`index.html` 底部的 `<script>`：
+`index.html` 底部的 `<script type="module">`：
 
-1. **投影** — `plane(cx, cy, zpx, K, theta, S)` 建立一個繪圖平面：先在平面內旋轉 `theta`（鏡頭環繞），再垂直壓扁 `K`（鏡頭俯角）。之後所有零件都當成平面圖形畫（圓就是 `arc()`），透視自動成立。
-2. **零件** — `PARTS` 陣列，每個有 `z`（堆疊高度）跟自己的 `draw()`。依 `z` 由低到高畫，遮擋關係自然正確。
-3. **相位** — `orbit`（0→0.45 環繞）、`ex`（0.46→1 爆炸）。`ex` 同時拉開 `z` 間距、壓低鏡頭 `K`、縮小整體 `S`（鏡頭後退）、淡入零件標註。
-4. **驅動** — rAF 迴圈讀 `#hero` 的 `getBoundingClientRect().top` 換算成 0→1 的進度，變化超過門檻才重畫。
+1. **攝影棚環境** — `buildStudio()` 蓋一個房間，裡面擺 7 塊發光板（頭頂大柔光箱、左右兩片大柔光箱、兩條窄硬光條、背面輪廓光、正面補光），再用 `PMREMGenerator.fromScene()` 烘成環境貼圖。金屬看到的所有反射都來自這裡。
+   > ⚠️ `fromScene()` 的 near/far 預設是 0.1/100。這個攝影棚有 700 單位大，**一定要明寫 `fromScene(scene, 0.03, 1, 2000)`**，否則整個攝影棚被 far plane 裁掉，環境貼圖會是全黑（然後你會以為是燈不夠亮，怎麼調都沒用）。
+2. **零件幾何** — 全部程式生成。錶殼／錶圈／底蓋／龍頭是 `LatheGeometry`（剖面線繞 Y 軸旋轉），錶耳是 `ExtrudeGeometry`，齒輪與時標是 `Cylinder`／`Box`。
+3. **紋路** — `flute()` 直接改頂點半徑：`r × (1 + amp·cos(count·θ))`。錶圈的 56 道齒紋、底蓋滾花、龍頭直紋、齒輪齒都是同一個函式做的。
+4. **材質** — `MeshPhysicalMaterial`。玫瑰金 `metalness:1, roughness:0.11`；藍寶石 `transmission:1, ior:1.77`；面盤用一張程式生成的放射狀 roughness map 做出旭日紋（光澤來自環境，不是畫上去的顏色）。
+5. **運鏡** — 捲動進度 → 方位角、仰角、鏡頭距離、零件 Y 位移。前半段環繞，後半段爆炸＋鏡頭下降後退。
 
 ## 換給客戶用
 
-改這幾處就換一個品牌：
-
-- **設計 token** — `<style>` 開頭的 `:root`。`--accent` 換成客戶的品牌色，其餘不動。
-- **文案** — HTML 裡全部是真實文案，沒有 lorem ipsum。Hero / Features 六張卡 / Specs 十列 / Closing CTA。
-- **產品本體** — `PARTS` 陣列跟各個 `draw*()`。換成別的產品（耳機、香水瓶、引擎、球鞋中底）就是重寫這幾個函式，投影跟捲動邏輯完全不用動。
-- **中文版** — 目前是英文（精品慣例）。要中文版把 `--display` 換成襯線中文字體（如 `Noto Serif TC`）再翻文案。
+- **金屬顏色** — `roseGold` 的 `color`。黃金 `(1.0,0.77,0.34)`、白金／不鏽鋼 `(0.95,0.94,0.92)`。
+- **面盤顏色** — `dialMat` 的 `color`。
+- **打光** — `buildStudio()` 裡那七行 `light(w,h,d, x,y,z, rx,ry,rz, intensity)`。想要更戲劇性就加大硬光條的 intensity、調暗柔光箱。
+- **文案** — HTML 裡全部是真實文案，沒有 lorem ipsum。
+- **設計 token** — `<style>` 開頭的 `:root`。
+- **換成別的產品** — 重寫那幾個 `part(...)` 區塊。攝影棚、運鏡、捲動邏輯完全不用動。
 
 ## 注意
 
-品牌 **Aurelis**、型號、參考號、口徑編號全部是虛構的，刻意避開真實品牌的註冊商標（Everose、Oyster、President、Cyclops 等都是 Rolex 的商標）。當展示樣板可以直接用；真的接案時換成客戶自己的品牌資料。
+品牌 **Aurelis**、型號、參考號、機芯編號全部是虛構的，刻意避開真實品牌的註冊商標（Everose、Oyster、President、Cyclops 等都是 Rolex 的商標）。當展示樣板可以直接用；真的接案時換成客戶自己的品牌資料。
 
 ## 相容性
 
-Chrome / Safari / Firefox 現行版。`ctx.letterSpacing` 沒有的瀏覽器會自動略過（標註仍然顯示，只是不加字距）。已處理 `prefers-reduced-motion`：關閉捲動動畫，直接顯示拆解完成的狀態。
+需要 WebGL2（Chrome / Safari / Firefox 現行版都有）。`prefers-reduced-motion` 開啟時會停掉捲動動畫，直接顯示拆解完成的狀態。
