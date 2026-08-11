@@ -1,19 +1,35 @@
-# Atelier — 捲動驅動精品 Landing Page（接案樣板）
+# ATELIER CHI — 捲動驅動的 3D 產品頁
 
-線上：`https://elainechi-art.github.io/atelier/`
+四個精品產品頁，共用同一套攝影棚、運鏡與捲動拆解機制。接案報價用的展示樣板。
 
-`index.html` + `vendor/three.module.js`。整只錶是 **WebGL 即時 3D 算圖**，沒有任何模型檔、貼圖檔或影片。
+## 檔案在哪
+
+```
+atelier/
+├─ index.html          ← 作品集入口（先開這個）
+├─ montre/             01 玫瑰金機械錶      程式生成
+├─ parfum/             02 水晶香水瓶        程式生成
+├─ casque/             03 監聽耳機          程式生成
+├─ course/             04 針織跑鞋          載入 .glb 模型
+│  └─ model/shoe.glb      ⚠️ CC BY 4.0，須標註出處（見下）
+├─ showcase.html       IG 直式自動播放版面（1080×1350）
+├─ media/
+│  ├─ atelier-reel-4x5.mp4   IG 成品影片（12 秒 · H.264）
+│  └─ thumbs/               作品集入口用的縮圖
+├─ vendor/             three.js r169 + GLTFLoader（本機化，不靠 CDN）
+└─ README.md           這份文件
+```
 
 ## ⚠️ 本機怎麼開
 
-這頁用 ES modules + importmap，**不能直接雙擊開啟**（`file://` 會被瀏覽器的 CORS 擋掉）。本機要跑一個伺服器：
+用了 ES modules，**不能直接雙擊 HTML**（`file://` 會被瀏覽器的 CORS 擋掉）。要跑一個本機伺服器：
 
 ```
 cd "/Users/elaine/Desktop/🎓 學習中心與專案/ElaineChi-art.github.io/atelier"
 python3 -m http.server 8777
 ```
 
-然後開 `http://localhost:8777/`。上到 GitHub Pages 就沒這個問題，直接開網址即可。
+然後開 `http://localhost:8777/`。上到 GitHub Pages 之後直接開網址即可，沒有這個限制。
 
 ## 這頁在賣什麼（給客戶的話術）
 
@@ -41,7 +57,7 @@ Higgsfield AI 生影片 → `ffmpeg` 抽 300+ 張 JPEG → canvas 依捲動進�
 
 ## 3D 是怎麼做出來的
 
-`index.html` 底部的 `<script type="module">`：
+`montre/index.html` 底部的 `<script type="module">`：
 
 1. **攝影棚環境** — `buildStudio()` 蓋一個房間，裡面擺 7 塊發光板（頭頂大柔光箱、左右兩片大柔光箱、兩條窄硬光條、背面輪廓光、正面補光），再用 `PMREMGenerator.fromScene()` 烘成環境貼圖。金屬看到的所有反射都來自這裡。
    > ⚠️ `fromScene()` 的 near/far 預設是 0.1/100。這個攝影棚有 700 單位大，**一定要明寫 `fromScene(scene, 0.03, 1, 2000)`**，否則整個攝影棚被 far plane 裁掉，環境貼圖會是全黑（然後你會以為是燈不夠亮，怎麼調都沒用）。
@@ -52,7 +68,7 @@ Higgsfield AI 生影片 → `ffmpeg` 抽 300+ 張 JPEG → canvas 依捲動進�
 
 ## IG 展示片
 
-`showcase.html` — 1080×1350（IG 直式 4:5）的自動播放版面：以人看電腦的視角擺一台筆電，螢幕裡是**真的 `index.html`**（同源 iframe），12 秒無縫循環自動捲動。
+`showcase.html` — 1080×1350（IG 直式 4:5）的自動播放版面：以人看電腦的視角擺一台筆電，螢幕裡是**真的 `montre/index.html`**（同源 iframe），12 秒無縫循環自動捲動。
 
 - 直接開 `http://localhost:8777/showcase.html` 就會自動播，可以直接螢幕錄影。
 - 加 `?t=3.5` 會凍結在第 3.5 秒 —— 逐格輸出影片就是靠這個。
@@ -105,7 +121,7 @@ python3 -m http.server 8777
 - **面盤顏色** — `dialMat` 的 `color`。
 - **打光** — `buildStudio()` 裡那七行 `light(w,h,d, x,y,z, rx,ry,rz, intensity)`。想要更戲劇性就加大硬光條的 intensity、調暗柔光箱。
 - **文案** — HTML 裡全部是真實文案，沒有 lorem ipsum。
-- **設計 token** — `<style>` 開頭的 `:root`。
+- **設計 token** — 每頁 `<style>` 開頭的 `:root`。
 - **換成別的產品** — 重寫那幾個 `part(...)` 區塊。攝影棚、運鏡、捲動邏輯完全不用動。
 
 ## 注意
