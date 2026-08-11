@@ -187,20 +187,22 @@ html,body{background:#050506;overflow:hidden}
 
 /* ═══════════════════════════════════════════════════════════
    自動播放時間軸。整段 12 秒無縫循環：
-     0.0 – 1.4  停在首屏（錶組裝完成）
-     1.4 – 7.2  捲過 hero，錶環繞後逐層拆解
-     7.2 – 9.8  繼續捲過 Features / Specs
-     9.8 –11.2  停在結尾 CTA
-    11.2 –12.0  淡出後回到頂端
+     0.0 – 1.3  停在首屏（錶組裝完成）
+     1.3 – 6.8  捲過 hero，錶環繞後逐層拆解
+     6.8 – 9.8  Features → Specs
+     9.8 –11.1  停在結尾 CTA
+    11.1 –12.0  淡出後回到頂端
    加上 ?t=3.5 可以凍結在任一秒，用來逐格輸出影片。
    ═══════════════════════════════════════════════════════════ */
 
 const LOOP = 12.0;
 const KEYS = [
-  [0.0,  0.00], [1.4,  0.00],
-  [7.2,  0.46],                 // hero 走完
-  [9.8,  0.93],
-  [11.2, 1.00], [12.0, 1.00],
+  [0.0,  0.00], [1.3,  0.00],   // 停在首屏
+  [6.8,  0.46],                 // hero 走完，錶已完全拆解
+  [8.3,  0.63],                 // Features
+  [9.8,  0.82],                 // Specs
+  [11.1, 1.00],                 // 結尾 CTA
+  [12.0, 1.00],
 ];
 
 const stage = document.getElementById('stage');
@@ -232,8 +234,10 @@ function scrollFraction(t){
 /* 12 秒的最後 0.8 秒淡出，讓循環接得順 */
 function fadeAt(t){
   t = ((t % LOOP) + LOOP) % LOOP;
-  if (t > LOOP - 0.8) return 1 - (t - (LOOP - 0.8)) / 0.8;
-  if (t < 0.25) return t / 0.25;
+  /* 收尾淡出 0.5 秒、開頭淡入 0.3 秒，且起點不從全黑開始，
+     循環時才不會閃出一格純黑 */
+  if (t > LOOP - 0.5) return Math.max(0.12, 1 - (t - (LOOP - 0.5)) / 0.5);
+  if (t < 0.3) return 0.12 + 0.88 * (t / 0.3);
   return 1;
 }
 
@@ -243,6 +247,15 @@ function bind(){
   try {
     doc = frame.contentDocument;
     range = Math.max(1, doc.documentElement.scrollHeight - frame.clientHeight);
+    /* 頁面的區塊是靠 IntersectionObserver 捲動淡入的。展示片是直接
+       跳到某個捲動位置，IO 不會補觸發，區塊會永遠停在 opacity:0
+       —— 影片後半段就會是一片黑。這裡直接把初始隱藏狀態拿掉。 */
+    if (!doc.getElementById('__showcase_reveal')){
+      const st = doc.createElement('style');
+      st.id = '__showcase_reveal';
+      st.textContent = '.rise{opacity:1!important;transform:none!important;transition:none!important}';
+      doc.head.appendChild(st);
+    }
   } catch (e) { doc = null; }
 }
 

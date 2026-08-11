@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concerto One — Ovide Audio</title>
+<meta name="description" content="Concerto One reference headphones. A scroll-driven exploded view, rendered live in WebGL.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#000000;
+  --ink:#ffffff;
+  --body:#E5E5E5;
+  --accent:#B9905C;
+  --accent-hi:#DEB884;
+  --dim:#8a8a8a;
+  --hairline:rgba(185,144,92,.2);
+  --rule:rgba(255,255,255,.07);
+  --display:"Playfair Display",Georgia,"Songti TC",serif;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;
+}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:300;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+.label{font-family:var(--sans);font-size:.65rem;font-weight:500;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--accent)}
+h1,h2{font-family:var(--display);font-weight:400;line-height:1.08}
+
+.btn{display:inline-block;font-family:var(--sans);font-size:.7rem;font-weight:500;
+  letter-spacing:.18em;text-transform:uppercase;text-decoration:none;
+  padding:.9rem 2.6rem;background:var(--accent);color:#000;border:1px solid var(--accent);
+  transition:background .35s ease,color .35s ease,border-color .35s ease;pointer-events:auto}
+.btn:hover{background:var(--accent-hi);border-color:var(--accent-hi)}
+.btn--ghost{background:transparent;color:var(--accent)}
+.btn--ghost:hover{background:var(--accent);color:#000}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(1.5rem,5vw,4rem)}
+
+#hero{position:relative;height:360vh}
+.hero-sticky{position:sticky;top:0;width:100vw;height:100vh;height:100svh;overflow:hidden;background:#000}
+#stage,#overlay{position:absolute;inset:0;display:block;width:100%;height:100%}
+#overlay{pointer-events:none}
+
+.hero-copy{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 clamp(1.5rem,5vw,4rem) clamp(3rem,8vh,6rem);pointer-events:none;
+  background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.35) 46%,transparent 100%)}
+.hero-inner{max-width:1180px;margin:0 auto;width:100%}
+.hero-copy h1{font-size:clamp(2.4rem,6vw,5.5rem);margin:.7rem 0 1.1rem}
+.hero-copy p{color:var(--body);font-size:clamp(.95rem,1.5vw,1.06rem);line-height:1.65;
+  max-width:min(460px,100%);margin-bottom:2.2rem}
+.scroll-cue{position:absolute;left:50%;bottom:1.6rem;transform:translateX(-50%);
+  font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);
+  pointer-events:none;transition:opacity .6s ease}
+
+.rise{opacity:0;transform:translateY(24px);
+  transition:opacity .9s cubic-bezier(.25,0,0,1),transform .9s cubic-bezier(.25,0,0,1)}
+.rise.in{opacity:1;transform:none}
+
+section.block{padding:clamp(6rem,14vh,11rem) 0}
+.block h2{font-size:clamp(2rem,4vw,3.5rem);margin:1.1rem 0 0}
+.lede{color:var(--body);max-width:520px;margin-top:1.4rem;line-height:1.7;font-size:.98rem}
+
+.grid{display:grid;gap:1px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  margin-top:clamp(3rem,7vh,5rem)}
+.card{padding:2.1rem 2rem 2.4rem 0;border-top:1px solid var(--hairline)}
+.card svg{width:26px;height:26px;stroke:var(--accent);fill:none;stroke-width:1.1;
+  stroke-linecap:round;stroke-linejoin:round}
+.card h3{font-family:var(--sans);font-size:.72rem;font-weight:500;letter-spacing:.2em;
+  text-transform:uppercase;margin:1.4rem 0 .8rem;color:var(--ink)}
+.card p{color:var(--dim);font-size:.9rem;line-height:1.7}
+
+.specs{margin-top:clamp(3rem,7vh,5rem);max-width:820px}
+.spec-row{display:flex;justify-content:space-between;gap:2rem;padding:1.15rem 0;
+  border-bottom:1px solid var(--rule)}
+.spec-row dt{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:500;flex:0 0 auto;padding-top:.15rem}
+.spec-row dd{color:var(--body);font-size:.98rem;text-align:right}
+
+#closing{text-align:center;padding:clamp(7rem,18vh,13rem) 0}
+#closing h2{font-size:clamp(2.2rem,5vw,4.5rem)}
+#closing h2 em{font-style:italic;color:var(--body);display:block}
+#closing .lede{margin:1.8rem auto 0;max-width:480px}
+.cta-glow{position:relative;display:inline-block;margin-top:2.8rem}
+.cta-glow::before{content:"";position:absolute;left:50%;top:50%;width:520px;height:280px;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse,rgba(185,144,92,.10) 0%,transparent 70%);pointer-events:none}
+.cta-glow .btn{position:relative}
+
+@media (max-width:768px){
+  .grid{grid-template-columns:1fr}
+  .card{padding-right:0}
+  .spec-row{flex-direction:column;gap:.45rem}
+  .spec-row dd{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){.rise{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+
+<div id="hero">
+  <div class="hero-sticky">
+    <canvas id="stage"></canvas>
+    <canvas id="overlay"></canvas>
+    <div class="hero-copy">
+      <div class="hero-inner">
+        <span class="label rise" data-delay="0">Ovide Audio · Copenhagen</span>
+        <h1 class="rise" data-delay="120">Concerto One</h1>
+        <p class="rise" data-delay="240">A 50 mm beryllium dome, a milled aluminium baffle, and lambskin over memory foam. Eleven parts you will never see, and four you will hold every day.</p>
+        <a href="#closing" class="btn rise" data-delay="360">Hear It</a>
+      </div>
+    </div>
+    <span class="scroll-cue" id="cue">Scroll to deconstruct</span>
+  </div>
+</div>
+
+<main style="background:#000">
+
+<section class="block" id="features">
+  <div class="wrap">
+    <span class="label rise">Built To Be Opened</span>
+    <h2 class="rise" data-delay="100">Every part comes apart.</h2>
+    <p class="lede rise" data-delay="200">Headphones fail at the pads, the cable and the headband — in that order. All three are user-replaceable here, without tools, and will be stocked for at least fifteen years.</p>
+
+    <div class="grid">
+      <div class="card rise">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/></svg>
+        <h3>Beryllium Dome</h3>
+        <p>A 50 mm diaphragm vapour-deposited in a single piece. Beryllium is stiff enough to stay pistonic past 25 kHz, which is why the top end never turns brittle.</p>
+      </div>
+      <div class="card rise" data-delay="80">
+        <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0116 0v5a2 2 0 01-2 2h-2v-7h4"/><path d="M4 12v5a2 2 0 002 2h2v-7H4"/></svg>
+        <h3>Milled Baffle</h3>
+        <p>Cut from a solid aluminium billet over forty minutes, then hard-anodised. A cast baffle would ring; this one is dead below the audible floor.</p>
+      </div>
+      <div class="card rise" data-delay="160">
+        <svg viewBox="0 0 24 24"><path d="M5 9c2.5-3 11.5-3 14 0"/><path d="M6.5 13c2-2 9-2 11 0"/><path d="M9 17c1.4-1.2 4.6-1.2 6 0"/></svg>
+        <h3>Tuned Leak</h3>
+        <p>Six acoustic vents behind the driver, each a different diameter. They are what turn a sealed box into a bass response that stays flat to 18 Hz.</p>
+      </div>
+      <div class="card rise" data-delay="240">
+        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="8.5" ry="6"/><ellipse cx="12" cy="12" rx="4.5" ry="3"/></svg>
+        <h3>Lambskin Pads</h3>
+        <p>Perforated on the inner wall only, so the seal stays airtight where it matters. Twist and lift to replace — no adhesive, no clips to snap.</p>
+      </div>
+      <div class="card rise" data-delay="320">
+        <svg viewBox="0 0 24 24"><path d="M4 16V9a8 8 0 0116 0v7"/><rect x="2.5" y="15" width="4" height="6" rx="1.6"/><rect x="17.5" y="15" width="4" height="6" rx="1.6"/></svg>
+        <h3>Sprung Headband</h3>
+        <p>A spring-steel band under a leather sleeve carries the weight; the yokes only steer. Clamping force is 3.4 newtons and does not change as the leather ages.</p>
+      </div>
+      <div class="card rise" data-delay="400">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8.5v7M8.5 12h7"/></svg>
+        <h3>Fifteen Years of Parts</h3>
+        <p>Every component in the exploded view above has a part number and a price. Order any of them, forever, and we will send an exploded diagram with it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="specs">
+  <div class="wrap">
+    <span class="label rise">Measured, Not Claimed</span>
+    <h2 class="rise" data-delay="100">The numbers we publish.</h2>
+    <dl class="specs">
+      <div class="spec-row rise"><dt>Reference</dt><dd>OV‑C1 · Cognac</dd></div>
+      <div class="spec-row rise" data-delay="60"><dt>Transducer</dt><dd>50 mm beryllium dome, dynamic</dd></div>
+      <div class="spec-row rise" data-delay="120"><dt>Impedance</dt><dd>32 Ω, nominal</dd></div>
+      <div class="spec-row rise" data-delay="180"><dt>Sensitivity</dt><dd>102 dB SPL / 1 mW</dd></div>
+      <div class="spec-row rise" data-delay="240"><dt>Frequency Response</dt><dd>18 Hz – 28 kHz, ±3 dB</dd></div>
+      <div class="spec-row rise" data-delay="300"><dt>Distortion</dt><dd>&lt; 0.05 % at 94 dB, 1 kHz</dd></div>
+      <div class="spec-row rise" data-delay="360"><dt>Clamping Force</dt><dd>3.4 N</dd></div>
+      <div class="spec-row rise" data-delay="420"><dt>Mass</dt><dd>318 g, without cable</dd></div>
+      <div class="spec-row rise" data-delay="480"><dt>Cable</dt><dd>1.8 m OFC, 4-pin mini-XLR each side</dd></div>
+      <div class="spec-row rise" data-delay="540"><dt>Materials</dt><dd>Anodised aluminium, spring steel, lambskin</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section id="closing">
+  <div class="wrap">
+    <span class="label rise">Thirty Days</span>
+    <h2 class="rise" data-delay="100">Listen for a month.<em>Then keep them or don't.</em></h2>
+    <p class="lede rise" data-delay="200">Concerto One ships with a return label already in the box. If they are not the last pair you buy, send them back and we pay the freight.</p>
+    <div class="cta-glow rise" data-delay="300">
+      <a href="#hero" class="btn btn--ghost">Order a Pair</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script type="importmap">
+{ "imports": { "three": "../vendor/three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* ═══════════════════════════════════════════════════════════
+   CONCERTO ONE — third product on the same rig. The studio,
+   the scroll-driven camera and the exploded-view machinery are
+   identical to the watch and the flacon; only the geometry and
+   the materials below are new.
+
+   One structural difference: an earcup explodes along its own
+   axis, which points sideways (±X), not up. So each part carries
+   an explode *vector*, not a scalar.
+   ═══════════════════════════════════════════════════════════ */
+
+const TAU   = Math.PI * 2;
+const clamp = (v,a,b) => v<a?a:v>b?b:v;
+const lerp  = (a,b,t) => a + (b-a)*t;
+const easeInOut = t => t<.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+const easeOut   = t => 1 - Math.pow(1-t,3);
+
+const stage   = document.getElementById('stage');
+const overlay = document.getElementById('overlay');
+const octx    = overlay.getContext('2d');
+const heroEl  = document.getElementById('hero');
+const cueEl   = document.getElementById('cue');
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const renderer = new THREE.WebGLRenderer({ canvas: stage, antialias: true });
+renderer.setClearColor(0x000000, 1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.90;
+
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(26, 1, 1, 900);
+
+function buildStudio(){
+  const s = new THREE.Scene();
+  const roomGeo = new THREE.BoxGeometry(1,1,1);
+  roomGeo.deleteAttribute('uv');
+  const room = new THREE.Mesh(roomGeo,
+    new THREE.MeshStandardMaterial({ side: THREE.BackSide, color: 0x101014, roughness: 1 }));
+  room.scale.setScalar(760);
+  s.add(room);
+
+  const box = new THREE.BoxGeometry(1,1,1);
+  const light = (w,h,d, x,y,z, rx,ry,rz, i) => {
+    const m = new THREE.MeshBasicMaterial(); m.color.setScalar(i);
+    const mesh = new THREE.Mesh(box, m);
+    mesh.scale.set(w,h,d); mesh.position.set(x,y,z); mesh.rotation.set(rx,ry,rz);
+    s.add(mesh);
+  };
+  light(320,  4, 320,   0, 170,   0,  0, 0,    0, 1.6);
+  light(  6, 260, 240,-170,  60,  20,  0, 0.34, 0, 4.4);
+  light(  6, 260, 240, 175,  70, -20,  0,-0.30, 0, 2.8);
+  light(  5,  90, 160,-125, 120,  60,  0, 0.30, 0,14);
+  light(300, 140,   5,   0,  40,-210,  0, 0,    0, 2.4);
+  light(220, 100,   5,   0, -50, 200,  0, 0,    0, 0.7);
+  return s;
+}
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(buildStudio(), 0.03, 1, 2000).texture;
+
+const key = new THREE.DirectionalLight(0xfff3e4, 0.85);
+key.position.set(-55, 80, 55); scene.add(key);
+const rim = new THREE.DirectionalLight(0xffdcb4, 0.45);
+rim.position.set(60, 25, -70); scene.add(rim);
+
+/* ── materials ──────────────────────────────────────────── */
+/* 陽極處理鋁：金屬感但表面霧，靠一張細噪點 roughness 貼圖 */
+function grainMap(){
+  const N = 512, c = document.createElement('canvas'); c.width = c.height = N;
+  const x = c.getContext('2d');
+  const img = x.createImageData(N, N);
+  for (let i = 0; i < N*N; i++){
+    const v = 118 + (Math.random()*46 | 0);
+    img.data[i*4] = img.data[i*4+1] = img.data[i*4+2] = v;
+    img.data[i*4+3] = 255;
+  }
+  x.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(6,6); t.anisotropy = 8;
+  return t;
+}
+const alu = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.16, 0.155, 0.15), metalness: 1, roughness: 0.62,
+  roughnessMap: grainMap(), envMapIntensity: 0.95,
+});
+const aluBright = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.62, 0.61, 0.59), metalness: 1, roughness: 0.24,
+  envMapIntensity: 1.25,
+});
+const brass = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.78, 0.56, 0.28), metalness: 1, roughness: 0.20,
+  envMapIntensity: 1.2,
+});
+const leather = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.135, 0.062, 0.030), metalness: 0, roughness: 0.72,
+  sheen: 0.5, sheenColor: new THREE.Color(0.5, 0.36, 0.24), envMapIntensity: 0.6,
+});
+const foam = new THREE.MeshStandardMaterial({
+  color: 0x141414, metalness: 0, roughness: 0.95,
+});
+const mesh = new THREE.MeshPhysicalMaterial({
+  color: 0x1a1a1a, metalness: 0.3, roughness: 0.55, envMapIntensity: 0.7,
+  transparent: true, opacity: 0.9, side: THREE.DoubleSide,
+});
+const beryllium = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.72, 0.70, 0.62), metalness: 1, roughness: 0.13,
+  envMapIntensity: 1.35,
+});
+const magnetMat = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.09, 0.09, 0.10), metalness: 1, roughness: 0.42,
+  envMapIntensity: 0.55,
+});
+const copperMat = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color(0.86, 0.44, 0.22), metalness: 1, roughness: 0.30,
+  envMapIntensity: 1.0,
+});
+
+/* ── helpers ────────────────────────────────────────────── */
+const V2 = (x,y) => new THREE.Vector2(x,y);
+const lathe = (pts, seg = 192) => {
+  const g = new THREE.LatheGeometry(pts, seg);
+  g.computeVertexNormals();
+  return g;
+};
+function flute(geo, count, amp, yMin, yMax, rMin = 0){
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++){
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    if (y < yMin || y > yMax) continue;
+    const r = Math.hypot(x, z);
+    if (r < 1e-4 || r < rMin) continue;
+    const s = 1 + amp * Math.cos(count * Math.atan2(z, x));
+    p.setX(i, x*s); p.setZ(i, z*s);
+  }
+  geo.computeVertexNormals();
+}
+
+/* ── the headphones ─────────────────────────────────────── */
+const product = new THREE.Group();
+scene.add(product);
+
+const parts = {};
+/* 耳罩是沿自己的軸線（±X，左右鏡射）散開的，不是往上。
+   所以每個零件帶的是「軸向散開量 ax」＋垂直/前後位移。 */
+function part(name, ax, ey, ez){
+  const g = new THREE.Group();
+  product.add(g);
+  parts[name] = { group: g, ax, ey, ez, label: name.toUpperCase() };
+  return g;
+}
+
+const CUP_Y = 0;          // 耳罩中心高度
+const CUP_X = 46;         // 左右耳罩間距的一半
+
+/* 把同一個零件做成左右兩份，右邊鏡射 */
+function pair(g, build){
+  for (const s of [-1, 1]){
+    const side = new THREE.Group();
+    side.position.x = s * CUP_X;
+    /* 車削件原本繞 Y 軸；轉 90° 讓它的 +Y 指向「內側」（朝頭的方向），
+       這樣耳墊(正 y)自然朝內、障板(負 y)自然朝外 */
+    side.rotation.z = s * Math.PI/2;
+    side.userData.s = s;
+    side.userData.baseX = s * CUP_X;
+    build(side, s);
+    g.add(side);
+  }
+}
+
+/* — 耳墊：羊皮包記憶棉 — */
+{
+  const g = part('earpad', 0, 0, 0);
+  pair(g, (side) => {
+    const pad = new THREE.Mesh(lathe([
+      V2(15, 0), V2(30, 1.5), V2(33, 6), V2(31, 13), V2(24, 17),
+      V2(16, 18), V2(15, 14), V2(15, 0),
+    ], 128), leather);
+    side.add(pad);
+    const inner = new THREE.Mesh(lathe([
+      V2(15, 1), V2(15, 15), V2(14.4, 15),  V2(14.4, 1),
+    ], 96), foam);
+    side.add(inner);
+  });
+}
+
+/* — 音響濾網 — */
+{
+  const g = part('grille', 26, 0, 0);
+  pair(g, (side) => {
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(28, 96), mesh);
+    disc.rotation.x = -Math.PI/2;
+    disc.position.y = 1.2;
+    side.add(disc);
+    const ring = new THREE.Mesh(lathe([
+      V2(27.4, 0), V2(29.6, 0), V2(29.6, 2.4), V2(27.4, 2.4),
+    ], 128), aluBright);
+    side.add(ring);
+  });
+}
+
+/* — 單體：鈹振膜 + 磁鐵 + 音圈 — */
+{
+  const g = part('driver', 52, 0, 0);
+  pair(g, (side) => {
+    const dome = new THREE.Mesh(lathe([
+      V2(0.01, 8.4), V2(9, 7.6), V2(16, 5.2), V2(21, 2.0), V2(25, 0.4),
+      V2(25, -0.6), V2(21, 1.0), V2(16, 4.2), V2(9, 6.6), V2(0.01, 7.4),
+    ], 128), beryllium);
+    side.add(dome);
+    const surround = new THREE.Mesh(lathe([
+      V2(25, 0.4), V2(27.4, 1.4), V2(29.2, 0.2), V2(29.2, -0.8),
+      V2(27.4, 0.4), V2(25, -0.6),
+    ], 128), foam);
+    side.add(surround);
+    const magnet = new THREE.Mesh(lathe([
+      V2(6, -1), V2(20, -1), V2(20, -7), V2(6, -7),
+    ], 96), magnetMat);
+    side.add(magnet);
+    const coil = new THREE.Mesh(lathe([
+      V2(19.4, -1.2), V2(21, -1.2), V2(21, -5), V2(19.4, -5),
+    ], 96), copperMat);
+    side.add(coil);
+  });
+}
+
+/* — 障板：整塊鋁銑出來，背面有六個調音孔 — */
+{
+  const g = part('baffle', 88, 0, 0);
+  pair(g, (side) => {
+    const body = new THREE.Mesh(lathe([
+      V2(0.01, -2),  V2(24, -2),   V2(29.6, -3.4), V2(32, -7),
+      V2(32, -19),   V2(29, -22),  V2(20, -23.5),  V2(0.01, -23.8),
+      V2(0.01, -21), V2(19, -20.6),V2(27, -19),    V2(29, -17),
+      V2(29, -8),    V2(26.6, -5), V2(0.01, -4),
+    ], 160), alu);
+    flute(body.geometry, 42, 0.006, -19, -6);
+    side.add(body);
+    /* 調音孔 */
+    for (let i = 0; i < 6; i++){
+      const a = i / 6 * TAU;
+      const r = 1.5 + (i % 3) * 0.6;
+      const hole = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 3.2, 20), foam);
+      hole.position.set(Math.cos(a) * 21, -21.4, Math.sin(a) * 21);
+      side.add(hole);
+    }
+    /* 品牌環 */
+    const badge = new THREE.Mesh(lathe([
+      V2(30.2, -9), V2(31.4, -9), V2(31.4, -12.4), V2(30.2, -12.4),
+    ], 128), brass);
+    side.add(badge);
+  });
+}
+
+/* — 支架與轉軸 — */
+{
+  const g = part('yoke', 0, 26, 0);
+  pair(g, (side, s) => {
+    const pivot = new THREE.Mesh(lathe([
+      V2(0.01, -25.5), V2(7, -25.5), V2(8, -27), V2(8, -31),
+      V2(6, -32.5), V2(0.01, -32.5),
+    ], 96), aluBright);
+    flute(pivot.geometry, 30, 0.012, -31, -26);
+    side.add(pivot);
+  });
+  /* 兩側的 U 形叉臂（在世界座標裡直接畫，不隨車削件轉向） */
+  for (const s of [-1, 1]){
+    const arm = new THREE.Shape();
+    arm.moveTo(-4.2, 0); arm.lineTo(4.2, 0);
+    arm.lineTo(4.2, 30);
+    arm.quadraticCurveTo(4.2, 37, 0, 39);
+    arm.quadraticCurveTo(-4.2, 37, -4.2, 30);
+    arm.closePath();
+    const geo = new THREE.ExtrudeGeometry(arm, {
+      depth: 3.4, bevelEnabled: true, bevelSize: 0.5,
+      bevelThickness: 0.5, bevelSegments: 2, curveSegments: 10,
+    });
+    geo.translate(0, 0, -1.7);
+    const m = new THREE.Mesh(geo, aluBright);
+    m.position.set(s * (CUP_X + 33), CUP_Y - 2, 0);
+    m.rotation.z = -s * 0.16;
+    m.userData.s = s;
+    m.userData.baseX = s * (CUP_X + 33);
+    g.add(m);
+  }
+}
+
+/* — 頭帶：彈簧鋼 + 皮革套 — */
+{
+  const g = part('headband', 0, 62, 0);
+  /* 彈簧鋼帶：沿圓弧掃出的扁管 */
+  class Arc extends THREE.Curve {
+    constructor(r, y0, a0, a1, squash){
+      super(); this.r = r; this.y0 = y0; this.a0 = a0; this.a1 = a1; this.sq = squash;
+    }
+    getPoint(t, target = new THREE.Vector3()){
+      const a = this.a0 + t * (this.a1 - this.a0);
+      return target.set(-Math.cos(a) * this.r, this.y0 + Math.sin(a) * this.r * this.sq, 0);
+    }
+  }
+  /* 兩端正好落在支架頂端 (±79, 37) */
+  const R = CUP_X + 33, Y0 = CUP_Y + 37;
+  const steel = new THREE.Mesh(
+    new THREE.TubeGeometry(new Arc(R, Y0, 0, Math.PI, 0.82), 140, 2.4, 10, false), aluBright);
+  steel.scale.z = 0.5;
+  g.add(steel);
+
+  /* 皮革頭墊掛在弧線內側，只包中段 */
+  const sleeve = new THREE.Mesh(
+    new THREE.TubeGeometry(new Arc(R - 7, Y0 + 2, Math.PI*0.22, Math.PI*0.78, 0.82), 120, 7.2, 16, false), leather);
+  sleeve.scale.z = 0.58;
+  g.add(sleeve);
+}
+
+/* — 線材接頭 — */
+{
+  const g = part('connector', 0, -26, 0);
+  for (const s of [-1, 1]){
+    const plug = new THREE.Mesh(lathe([
+      V2(0.01, 0), V2(4.2, 0), V2(4.6, -1.4), V2(4.6, -7),
+      V2(3.6, -9), V2(0.01, -9),
+    ], 64), brass);
+    flute(plug.geometry, 26, 0.02, -7, -1);
+    plug.position.set(s * CUP_X, CUP_Y - 24, 0);
+    plug.userData.s = s;
+    plug.userData.baseX = s * CUP_X;
+    g.add(plug);
+  }
+}
+
+const PART_ORDER = ['headband','yoke','earpad','grille','driver','baffle','connector'];
+
+/* 標註線的錨點（世界座標，未爆炸時） */
+const ANCHOR = {
+  headband:  [0,  CUP_Y + 78, 0],
+  yoke:      [-(CUP_X + 33), CUP_Y + 18, 0],
+  earpad:    [-CUP_X - 8,  CUP_Y + 6, 0],
+  grille:    [-CUP_X + 2,  CUP_Y + 2, 0],
+  driver:    [-CUP_X + 10, CUP_Y - 2, 0],
+  baffle:    [-CUP_X + 20, CUP_Y - 8, 0],
+  connector: [-CUP_X,      CUP_Y - 28, 0],
+};
+
+/* ── frame ──────────────────────────────────────────────── */
+let W = 0, H = 0, lastP = -1;
+
+function resize(){
+  const r = stage.getBoundingClientRect();
+  W = Math.max(1, r.width); H = Math.max(1, r.height);
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.9);
+  renderer.setPixelRatio(dpr);
+  renderer.setSize(W, H, false);
+  overlay.width = Math.round(W*dpr); overlay.height = Math.round(H*dpr);
+  camera.aspect = W/H;
+  camera.fov = W < 760 ? 34 : 26;
+  camera.updateProjectionMatrix();
+  draw(lastP < 0 ? 0 : lastP);
+}
+
+const tmpV = new THREE.Vector3();
+
+function drawCallouts(ex, dpr){
+  octx.setTransform(dpr,0,0,dpr,0,0);
+  octx.clearRect(0,0,W,H);
+  if (ex < 0.20 || W < 1000) return;
+  const a = clamp((ex - 0.20)/0.30, 0, 1);
+  const colX = W/2 + Math.min(400, W*0.34);
+  octx.font = '500 10px Inter, sans-serif';
+  if ('letterSpacing' in octx) octx.letterSpacing = '2.4px';
+  octx.textBaseline = 'middle';
+  const rows = [];
+  for (const name of PART_ORDER){
+    const p = parts[name], A = ANCHOR[name];
+    tmpV.set(A[0] - p.ax*ex, A[1] + p.ey*ex, A[2]);
+    product.localToWorld(tmpV);
+    tmpV.project(camera);
+    rows.push({ name: p.label,
+                x: ( tmpV.x*0.5 + 0.5) * W,
+                y: (-tmpV.y*0.5 + 0.5) * H });
+  }
+  rows.sort((u,v) => u.y - v.y);
+  let last = -1e9;
+  for (const r of rows){
+    const y = Math.max(r.y, last + 34); last = y;      // 避免標籤疊在一起
+    octx.strokeStyle = `rgba(185,144,92,${(a*0.26).toFixed(3)})`;
+    octx.lineWidth = 1;
+    octx.beginPath();
+    octx.moveTo(r.x + 16, r.y); octx.lineTo(colX - 14, y); octx.lineTo(colX, y);
+    octx.stroke();
+    octx.fillStyle = `rgba(185,144,92,${(a*0.82).toFixed(3)})`;
+    octx.fillText(r.name, colX + 8, y);
+  }
+}
+
+function draw(p){
+  lastP = p;
+  const orbit = easeOut(clamp((p - 0.03)/0.42, 0, 1));
+  const ex    = easeInOut(clamp((p - 0.46)/0.50, 0, 1));
+
+  for (const name of PART_ORDER){
+    const q = parts[name];
+    q.group.position.set(0, q.ey*ex, q.ez*ex);
+    for (const child of q.group.children){
+      const s = child.userData.s;
+      if (s === undefined) continue;
+      child.position.x = child.userData.baseX + s * q.ax * ex;
+    }
+  }
+
+  const az   = lerp(-1.00, 0.02, orbit) + ex*0.26;
+  const el   = lerp(0.30, 0.24, ex);
+  const dist = lerp(432, 626, ex);
+  const ty   = lerp(24, 30, ex);
+
+  camera.position.set(
+    dist*Math.cos(el)*Math.sin(az),
+    dist*Math.sin(el) + ty,
+    dist*Math.cos(el)*Math.cos(az));
+  camera.lookAt(0, ty, 0);
+
+  product.rotation.y = lerp(0.18, 0, orbit) + ex*0.10;
+
+  renderer.render(scene, camera);
+  drawCallouts(ex, renderer.getPixelRatio());
+  if (cueEl) cueEl.style.opacity = String(clamp(1 - p*8, 0, 1));
+}
+
+function progress(){
+  const top = heroEl.getBoundingClientRect().top;
+  const range = heroEl.offsetHeight - window.innerHeight;
+  return range <= 0 ? 0 : clamp(-top/range, 0, 1);
+}
+let prev = -1;
+function tick(){
+  const p = REDUCED ? 0.92 : progress();
+  if (Math.abs(p - prev) > 0.0004){ prev = p; draw(p); }
+  requestAnimationFrame(tick);
+}
+
+window.addEventListener('resize', resize, { passive: true });
+resize();
+draw(REDUCED ? 0.92 : progress());
+if (!REDUCED) tick();
+
+const io = new IntersectionObserver((entries) => {
+  for (const e of entries){
+    if (!e.isIntersecting) continue;
+    const d = Number(e.target.dataset.delay || 0);
+    setTimeout(() => e.target.classList.add('in'), d);
+    io.unobserve(e.target);
+  }
+}, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+document.querySelectorAll('.rise').forEach(el => io.observe(el));
+document.querySelectorAll('.hero-copy .rise').forEach(el => {
+  io.unobserve(el);
+  setTimeout(() => el.classList.add('in'), 900 + Number(el.dataset.delay || 0));
+});
+</script>
+</body>
+</html>
