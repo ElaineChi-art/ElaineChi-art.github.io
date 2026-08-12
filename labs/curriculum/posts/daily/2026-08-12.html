@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>響應式設計不是縮小畫面：斷點設計的實務決策｜技能實驗室・每日課程</title>
+<meta name="description" content="響應式設計不是把桌機畫面等比例縮小塞進手機，而是為不同螢幕寬度分別決定「內容該怎麼排」。斷點不是背 768、1024 這些裝置寬度，而是看版面在哪個寬度開始擠、開始難看，就在那裡設一條線，這叫內容驅動的斷點。實務上採 mobile-first：先把小螢幕排順，再用 min-width 往上加規則。斷點負責大改版，彈性單位與 Flexbox／Grid 負責兩個斷點之間的平順過渡。這一課也拆解最容易答錯的地方：viewport meta 沒設、以及把響應式和自適應搞混。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-12</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・前端開發</div>
+  <h1>響應式設計不是縮小畫面：斷點設計的實務決策</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-12</span>
+    <span>約 7 分鐘</span>
+    <span>對應真專案主題：網頁切版概念與響應式應用</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>響應式設計（RWD，同一份網頁自己適應不同螢幕寬度）真正在做的事，是<b>為不同寬度分別決定「內容怎麼排」，而不是把桌機畫面等比例縮小</b>。縮小只會讓字變小、按鈕變得難按；真正該做的是「這麼寬的時候三欄並排、窄一點的時候疊成一欄」。切換版面的那條線叫<b>斷點</b>（breakpoint），關鍵觀念是：斷點不是去背 768、1024 這些裝置寬度，而是<b>看你的版面在哪個寬度開始擠、開始難看，就在那裡設一條線</b>——這叫內容驅動的斷點。實務上採 <b>mobile-first</b>（手機優先）：先把最窄的畫面排順，再用 <code>min-width</code> 往寬的方向一層層加規則。最後記住分工：<b>斷點負責大改版，彈性單位和 Flexbox／Grid 負責兩個斷點之間的平順過渡。</b></p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-15-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260812" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260812" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260812" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+        <marker id="arrGD20260812" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#35C08E"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260812)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260812)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M4 · 前端開發  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">不是縮小畫面：<tspan fill="#4D9FFF">響應式的斷點決策</tspan></text>
+
+      <!-- 卡1：迷思 vs 真相 -->
+      <rect x="64" y="140" width="352" height="392" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="64" y="140" width="352" height="5" rx="2.5" fill="url(#topbarD20260812)"/>
+      <text x="86" y="184" font-size="19" font-weight="800" fill="#4D9FFF">① 迷思 vs 真相</text>
+      <text x="86" y="216" font-size="16" fill="#8FA1C0">響應式到底在調整什麼</text>
+      <text x="86" y="262" font-size="17" fill="#C7D2E4">✗ 迷思：把桌機畫面</text>
+      <text x="86" y="288" font-size="17" fill="#C7D2E4">　 等比例縮小塞進手機</text>
+      <text x="86" y="318" font-size="16" fill="#8FA1C0">→ 字變小、按鈕難按</text>
+      <text x="86" y="372" font-size="17" fill="#C7D2E4">✓ 真相：為不同寬度</text>
+      <text x="86" y="398" font-size="17" fill="#C7D2E4">　 分別決定內容怎麼排</text>
+      <text x="86" y="428" font-size="16" fill="#8FA1C0">例：寬→三欄並排</text>
+      <text x="86" y="452" font-size="16" fill="#8FA1C0">　　窄→疊成一欄</text>
+      <text x="86" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 調的是版面，不是縮放比例。</text>
+
+      <!-- 卡2：斷點怎麼決定 -->
+      <rect x="440" y="140" width="400" height="392" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="462" y="184" font-size="19" font-weight="800" fill="#F5F8FF">② 斷點怎麼決定</text>
+      <text x="462" y="216" font-size="16" fill="#8FA1C0">breakpoint＝換版面的那條線</text>
+
+      <rect x="462" y="238" width="356" height="70" rx="10" fill="rgba(242,163,60,.10)" stroke="#F2A33C" stroke-width="1.5"/>
+      <text x="482" y="268" font-size="16" font-weight="700" fill="#F2A33C">✗ 裝置驅動：背 768／1024</text>
+      <text x="482" y="292" font-size="15" fill="#8FA1C0">裝置尺寸年年變，背不完</text>
+
+      <rect x="462" y="320" width="356" height="70" rx="10" fill="rgba(53,192,142,.10)" stroke="#35C08E" stroke-width="1.5"/>
+      <text x="482" y="350" font-size="16" font-weight="700" fill="#35C08E">✓ 內容驅動：版面擠了才設線</text>
+      <text x="482" y="374" font-size="15" fill="#8FA1C0">看它在哪個寬度開始難看</text>
+
+      <text x="462" y="424" font-size="17" fill="#C7D2E4">做法：mobile-first（手機優先）</text>
+      <text x="462" y="452" font-size="16" fill="#8FA1C0">先把最窄畫面排順，</text>
+      <text x="462" y="476" font-size="16" fill="#8FA1C0">再用 min-width 往寬的方向加</text>
+      <text x="462" y="514" font-size="16" font-weight="700" fill="#7E8CA8">→ 斷點是決策，不是要背的數字。</text>
+
+      <!-- 卡3：斷點＋彈性 分工 -->
+      <rect x="864" y="140" width="352" height="392" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="864" y="140" width="352" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="886" y="184" font-size="19" font-weight="800" fill="#35C08E">③ 斷點＋彈性 分工</text>
+      <text x="886" y="216" font-size="16" fill="#8FA1C0">誰負責大改版，誰負責過渡</text>
+      <text x="886" y="262" font-size="17" fill="#C7D2E4">斷點（媒體查詢）</text>
+      <text x="886" y="288" font-size="16" fill="#8FA1C0">→ 一到某寬度就整組換版面</text>
+      <text x="886" y="332" font-size="17" fill="#C7D2E4">彈性單位＋Flexbox／Grid</text>
+      <text x="886" y="358" font-size="16" fill="#8FA1C0">→ %／fr／auto 會自己伸縮</text>
+      <text x="886" y="404" font-size="16" fill="#C7D2E4">兩個斷點之間，畫面靠彈性</text>
+      <text x="886" y="428" font-size="16" fill="#C7D2E4">單位平順地拉開、縮回</text>
+      <text x="886" y="478" font-size="16" fill="#8FA1C0">別忘了 viewport meta，</text>
+      <text x="886" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 沒設它，手機根本不縮版。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：斷點不是背裝置寬度，是版面開始擠了才設的一條線。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">斷點負責換版面，彈性單位和 Flexbox／Grid 負責兩個斷點之間的平順過渡。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-15-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-12-1.mp3"></audio>
+    <p>這張圖在講的是，響應式設計真正在做的決策是什麼。很多人以為響應式就是把桌機畫面等比例縮小塞進手機，但那只會讓字變小、按鈕變得難按。真正的做法是左邊這條主線：先想內容在小螢幕怎麼排得順，再往上加。中間講的是斷點怎麼決定，不是背七六八、一零二四這些裝置寬度，而是看你的版面在哪個寬度開始擠、開始難看，就在那裡設一個斷點，這叫內容驅動的斷點。右邊提醒你，斷點只是換版面的觸發點，真正撐住畫面的是彈性單位跟 Flexbox、Grid 這些會自己伸縮的排版；斷點負責大改版，彈性負責兩個斷點之間的平順過渡。所以整張圖的主張是：響應式不是縮小畫面，是為不同寬度分別決定內容怎麼排。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>響應式設計，是讓<b>同一份網頁自己適應不同螢幕寬度</b>的做法。你只維護一份 HTML 和 CSS，它在手機上是一個樣子、在筆電上是另一個樣子，靠的是 CSS 的<b>媒體查詢</b>（media query，「當螢幕寬度符合某條件時，才套用這組樣式」的語法）。這裡最關鍵、也最多人一開始搞錯的一句話是：響應式<b>不是把桌機畫面等比例縮小塞進手機</b>。如果只是縮小，字會變得看不清、按鈕小到按不準、原本並排的三欄擠成一團。真正該做的是「<b>重新決定內容在這個寬度該怎麼排</b>」——寬螢幕時商品三欄並排、導覽列橫著攤開；到了手機就疊成一欄、導覽列收進一個漢堡選單。調整的是<b>版面（layout）</b>，不是縮放比例。</p>
+  <p>切換版面的那條線，叫<b>斷點</b>。斷點就是「螢幕寬度跨過這個值時，就換一套排版規則」的分界點，在 CSS 裡通常寫成 <code>@media (min-width: 600px) { ... }</code> 這種形式——意思是「當畫面至少 600px 寬，才套用大括號裡這組樣式」。很多教學會給你一張「手機 768、平板 1024」的對照表要你背，但那是把斷點理解反了。斷點該長在哪，<b>取決於你的內容在哪裡開始壞掉</b>，而不是某支手機的實際寬度。你把瀏覽器慢慢拉窄，看到卡片被擠到換行很醜、或文字一行只剩三個字，那個寬度就是你該設斷點的地方——這叫<b>內容驅動（content-first）的斷點</b>。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎響應式，是因為<b>使用者早就從各種尺寸的螢幕進來了，而你只想維護一份程式碼</b>。手機、平板、筆電、大螢幕，量級上台灣多數消費型網站的行動裝置流量都已經是主力甚至過半（這是產業常識性的趨勢，我這裡不引用特定某份報告的精確數字，以免記錯）。如果每種裝置都做一個獨立版本，維護成本會爆炸；響應式讓你用一份原始碼、加上幾組媒體查詢，就覆蓋所有寬度。這也接回 104 人力銀行《AI 人才趨勢報告》一直強調的方向：求職者要能打通「從需求到上線」的完整應用情境，而不是只會零散語法。切版正是這條情境裡很前段、也很容易被輕視的一環——版面在手機上會不會壞，直接決定使用者留不留得住。</p>
+  <p>把「斷點」理解成內容驅動的決策，換來的是<b>可維護、也禁得起時間</b>的版面。第一，<b>不被裝置尺寸綁架</b>：手機螢幕年年換新尺寸，你要是把斷點寫死成某幾支熱門機型的寬度，明年出了新尺寸就破版；改成「版面擠了才設線」，斷點就跟著你的設計走，而不是追著硬體跑。第二，<b>mobile-first 讓程式碼更乾淨</b>：先寫最窄畫面的基本樣式（不包在任何媒體查詢裡），再用 <code>min-width</code> 一層層往寬的方向加規則。因為手機版通常是最單純的一欄式，從簡單往複雜疊，比從桌機的複雜版面往下砍要好維護得多。這套思路在台灣中大型企業和國際遠端職缺裡幾乎是前端的基本功——面試官問你切版，多半不是要你背斷點數字，而是想確認你懂不懂「為什麼在這裡設線」。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到 91APP 這類電商、或玉山網銀的場景，最典型的例子是一個「商品列表頁」或「帳戶總覽頁」。我的做法會是：<b>先寫手機版</b>——所有商品卡片單欄由上往下排，這是不包在媒體查詢裡的預設樣式，因為它最單純、也保證最窄的畫面一定能看。接著我把瀏覽器慢慢拉寬，觀察到大約某個寬度時，單欄開始顯得空、兩側留白過多，那裡就設第一個斷點：<code>@media (min-width: 600px)</code> 讓卡片變兩欄；再拉寬到桌機、留白又太多時設第二個斷點變三欄或四欄。<b>斷點的值是我「看出來」的，不是抄來的。</b>而兩個斷點<b>之間</b>的平順過渡，我不靠媒體查詢，而是靠彈性排版——用 Flexbox 或 CSS Grid 搭配 <code>fr</code>、百分比、<code>minmax()</code> 這類會自己伸縮的單位，讓卡片在同一個斷點內隨著視窗寬度平滑地拉開或縮回。這樣分工很清楚：<b>斷點負責「換一整套版面」，彈性單位負責「同一套版面內的微調」。</b></p>
+  <p>對我這種法律金融跨域背景的人，最能連結到本業的一點，是把切版當成<b>「不同情境下的資訊優先順序」問題，而不是純視覺問題</b>。這其實跟我讀合約、寫法律文件時排資訊的直覺是同一件事：在最小的空間裡，哪些資訊必須第一眼看到、哪些可以收起來。手機螢幕就是那個「最小空間」——金融產品在手機上，帳戶餘額、可用額度、警示訊息必須最先跳出來，次要的功能才收進選單。所以我做響應式時不會只想「怎麼把桌機版塞進手機」，而是先問「在手機這麼窄的地方，使用者這一刻最需要看到什麼」。放到國際遠端全端職缺，這套「內容優先」的思路會往後端延伸：前端在不同寬度下決定要顯示哪些欄位，後端 API 就該支援只回傳需要的資料、而不是每次都把整包塞過來，這是我接下來要打通的下一段。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易踩、也最常被追問的坑，是<b>忘了設 viewport meta</b>。很多人切版切得好好的，一放到真手機上卻發現整個桌機版被縮小塞進去、要放大才看得到——問題不在 CSS，而是 HTML 的 <code>&lt;head&gt;</code> 裡少了一行 <code>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</code>。這行的意思是「請用裝置實際的寬度當作版面寬度、初始不要縮放」。少了它，手機瀏覽器會<b>假裝自己是一個約 980px 寬的桌機</b>去渲染網頁、再整頁縮小，於是你寫的所有媒體查詢都對不上實際寬度、等於白做。面試官問響應式時很愛用這題確認你是「真的在真機上驗過」，還是只在電腦上把視窗拉窄自我感覺良好。這裡我要誠實：這個原理和踩雷情境我搞懂了、也能講清楚為什麼，但我目前是從教學專案和個人 side project 練的，還沒在大型正式產品裡處理過那種跨裝置的複雜切版（例如要同時兼顧無障礙、多語系造成的字串長度變化）；被追問到這種實戰細節時，我會講清楚我掌握的主線並說明我會怎麼在真機上驗證，而不是硬掰經驗。</p>
+  <p>另一個值得先分清楚的追問，是<b>「響應式（responsive）」和「自適應（adaptive）」不是同一件事</b>。響應式是<b>一份會流動的版面</b>：用彈性單位和媒體查詢，讓畫面隨寬度連續變化，中間任何寬度都不會壞。自適應則是<b>準備好幾套固定版面</b>：偵測到大約是手機、平板還是桌機，就直接套對應的那一套，斷點之間是「跳」過去的、不是連續流動的。兩者不是誰對誰錯，而是取捨——響應式一份程式碼覆蓋所有寬度、最好維護，是現在的主流；自適應在某些需要為特定裝置精雕細琢的場合才用。把這條界線講清楚，才不會在被問到「你說的響應式，跟自適應差在哪」時答得含糊。</p>
+
+  <p>響應式設計，從來不是「把畫面縮小」這麼一句，而是一個可以貫穿全部的決策：<b>為不同寬度分別決定內容怎麼排，斷點設在版面開始擠的地方，剩下的交給彈性單位平順過渡。</b>把這句話記牢，媒體查詢、mobile-first、Flexbox 與 Grid，全都只是它的不同側面。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「你會怎麼跟非技術的人解釋什麼是響應式設計？」</span>
+        <span class="hint">👉 這題其實在問：你抓到的是核心概念，還是只會背媒體查詢語法。</span>
+        <span class="a">她可以怎麼答：我會說，響應式設計是讓同一個網頁自己適應不同大小的螢幕。重點是它不是把電腦版畫面等比例縮小塞進手機，那樣字會太小、按鈕會難按；而是為不同寬度分別決定內容該怎麼排，比如電腦上商品三欄並排，到手機就疊成一欄、選單收起來。調整的是版面，不是縮放比例。技術上是靠 CSS 的媒體查詢，在螢幕寬度跨過某個值時換一套排版規則。</span>
+      </li>
+      <li>
+        <span class="q">「斷點該怎麼決定？你會用哪些數字？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂內容驅動，還是死背裝置寬度對照表。</span>
+        <span class="a">她可以怎麼答：我不會去背某幾支手機的寬度，因為裝置尺寸年年變，寫死了明年就破版。我的做法是內容驅動：把瀏覽器慢慢拉窄，看版面在哪個寬度開始擠、開始難看，那裡就是該設斷點的地方。斷點該長在哪，取決於我的內容在哪裡開始壞掉，而不是某支手機的實際寬度。所以數字是我看出來的，會因設計而異，不是一張固定對照表。</span>
+      </li>
+      <li>
+        <span class="q">「為什麼建議用 mobile-first？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道從簡單往複雜疊比較好維護。</span>
+        <span class="a">她可以怎麼答：因為手機版通常是最單純的一欄式版面，從最簡單的往複雜疊，比從桌機的複雜版面往下砍好維護。實作上我先寫最窄畫面的基本樣式，這組不包在任何媒體查詢裡、保證最窄的畫面一定能看；再用 min-width 一層一層往寬的方向加規則。這樣程式碼的疊加方向和使用者裝置的多寡也對得起來，行動流量本來就是大宗。</span>
+      </li>
+      <li>
+        <span class="q">「切版切得好好的，放到真手機上卻整頁被縮小，可能是什麼問題？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有在真機上驗過，知不知道 viewport meta。</span>
+        <span class="a">她可以怎麼答：最可能是 HTML 的 head 裡少了 viewport 這行 meta，就是 width=device-width, initial-scale=1.0 那行。少了它，手機瀏覽器會假裝自己是約 980px 寬的桌機去渲染、再整頁縮小，於是我寫的媒體查詢都對不上實際寬度、等於白做。補上這行讓它用裝置實際寬度當版面寬度就好了。我會習慣在真手機或開發者工具的裝置模式上驗，而不是只把電腦視窗拉窄。</span>
+      </li>
+      <li>
+        <span class="q">「響應式和自適應有什麼不一樣？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得清連續流動與切換固定版面的取捨。</span>
+        <span class="a">她可以怎麼答：響應式是一份會流動的版面，用彈性單位加媒體查詢讓畫面隨寬度連續變化，中間任何寬度都不會壞。自適應是準備好幾套固定版面，偵測到大概是手機、平板還是桌機，就套對應那一套，斷點之間是跳過去的、不是連續的。兩者是取捨：響應式一份程式碼覆蓋所有寬度、最好維護，是現在主流；自適應在需要為特定裝置精雕細琢時才用。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-11.html"><span class="dir">上一課</span>← React的資料流向：從useState到跟後端API溝通的完整路徑</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

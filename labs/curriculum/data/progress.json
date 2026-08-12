@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-11",
+  "updated": "2026-08-12",
   "lessons": [
     {
       "id": 1,
@@ -161,10 +161,10 @@
       "category": "frontend",
       "topic": "網頁切版概念與響應式應用",
       "title": "響應式設計不是縮小畫面：斷點設計的實務決策",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-12",
+      "url": "posts/daily/2026-08-12.html",
+      "slides": 1
     },
     {
       "id": 16,
