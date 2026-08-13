@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>讓介面感覺「活著」：CSS transition/animation的分寸拿捏｜技能實驗室・每日課程</title>
+<meta name="description" content="CSS 的 transition 和 animation 是讓畫面變化不要瞬間跳、而是平順滑過去的兩個工具：transition 管一個狀態到另一個狀態的過渡、需要觸發，animation 加 @keyframes 能自己跑、可循環、多階段。分寸的重點不在會不會寫語法，而在克制——動效是為了幫使用者理解畫面發生了什麼，不是炫技。三個原則：時間抓在約 150–300ms、盡量只動 transform 與 opacity（走合成器不重算版面才不卡）、尊重 prefers-reduced-motion。也拆解最容易答錯的坑：對 display:none 做過渡沒有效果。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-13</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・前端開發</div>
+  <h1>讓介面感覺「活著」：CSS transition/animation的分寸拿捏</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-13</span>
+    <span>約 7 分鐘</span>
+    <span>對應真專案主題：CSS動畫實作</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>CSS 的 <code>transition</code> 和 <code>animation</code>，是讓畫面變化<b>不要「瞬間跳」而是「平順滑過去」</b>的兩個工具。<b>transition</b>（過渡）管的是「從一個狀態滑到另一個狀態」，需要有東西<b>觸發</b>它——例如滑鼠移上去、按鈕顏色慢慢變。<b>animation</b>（動畫）加上 <code>@keyframes</code> 就更強：可以<b>自己跑、可循環、能有很多階段</b>，例如載入中一直轉圈。但這一課真正的重點不是語法，而是<b>分寸</b>：動效是為了幫使用者理解「剛剛發生了什麼、東西從哪來到哪去」，<b>不是拿來炫技</b>。三個原則記牢：時間抓在<b>大約 150–300ms</b>、盡量<b>只動 <code>transform</code> 和 <code>opacity</code></b>（效能最好），還要<b>尊重使用者的「減少動態」偏好設定</b>。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-16-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260813" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260813" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260813)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260813)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M4 · 前端開發  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">讓介面「活著」：<tspan fill="#4D9FFF">動效的分寸拿捏</tspan></text>
+
+      <!-- 卡1：transition vs animation -->
+      <rect x="64" y="140" width="352" height="392" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="64" y="140" width="352" height="5" rx="2.5" fill="url(#topbarD20260813)"/>
+      <text x="86" y="184" font-size="19" font-weight="800" fill="#4D9FFF">① 兩個工具的分工</text>
+      <text x="86" y="216" font-size="16" fill="#8FA1C0">先搞清楚誰管什麼</text>
+      <text x="86" y="262" font-size="17" fill="#C7D2E4">transition（過渡）</text>
+      <text x="86" y="288" font-size="16" fill="#8FA1C0">狀態 A → 狀態 B 的補間</text>
+      <text x="86" y="312" font-size="16" fill="#8FA1C0">要有觸發：hover／class 切換</text>
+      <text x="86" y="336" font-size="15" fill="#7E8CA8">例：滑上去顏色慢慢變</text>
+      <text x="86" y="392" font-size="17" fill="#C7D2E4">animation ＋ @keyframes</text>
+      <text x="86" y="418" font-size="16" fill="#8FA1C0">自己跑、可循環、多階段</text>
+      <text x="86" y="442" font-size="15" fill="#7E8CA8">例：載入中一直轉圈</text>
+      <text x="86" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 一次性過渡 vs 會自播的動畫。</text>
+
+      <!-- 卡2：分寸三原則 -->
+      <rect x="440" y="140" width="400" height="392" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="462" y="184" font-size="19" font-weight="800" fill="#F5F8FF">② 分寸三原則</text>
+      <text x="462" y="216" font-size="16" fill="#8FA1C0">動效是回饋，不是裝飾</text>
+
+      <rect x="462" y="238" width="356" height="64" rx="10" fill="rgba(53,192,142,.10)" stroke="#35C08E" stroke-width="1.5"/>
+      <text x="482" y="266" font-size="16" font-weight="700" fill="#35C08E">✓ 時間抓 150–300ms</text>
+      <text x="482" y="290" font-size="15" fill="#8FA1C0">太慢會讓人等、覺得卡</text>
+
+      <rect x="462" y="314" width="356" height="64" rx="10" fill="rgba(53,192,142,.10)" stroke="#35C08E" stroke-width="1.5"/>
+      <text x="482" y="342" font-size="16" font-weight="700" fill="#35C08E">✓ 只動 transform / opacity</text>
+      <text x="482" y="366" font-size="15" fill="#8FA1C0">走合成器、不重算版面才不卡</text>
+
+      <rect x="462" y="390" width="356" height="64" rx="10" fill="rgba(53,192,142,.10)" stroke="#35C08E" stroke-width="1.5"/>
+      <text x="482" y="418" font-size="16" font-weight="700" fill="#35C08E">✓ 尊重 reduced-motion</text>
+      <text x="482" y="442" font-size="15" fill="#8FA1C0">使用者要求少動態就關掉</text>
+
+      <text x="462" y="500" font-size="16" font-weight="700" fill="#7E8CA8">→ 幫人理解畫面，不是炫技。</text>
+
+      <!-- 卡3：常見誤區 -->
+      <rect x="864" y="140" width="352" height="392" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="864" y="140" width="352" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="886" y="184" font-size="19" font-weight="800" fill="#F2A33C">③ 最常踩的坑</text>
+      <text x="886" y="216" font-size="16" fill="#8FA1C0">乍看會、其實會出錯</text>
+      <text x="886" y="262" font-size="17" fill="#C7D2E4">✗ 對 display:none 做過渡</text>
+      <text x="886" y="288" font-size="16" fill="#8FA1C0">display 不能補間 → 沒效果</text>
+      <text x="886" y="312" font-size="15" fill="#7E8CA8">要用 opacity＋visibility</text>
+      <text x="886" y="366" font-size="17" fill="#C7D2E4">✗ 動 width／top／left</text>
+      <text x="886" y="392" font-size="16" fill="#8FA1C0">會觸發重排、畫面卡頓</text>
+      <text x="886" y="416" font-size="15" fill="#7E8CA8">改用 transform 位移／縮放</text>
+      <text x="886" y="470" font-size="16" fill="#C7D2E4">✗ 什麼都加動畫</text>
+      <text x="886" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 太多動效＝干擾，不是質感。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：好動效讓人「感覺不到動畫，只覺得順」——它在幫人理解，不是搶戲。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">transition 管狀態過渡、animation 管自播動畫；分寸在時間短、只動 transform／opacity、尊重 reduced-motion。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-16-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-13-1.mp3"></audio>
+    <p>這張圖在講的是，CSS 動畫真正該拿捏的分寸在哪裡。左邊先分清楚兩個工具：transition 管的是從一個狀態滑到另一個狀態的過渡，需要有觸發，比如滑鼠移上去顏色慢慢變；animation 加上 keyframes 可以自己跑、可以循環、可以有很多階段，比如載入中的轉圈。中間是最重要的三個分寸原則：時間抓在大約一百五到三百毫秒之間，太慢會讓人等；盡量只動 transform 和 opacity 這兩個屬性，因為它們走的是合成器、不會重算版面，畫面才不會卡；還要尊重使用者的減少動態偏好設定，關掉多餘動畫。右邊提醒常見的坑，像是對 display none 做過渡是沒有效果的。整張圖的主張是：動畫是為了幫使用者理解畫面發生了什麼，不是拿來炫技。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>transition 和 animation，都是讓 CSS 屬性的變化<b>「有時間感」</b>的工具——差別在誰來啟動、能不能自己跑。平常你改一個 CSS 屬性（例如把按鈕背景從灰變藍），畫面是<b>瞬間切換</b>的；<code>transition</code>（過渡）做的事，就是叫瀏覽器「別瞬間切，給我用一段時間平順地補間過去」。但 transition 有個前提：它只在<b>屬性值真的改變的那一刻</b>才作用，所以一定要有東西去<b>觸發</b>那個改變——最常見的是滑鼠移上去（<code>:hover</code>）、或用 JavaScript 加減一個 class。它是「<b>一次性、來回式</b>」的：狀態變過去、再變回來。</p>
+  <p><code>animation</code>（動畫）則更進一步：它讓你先用 <code>@keyframes</code> 把一段變化<b>拆成好幾個階段</b>（0% 長這樣、50% 長那樣、100% 又長這樣），然後這段動畫可以<b>自己開始播、自動循環、不需要任何觸發</b>。載入中一直轉的圈圈、緩緩呼吸的提示點，都是 animation。一句話記住兩者的分工：<b>transition 管「從 A 狀態滑到 B 狀態」的過渡、需要觸發；animation 管「會自己跑、可循環、有多個階段」的動畫。</b>簡單的 hover 回饋用 transition 就夠了，別動不動就搬出 animation。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎動效，是因為它其實是<b>「介面回饋」</b>，不是裝飾——它在降低使用者的不確定感。人點了一個按鈕，如果畫面毫無反應地瞬間跳到下一頁，他會懷疑「我剛剛到底有沒有點到」；如果按鈕微微下沉、頁面平順地滑進來，他就<b>知道系統收到了、事情正在發生</b>。動效幫使用者建立「東西從哪來、到哪去」的空間感：抽屜是從左邊滑出來的，關掉時就該滑回左邊，而不是憑空消失。這正接回 104 人力銀行《AI 人才趨勢報告》一直強調的方向——求職者要能打通「從需求到體驗」的<b>完整應用情境</b>，而不是只會孤立地寫 <code>@keyframes</code> 語法。懂得「這個動效是為了解決什麼體驗問題」，比會背十種動畫寫法更值錢。</p>
+  <p>另一個業界很在乎、而且很吃基本功的點是<b>效能</b>。動畫如果做錯，畫面會一格一格地卡（掉幀）。關鍵原理是：瀏覽器渲染畫面有幾個階段，<b>只有動 <code>transform</code>（位移、縮放、旋轉）和 <code>opacity</code>（透明度）這兩類屬性，能交給繪圖合成器（compositor）直接處理、不必重新計算版面</b>；而如果你去動 <code>width</code>、<code>height</code>、<code>top</code>、<code>left</code> 這種會改變元素位置或大小的屬性，瀏覽器每一幀都得<b>重新排一次版（reflow／重排）</b>，一卡就是整頁跟著卡。所以「想讓某個東西往右移」的正解，是用 <code>transform: translateX()</code> 而不是改 <code>left</code>。這種「知道為什麼順、為什麼卡」的判斷，是台灣中大型企業和國際遠端前端職缺都會拿來確認你到底懂不懂底層的題目。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到玉山網銀或 91APP 這類產品，動效最常出現在<b>四種場景</b>：hover 回饋、狀態切換、載入等待、頁面／面板轉場。我的做法會是這樣分：按鈕滑上去變色、加入購物車時圖示輕輕放大一下——這種「有觸發、來回一次」的，用 <code>transition</code>，時間設短，大約 <code>0.2s</code>，加一點 <code>ease-out</code> 讓它結尾自然收住。而資料還在跟後端要、畫面得先撐著的載入狀態，我會用 <code>animation</code> 做一個會自動循環的<b>骨架屏（skeleton）微光效果</b>或轉圈，因為它需要「沒有觸發也自己一直跑」。表單送出後欄位驗證錯誤時，讓那一欄<b>輕微左右抖一下</b>提示，用 <code>@keyframes</code> 定義三四個位移階段、只播一次。整個過程我會刻意<b>只動 <code>transform</code> 和 <code>opacity</code></b>，把每個動效控制在使用者「感覺順、但說不出哪裡有動畫」的程度。</p>
+  <p>對我這種法律金融跨域背景的人，最能連回本業的一點，是把動效理解成<b>「程序上的告知」</b>，而不是視覺特效。這跟我讀合約、處理金融流程時很在意的「<b>程序正義</b>」其實同一個直覺：每一步都要讓當事人清楚知道「你的動作被收到了、現在進行到哪、下一步會發生什麼」。金融產品尤其不能讓使用者對「我剛剛那筆轉帳到底送出去了沒」產生一秒鐘的懷疑——所以送出鈕按下後要立刻有回饋、載入時要有明確的進行中狀態、成功要有一個安定人心的確認動效。放到國際遠端全端職缺，這套「動效＝告知」的思路還會往無障礙延伸：我不能假設每個人都想看動畫，得<b>尊重系統的「減少動態」設定</b>——這正是下一段要講的誠實邊界。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易踩、也最常被追問的坑，是<b>「想用 transition 讓一個 <code>display:none</code> 的東西淡入淡出，結果完全沒效果」</b>。原因是 <code>display</code> 這個屬性<b>沒有「中間值」可以補間</b>——它只有 none 和 block 這種是非題狀態，瀏覽器沒辦法在「不存在」和「存在」之間插出一個 50%，所以 transition 對它無效，元素會直接啪一聲出現或消失。正解是改用<b>能補間的屬性</b>：用 <code>opacity</code> 從 0 到 1 做淡入淡出，需要「淡出後真的不佔位、也不能被點到」的話，再搭配 <code>visibility</code> 一起處理。現代 CSS 也有 <code>@starting-style</code> 這類新語法能更漂亮地處理「元素剛出現時的起始狀態」，不過我要誠實：這個坑背後的原理我搞懂了、也能講清楚為什麼 <code>display</code> 不能被 transition，但更新的 <code>@starting-style</code> 我目前只在小 side project 試過、還沒在正式產品裡大量用；被追問到更細的瀏覽器相容或實戰細節時，我會講清楚我掌握的主線、並說明我會怎麼查文件驗證，而不是硬掰。</p>
+  <p>另一個值得先想清楚的追問，是<b>「動畫到底要做多少才合適」</b>。答案是<b>克制</b>：動效是為了幫使用者理解，一旦每個元素都在動、都在閃，注意力就被分散，反而降低了可用性、也拖慢效能。判斷標準很簡單——<b>「這個動畫是在解釋一件事，還是只是想讓人覺得酷？」</b>能解釋（東西從哪來、狀態變成了什麼）就留，純炫技就拿掉。而且一定要記得無障礙這一關：有些人會因為前庭功能問題，看到大幅度動畫而暈眩，作業系統提供了<b>「減少動態」</b>的偏好設定，我們該用 <code>@media (prefers-reduced-motion: reduce)</code> 去偵測它、對這些使用者關掉或大幅減弱動畫。會主動講到這一點，面試官會知道你想的是「所有使用者」，而不只是自己螢幕上好不好看。</p>
+
+  <p>動效這件事，講到底不是「會不會寫 <code>@keyframes</code>」，而是一句克制的判斷：<b>好的動畫讓人「感覺不到動畫、只覺得順」——它在幫人理解畫面發生了什麼，不是搶戲。</b>把 transition 和 animation 的分工、時間短、只動 transform／opacity、尊重 reduced-motion 這幾條記牢，剩下的都只是它的不同側面。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「transition 和 animation 差在哪？你什麼時候用哪個？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得清「需要觸發的一次性過渡」和「會自播的動畫」。</span>
+        <span class="a">她可以怎麼答：transition 管的是從一個狀態滑到另一個狀態的過渡，它需要有東西觸發，比如滑鼠 hover 或用 JS 切 class，而且是一次性、來回式的。animation 加上 @keyframes 就能把變化拆成很多階段，可以自己開始播、自動循環，不需要觸發。所以簡單的 hover 變色、按鈕回饋我用 transition 就夠；載入中一直轉的圈圈、需要多階段或循環的，才用 animation。我不會小事也搬出 animation。</span>
+      </li>
+      <li>
+        <span class="q">「為什麼做動畫盡量只動 transform 和 opacity？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂為什麼有些動畫會卡、有些會順。</span>
+        <span class="a">她可以怎麼答：因為瀏覽器渲染分幾個階段，transform 和 opacity 這兩類可以直接交給繪圖合成器處理，不用重新算版面。如果我去動 width、height、top、left 這種會改變元素大小或位置的屬性，瀏覽器每一幀都要重新排一次版，也就是重排，動畫就會一格一格地卡。所以想讓東西往右移，我會用 transform translateX，而不是改 left。這樣才能維持順暢的幀率。</span>
+      </li>
+      <li>
+        <span class="q">「我想讓一個 display:none 的元素淡入，寫了 transition 卻沒反應，為什麼？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道 display 不能被補間這個經典坑。</span>
+        <span class="a">她可以怎麼答：因為 display 沒有中間值可以補間，它只有 none 和 block 這種是非狀態，瀏覽器沒辦法在不存在和存在之間插出一個中間值，所以 transition 對它無效，元素會直接啪一聲出現。正解是改用能補間的屬性，用 opacity 從 0 到 1 做淡入淡出；如果淡出後還要它不佔位、不能被點到，再搭配 visibility 一起處理。現代 CSS 也有 @starting-style 能更漂亮地處理起始狀態，不過那部分我還在學。</span>
+      </li>
+      <li>
+        <span class="q">「動畫的時間長度你怎麼抓？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有實際手感，還是隨便填數字。</span>
+        <span class="a">她可以怎麼答：一般的介面回饋我會抓在大約 150 到 300 毫秒之間。太快會讓人看不出有過渡、太慢會讓人覺得在等、覺得卡。小範圍的 hover 回饋我會偏短，大一點的面板轉場可以稍微長一點但也不會超過太多。緩動我常用 ease-out，讓動畫結尾自然收住，感覺比較順。重點是使用者要感覺順，但幾乎意識不到有動畫在跑。</span>
+      </li>
+      <li>
+        <span class="q">「做動效時你會考慮無障礙嗎？」</span>
+        <span class="hint">👉 這題其實在問：你想的是所有使用者，還是只有自己螢幕上好不好看。</span>
+        <span class="a">她可以怎麼答：會。有些使用者會因為前庭功能問題，看到大幅度動畫而暈眩，作業系統提供了「減少動態」的偏好設定。我會用 @media prefers-reduced-motion: reduce 去偵測它，對這些使用者關掉或大幅減弱動畫。這也提醒我一個原則：動效是為了幫使用者理解，不是每個地方都要動，會分散注意力又傷效能的純炫技動畫我會拿掉。誠實說，我目前是在個人專案裡實作過這個判斷，還沒在大型正式產品的完整無障礙流程裡跑過。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-12.html"><span class="dir">上一課</span>← 響應式設計不是縮小畫面：斷點設計的實務決策</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

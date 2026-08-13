@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-12",
+  "updated": "2026-08-13",
   "lessons": [
     {
       "id": 1,
@@ -172,10 +172,10 @@
       "category": "frontend",
       "topic": "CSS動畫實作",
       "title": "讓介面感覺「活著」：CSS transition/animation的分寸拿捏",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-13",
+      "url": "posts/daily/2026-08-13.html",
+      "slides": 1
     },
     {
       "id": 17,
