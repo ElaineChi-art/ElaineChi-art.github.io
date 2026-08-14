@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RESTful API設計的第一課：資源、動詞與狀態碼怎麼對應真實需求｜技能實驗室・每日課程</title>
+<meta name="description" content="RESTful API 的第一課不是背語法，而是搞懂三件事怎麼對應真實需求：資源（把系統想成一堆名詞，網址放名詞不放動作）、HTTP 動詞（GET 讀、POST 新增、PUT/PATCH 改、DELETE 刪，用動詞表達你要做什麼）、狀態碼（2xx 成功、4xx 是你請求有錯、5xx 是伺服器出錯）。三者對準需求，前端不用翻文件也能猜到 API 怎麼呼叫，這就是 REST 想要的一致性。也拆解最常答錯的坑：把動作寫進網址、以及 PUT 和 PATCH 的差別。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-14</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・後端與資料庫</div>
+  <h1>RESTful API設計的第一課：資源、動詞與狀態碼怎麼對應真實需求</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-14</span>
+    <span>約 8 分鐘</span>
+    <span>對應真專案主題：Python：後端框架與 API 開發</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>RESTful API（一種設計後端網址與行為的慣例）的第一課，<b>不是背語法，而是搞懂三件事怎麼對準真實需求</b>：<b>資源</b>——把系統想成一堆「名詞」（使用者、訂單、帳戶），網址裡放的應該是這些名詞，<b>不是動作</b>；<b>動詞</b>——你要對名詞做什麼，用 HTTP 方法表達（<code>GET</code> 讀、<code>POST</code> 新增、<code>PUT</code>／<code>PATCH</code> 改、<code>DELETE</code> 刪），而不是寫進網址；<b>狀態碼</b>——伺服器回一個三位數告訴前端結果（<code>2xx</code> 成功、<code>4xx</code> 是「你這邊請求有問題」、<code>5xx</code> 是「伺服器自己出錯」）。三者對準需求，前端<b>不用翻文件也能猜到 API 怎麼呼叫</b>——這種「可預測、有一致性」就是 REST 真正想達成的事。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-17-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260814" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260814" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260814)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260814)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M5 · 後端與資料庫  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">RESTful API 的三件事：<tspan fill="#4D9FFF">資源・動詞・狀態碼</tspan></text>
+
+      <!-- 卡1：資源＝名詞 -->
+      <rect x="64" y="140" width="352" height="392" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="64" y="140" width="352" height="5" rx="2.5" fill="url(#topbarD20260814)"/>
+      <text x="86" y="184" font-size="19" font-weight="800" fill="#4D9FFF">① 資源＝名詞</text>
+      <text x="86" y="216" font-size="16" fill="#8FA1C0">網址放「東西」，不放「動作」</text>
+      <text x="86" y="262" font-size="17" fill="#C7D2E4">✓ /users/42</text>
+      <text x="86" y="288" font-size="16" fill="#8FA1C0">第 42 號使用者這個資源</text>
+      <text x="86" y="312" font-size="17" fill="#C7D2E4">✓ /users/42/orders</text>
+      <text x="86" y="338" font-size="16" fill="#8FA1C0">他底下的訂單集合</text>
+      <text x="86" y="398" font-size="17" fill="#F2A33C">✗ /getUser?id=42</text>
+      <text x="86" y="424" font-size="16" fill="#8FA1C0">動作塞進網址就不 REST 了</text>
+      <text x="86" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 名詞穩定、複數、可巢狀。</text>
+
+      <!-- 卡2：動詞＝HTTP method -->
+      <rect x="440" y="140" width="400" height="392" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="462" y="184" font-size="19" font-weight="800" fill="#F5F8FF">② 動詞＝HTTP 方法</text>
+      <text x="462" y="216" font-size="16" fill="#8FA1C0">「對名詞做什麼」用方法表達</text>
+
+      <rect x="462" y="238" width="356" height="52" rx="10" fill="rgba(53,192,142,.10)" stroke="#35C08E" stroke-width="1.5"/>
+      <text x="482" y="270" font-size="16" font-weight="700" fill="#35C08E">GET　讀取（不改資料）</text>
+
+      <rect x="462" y="300" width="356" height="52" rx="10" fill="rgba(53,192,142,.10)" stroke="#35C08E" stroke-width="1.5"/>
+      <text x="482" y="332" font-size="16" font-weight="700" fill="#35C08E">POST　新增一筆</text>
+
+      <rect x="462" y="362" width="356" height="52" rx="10" fill="rgba(53,192,142,.10)" stroke="#35C08E" stroke-width="1.5"/>
+      <text x="482" y="394" font-size="16" font-weight="700" fill="#35C08E">PUT／PATCH　整筆換／改一部分</text>
+
+      <rect x="462" y="424" width="356" height="52" rx="10" fill="rgba(53,192,142,.10)" stroke="#35C08E" stroke-width="1.5"/>
+      <text x="482" y="456" font-size="16" font-weight="700" fill="#35C08E">DELETE　刪除</text>
+
+      <text x="462" y="510" font-size="16" font-weight="700" fill="#7E8CA8">→ 同一個 /users，動詞不同＝意圖不同。</text>
+
+      <!-- 卡3：狀態碼 -->
+      <rect x="864" y="140" width="352" height="392" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="864" y="140" width="352" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="886" y="184" font-size="19" font-weight="800" fill="#F2A33C">③ 狀態碼＝結果一句話</text>
+      <text x="886" y="216" font-size="16" fill="#8FA1C0">伺服器回三位數告訴前端結果</text>
+      <text x="886" y="262" font-size="17" fill="#C7D2E4">2xx　成功</text>
+      <text x="886" y="288" font-size="16" fill="#8FA1C0">200 OK・201 Created</text>
+      <text x="886" y="336" font-size="17" fill="#C7D2E4">4xx　你這邊請求有錯</text>
+      <text x="886" y="362" font-size="16" fill="#8FA1C0">400 格式錯・401 沒登入・404 找不到</text>
+      <text x="886" y="410" font-size="17" fill="#C7D2E4">5xx　伺服器自己出錯</text>
+      <text x="886" y="436" font-size="16" fill="#8FA1C0">500 內部錯誤</text>
+      <text x="886" y="502" font-size="16" font-weight="700" fill="#7E8CA8">→ 分清是「誰的錯」才好抓 bug。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：好的 REST API 讓人「不用翻文件也能猜到怎麼呼叫」——靠的是一致性。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">資源用名詞、動作用 HTTP 動詞、結果用狀態碼；三者對準真實需求，前端就能預測 API。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-17-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-14-1.mp3"></audio>
+    <p>這張圖在講的是，RESTful API 的設計其實是三個東西的對應：資源、動詞、狀態碼。左邊先講資源，網址裡放的應該是名詞，像是使用者、訂單，而不是動作。你要做什麼事，不是寫在網址裡，而是靠中間這欄的 HTTP 動詞來表達：GET 是讀取、POST 是新增、PUT 跟 PATCH 是更新、DELETE 是刪除。右邊是狀態碼，它是伺服器回給前端的一句話，二開頭代表成功、四開頭代表是你這邊請求有問題、五開頭代表是伺服器自己出錯。整張圖的主張是：把資源、動詞、狀態碼三者對準真實需求，前端不用翻文件也能猜到 API 怎麼呼叫，這就是 REST 想達成的一致性。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>RESTful API，是一套「怎麼把後端功能設計成一組可預測的網址與行為」的慣例。先拆字：API（應用程式介面）就是「別的程式想用你的功能時，該打哪個網址、帶什麼資料」的窗口；REST 則是替這些窗口訂的一套風格慣例。它的核心直覺只有一句話：<b>把整個系統想成一堆「資源」，也就是一堆名詞</b>——使用者、訂單、帳戶、貼文。每一個名詞都有自己的網址（例如 <code>/users/42</code> 就代表「第 42 號使用者」這個資源），而你想對這個名詞<b>做什麼</b>，不是寫進網址裡，而是靠 <b>HTTP 動詞</b>來表達。</p>
+  <p>所以 REST 的第一課，其實是三欄東西的對應：<b>資源（名詞）、動詞（HTTP 方法）、狀態碼（結果）</b>。同一個 <code>/users</code>，我用 <code>GET</code> 就是「讀使用者」、用 <code>POST</code> 就是「新增一個使用者」、對 <code>/users/42</code> 用 <code>DELETE</code> 就是「刪掉第 42 號」——網址沒變，是動詞決定了意圖。做完之後，伺服器回一個三位數的<b>狀態碼</b>告訴前端結果：<code>2xx</code> 系列代表成功、<code>4xx</code> 代表「你這邊的請求有問題」、<code>5xx</code> 代表「伺服器自己出錯了」。把這三欄對齊，別人光看網址和動詞就大概猜得到會發生什麼事——這種「可預測」就是 REST 的價值，不是什麼高深語法。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎 REST，是因為它解決的是「<b>兩個團隊怎麼在不吵架的情況下對接</b>」這個真實問題。一個產品通常是前端一組人、後端一組人（或者你要串接別家公司的服務）。如果每個 API 的網址都各憑喜好亂取——這支叫 <code>/getUserData</code>、那支叫 <code>/user_info_fetch</code>、刪除又搞成 <code>/removeUserNow</code>——那前端每接一支都得回頭翻文件、問人，溝通成本高到爆。REST 提供的是一套<b>大家都認得的共同慣例</b>：看到 <code>GET /users/42</code>，不用問就知道是「讀第 42 號使用者、而且不會改到資料」。這種一致性讓 API <b>自我說明</b>，團隊協作與交接的摩擦就小很多。</p>
+  <p>這點正好接上 104 人力銀行《AI 人才趨勢報告》一直強調的方向——求職者要能打通<b>完整應用情境</b>，而不是只會孤立的技術點。REST 剛好是「前後端如何協作」這個完整情境裡的共同語言：你不只是會用 Python 的 Flask 或 FastAPI 寫出一個能跑的端點，而是能想清楚「這個 API 給誰用、他會怎麼預期、我的網址和狀態碼有沒有讓他好猜」。另外要誠實補一句：REST 是目前最主流、也最該先學會的風格，但不是唯一——像 GraphQL、gRPC 都是為了不同場景生的替代方案。這屬於常識性的技術背景知識，重點是先把 REST 這套「資源＋動詞＋狀態碼」的基本功練扎實，它是後面所有 API 討論的地基。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到玉山網銀或 91APP 這類產品，假設我要設計「使用者的訂單」這一組 API，我會這樣對齊三欄。查某個使用者的所有訂單：<code>GET /users/42/orders</code>——用巢狀網址表達「這些訂單是掛在 42 號使用者底下的」，成功就回 <code>200</code>。新增一筆訂單：<code>POST /users/42/orders</code>，把訂單內容放在請求的 body 裡，建立成功回 <code>201 Created</code>（明確告訴前端「東西被建立了」，而不是含糊地回 200）。改訂單狀態：<code>PATCH /orders/1001</code>（只改一部分欄位）。取消訂單：<code>DELETE /orders/1001</code>。如果前端帶了一張不存在的訂單編號來查，我回 <code>404</code>；如果他沒登入就想查別人的訂單，我回 <code>401</code> 或 <code>403</code>——用狀態碼把「是誰的錯、錯在哪」講清楚。</p>
+  <p>對我這種法律金融跨域背景的人，最能連回本業的一點，是把 REST 的設計理解成<b>「一份契約」</b>。API 其實就是前後端之間的合約：網址是標的、動詞是允許的動作、狀態碼是履約結果的正式回覆。我讀合約時很在意「權利義務有沒有寫清楚、對方能不能只看條文就知道自己能做什麼」——設計 API 是同一個直覺：一個好的端點，應該讓呼叫它的人光看定義就知道「我能對哪個資源、做哪個動作、會拿到什麼回應」，不需要私下再問。放到國際遠端全端職缺，這種「把介面當契約來設計」的思路特別重要，因為遠端協作沒辦法隨時轉頭問人，API 的自我說明性就是團隊效率的關鍵。金融場景還會再加一層對狀態碼的謹慎：轉帳這種操作，成功、餘額不足（<code>4xx</code>）、系統當機（<code>5xx</code>）必須用不同狀態碼清楚區分，前端才能對每種情況做正確處理，不能一律含糊回 200。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易踩、也最常被追問的坑，是<b>「把動作寫進網址」</b>。很多人剛學會 REST 的樣子，卻設計出 <code>POST /users/42/updateOrder</code>、<code>GET /orders/deleteAll</code> 這種端點——網址裡出現了 <code>update</code>、<code>delete</code>、<code>get</code> 這些動詞，就代表你其實還在用「函式呼叫」的思維在設計 API，不是 REST。REST 的精神是<b>網址只放名詞（資源）、動作交給 HTTP 方法</b>：想改訂單就 <code>PATCH /orders/1001</code>，而不是 <code>POST /orders/1001/update</code>。一個快速自我檢查法：如果你的網址裡出現了動詞，八成就設計錯了。當然這不是宗教教條——真的遇到「不是對某個資源做增刪改查」的動作（例如「寄送驗證信」「觸發一次結算」），業界也有務實的處理方式，這種邊界情況我知道存在、但還沒在正式產品裡大量處理過，被追問時我會誠實說明我掌握的主線原則、並說我會查團隊既有慣例來對齊，而不是硬凹。</p>
+  <p>另一個很值得先想清楚的追問，是 <b><code>PUT</code> 和 <code>PATCH</code> 到底差在哪</b>。乍看都是「更新」，但語意不同：<code>PUT</code> 是<b>「整筆替換」</b>——我把整個資源用我送的內容覆蓋掉，沒帶到的欄位理論上會被清空；<code>PATCH</code> 是<b>「局部修改」</b>——我只送想改的那幾個欄位，其他保持原樣。舉例：使用者只想改一個電話號碼，用 <code>PATCH</code> 送 <code>{"phone": "..."}</code> 就好；如果用 <code>PUT</code> 卻只送一個 phone，可能會把名字、地址那些沒帶到的欄位都清掉。順帶一個常被追問的觀念是<b>「冪等」</b>（idempotent，同一個請求重複送很多次，結果都跟送一次一樣）：<code>GET</code>、<code>PUT</code>、<code>DELETE</code> 通常是冪等的，重送不會出事；而 <code>POST</code> 不是——連按兩次送出鈕，可能就真的建立了兩筆訂單。金融場景對這件事特別敏感，所以會用額外機制（例如帶一個唯一的請求識別碼）來防止重複扣款。能講到冪等這一層，面試官會知道你不只是會呼叫 API，而是真的懂它背後的設計取捨。</p>
+
+  <p>RESTful API 的第一課，講到底不是背 <code>GET</code>／<code>POST</code>／<code>PUT</code> 有幾種，而是一句話的判斷：<b>把資源當名詞、動作交給動詞、結果用狀態碼講清楚——讓別人不用翻文件，也能猜到你的 API 怎麼呼叫。</b>做到這點，你設計的就不只是「能跑的端點」，而是一份看得懂、對得準需求的契約。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「你會怎麼跟不懂技術的人解釋什麼是 RESTful API？」</span>
+        <span class="hint">👉 這題其實在問：你是真的懂它的核心精神，還是只會背方法名稱。</span>
+        <span class="a">她可以怎麼答：我會說 REST 就是把整個系統想成一堆名詞，也就是資源，像使用者、訂單。每個名詞都有自己的網址，比如斜線 users 斜線 42 代表第 42 號使用者。你想對這個名詞做什麼，不是寫在網址裡，而是用 HTTP 的動詞來表達：GET 是讀、POST 是新增、PUT 或 PATCH 是改、DELETE 是刪。做完之後伺服器回一個狀態碼告訴你結果。它最大的好處是一致性，讓別人不用翻文件也能猜到 API 怎麼呼叫。</span>
+      </li>
+      <li>
+        <span class="q">「設計 API 時,你怎麼決定網址要怎麼取？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道網址放名詞、不放動作這個核心原則。</span>
+        <span class="a">她可以怎麼答：我的原則是網址只放名詞，也就是資源，動作交給 HTTP 方法。所以我會設計成 GET 斜線 users 斜線 42 斜線 orders 去查某個使用者的訂單，而不是設計成 getUserOrders 這種把動作塞進網址的寫法。資源名稱我習慣用複數，有從屬關係的就用巢狀，像訂單掛在使用者底下。一個快速自我檢查是：如果網址裡出現了 get、update、delete 這種動詞，八成就設計錯了，那其實是函式呼叫的思維，不是 REST。</span>
+      </li>
+      <li>
+        <span class="q">「PUT 和 PATCH 差在哪？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得清整筆替換和局部修改。</span>
+        <span class="a">她可以怎麼答：PUT 是整筆替換，我送什麼就把整個資源覆蓋成什麼，沒帶到的欄位理論上會被清空。PATCH 是局部修改，我只送想改的那幾個欄位，其他保持原樣。舉例，使用者只想改電話，我會用 PATCH 只送 phone 這個欄位就好；如果用 PUT 卻只送一個 phone，可能會不小心把名字、地址那些沒帶到的欄位都清掉。所以要看需求是整筆換還是改一部分來選。</span>
+      </li>
+      <li>
+        <span class="q">「常見的 HTTP 狀態碼你知道哪些？400 和 500 差在哪？」</span>
+        <span class="hint">👉 這題其實在問：你會不會用狀態碼清楚表達「是誰的錯」。</span>
+        <span class="a">她可以怎麼答：我把狀態碼分成幾組：2 開頭是成功，像 200 OK、201 Created 代表東西建立好了；4 開頭代表是呼叫方這邊的請求有問題，比如 400 是格式錯、401 是沒登入、404 是找不到資源；5 開頭代表是伺服器自己出錯，比如 500 內部錯誤。400 和 500 最關鍵的差別就是「是誰的錯」：400 是你請求本身有問題、要改的是呼叫端；500 是伺服器爆了、要改的是後端。分清楚這個，抓 bug 才知道該往哪查。</span>
+      </li>
+      <li>
+        <span class="q">「你聽過『冪等』嗎？哪些方法是冪等的，為什麼重要？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂重複請求會不會出事這個設計取捨。</span>
+        <span class="a">她可以怎麼答：冪等的意思是同一個請求重複送很多次，結果都跟送一次一樣。GET、PUT、DELETE 通常是冪等的，重送不會出事，比如刪一筆已經刪掉的資料，狀態不會再變。POST 不是冪等的，連按兩次送出鈕可能就真的建立了兩筆訂單。這在金融場景特別重要，所以會用額外機制，比如帶一個唯一的請求識別碼，來避免重複扣款。老實說這個機制我目前是懂原理，實戰上比較是在小專案裡處理過，還沒在大型金流系統裡完整做過。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-13.html"><span class="dir">上一課</span>← 讓介面感覺「活著」：CSS transition/animation的分寸拿捏</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

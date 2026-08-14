@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-13",
+  "updated": "2026-08-14",
   "lessons": [
     {
       "id": 1,
@@ -183,10 +183,10 @@
       "category": "backend",
       "topic": "Python：後端框架與 API 開發",
       "title": "RESTful API設計的第一課：資源、動詞與狀態碼怎麼對應真實需求",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-14",
+      "url": "posts/daily/2026-08-14.html",
+      "slides": 1
     },
     {
       "id": 18,
