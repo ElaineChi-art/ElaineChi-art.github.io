@@ -17,7 +17,7 @@ button,select,input{font:inherit;color:inherit}
 .chip{padding:4px 10px;border:1px solid var(--line);background:transparent;border-radius:14px;cursor:pointer;font-size:12.5px}
 .chip.on{background:var(--ink);color:var(--bg)}
 #q{flex:1;min-width:150px;padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
-.wrap{display:flex;align-items:flex-start}
+.wrap{display:flex;align-items:flex-start;max-width:1680px;margin:0 auto}
 #toc{position:sticky;top:104px;flex:0 0 250px;max-height:calc(100vh - 140px);overflow:auto;
 padding:10px 8px 20px 14px;border-right:1px solid var(--line);font-size:13px}
 #toc .subj{font-weight:700;color:#fff;background:var(--acc);padding:5px 9px;border-radius:5px;margin:6px 0 8px;font-size:12.6px}
@@ -26,7 +26,7 @@ padding:10px 8px 20px 14px;border-right:1px solid var(--line);font-size:13px}
 #toc a.on{border-left-color:var(--c);color:var(--c);font-weight:700;background:rgba(176,58,46,.08)}
 #toc .num{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;opacity:.7;margin-right:5px}
 #toc .qty{float:right;font-size:11px;opacity:.6}
-main{flex:1;min-width:0;padding:12px 14px 90px;max-width:900px}
+main{flex:1;min-width:0;padding:12px 30px 90px 20px}
 #tocbtn{display:none}
 @media(max-width:880px){
  #toc{position:fixed;left:0;top:0;bottom:0;z-index:40;width:78%;max-width:300px;max-height:none;
@@ -77,7 +77,7 @@ padding:8px 12px;display:flex;gap:8px;align-items:center;z-index:30;flex-wrap:wr
 <div class="bar">
 <button id="pp" class="p">▶ 朗讀本頁</button>
 <button id="stop">■ 停</button>
-<b>語速</b><input id="rate" type="range" min="0.7" max="1.6" step="0.1" value="1.05" style="width:90px">
+<b>語速</b><span class="mini" id="ratev" style="min-width:38px;display:inline-block"></span><input id="rate" type="range" min="0.8" max="2" step="0.05" value="1.3" style="width:90px">
 <b>聲音</b><select id="voice" style="max-width:150px;padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"></select>
 <label class="mini"><input type="checkbox" id="contall" checked> 點一題從該題念到底</label>
 <span class="mini" id="st"></span>
@@ -149,7 +149,11 @@ function loadVoices(){try{voices=speechSynthesis.getVoices()||[]}catch(e){voices
   const mj=zh.find(v=>/Meijia|美佳/i.test(v.name));if(!pref&&mj)pref=mj.name;if(pref)s.value=pref;}
 function best(){const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
   return zh.find(v=>v.name===pref)||zh.find(v=>/Meijia|美佳/i.test(v.name))||zh.find(v=>v.lang==="zh-TW")||zh[0]||null;}
-function rateNow(){return parseFloat(document.getElementById("rate").value)||1;}
+function rateNow(){return parseFloat(document.getElementById("rate").value)||1.3;}
+(function(){const r=document.getElementById("rate");if(!r)return;
+  const sv=localStorage.getItem("mb_rate"); if(sv)r.value=sv;
+  const lab=document.getElementById("ratev"); const show=()=>{if(lab)lab.textContent=(+r.value).toFixed(2)+"×";};
+  show(); r.oninput=()=>{localStorage.setItem("mb_rate",r.value);show();};})();
 function chunks(t){const out=[];let s="";
   String(t).replace(/\s+/g," ").split(/(?<=[。！？；：，])/).forEach(p=>{
     if((s+p).length>90){if(s)out.push(s);s=p}else s+=p});

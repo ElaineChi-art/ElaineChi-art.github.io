@@ -13,7 +13,7 @@ h1 small{font-weight:400;color:var(--sub);font-size:12px;margin-left:6px}
 button,select,input{font:inherit;color:inherit}
 #q{flex:1;min-width:160px;padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
 #jump{padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:var(--bg);max-width:60%}
-.wrap{display:flex;gap:0;align-items:flex-start}
+.wrap{display:flex;gap:0;align-items:flex-start;max-width:1680px;margin:0 auto}
 #toc{position:sticky;top:96px;flex:0 0 268px;max-height:calc(100vh - 130px);overflow:auto;
 padding:10px 8px 20px 14px;border-right:1px solid var(--line);font-size:13px}
 #toc .tch{font-weight:700;color:#fff;background:var(--acc);padding:5px 9px;border-radius:5px;margin:12px 0 6px;font-size:12.6px}
@@ -22,7 +22,7 @@ padding:10px 8px 20px 14px;border-right:1px solid var(--line);font-size:13px}
 #toc a:hover{background:rgba(93,173,226,.13);color:var(--ink)}
 #toc a.on{border-left-color:var(--red);color:var(--red);font-weight:700;background:rgba(123,36,28,.08)}
 #toc .code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;opacity:.75;margin-right:4px}
-main{flex:1;min-width:0;padding:12px 16px 92px;max-width:860px}
+main{flex:1;min-width:0;padding:12px 34px 92px 22px}
 #tocbtn{display:none}
 @media(max-width:880px){
  #toc{position:fixed;left:0;top:0;bottom:0;z-index:40;width:80%;max-width:310px;max-height:none;
@@ -86,7 +86,7 @@ background:var(--bg);color:var(--ink);font:inherit;font-size:13.6px;line-height:
 <div class="bar">
 <button id="pp" class="p2">▶ 朗讀全部</button>
 <button id="stop">■ 停</button>
-<b>語速</b><input id="rate" type="range" min="0.7" max="1.6" step="0.1" value="1.05" style="width:88px">
+<b>語速</b><span class="mini" id="ratev" style="min-width:38px;display:inline-block"></span><input id="rate" type="range" min="0.8" max="2" step="0.05" value="1.3" style="width:88px">
 <b>聲音</b><select id="voice" style="max-width:148px;padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"></select>
 <b>朗讀</b><select id="rmode" style="padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)">
 <option value="screen">跟著畫面</option><option value="sd">一律速讀</option><option value="full">一律擬答</option></select>
@@ -202,7 +202,11 @@ function loadVoices(){try{voices=speechSynthesis.getVoices()||[]}catch(e){voices
   const mj=zh.find(v=>/Meijia|美佳/i.test(v.name));if(!pref&&mj)pref=mj.name;if(pref)s.value=pref;}
 function best(){const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
   return zh.find(v=>v.name===pref)||zh.find(v=>/Meijia|美佳/i.test(v.name))||zh.find(v=>v.lang==="zh-TW")||zh[0]||null;}
-function rateNow(){return parseFloat(document.getElementById("rate").value)||1;}
+function rateNow(){return parseFloat(document.getElementById("rate").value)||1.3;}
+(function(){const r=document.getElementById("rate");if(!r)return;
+  const sv=localStorage.getItem("mb_rate"); if(sv)r.value=sv;
+  const lab=document.getElementById("ratev"); const show=()=>{if(lab)lab.textContent=(+r.value).toFixed(2)+"×";};
+  show(); r.oninput=()=>{localStorage.setItem("mb_rate",r.value);show();};})();
 function chunks(t){const out=[];let s="";
   String(t).replace(/\s+/g," ").split(/(?<=[。！？；：，])/).forEach(p=>{
     if((s+p).length>90){if(s)out.push(s);s=p}else s+=p});
