@@ -15,7 +15,7 @@ button,select,input{font:inherit;color:inherit}
 #jump{padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:var(--bg);max-width:60%}
 .wrap{display:flex;gap:0;align-items:flex-start;max-width:1680px;margin:0 auto}
 #toc{position:sticky;top:96px;flex:0 0 268px;max-height:calc(100vh - 130px);overflow:auto;
-padding:10px 8px 20px 14px;border-right:1px solid var(--line);font-size:13px}
+padding:10px 8px 20px 14px;border-right:1px solid var(--line);font-size:calc(13px * var(--sc,1))}
 #toc .tch{font-weight:700;color:#fff;background:var(--acc);padding:5px 9px;border-radius:5px;margin:12px 0 6px;font-size:12.6px}
 #toc .tsec{font-weight:700;color:var(--acc);margin:9px 0 3px;font-size:12.6px}
 #toc a{display:block;padding:4px 7px 4px 12px;color:var(--sub);text-decoration:none;border-left:2px solid transparent;border-radius:0 5px 5px 0;line-height:1.5}
@@ -34,11 +34,11 @@ main{flex:1;min-width:0;padding:12px 34px 92px 22px}
 .ch{margin:26px 0 8px;font-weight:700;color:#fff;background:var(--acc);padding:8px 13px;border-radius:7px;font-size:15px}
 .sec{margin:16px 0 6px;font-weight:700;color:var(--acc);background:rgba(93,173,226,.13);padding:6px 12px;border-radius:6px;font-size:14px}
 .tp{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:9px;padding:12px 15px;margin:12px 0}
-.tt{font-weight:700;font-size:15.5px;color:var(--red);display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}
-.lead{text-indent:2em;margin:8px 0 12px;font-size:14.6px}
-.h1x{font-weight:700;color:var(--acc);margin:14px 0 6px;font-size:14.8px}
-.h2x{font-weight:700;margin:10px 0 4px 1.4em;font-size:14.4px}
-.p{text-indent:2em;margin:6px 0 6px 1.4em;font-size:14.4px}
+.tt{font-weight:700;font-size:calc(15.5px * var(--sc,1));color:var(--red);display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}
+.lead{text-indent:2em;margin:8px 0 12px;font-size:calc(14.6px * var(--sc,1))}
+.h1x{font-weight:700;color:var(--acc);margin:14px 0 6px;font-size:calc(14.8px * var(--sc,1))}
+.h2x{font-weight:700;margin:10px 0 4px 1.4em;font-size:calc(14.4px * var(--sc,1))}
+.p{text-indent:2em;margin:6px 0 6px 1.4em;font-size:calc(14.4px * var(--sc,1))}
 .p.d2{margin-left:2.8em}
 .tip{background:rgba(212,172,13,.12);border-left:3px solid var(--gold);padding:8px 12px;margin:12px 0 2px;font-size:13.3px;color:var(--gold);border-radius:0 6px 6px 0}
 b.kk{color:#c0392b;font-weight:700}
@@ -59,7 +59,7 @@ body.nokk b.kk{color:inherit;font-weight:inherit}
 .sd{margin-top:6px}
 .sd .r{display:flex;gap:7px;margin:5px 0;align-items:flex-start}
 .sd .lb{flex:0 0 auto;width:23px;height:20px;border-radius:4px;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
-.sd .bd{flex:1;font-size:14.3px;line-height:1.75}
+.sd .bd{flex:1;font-size:calc(14.3px * var(--sc,1));line-height:1.75}
 .L爭{background:#8e6c1a}.L據{background:#566573}.L實{background:#2b5f8f}.L說{background:#2e7d52}
 .L採{background:#7d3c98}.L攝{background:#117864}.L結{background:#b03a2e}.L訣{background:#7d6608}
 .sd .r.k訣 .bd{background:rgba(212,172,13,.13);padding:6px 10px;border-radius:6px;font-size:13.2px}
@@ -68,7 +68,7 @@ body.nokk b.kk{color:inherit;font-weight:inherit}
 .body[contenteditable="true"]{outline:2px dashed var(--acc);outline-offset:6px;border-radius:6px;background:rgba(93,173,226,.04)}
 .note{margin-top:10px}
 .note textarea{width:100%;min-height:62px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;
-background:var(--bg);color:var(--ink);font:inherit;font-size:13.6px;line-height:1.7;resize:vertical}
+background:var(--bg);color:var(--ink);font:inherit;font-size:calc(13.6px * var(--sc,1));line-height:1.7;resize:vertical}
 .note .hd{font-size:12px;color:var(--sub);margin-bottom:3px}
 .edited{font-size:11px;color:var(--gold);margin-left:6px}
 </style></head><body>
@@ -88,6 +88,7 @@ background:var(--bg);color:var(--ink);font:inherit;font-size:13.6px;line-height:
 <button id="stop">■ 停</button>
 <b>語速</b><span class="mini" id="ratev" style="min-width:38px;display:inline-block"></span><input id="rate" type="range" min="0.8" max="2" step="0.05" value="1.3" style="width:88px">
 <b>聲音</b><select id="voice" style="max-width:148px;padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"></select>
+<b>字級</b><button id="fsm" style="padding:4px 9px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer">A－</button><span class="mini" id="fsv" style="min-width:42px;display:inline-block;text-align:center"></span><button id="fsp" style="padding:4px 9px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer">A＋</button>
 <b>朗讀</b><select id="rmode" style="padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)">
 <option value="screen">跟著畫面</option><option value="sd">一律速讀</option><option value="full">一律擬答</option></select>
 <label class="mini"><input type="checkbox" id="contall" checked> 點一題從該題念到底</label>
@@ -370,6 +371,20 @@ document.getElementById("pp").onclick=()=>{
   start(visibleIdx());};
 document.getElementById("stop").onclick=stopAll;
 document.getElementById("voice").onchange=e=>{pref=e.target.value;localStorage.setItem("mb_voice",pref)};
+/* ── 字級（記憶） ── */
+(function(){
+  let sc=parseFloat(localStorage.getItem("mb_scale")||"1");
+  const v=document.getElementById("fsv");
+  const app=()=>{document.documentElement.style.setProperty("--sc",sc);
+    if(v)v.textContent=Math.round(sc*100)+"%";localStorage.setItem("mb_scale",sc);};
+  document.getElementById("fsp").onclick=()=>{sc=Math.min(2,+(sc+0.1).toFixed(2));app();};
+  document.getElementById("fsm").onclick=()=>{sc=Math.max(0.8,+(sc-0.1).toFixed(2));app();};
+  app();
+})();
+/* ── 勾選記憶 ── */
+["contall","notip"].forEach(id=>{const el=document.getElementById(id);if(!el)return;
+  const sv=localStorage.getItem("mb_"+id); if(sv!==null)el.checked=sv==="1";
+  el.addEventListener("change",()=>localStorage.setItem("mb_"+id,el.checked?"1":"0"));});
 const rm=document.getElementById("rmode"); rm.value=readMode();
 rm.onchange=e=>{localStorage.setItem("nida_readmode",e.target.value);
   if(playing){const from=queue[qi]?queue[qi].i:null, vis=visibleIdx(), pos=vis.indexOf(from);
