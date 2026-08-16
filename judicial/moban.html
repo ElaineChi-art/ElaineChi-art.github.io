@@ -163,32 +163,37 @@ function speakNext(){
   if(!playing){return;}
   if(qi>=queue.length){stopAll();return;}
   const it=queue[qi];
-  highlight(it);
+  if(!it.silent)highlight(it);
   const u=new SpeechSynthesisUtterance(it.text);
-  u.lang="zh-TW"; u.rate=rateNow();
+  u.lang="zh-TW"; u.rate=it.silent?2:rateNow(); if(it.silent)u.volume=0;
   const v=best(); if(v)u.voice=v;
   utterRefs.push(u); if(utterRefs.length>40)utterRefs.shift();
   let done=false;
   const go=()=>{ if(done)return; done=true; clearTimeout(wd); qi++; setTimeout(speakNext,20); };
   u.onend=go; u.onerror=go;
-  const st=document.getElementById("st"); if(st)st.textContent=(qi+1)+" / "+queue.length;
+  const st=document.getElementById("st"); if(st)st.textContent=Math.max(1,qi)+" / "+(queue.length-1);
   try{ speechSynthesis.speak(u); }catch(e){ go(); return; }
   // watchdog：依字數估時長，逾時仍未結束就強制前進，避免整串卡死
   const est=Math.max(4000, it.text.length*(1000/(4.2*rateNow()))+4000);
   wd=setTimeout(()=>{ if(playing&&!done){ try{speechSynthesis.cancel()}catch(e){} go(); } },est);
 }
+function whenIdle(cb,n){n=n||0;
+  try{ if(!speechSynthesis.speaking&&!speechSynthesis.pending)return cb(); }catch(e){ return cb(); }
+  if(n>40)return cb();
+  setTimeout(()=>whenIdle(cb,n+1),50);}
 function start(list){
   try{speechSynthesis.cancel()}catch(e){}
   queue=[];qi=0;utterRefs=[];
   buildQueue(list);
   if(!queue.length)return;
+  queue.unshift({text:"　",k:queue[0].k,first:false,silent:true});
   playing=true;
   const pp=document.getElementById("pp"); if(pp)pp.textContent="⏸ 暫停";
   clearInterval(keep);
   keep=setInterval(()=>{ if(!playing)return;
     if(speechSynthesis.speaking&&!speechSynthesis.paused){ try{speechSynthesis.pause();speechSynthesis.resume();}catch(e){} }
   },9000);
-  setTimeout(speakNext,220);     // cancel() 是非同步，等一下再開講
+  whenIdle(()=>setTimeout(speakNext,120));
 }
 function stopAll(){playing=false;clearInterval(keep);clearTimeout(wd);
   try{speechSynthesis.cancel()}catch(e){}
