@@ -68,11 +68,16 @@ body.nokk b.kk{color:inherit;font-weight:inherit}
 .body[contenteditable="true"]{outline:2px dashed var(--acc);outline-offset:6px;border-radius:6px;background:rgba(93,173,226,.04)}
 .note{margin-top:10px}
 .note{position:relative}
-.note textarea{width:100%;min-height:62px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;
+.nb{width:100%;min-height:62px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;
 background:var(--bg);color:var(--ink);font:inherit;font-size:calc(13.6px * var(--sc,1));line-height:1.75;
-resize:vertical;overflow:hidden;transition:max-height .18s}
-.note.clip textarea{max-height:96px;overflow:auto}
-.note.clip:after{content:"";position:absolute;left:1px;right:1px;bottom:30px;height:34px;pointer-events:none;
+overflow:hidden;transition:max-height .18s;outline:none}
+.nb:focus{border-color:var(--acc)}
+.nb:empty:before{content:attr(data-ph);color:var(--sub);opacity:.7}
+.nb img{max-width:100%;height:auto;border-radius:7px;margin:6px 0;display:block;cursor:zoom-in;border:1px solid var(--line)}
+.note.clip .nb{max-height:120px;overflow:auto}
+#lbx{position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+#lbx img{max-width:96vw;max-height:92vh;border-radius:8px}
+.note.clip:after{content:"";position:absolute;left:1px;right:1px;bottom:4px;height:34px;pointer-events:none;
 background:linear-gradient(to bottom,transparent,var(--card))}
 .note .hd{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .note .tg2{border:1px solid var(--line);background:transparent;border-radius:6px;padding:2px 10px;
@@ -139,6 +144,33 @@ function bodyHTML(t,mode){
   return h;
 }
 const K=(c,m)=>"nida_"+c+"_"+m, KN=c=>"nidanote_"+c;
+const IDB=(()=>{let db=null;
+  function open(){return new Promise((res,rej)=>{ if(db)return res(db);
+    const r=indexedDB.open("nidaNotes",1);
+    r.onupgradeneeded=()=>{try{r.result.createObjectStore("notes")}catch(e){}};
+    r.onsuccess=()=>{db=r.result;res(db)}; r.onerror=()=>rej(r.error);});}
+  async function get(k){try{const d=await open();return await new Promise(r=>{
+    const q=d.transaction("notes").objectStore("notes").get(k);
+    q.onsuccess=()=>r(q.result||""); q.onerror=()=>r("");});}catch(e){return localStorage.getItem(KN(k))||"";}}
+  async function set(k,v){try{const d=await open();return await new Promise(r=>{
+    const q=d.transaction("notes","readwrite").objectStore("notes").put(v,k);
+    q.onsuccess=()=>r(1); q.onerror=()=>r(0);});}catch(e){try{localStorage.setItem(KN(k),v)}catch(_){ }}}
+  return {get,set};})();
+async function loadNotes(){
+  for(const box of document.querySelectorAll(".note")){
+    const c=box.dataset.code, nb=box.querySelector(".nb"); if(!nb)continue;
+    let v=await IDB.get(c);
+    if(!v){ const old=localStorage.getItem(KN(c));
+      if(old){ v=esc(old).replace(/\n/g,"<br>"); await IDB.set(c,v); } }
+    nb.innerHTML=v||""; updHd(box); fit(nb);
+  }
+}
+function updHd(box){
+  const nb=box.querySelector(".nb"); if(!nb)return;
+  const n=nb.innerText.trim().length, im=nb.querySelectorAll("img").length;
+  const c=box.querySelector(".hd span");
+  if(c)c.innerHTML='📝 我的筆記（自動儲存）'+((n||im)?'　<span style="opacity:.7">'+(n?n+' 字':'')+(im?(n?'・':'')+im+' 張圖':'')+'</span>':'');
+}
 function render(){
   const app=document.getElementById("app");let html="",lastCh="",lastSec="",n=0;
   window.NIDA.forEach((t,idx)=>{
@@ -160,13 +192,14 @@ function render(){
       '<div class="body">'+(saved||bodyHTML(t,mode))+'</div>'+
       '<div class="note'+(note.length>120&&localStorage.getItem("nidaopen_"+t.code)!=="1"?" clip":"")+'" data-code="'+esc(t.code)+'">'+
       '<div class="hd"><span>📝 我的筆記（自動儲存）'+(note?'　<span style="opacity:.7">'+note.length+' 字</span>':'')+'</span>'+
-      '<button class="tg2" data-code="'+esc(t.code)+'">'+(localStorage.getItem("nidaopen_"+t.code)==="1"?"▴ 收合":"▾ 展開全部")+'</button></div>'+
-      '<textarea data-code="'+esc(t.code)+'" placeholder="貼上或寫下你自己的補充…">'+esc(note)+'</textarea></div>'+
+      '<span><button class="tg2" data-code="'+esc(t.code)+'">'+(localStorage.getItem("nidaopen_"+t.code)==="1"?"▴ 收合":"▾ 展開全部")+'</button> '+
+      '<button class="tg2 pic" data-code="'+esc(t.code)+'">📷 插入照片</button></span></div>'+
+      '<div class="nb" contenteditable="true" data-code="'+esc(t.code)+'" data-ph="貼上文字或照片（⌘V）、也可把圖片拖進來…"></div></div>'+
       '</div>';
   });
   app.innerHTML=html||'<div class="empty">找不到符合的題型</div>';
   document.getElementById("cnt").textContent="顯示 "+n+" 題";
-  setTimeout(fitAll,0);
+  setTimeout(()=>{loadNotes();},0);
 }
 function buildTOC(){
   let h="",lc="",ls="";
@@ -336,27 +369,70 @@ app.addEventListener("click",e=>{
   const i=+b.dataset.i, vis=visibleIdx(), pos=vis.indexOf(i);
   const cont=document.getElementById("contall").checked;
   stopAll(); start(cont&&pos>=0?vis.slice(pos):[i]);});
-function fit(ta){ if(!ta)return;
-  const box=ta.closest(".note"); if(box&&box.classList.contains("clip"))return;
-  ta.style.height="auto"; ta.style.height=(ta.scrollHeight+4)+"px"; }
-function fitAll(){ document.querySelectorAll(".note textarea").forEach(fit); }
+function fit(el){ if(!el)return;
+  const box=el.closest(".note"); if(box&&box.classList.contains("clip"))return;
+  el.style.height="auto"; el.style.height=(el.scrollHeight+4)+"px"; }
+function fitAll(){ document.querySelectorAll(".nb").forEach(fit); }
 window.fitAll=fitAll;
-app.addEventListener("input",e=>{
-  const ta=e.target.closest(".note textarea"); if(!ta)return;
-  localStorage.setItem(KN(ta.dataset.code),ta.value); fit(ta);
-  const c=ta.closest(".note").querySelector(".hd span");
-  if(c)c.innerHTML='📝 我的筆記（自動儲存）'+(ta.value?'　<span style="opacity:.7">'+ta.value.length+' 字</span>':'');});
-app.addEventListener("focusin",e=>{const ta=e.target.closest(".note textarea");
-  if(ta){const b=ta.closest(".note"); b.classList.remove("clip");
-    localStorage.setItem("nidaopen_"+ta.dataset.code,"1");
-    const btn=b.querySelector(".tg2"); if(btn)btn.textContent="▴ 收合"; fit(ta);}});
+let saveT=null;
+function saveNote(box){ const nb=box.querySelector(".nb"); if(!nb)return;
+  clearTimeout(saveT); saveT=setTimeout(()=>IDB.set(box.dataset.code,nb.innerHTML),250);
+  updHd(box); fit(nb); }
+function shrink(file,cb){
+  const fr=new FileReader();
+  fr.onload=()=>{ const im=new Image();
+    im.onload=()=>{ const max=1400, k=Math.min(1,max/im.width);
+      const cv=document.createElement("canvas");
+      cv.width=Math.round(im.width*k); cv.height=Math.round(im.height*k);
+      cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+      let url; try{url=cv.toDataURL("image/jpeg",0.72);}catch(e){url=fr.result;}
+      cb(url); };
+    im.onerror=()=>cb(fr.result); im.src=fr.result; };
+  fr.readAsDataURL(file);
+}
+function insertImgs(files,box){
+  const nb=box.querySelector(".nb"); nb.focus();
+  [...files].filter(f=>/^image\//.test(f.type)).forEach(f=>shrink(f,url=>{
+    try{ document.execCommand("insertHTML",false,'<img src="'+url+'">'); }
+    catch(e){ const i=document.createElement("img"); i.src=url; nb.appendChild(i); }
+    saveNote(box);
+  }));
+}
+app.addEventListener("input",e=>{ const nb=e.target.closest(".nb"); if(nb)saveNote(nb.closest(".note")); });
+app.addEventListener("paste",e=>{
+  const nb=e.target.closest(".nb"); if(!nb)return;
+  const items=[...(e.clipboardData||{}).items||[]];
+  const imgs=items.filter(i=>i.kind==="file"&&/^image\//.test(i.type)).map(i=>i.getAsFile()).filter(Boolean);
+  if(imgs.length){ e.preventDefault(); insertImgs(imgs,nb.closest(".note")); return; }
+  e.preventDefault();
+  const txt=(e.clipboardData||window.clipboardData).getData("text/plain");
+  document.execCommand("insertText",false,txt); saveNote(nb.closest(".note"));
+});
+app.addEventListener("dragover",e=>{ if(e.target.closest(".nb"))e.preventDefault(); });
+app.addEventListener("drop",e=>{
+  const nb=e.target.closest(".nb"); if(!nb)return; e.preventDefault();
+  insertImgs(e.dataTransfer.files,nb.closest(".note"));
+});
+app.addEventListener("focusin",e=>{const nb=e.target.closest(".nb");
+  if(nb){const b=nb.closest(".note"); b.classList.remove("clip");
+    localStorage.setItem("nidaopen_"+nb.dataset.code,"1");
+    const btn=b.querySelector(".tg2"); if(btn)btn.textContent="▴ 收合"; fit(nb);}});
 app.addEventListener("click",e=>{
-  const t2=e.target.closest(".tg2"); if(!t2)return;
-  const box=t2.closest(".note"), ta=box.querySelector("textarea");
+  const im=e.target.closest(".nb img");
+  if(im){ const lb=document.getElementById("lbx"); lb.querySelector("img").src=im.src;
+    lb.style.display="flex"; return; }
+  const pic=e.target.closest(".tg2.pic");
+  if(pic){ const box=pic.closest(".note"); const inp=document.getElementById("pick");
+    inp.onchange=()=>{ insertImgs(inp.files,box); inp.value=""; }; inp.click(); return; }
+});
+document.getElementById("lbx").onclick=function(){this.style.display="none";};
+app.addEventListener("click",e=>{
+  const t2=e.target.closest(".tg2"); if(!t2||t2.classList.contains("pic"))return;
+  const box=t2.closest(".note"), nb=box.querySelector(".nb");
   const open=box.classList.toggle("clip")===false;
   localStorage.setItem("nidaopen_"+t2.dataset.code,open?"1":"0");
   t2.textContent=open?"▴ 收合":"▾ 展開全部";
-  if(open)fit(ta); else ta.style.height="";});
+  if(open)fit(nb); else nb.style.height="";});
 function toggleEdit(card){
   const body=card.querySelector(".body"), on=body.getAttribute("contenteditable")==="true";
   const c=card.dataset.code, m=card.dataset.mode;
@@ -422,4 +498,6 @@ rm.onchange=e=>{localStorage.setItem("nida_readmode",e.target.value);
 loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSynthesis.onvoiceschanged=loadVoices;
 document.getElementById("tot").textContent=window.NIDA.length;
 buildTOC();render();allMode();syncTOC();
-</script></body></html>
+</script><div id="lbx"><img alt=""></div>
+<input type="file" id="pick" accept="image/*" multiple style="display:none">
+</body></html>
