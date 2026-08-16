@@ -86,9 +86,11 @@ background:var(--bg);color:var(--ink);font:inherit;font-size:13.6px;line-height:
 <button id="stop">■ 停</button>
 <b>語速</b><input id="rate" type="range" min="0.7" max="1.6" step="0.1" value="1.05" style="width:88px">
 <b>聲音</b><select id="voice" style="max-width:148px;padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"></select>
+<b>朗讀</b><select id="rmode" style="padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)">
+<option value="screen">跟著畫面</option><option value="sd">一律速讀</option><option value="full">一律擬答</option></select>
 <label class="mini"><input type="checkbox" id="contall" checked> 點一題從該題念到底</label>
 <label class="mini"><input type="checkbox" id="notip"> 不念考場提示</label>
-<span class="mini" id="st"></span>
+<span class="mini" id="nowt"></span><span class="mini" id="st"></span>
 </div>
 <script src="nida-data.js"></script>
 <script src="sudu-data.js"></script>
@@ -162,14 +164,14 @@ function syncTOC(){
 }
 document.getElementById("tocbtn").onclick=()=>document.getElementById("toc").classList.toggle("open");
 addEventListener("scroll",()=>{clearTimeout(window.__st);window.__st=setTimeout(syncTOC,80)},{passive:true});
-document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render();syncTOC()};
+document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render();allMode();syncTOC();reapplyNow()};
 function allMode(){const v=window.NIDA.every(t=>(localStorage.getItem("nidamode_"+t.code)||"full")==="sd");
   const b=document.getElementById("allsd"); b.classList.toggle("on",v);
   b.textContent=v?"📄 全部擬答":"⚡ 全部速讀"; return v;}
 document.getElementById("allsd").onclick=()=>{
   const toFull=allMode();
   window.NIDA.forEach(t=>localStorage.setItem("nidamode_"+t.code,toFull?"full":"sd"));
-  stopAll();render();allMode();syncTOC();};
+  render();allMode();syncTOC();reapplyNow();};
 const PLAYLABEL="▶ 朗讀全部";
 
 /* ── 朗讀引擎（防 GC／防 15 秒斷線／watchdog 續播） ── */
@@ -228,30 +230,43 @@ function stopAll(){playing=false;clearInterval(keep);clearTimeout(wd);
 function highlight(it){
   document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
   const el=document.getElementById("t"+it.i);
-  if(el){el.classList.add("now"); if(it.first)el.scrollIntoView({block:"start",behavior:"smooth"});}
+  if(el){el.classList.add("now"); if(it.first&&!window.__noscroll)el.scrollIntoView({block:"start",behavior:"smooth"});}
+  const t=window.NIDA[it.i], nw=document.getElementById("nowt");
+  if(nw&&t)nw.textContent="🔊 "+t.code+"　"+(modeOf(t.code)==="sd"?"速讀":"擬答");
 }
+function reapplyNow(){ if(playing&&queue[qi]){window.__noscroll=true;highlight(queue[qi]);window.__noscroll=false;} }
 const LBN={"爭":"爭點","據":"依據","實":"實務見解","說":"學說","採":"本文見解","攝":"涵攝","結":"結論","訣":"口訣"};
+function readMode(){return localStorage.getItem("nida_readmode")||"screen";}
+function modeOf(code){
+  let m=readMode();
+  if(m==="screen")m=localStorage.getItem("nidamode_"+code)||"full";
+  if(m==="sd"&&!(window.SUDU||{})[code])m="full";
+  return m;
+}
+function stripHTML(html,no){
+  const d=document.createElement("div"); d.innerHTML=html;
+  if(no)d.querySelectorAll(".tip,.k訣").forEach(e=>e.remove());
+  return d.innerText.replace(/\n{2,}/g,"\n").split("\n").map(x=>x.trim()).filter(Boolean)
+          .map(x=>/[。！？；：]$/.test(x)?x:x+"。").join("");
+}
 function topicText(idx){
-  const card=document.getElementById("t"+idx); if(!card)return "";
   const t=window.NIDA[idx], no=document.getElementById("notip").checked;
+  const m=modeOf(t.code);
   let s="題型"+t.code.replace(/-/g,"之")+"。"+t.title+"。";
-  const body=card.querySelector(".body"); if(!body)return s;
-  if(card.dataset.mode==="sd"){
-    body.querySelectorAll(".r").forEach(r=>{
-      const lb=(r.querySelector(".lb")||{}).textContent||"";
-      if(no&&lb==="訣")return;
-      const bd=(r.querySelector(".bd")||r).innerText.trim();
-      if(bd)s+=(LBN[lb]||"")+"。"+bd+"。";
-    });
-    if(!body.querySelector(".r"))s+=body.innerText.trim();
+  const saved=localStorage.getItem("nida_"+t.code+"_"+m);
+  if(saved)return s+stripHTML(saved,no);
+  if(m==="sd"){
+    ((window.SUDU||{})[t.code]||[]).forEach(([k,v])=>{ if(no&&k==="訣")return;
+      s+=(LBN[k]||"")+"。"+v+(/[。！？]$/.test(v)?"":"。"); });
   }else{
     let a=0,b=0;
-    body.querySelectorAll(".lead,.h1x,.h2x,.p,.tip").forEach(el=>{
-      const tx=el.innerText.trim(); if(!tx)return;
-      if(el.classList.contains("tip")){ if(!no)s+="考場提示。"+tx.replace(/^【考場提示】/,"")+"。"; return;}
-      s+=tx+(/[。！？]$/.test(tx)?"":"。");
+    t.items.forEach(it=>{
+      if(it.k==="lead")s+=it.t;
+      else if(it.k==="h1"){a++;b=0;s+=CN[a-1]+"、"+it.t+"。";}
+      else if(it.k==="h2"){b++;s+="第"+CN[b-1]+"款。"+it.t+"。";}
+      else if(it.k==="p")s+=it.t;
+      else if(it.k==="tip"&&!no)s+="考場提示。"+it.t;
     });
-    if(!body.querySelector(".lead,.h1x,.p"))s+=body.innerText.trim();
   }
   return s;
 }
@@ -264,7 +279,7 @@ app.addEventListener("click",e=>{
   const sw=e.target.closest(".sw");
   if(sw){const card=sw.closest(".tp"),c=card.dataset.code;
     const nm=card.dataset.mode==="sd"?"full":"sd";
-    localStorage.setItem("nidamode_"+c,nm);stopAll();render();allMode();syncTOC();
+    localStorage.setItem("nidamode_"+c,nm);render();allMode();syncTOC();reapplyNow();
     const el=document.querySelector('[data-code="'+c+'"]'); if(el)el.scrollIntoView({block:"start"});
     return;}
   const ed=e.target.closest(".ed");
@@ -319,6 +334,10 @@ document.getElementById("pp").onclick=()=>{
   start(visibleIdx());};
 document.getElementById("stop").onclick=stopAll;
 document.getElementById("voice").onchange=e=>{pref=e.target.value;localStorage.setItem("mb_voice",pref)};
+const rm=document.getElementById("rmode"); rm.value=readMode();
+rm.onchange=e=>{localStorage.setItem("nida_readmode",e.target.value);
+  if(playing){const from=queue[qi]?queue[qi].i:null, vis=visibleIdx(), pos=vis.indexOf(from);
+    stopAll(); start(pos>=0?vis.slice(pos):vis);}};
 loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSynthesis.onvoiceschanged=loadVoices;
 document.getElementById("tot").textContent=window.NIDA.length;
 buildTOC();render();allMode();syncTOC();

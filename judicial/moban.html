@@ -194,8 +194,10 @@ function stopAll(){playing=false;clearInterval(keep);clearTimeout(wd);
 
 function highlight(it){
   document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
-  if(it.el){it.el.classList.add("now"); if(it.first)it.el.scrollIntoView({block:"center",behavior:"smooth"});}
+  const el=document.querySelector('.card[data-k="'+it.k+'"]');
+  if(el){el.classList.add("now"); if(it.first&&!window.__noscroll)el.scrollIntoView({block:"center",behavior:"smooth"});}
 }
+function reapplyNow(){ if(playing&&queue[qi]){window.__noscroll=true;highlight(queue[qi]);window.__noscroll=false;} }
 function cardText(el){
   const t=el.querySelector(".ct span").textContent.trim();
   let s="爭點。"+t+"。";
@@ -204,7 +206,8 @@ function cardText(el){
   return s;
 }
 function buildQueue(list){
-  list.forEach(el=>chunks(cardText(el)).forEach((c,k)=>queue.push({text:c,el:el,first:k===0})));
+  list.forEach(el=>{const id=el.dataset.k;
+    chunks(cardText(el)).forEach((c,k)=>queue.push({text:c,k:id,first:k===0}));});
 }
 /* ── 事件 ── */
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
@@ -212,8 +215,8 @@ document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
   b.classList.add("on");cur=b.dataset.s;stopAll();render();scrollTo(0,0);});
 document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));
-  b.classList.add("on");lv=+b.dataset.lv;render();});
-document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render();};
+  b.classList.add("on");lv=+b.dataset.lv;render();syncTOC();reapplyNow();});
+document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render();syncTOC();reapplyNow();};
 document.getElementById("app").addEventListener("click",e=>{
   const b=e.target.closest(".play"); if(!b)return;
   const card=b.closest(".card"), all=window.__rows||[], pos=all.indexOf(card);
