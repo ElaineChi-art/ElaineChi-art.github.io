@@ -73,7 +73,9 @@ background:var(--bg);color:var(--ink);font:inherit;font-size:calc(13.6px * var(-
 overflow:hidden;transition:max-height .18s;outline:none}
 .nb:focus{border-color:var(--acc)}
 .nb:empty:before{content:attr(data-ph);color:var(--sub);opacity:.7}
-.nb img{max-width:100%;height:auto;border-radius:7px;margin:6px 0;display:block;cursor:zoom-in;border:1px solid var(--line)}
+.nb img{max-width:min(100%,var(--imgw,320px));max-height:var(--imgh,260px);height:auto;width:auto;
+object-fit:contain;border-radius:7px;margin:6px 6px 6px 0;display:inline-block;vertical-align:top;
+cursor:zoom-in;border:1px solid var(--line)}
 .note.clip .nb{max-height:120px;overflow:auto}
 #lbx{position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
 #lbx img{max-width:96vw;max-height:92vh;border-radius:8px}
@@ -101,6 +103,7 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 <button id="stop">■ 停</button>
 <b>語速</b><span class="mini" id="ratev" style="min-width:38px;display:inline-block"></span><input id="rate" type="range" min="0.8" max="2" step="0.05" value="1.3" style="width:88px">
 <b>聲音</b><select id="voice" style="max-width:148px;padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"></select>
+<b>圖片</b><select id="imgsz" style="padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"><option value="200">小</option><option value="320">中</option><option value="480">大</option><option value="9999">原寬</option></select>
 <b>字級</b><button id="fsm" style="padding:4px 9px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer">A－</button><span class="mini" id="fsv" style="min-width:42px;display:inline-block;text-align:center"></span><button id="fsp" style="padding:4px 9px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer">A＋</button>
 <b>朗讀</b><select id="rmode" style="padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)">
 <option value="screen">跟著畫面</option><option value="sd">一律速讀</option><option value="full">一律擬答</option></select>
@@ -477,6 +480,14 @@ document.getElementById("pp").onclick=()=>{
   start(visibleIdx());};
 document.getElementById("stop").onclick=stopAll;
 document.getElementById("voice").onchange=e=>{pref=e.target.value;localStorage.setItem("mb_voice",pref)};
+/* ── 圖片顯示大小（記憶） ── */
+(function(){const sel=document.getElementById("imgsz");if(!sel)return;
+  const v=localStorage.getItem("mb_imgw")||"320"; sel.value=v;
+  const app2=w=>{const px=(w==="9999"?"100%":w+"px");
+    document.documentElement.style.setProperty("--imgw",px);
+    document.documentElement.style.setProperty("--imgh",(w==="9999"?"none":Math.round(+w*0.82)+"px"));
+    localStorage.setItem("mb_imgw",w); if(window.fitAll)setTimeout(window.fitAll,60);};
+  app2(v); sel.onchange=e=>app2(e.target.value);})();
 /* ── 字級（記憶） ── */
 (function(){
   let sc=parseFloat(localStorage.getItem("mb_scale")||"1");
