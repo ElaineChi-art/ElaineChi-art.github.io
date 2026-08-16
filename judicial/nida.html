@@ -66,6 +66,7 @@ em{font-style:normal;font-weight:700;color:#8e1b1b}
 <button id="stop">■ 停</button>
 <b>語速</b><input id="rate" type="range" min="0.7" max="1.6" step="0.1" value="1.05" style="width:88px">
 <b>聲音</b><select id="voice" style="max-width:148px;padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"></select>
+<label class="mini"><input type="checkbox" id="contall" checked> 點一題從該題念到底</label>
 <label class="mini"><input type="checkbox" id="notip"> 不念考場提示</label>
 <span class="mini" id="st"></span>
 </div>
@@ -119,16 +120,66 @@ function syncTOC(){
 document.getElementById("tocbtn").onclick=()=>document.getElementById("toc").classList.toggle("open");
 addEventListener("scroll",()=>{clearTimeout(window.__st);window.__st=setTimeout(syncTOC,80)},{passive:true});
 document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render()};
-/* 朗讀 */
-let voices=[],pref=localStorage.getItem("mb_voice")||"",queue=[],qi=0,playing=false,keep=null;
+const PLAYLABEL="▶ 朗讀全部";
+
+/* ── 朗讀引擎（防 GC／防 15 秒斷線／watchdog 續播） ── */
+let voices=[],pref=localStorage.getItem("mb_voice")||"",queue=[],qi=0,playing=false,keep=null,wd=null;
+let utterRefs=[];               // 保留參考，避免被 GC 掉導致 onend 不觸發
 function loadVoices(){try{voices=speechSynthesis.getVoices()||[]}catch(e){voices=[]}
-  const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));const s=document.getElementById("voice");s.innerHTML="";
+  const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));const s=document.getElementById("voice");
+  if(!s)return; s.innerHTML="";
   zh.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name;s.appendChild(o)});
   const mj=zh.find(v=>/Meijia|美佳/i.test(v.name));if(!pref&&mj)pref=mj.name;if(pref)s.value=pref;}
 function best(){const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
   return zh.find(v=>v.name===pref)||zh.find(v=>/Meijia|美佳/i.test(v.name))||zh.find(v=>v.lang==="zh-TW")||zh[0]||null;}
-function chunks(t){const out=[];let s="";t.replace(/\s+/g," ").split(/(?<=[。！？；：])/).forEach(p=>{
-  if((s+p).length>140){if(s)out.push(s);s=p}else s+=p});if(s.trim())out.push(s);return out.filter(x=>x.trim());}
+function rateNow(){return parseFloat(document.getElementById("rate").value)||1;}
+function chunks(t){const out=[];let s="";
+  String(t).replace(/\s+/g," ").split(/(?<=[。！？；：，])/).forEach(p=>{
+    if((s+p).length>90){if(s)out.push(s);s=p}else s+=p});
+  if(s.trim())out.push(s);return out.filter(x=>x.trim());}
+function speakNext(){
+  clearTimeout(wd);
+  if(!playing){return;}
+  if(qi>=queue.length){stopAll();return;}
+  const it=queue[qi];
+  highlight(it);
+  const u=new SpeechSynthesisUtterance(it.text);
+  u.lang="zh-TW"; u.rate=rateNow();
+  const v=best(); if(v)u.voice=v;
+  utterRefs.push(u); if(utterRefs.length>40)utterRefs.shift();
+  let done=false;
+  const go=()=>{ if(done)return; done=true; clearTimeout(wd); qi++; setTimeout(speakNext,20); };
+  u.onend=go; u.onerror=go;
+  const st=document.getElementById("st"); if(st)st.textContent=(qi+1)+" / "+queue.length;
+  try{ speechSynthesis.speak(u); }catch(e){ go(); return; }
+  // watchdog：依字數估時長，逾時仍未結束就強制前進，避免整串卡死
+  const est=Math.max(4000, it.text.length*(1000/(4.2*rateNow()))+4000);
+  wd=setTimeout(()=>{ if(playing&&!done){ try{speechSynthesis.cancel()}catch(e){} go(); } },est);
+}
+function start(list){
+  try{speechSynthesis.cancel()}catch(e){}
+  queue=[];qi=0;utterRefs=[];
+  buildQueue(list);
+  if(!queue.length)return;
+  playing=true;
+  const pp=document.getElementById("pp"); if(pp)pp.textContent="⏸ 暫停";
+  clearInterval(keep);
+  keep=setInterval(()=>{ if(!playing)return;
+    if(speechSynthesis.speaking&&!speechSynthesis.paused){ try{speechSynthesis.pause();speechSynthesis.resume();}catch(e){} }
+  },9000);
+  setTimeout(speakNext,220);     // cancel() 是非同步，等一下再開講
+}
+function stopAll(){playing=false;clearInterval(keep);clearTimeout(wd);
+  try{speechSynthesis.cancel()}catch(e){}
+  const pp=document.getElementById("pp"); if(pp)pp.textContent=PLAYLABEL;
+  const st=document.getElementById("st"); if(st)st.textContent="";
+  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));}
+
+function highlight(it){
+  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
+  const el=document.getElementById("t"+it.i);
+  if(el){el.classList.add("now"); if(it.first)el.scrollIntoView({block:"start",behavior:"smooth"});}
+}
 function topicText(idx){
   const t=window.NIDA[idx];const no=document.getElementById("notip").checked;
   let s="題型"+t.code.replace(/-/g,"之")+"。"+t.title+"。";let a=0,b=0;
@@ -140,36 +191,19 @@ function topicText(idx){
     else if(it.k==="tip"&&!no)s+="考場提示。"+it.t;
   });return s;
 }
-function speakNext(){
-  if(!playing||qi>=queue.length){stopAll();return;}
-  const it=queue[qi];
-  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
-  const el=document.getElementById("t"+it.i);
-  if(el){el.classList.add("now");if(it.first)el.scrollIntoView({block:"start",behavior:"smooth"});}
-  const u=new SpeechSynthesisUtterance(it.text);u.lang="zh-TW";
-  u.rate=parseFloat(document.getElementById("rate").value);
-  const v=best();if(v)u.voice=v;
-  u.onend=()=>{qi++;speakNext()};u.onerror=()=>{qi++;speakNext()};
-  document.getElementById("st").textContent=(qi+1)+" / "+queue.length;
-  speechSynthesis.speak(u);
-}
-function start(list){
-  speechSynthesis.cancel();queue=[];qi=0;
+function buildQueue(list){
   list.forEach(i=>chunks(topicText(i)).forEach((c,k)=>queue.push({text:c,i:i,first:k===0})));
-  if(!queue.length)return;
-  playing=true;document.getElementById("pp").textContent="⏸ 暫停";
-  clearInterval(keep);keep=setInterval(()=>{if(playing&&speechSynthesis.speaking)speechSynthesis.resume()},7000);
-  speakNext();
 }
-function stopAll(){playing=false;speechSynthesis.cancel();clearInterval(keep);
-  document.getElementById("pp").textContent="▶ 朗讀全部";document.getElementById("st").textContent="";
-  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));}
+function visibleIdx(){return [...document.querySelectorAll(".tp")].map(e=>+e.dataset.i);}
 document.getElementById("app").addEventListener("click",e=>{
-  const b=e.target.closest(".play");if(!b)return;stopAll();start([+b.dataset.i]);});
+  const b=e.target.closest(".play");if(!b)return;
+  const i=+b.dataset.i, vis=visibleIdx(), pos=vis.indexOf(i);
+  const cont=document.getElementById("contall").checked;
+  stopAll(); start(cont&&pos>=0?vis.slice(pos):[i]);});
 document.getElementById("pp").onclick=()=>{
   if(playing){if(speechSynthesis.paused){speechSynthesis.resume();document.getElementById("pp").textContent="⏸ 暫停";}
     else{speechSynthesis.pause();document.getElementById("pp").textContent="▶ 繼續";}return;}
-  const vis=[...document.querySelectorAll(".tp")].map(e=>+e.dataset.i);start(vis);};
+  start(visibleIdx());};
 document.getElementById("stop").onclick=stopAll;
 document.getElementById("voice").onchange=e=>{pref=e.target.value;localStorage.setItem("mb_voice",pref)};
 loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSynthesis.onvoiceschanged=loadVoices;

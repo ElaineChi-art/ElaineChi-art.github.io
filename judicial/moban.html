@@ -79,6 +79,7 @@ padding:8px 12px;display:flex;gap:8px;align-items:center;z-index:30;flex-wrap:wr
 <button id="stop">■ 停</button>
 <b>語速</b><input id="rate" type="range" min="0.7" max="1.6" step="0.1" value="1.05" style="width:90px">
 <b>聲音</b><select id="voice" style="max-width:150px;padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"></select>
+<label class="mini"><input type="checkbox" id="contall" checked> 點一題從該題念到底</label>
 <span class="mini" id="st"></span>
 </div>
 <script src="moban-data.js"></script>
@@ -136,55 +137,75 @@ function syncTOC(){
   const act=bs.filter(b=>b.y<170).pop()||bs[0];
   document.querySelectorAll("#toc a").forEach(a=>a.classList.toggle("on",act&&a.dataset.b===act.i));
 }
-/* ── 朗讀 ── */
-let voices=[],pref=localStorage.getItem("mb_voice")||"",queue=[],qi=0,playing=false,keep=null;
-function loadVoices(){ try{voices=speechSynthesis.getVoices()||[]}catch(e){voices=[]}
-  const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
-  const sel=document.getElementById("voice"); sel.innerHTML="";
-  zh.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name;sel.appendChild(o)});
-  const meijia=zh.find(v=>/Meijia|美佳/i.test(v.name));
-  if(!pref&&meijia)pref=meijia.name;
-  if(pref)sel.value=pref;
-}
+const PLAYLABEL="▶ 朗讀本頁";
+
+/* ── 朗讀引擎（防 GC／防 15 秒斷線／watchdog 續播） ── */
+let voices=[],pref=localStorage.getItem("mb_voice")||"",queue=[],qi=0,playing=false,keep=null,wd=null;
+let utterRefs=[];               // 保留參考，避免被 GC 掉導致 onend 不觸發
+function loadVoices(){try{voices=speechSynthesis.getVoices()||[]}catch(e){voices=[]}
+  const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));const s=document.getElementById("voice");
+  if(!s)return; s.innerHTML="";
+  zh.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name;s.appendChild(o)});
+  const mj=zh.find(v=>/Meijia|美佳/i.test(v.name));if(!pref&&mj)pref=mj.name;if(pref)s.value=pref;}
 function best(){const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
   return zh.find(v=>v.name===pref)||zh.find(v=>/Meijia|美佳/i.test(v.name))||zh.find(v=>v.lang==="zh-TW")||zh[0]||null;}
+function rateNow(){return parseFloat(document.getElementById("rate").value)||1;}
 function chunks(t){const out=[];let s="";
-  t.replace(/\s+/g," ").split(/(?<=[。！？；：])/).forEach(p=>{
-    if((s+p).length>140){if(s)out.push(s);s=p}else s+=p});
+  String(t).replace(/\s+/g," ").split(/(?<=[。！？；：，])/).forEach(p=>{
+    if((s+p).length>90){if(s)out.push(s);s=p}else s+=p});
   if(s.trim())out.push(s);return out.filter(x=>x.trim());}
+function speakNext(){
+  clearTimeout(wd);
+  if(!playing){return;}
+  if(qi>=queue.length){stopAll();return;}
+  const it=queue[qi];
+  highlight(it);
+  const u=new SpeechSynthesisUtterance(it.text);
+  u.lang="zh-TW"; u.rate=rateNow();
+  const v=best(); if(v)u.voice=v;
+  utterRefs.push(u); if(utterRefs.length>40)utterRefs.shift();
+  let done=false;
+  const go=()=>{ if(done)return; done=true; clearTimeout(wd); qi++; setTimeout(speakNext,20); };
+  u.onend=go; u.onerror=go;
+  const st=document.getElementById("st"); if(st)st.textContent=(qi+1)+" / "+queue.length;
+  try{ speechSynthesis.speak(u); }catch(e){ go(); return; }
+  // watchdog：依字數估時長，逾時仍未結束就強制前進，避免整串卡死
+  const est=Math.max(4000, it.text.length*(1000/(4.2*rateNow()))+4000);
+  wd=setTimeout(()=>{ if(playing&&!done){ try{speechSynthesis.cancel()}catch(e){} go(); } },est);
+}
+function start(list){
+  try{speechSynthesis.cancel()}catch(e){}
+  queue=[];qi=0;utterRefs=[];
+  buildQueue(list);
+  if(!queue.length)return;
+  playing=true;
+  const pp=document.getElementById("pp"); if(pp)pp.textContent="⏸ 暫停";
+  clearInterval(keep);
+  keep=setInterval(()=>{ if(!playing)return;
+    if(speechSynthesis.speaking&&!speechSynthesis.paused){ try{speechSynthesis.pause();speechSynthesis.resume();}catch(e){} }
+  },9000);
+  setTimeout(speakNext,220);     // cancel() 是非同步，等一下再開講
+}
+function stopAll(){playing=false;clearInterval(keep);clearTimeout(wd);
+  try{speechSynthesis.cancel()}catch(e){}
+  const pp=document.getElementById("pp"); if(pp)pp.textContent=PLAYLABEL;
+  const st=document.getElementById("st"); if(st)st.textContent="";
+  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));}
+
+function highlight(it){
+  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
+  if(it.el){it.el.classList.add("now"); if(it.first)it.el.scrollIntoView({block:"center",behavior:"smooth"});}
+}
 function cardText(el){
   const t=el.querySelector(".ct span").textContent.trim();
   let s="爭點。"+t+"。";
   el.querySelectorAll(".line").forEach(l=>{
-    const tg=l.querySelector(".tg").getAttribute("title");
-    s+=tg+"。"+l.querySelector(".tx").textContent.trim()+"。";});
+    s+=l.querySelector(".tg").getAttribute("title")+"。"+l.querySelector(".tx").textContent.trim()+"。";});
   return s;
 }
-function speakNext(){
-  if(!playing||qi>=queue.length){stopAll();return;}
-  const it=queue[qi];
-  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
-  if(it.el){it.el.classList.add("now");it.el.scrollIntoView({block:"center",behavior:"smooth"});}
-  const u=new SpeechSynthesisUtterance(it.text);
-  u.lang="zh-TW";u.rate=parseFloat(document.getElementById("rate").value);
-  const v=best(); if(v)u.voice=v;
-  u.onend=()=>{qi++;speakNext();};
-  u.onerror=()=>{qi++;speakNext();};
-  document.getElementById("st").textContent=(qi+1)+" / "+queue.length;
-  speechSynthesis.speak(u);
+function buildQueue(list){
+  list.forEach(el=>chunks(cardText(el)).forEach((c,k)=>queue.push({text:c,el:el,first:k===0})));
 }
-function start(list){
-  speechSynthesis.cancel(); queue=[];qi=0;
-  list.forEach(el=>chunks(cardText(el)).forEach(c=>queue.push({text:c,el})));
-  if(!queue.length)return;
-  playing=true; document.getElementById("pp").textContent="⏸ 暫停";
-  clearInterval(keep); keep=setInterval(()=>{if(playing&&speechSynthesis.speaking)speechSynthesis.resume()},7000);
-  speakNext();
-}
-function stopAll(){playing=false;speechSynthesis.cancel();clearInterval(keep);
-  document.getElementById("pp").textContent="▶ 朗讀本頁";
-  document.getElementById("st").textContent="";
-  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));}
 /* ── 事件 ── */
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
@@ -195,7 +216,9 @@ document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{
 document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render();};
 document.getElementById("app").addEventListener("click",e=>{
   const b=e.target.closest(".play"); if(!b)return;
-  const card=b.closest(".card"); stopAll(); start([card]);});
+  const card=b.closest(".card"), all=window.__rows||[], pos=all.indexOf(card);
+  const cont=document.getElementById("contall").checked;
+  stopAll(); start(cont&&pos>=0?all.slice(pos):[card]);});
 document.getElementById("pp").onclick=()=>{
   if(playing){ if(speechSynthesis.paused){speechSynthesis.resume();document.getElementById("pp").textContent="⏸ 暫停";}
     else{speechSynthesis.pause();document.getElementById("pp").textContent="▶ 繼續";} return;}
