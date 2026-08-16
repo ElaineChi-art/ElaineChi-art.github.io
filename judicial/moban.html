@@ -141,7 +141,7 @@ function syncTOC(){
 const PLAYLABEL="▶ 朗讀本頁";
 
 /* ── 朗讀引擎（防 GC／防 15 秒斷線／watchdog 續播） ── */
-let voices=[],pref=localStorage.getItem("mb_voice")||"",queue=[],qi=0,playing=false,keep=null,wd=null;
+let voices=[],pref=localStorage.getItem("mb_voice")||"",queue=[],qi=0,playing=false,keep=null,wd=null,poll=null;
 let utterRefs=[];               // 保留參考，避免被 GC 掉導致 onend 不觸發
 function loadVoices(){try{voices=speechSynthesis.getVoices()||[]}catch(e){voices=[]}
   const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));const s=document.getElementById("voice");
@@ -160,7 +160,7 @@ function chunks(t){const out=[];let s="";
     if((s+p).length>90){if(s)out.push(s);s=p}else s+=p});
   if(s.trim())out.push(s);return out.filter(x=>x.trim());}
 function speakNext(){
-  clearTimeout(wd);
+  clearTimeout(wd); clearInterval(poll);
   if(!playing){return;}
   if(qi>=queue.length){stopAll();return;}
   const it=queue[qi];
@@ -170,12 +170,23 @@ function speakNext(){
   const v=best(); if(v)u.voice=v;
   utterRefs.push(u); if(utterRefs.length>40)utterRefs.shift();
   let done=false;
-  const go=()=>{ if(done)return; done=true; clearTimeout(wd); qi++; setTimeout(speakNext,20); };
+  const go=()=>{ if(done)return; done=true; clearTimeout(wd); clearInterval(poll);
+                 qi++; setTimeout(speakNext,20); };
   u.onend=go; u.onerror=go;
-  const st=document.getElementById("st"); if(st)st.textContent=Math.max(1,qi)+" / "+(queue.length-1);
+  const st=document.getElementById("st");
+  if(st)st.textContent=Math.max(1,qi)+" / "+(queue.length-1);
+  const t0=Date.now();
   try{ speechSynthesis.speak(u); }catch(e){ go(); return; }
-  // watchdog：依字數估時長，逾時仍未結束就強制前進，避免整串卡死
-  const est=Math.max(4000, it.text.length*(1000/(4.2*rateNow()))+4000);
+  // 主要推進機制：輪詢引擎狀態（不依賴 onend，Safari/Chrome 都常漏觸發）
+  poll=setInterval(()=>{
+    if(!playing||done)return;
+    if(Date.now()-t0<900)return;                 // 剛送出，給引擎起跑時間
+    let sp=false,pd=false,ps=false;
+    try{sp=speechSynthesis.speaking;pd=speechSynthesis.pending;ps=speechSynthesis.paused;}catch(e){}
+    if(!sp&&!pd&&!ps) go();                      // 已唸完但 onend 沒來
+  },350);
+  // 保險：估算時長逾時仍未結束才強制前進（放寬到 1.8 倍 + 8 秒）
+  const est=Math.max(8000, it.text.length*(1000/(4.2*rateNow()))*1.8+8000);
   wd=setTimeout(()=>{ if(playing&&!done){ try{speechSynthesis.cancel()}catch(e){} go(); } },est);
 }
 function whenIdle(cb,n){n=n||0;
@@ -191,12 +202,13 @@ function start(list){
   playing=true;
   const pp=document.getElementById("pp"); if(pp)pp.textContent="⏸ 暫停";
   clearInterval(keep);
-  keep=setInterval(()=>{ if(!playing)return;
-    if(speechSynthesis.speaking&&!speechSynthesis.paused){ try{speechSynthesis.pause();speechSynthesis.resume();}catch(e){} }
-  },9000);
+  if(/Chrome|Edg/.test(navigator.userAgent)&&!/Version\/\d+.*Safari/.test(navigator.userAgent)){
+    keep=setInterval(()=>{ if(!playing)return;
+      if(speechSynthesis.speaking&&!speechSynthesis.paused){ try{speechSynthesis.pause();speechSynthesis.resume();}catch(e){} }
+    },9000); }
   whenIdle(()=>setTimeout(speakNext,120));
 }
-function stopAll(){playing=false;clearInterval(keep);clearTimeout(wd);
+function stopAll(){playing=false;clearInterval(keep);clearInterval(poll);clearTimeout(wd);
   try{speechSynthesis.cancel()}catch(e){}
   const pp=document.getElementById("pp"); if(pp)pp.textContent=PLAYLABEL;
   const st=document.getElementById("st"); if(st)st.textContent="";
