@@ -51,6 +51,24 @@ em{font-style:normal;font-weight:700;color:#8e1b1b}
 .mini{font-size:12px;color:var(--sub)}
 .now{outline:2px solid var(--acc);outline-offset:3px;border-radius:4px}
 .empty{text-align:center;color:var(--sub);padding:40px 0}
+.btns{display:flex;gap:5px;align-items:center;white-space:nowrap}
+.tb{border:1px solid var(--line);background:transparent;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:12px;color:var(--sub)}
+.tb.on{background:var(--red);color:#fff;border-color:var(--red)}
+.sd{margin-top:6px}
+.sd .r{display:flex;gap:7px;margin:5px 0;align-items:flex-start}
+.sd .lb{flex:0 0 auto;width:23px;height:20px;border-radius:4px;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.sd .bd{flex:1;font-size:14.3px;line-height:1.75}
+.L爭{background:#8e6c1a}.L據{background:#566573}.L實{background:#2b5f8f}.L說{background:#2e7d52}
+.L採{background:#7d3c98}.L攝{background:#117864}.L結{background:#b03a2e}.L訣{background:#7d6608}
+.sd .r.k訣 .bd{background:rgba(212,172,13,.13);padding:6px 10px;border-radius:6px;font-size:13.2px}
+.tools{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 4px;padding:6px 8px;background:rgba(93,173,226,.09);border-radius:7px}
+.tools button{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:3px 9px;cursor:pointer;font-size:12.5px}
+.body[contenteditable="true"]{outline:2px dashed var(--acc);outline-offset:6px;border-radius:6px;background:rgba(93,173,226,.04)}
+.note{margin-top:10px}
+.note textarea{width:100%;min-height:62px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;
+background:var(--bg);color:var(--ink);font:inherit;font-size:13.6px;line-height:1.7;resize:vertical}
+.note .hd{font-size:12px;color:var(--sub);margin-bottom:3px}
+.edited{font-size:11px;color:var(--gold);margin-left:6px}
 </style></head><body>
 <header>
 <h1>✍️ 行政法題型擬答<small>上榜答題體例　按…次按…查本案中…綜上所述　共 <span id="tot">—</span> 題</small></h1>
@@ -71,12 +89,32 @@ em{font-style:normal;font-weight:700;color:#8e1b1b}
 <span class="mini" id="st"></span>
 </div>
 <script src="nida-data.js"></script>
+<script src="sudu-data.js"></script>
 <script>
 const EM=/(§\s*\d+[-\d]*[ⅠⅡⅢⅣⅤ]*|釋字第[一二三四五六七八九十百○\d]+號|憲判字第\d+號|第[一二三四五六七八九十百千\d]+條(?:第[一二三四五六七八九十\d]+項)?(?:第[一二三四五六七八九十\d]+款)?|行政程序法|行政訴訟法|訴願法|行政罰法|行政執行法|國家賠償法|地方制度法|教師法|房屋稅條例|政府採購法|原住民族工作權保障法|傳染病防治法|公務人員保障法|公務人員任用法|公務人員陞遷法|法院組織法|最高行政法院[^，。；、）]{0,20}|庭長法官聯席會議)/g;
 const CN="一二三四五六七八九十";
 const esc=s=>s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
 const rich=s=>esc(s).replace(EM,'<em>$1</em>');
 let kw="";
+function bodyHTML(t,mode){
+  let h="",a=0,b=0;
+  if(mode==="sd"){
+    const d=(window.SUDU||{})[t.code];
+    if(!d)return '<div class="empty" style="padding:22px 0">此題速讀版尚未製作<br><span style="font-size:12px">（目前只有 1-1-1，說一聲我照這個規格全部補齊）</span></div>';
+    h='<div class="sd">';
+    d.forEach(([k,v])=>{h+='<div class="r k'+k+'"><span class="lb L'+k+'">'+k+'</span><span class="bd">'+rich(v)+'</span></div>';});
+    return h+'</div>';
+  }
+  t.items.forEach(it=>{
+    if(it.k==="lead")h+='<div class="lead">'+rich(it.t)+'</div>';
+    else if(it.k==="h1"){a++;b=0;h+='<div class="h1x">'+CN[a-1]+'、'+rich(it.t)+'</div>';}
+    else if(it.k==="h2"){b++;h+='<div class="h2x">（'+CN[b-1]+'）'+rich(it.t)+'</div>';}
+    else if(it.k==="p")h+='<div class="p'+(b?' d2':'')+'">'+rich(it.t)+'</div>';
+    else if(it.k==="tip")h+='<div class="tip">【考場提示】'+esc(it.t)+'</div>';
+  });
+  return h;
+}
+const K=(c,m)=>"nida_"+c+"_"+m, KN=c=>"nidanote_"+c;
 function render(){
   const app=document.getElementById("app");let html="",lastCh="",lastSec="",n=0;
   window.NIDA.forEach((t,idx)=>{
@@ -85,16 +123,19 @@ function render(){
     n++;
     if(t.ch!==lastCh){html+='<div class="ch">'+esc(t.ch)+'</div>';lastCh=t.ch;lastSec="";}
     if(t.sec!==lastSec){html+='<div class="sec">'+esc(t.sec)+'</div>';lastSec=t.sec;}
-    html+='<div class="tp" id="t'+idx+'" data-i="'+idx+'"><div class="tt"><span>題型 '+esc(t.code)+'　'+esc(t.title)+'</span><button class="play" data-i="'+idx+'">🔊</button></div>';
-    let a=0,b=0;
-    t.items.forEach(it=>{
-      if(it.k==="lead")html+='<div class="lead">'+rich(it.t)+'</div>';
-      else if(it.k==="h1"){a++;b=0;html+='<div class="h1x">'+CN[a-1]+'、'+rich(it.t)+'</div>';}
-      else if(it.k==="h2"){b++;html+='<div class="h2x">（'+CN[b-1]+'）'+rich(it.t)+'</div>';}
-      else if(it.k==="p")html+='<div class="p'+(b?' d2':'')+'">'+rich(it.t)+'</div>';
-      else if(it.k==="tip")html+='<div class="tip">【考場提示】'+esc(it.t)+'</div>';
-    });
-    html+='</div>';
+    const mode=localStorage.getItem("nidamode_"+t.code)||"full";
+    const saved=localStorage.getItem(K(t.code,mode));
+    const note=localStorage.getItem(KN(t.code))||"";
+    html+='<div class="tp" id="t'+idx+'" data-i="'+idx+'" data-code="'+t.code+'" data-mode="'+mode+'">'+
+      '<div class="tt"><span>題型 '+esc(t.code)+'　'+esc(t.title)+
+      (saved?'<span class="edited">已編輯</span>':'')+'</span><span class="btns">'+
+      '<button class="tb sw'+(mode==="sd"?" on":"")+'" data-i="'+idx+'">'+(mode==="sd"?"📄 擬答":"⚡ 速讀")+'</button>'+
+      '<button class="tb ed" data-i="'+idx+'">✏️</button>'+
+      '<button class="tb play" data-i="'+idx+'">🔊</button></span></div>'+
+      '<div class="body">'+(saved||bodyHTML(t,mode))+'</div>'+
+      '<div class="note"><div class="hd">📝 我的筆記（自動儲存）</div>'+
+      '<textarea data-code="'+esc(t.code)+'" placeholder="貼上或寫下你自己的補充…">'+esc(note)+'</textarea></div>'+
+      '</div>';
   });
   app.innerHTML=html||'<div class="empty">找不到符合的題型</div>';
   document.getElementById("cnt").textContent="顯示 "+n+" 題";
@@ -195,11 +236,60 @@ function buildQueue(list){
   list.forEach(i=>chunks(topicText(i)).forEach((c,k)=>queue.push({text:c,i:i,first:k===0})));
 }
 function visibleIdx(){return [...document.querySelectorAll(".tp")].map(e=>+e.dataset.i);}
-document.getElementById("app").addEventListener("click",e=>{
+const app=document.getElementById("app");
+app.addEventListener("click",e=>{
+  const sw=e.target.closest(".sw");
+  if(sw){const card=sw.closest(".tp"),c=card.dataset.code;
+    const nm=card.dataset.mode==="sd"?"full":"sd";
+    localStorage.setItem("nidamode_"+c,nm);stopAll();render();syncTOC();
+    const el=document.querySelector('[data-code="'+c+'"]'); if(el)el.scrollIntoView({block:"start"});
+    return;}
+  const ed=e.target.closest(".ed");
+  if(ed){toggleEdit(ed.closest(".tp"));return;}
   const b=e.target.closest(".play");if(!b)return;
   const i=+b.dataset.i, vis=visibleIdx(), pos=vis.indexOf(i);
   const cont=document.getElementById("contall").checked;
   stopAll(); start(cont&&pos>=0?vis.slice(pos):[i]);});
+app.addEventListener("input",e=>{
+  const ta=e.target.closest(".note textarea"); if(!ta)return;
+  localStorage.setItem(KN(ta.dataset.code),ta.value);});
+function toggleEdit(card){
+  const body=card.querySelector(".body"), on=body.getAttribute("contenteditable")==="true";
+  const c=card.dataset.code, m=card.dataset.mode;
+  if(on){
+    body.setAttribute("contenteditable","false");
+    localStorage.setItem(K(c,m),body.innerHTML);
+    card.querySelector(".tools")?.remove();
+    card.querySelector(".ed").classList.remove("on");
+    if(!card.querySelector(".edited")){
+      const s2=document.createElement("span");s2.className="edited";s2.textContent="已編輯";
+      card.querySelector(".tt span").appendChild(s2);}
+    return;
+  }
+  body.setAttribute("contenteditable","true");
+  card.querySelector(".ed").classList.add("on");
+  const tb=document.createElement("div");tb.className="tools";
+  tb.innerHTML='<button data-a="red">🔴 紅字</button><button data-a="hl">🖍️ 螢光筆</button>'+
+    '<button data-a="blue">🔵 藍字</button><button data-a="b">B 粗體</button>'+
+    '<button data-a="clr">↩️ 清除格式</button><button data-a="save">💾 存檔</button>'+
+    '<button data-a="reset">♻️ 還原原文</button>';
+  body.parentNode.insertBefore(tb,body);
+  tb.onclick=ev=>{
+    const a=ev.target.closest("button")?.dataset.a; if(!a)return;
+    body.focus();
+    try{
+      if(a==="red")document.execCommand("foreColor",false,"#c0392b");
+      else if(a==="blue")document.execCommand("foreColor",false,"#1b4f72");
+      else if(a==="hl")document.execCommand("hiliteColor",false,"#ffe680");
+      else if(a==="b")document.execCommand("bold",false,null);
+      else if(a==="clr")document.execCommand("removeFormat",false,null);
+      else if(a==="save"){localStorage.setItem(K(c,m),body.innerHTML);ev.target.textContent="✓ 已存";
+        setTimeout(()=>ev.target.textContent="💾 存檔",1200);}
+      else if(a==="reset"){if(confirm("還原成原文？你的顏色與標記會消失（筆記欄不受影響）")){
+        localStorage.removeItem(K(c,m));render();syncTOC();}}
+    }catch(err){}
+  };
+}
 document.getElementById("pp").onclick=()=>{
   if(playing){if(speechSynthesis.paused){speechSynthesis.resume();document.getElementById("pp").textContent="⏸ 暫停";}
     else{speechSynthesis.pause();document.getElementById("pp").textContent="▶ 繼續";}return;}
