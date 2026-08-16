@@ -108,6 +108,8 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 <label class="mini"><input type="checkbox" id="notip"> 不念考場提示</label>
 <span class="mini" id="nowt"></span><span class="mini" id="st"></span>
 </div>
+<div id="lbx"><img alt=""></div>
+<input type="file" id="pick" accept="image/*" multiple style="display:none">
 <script src="nida-data.js"></script>
 <script src="sudu-data.js"></script>
 <script src="key-data.js"></script>
@@ -419,13 +421,12 @@ app.addEventListener("focusin",e=>{const nb=e.target.closest(".nb");
     const btn=b.querySelector(".tg2"); if(btn)btn.textContent="▴ 收合"; fit(nb);}});
 app.addEventListener("click",e=>{
   const im=e.target.closest(".nb img");
-  if(im){ const lb=document.getElementById("lbx"); lb.querySelector("img").src=im.src;
-    lb.style.display="flex"; return; }
+  if(im){ const lb=document.getElementById("lbx"); if(lb){lb.querySelector("img").src=im.src; lb.style.display="flex";} return; }
   const pic=e.target.closest(".tg2.pic");
-  if(pic){ const box=pic.closest(".note"); const inp=document.getElementById("pick");
+  if(pic){ const box=pic.closest(".note"); const inp=document.getElementById("pick"); if(!inp)return;
     inp.onchange=()=>{ insertImgs(inp.files,box); inp.value=""; }; inp.click(); return; }
 });
-document.getElementById("lbx").onclick=function(){this.style.display="none";};
+const _lb=document.getElementById("lbx"); if(_lb)_lb.onclick=function(){this.style.display="none";};
 app.addEventListener("click",e=>{
   const t2=e.target.closest(".tg2"); if(!t2||t2.classList.contains("pic"))return;
   const box=t2.closest(".note"), nb=box.querySelector(".nb");
@@ -498,6 +499,5 @@ rm.onchange=e=>{localStorage.setItem("nida_readmode",e.target.value);
 loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSynthesis.onvoiceschanged=loadVoices;
 document.getElementById("tot").textContent=window.NIDA.length;
 buildTOC();render();allMode();syncTOC();
-</script><div id="lbx"><img alt=""></div>
-<input type="file" id="pick" accept="image/*" multiple style="display:none">
+</script>
 </body></html>
