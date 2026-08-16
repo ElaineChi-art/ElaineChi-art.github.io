@@ -41,10 +41,9 @@ main{flex:1;min-width:0;padding:12px 16px 92px;max-width:860px}
 .p{text-indent:2em;margin:6px 0 6px 1.4em;font-size:14.4px}
 .p.d2{margin-left:2.8em}
 .tip{background:rgba(212,172,13,.12);border-left:3px solid var(--gold);padding:8px 12px;margin:12px 0 2px;font-size:13.3px;color:var(--gold);border-radius:0 6px 6px 0}
-em{font-style:normal;font-weight:700;color:#8e1b1b}
 b.kk{color:#c0392b;font-weight:700}
 body.nokk b.kk{color:inherit;font-weight:inherit}
-@media(prefers-color-scheme:dark){em{color:#f1948a}b.kk{color:#ec7063}}
+@media(prefers-color-scheme:dark){b.kk{color:#ec7063}}
 .play{border:1px solid var(--line);background:transparent;border-radius:6px;padding:2px 9px;cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:8px 12px;display:flex;gap:8px;align-items:center;z-index:30;flex-wrap:wrap}
 .bar b{font-size:12.5px;color:var(--sub);font-weight:500}
@@ -99,23 +98,17 @@ background:var(--bg);color:var(--ink);font:inherit;font-size:13.6px;line-height:
 <script src="sudu-data.js"></script>
 <script src="key-data.js"></script>
 <script>
-const EM=/(§\s*\d+[-\d]*[ⅠⅡⅢⅣⅤ]*|釋字第[一二三四五六七八九十百○\d]+號|憲判字第\d+號|第[一二三四五六七八九十百千\d]+條(?:第[一二三四五六七八九十\d]+項)?(?:第[一二三四五六七八九十\d]+款)?|行政程序法|行政訴訟法|訴願法|行政罰法|行政執行法|國家賠償法|地方制度法|教師法|房屋稅條例|政府採購法|原住民族工作權保障法|傳染病防治法|公務人員保障法|公務人員任用法|公務人員陞遷法|法院組織法|最高行政法院[^，。；、）]{0,20}|庭長法官聯席會議)/g;
 const CN="一二三四五六七八九十";
-const esc=s=>s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
 const reEsc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
 let KEYRE=null;
 function setKeys(code){
   const ks=((window.KEYS||{})[code]||[]).slice().sort((a,b)=>b.length-a.length);
   KEYRE = ks.length ? new RegExp("("+ks.map(esc).map(reEsc).join("|")+")","g") : null;
 }
-function rich(s){
-  let h=esc(s).replace(EM,'<em>$1</em>');
-  if(KEYRE){
-    h=h.split(/(<em>[\s\S]*?<\/em>)/).map(part=>
-      part.startsWith("<em>")?part:part.replace(KEYRE,'<b class="kk">$1</b>')).join("");
-  }
-  return h;
-}
+/* 擬答版：標紅（＝該題速讀版的內容）；速讀版與標題：不標 */
+function rich(s){ const h=esc(s); return KEYRE? h.replace(KEYRE,'<b class="kk">$1</b>') : h; }
+function plain(s){ return esc(s); }
 let kw="";
 function bodyHTML(t,mode){
   setKeys(t.code);
@@ -124,13 +117,13 @@ function bodyHTML(t,mode){
     const d=(window.SUDU||{})[t.code];
     if(!d)return '<div class="empty" style="padding:22px 0">此題速讀版尚未製作</div>';
     h='<div class="sd">';
-    d.forEach(([k,v])=>{h+='<div class="r k'+k+'"><span class="lb L'+k+'">'+k+'</span><span class="bd">'+rich(v)+'</span></div>';});
+    d.forEach(([k,v])=>{h+='<div class="r k'+k+'"><span class="lb L'+k+'">'+k+'</span><span class="bd">'+plain(v)+'</span></div>';});
     return h+'</div>';
   }
   t.items.forEach(it=>{
     if(it.k==="lead")h+='<div class="lead">'+rich(it.t)+'</div>';
-    else if(it.k==="h1"){a++;b=0;h+='<div class="h1x">'+CN[a-1]+'、'+rich(it.t)+'</div>';}
-    else if(it.k==="h2"){b++;h+='<div class="h2x">（'+CN[b-1]+'）'+rich(it.t)+'</div>';}
+    else if(it.k==="h1"){a++;b=0;h+='<div class="h1x">'+CN[a-1]+'、'+plain(it.t)+'</div>';}
+    else if(it.k==="h2"){b++;h+='<div class="h2x">（'+CN[b-1]+'）'+plain(it.t)+'</div>';}
     else if(it.k==="p")h+='<div class="p'+(b?' d2':'')+'">'+rich(it.t)+'</div>';
     else if(it.k==="tip")h+='<div class="tip">【考場提示】'+esc(it.t)+'</div>';
   });
