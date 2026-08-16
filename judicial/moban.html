@@ -1,0 +1,169 @@
+<!doctype html><html lang="zh-Hant"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📐 爭點答題模板 ‧ 司法官律師平台</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1c2833;--sub:#5d6d7e;--line:#e5e8e8;--acc:#1b4f72;
+--q:#8e6c1a;--j:#566573;--s:#2b5f8f;--x:#2e7d52;--b:#7d3c98;--h:#117864;--c:#b03a2e}
+@media(prefers-color-scheme:dark){:root{--bg:#151a1f;--card:#1d242b;--ink:#e8eef3;--sub:#9fb0bf;--line:#2c353d;--acc:#5dade2}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 -apple-system,"PingFang TC","Noto Sans TC",sans-serif}
+header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);padding:10px 14px}
+h1{margin:0 0 8px;font-size:17px;letter-spacing:.5px}
+h1 small{font-weight:400;color:var(--sub);font-size:12px;margin-left:6px}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+button,select,input{font:inherit;color:inherit}
+.tab{padding:6px 14px;border:1px solid var(--line);background:transparent;border-radius:20px;cursor:pointer}
+.tab.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.chip{padding:4px 10px;border:1px solid var(--line);background:transparent;border-radius:14px;cursor:pointer;font-size:12.5px}
+.chip.on{background:var(--ink);color:var(--bg)}
+#q{flex:1;min-width:150px;padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+main{padding:12px 14px 90px;max-width:900px;margin:0 auto}
+.band{margin:22px 0 10px;font-weight:700;font-size:15px;color:#fff;background:var(--acc);padding:7px 12px;border-radius:7px}
+.card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:9px;padding:11px 13px;margin:9px 0}
+.ct{font-weight:700;font-size:15px;display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.star{color:#c0392b;font-size:12px;white-space:nowrap}
+.star.s2{color:#b7950b}.star.s1{color:#95a5a6}
+.line{display:flex;gap:7px;margin-top:6px;align-items:flex-start}
+.tg{flex:0 0 auto;width:22px;height:19px;border-radius:4px;color:#fff;font-size:12px;font-weight:700;
+display:flex;align-items:center;justify-content:center;margin-top:2px}
+.tx{flex:1;font-size:14.2px}
+.tx em{font-style:normal;font-weight:700;color:#8e1b1b}
+@media(prefers-color-scheme:dark){.tx em{color:#f1948a}}
+.b-b .tx,.b-c .tx{font-weight:600}
+.play{border:1px solid var(--line);background:transparent;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:12px;color:var(--sub)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
+padding:8px 12px;display:flex;gap:8px;align-items:center;z-index:30;flex-wrap:wrap}
+.bar b{font-size:12.5px;color:var(--sub);font-weight:500}
+.bar button{padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:transparent;cursor:pointer}
+.bar button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.mini{font-size:12px;color:var(--sub)}
+.empty{text-align:center;color:var(--sub);padding:40px 0}
+.now{outline:2px solid var(--acc);outline-offset:2px}
+</style></head><body>
+<header>
+<h1>📐 爭點答題模板<small>題→據→實→說→採→攝→結　共 <span id="tot">—</span> 個爭點</small></h1>
+<div class="row" style="margin-bottom:6px">
+<button class="tab on" data-s="xs">刑事訴訟法</button>
+<button class="tab" data-s="xf">刑法</button>
+<button class="tab" data-s="xz">行政法</button>
+<input id="q" placeholder="搜尋爭點、條號、關鍵字…">
+</div>
+<div class="row">
+<button class="chip on" data-lv="0">全部</button>
+<button class="chip" data-lv="3">★★★ 必考</button>
+<button class="chip" data-lv="2">★★ 中頻</button>
+<button class="chip" data-lv="1">★ 冷門</button>
+<span class="mini" id="cnt"></span>
+</div>
+</header>
+<main id="app"></main>
+<div class="bar">
+<button id="pp" class="p">▶ 朗讀本頁</button>
+<button id="stop">■ 停</button>
+<b>語速</b><input id="rate" type="range" min="0.7" max="1.6" step="0.1" value="1.05" style="width:90px">
+<b>聲音</b><select id="voice" style="max-width:150px;padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"></select>
+<span class="mini" id="st"></span>
+</div>
+<script src="moban-data.js"></script>
+<script>
+const TAGS=[["q","題","--q"],["j","據","--j"],["s","實","--s"],["x","說","--x"],["b","採","--b"],["h","攝","--h"],["c","結","--c"]];
+const LAB={q:"題目在問什麼",j:"條文依據",s:"實務見解",x:"學說",b:"本文採",h:"涵攝",c:"結論"};
+let cur="xs",lv=0,kw="";
+const EM=/(§\s*\d+[-\d]*[ⅠⅡⅢⅣⅤ]*|釋字第\s*[一二三四五六七八九十百○\d]+\s*號|憲判字第\s*\d+\s*號|第\s*[一二三四五六七八九十百千\d]+\s*條(?:第\s*[一二三四五六七八九十\d]+\s*項)?(?:第\s*[一二三四五六七八九十\d]+\s*款)?|最高行政法院[^，。；、）]{0,18}|大法庭[^，。；、）]{0,10})/g;
+const esc=s=>s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+const rich=s=>esc(s).replace(EM,'<em>$1</em>');
+function render(){
+  const D=window.MOBAN[cur],app=document.getElementById("app");
+  let html="",n=0;
+  D.b.forEach(band=>{
+    const rows=band.r.filter(r=>{
+      if(lv&&(r.lv||1)!==lv)return false;
+      if(!kw)return true;
+      return (r.t+" "+TAGS.map(t=>r[t[0]]||"").join(" ")).toLowerCase().includes(kw);
+    });
+    if(!rows.length)return;
+    html+='<div class="band">'+esc(band.n)+'</div>';
+    rows.forEach(r=>{
+      n++;const st=r.lv||1;
+      html+='<div class="card" data-k="'+n+'"><div class="ct"><span>'+rich(r.t)+'</span>'+
+        '<span style="white-space:nowrap"><span class="star s'+st+'">'+"★".repeat(st)+'</span> '+
+        '<button class="play" data-k="'+n+'">🔊</button></span></div>';
+      TAGS.forEach(([k,lb,cv])=>{ if(!r[k])return;
+        html+='<div class="line b-'+k+'"><span class="tg" style="background:var('+cv+')" title="'+LAB[k]+'">'+lb+'</span><span class="tx">'+rich(r[k])+'</span></div>';});
+      html+='</div>';
+    });
+  });
+  app.innerHTML=html||'<div class="empty">找不到符合的爭點</div>';
+  document.getElementById("cnt").textContent="顯示 "+n+" 則";
+  window.__rows=[...app.querySelectorAll(".card")];
+}
+/* ── 朗讀 ── */
+let voices=[],pref=localStorage.getItem("mb_voice")||"",queue=[],qi=0,playing=false,keep=null;
+function loadVoices(){ try{voices=speechSynthesis.getVoices()||[]}catch(e){voices=[]}
+  const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
+  const sel=document.getElementById("voice"); sel.innerHTML="";
+  zh.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name;sel.appendChild(o)});
+  const meijia=zh.find(v=>/Meijia|美佳/i.test(v.name));
+  if(!pref&&meijia)pref=meijia.name;
+  if(pref)sel.value=pref;
+}
+function best(){const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
+  return zh.find(v=>v.name===pref)||zh.find(v=>/Meijia|美佳/i.test(v.name))||zh.find(v=>v.lang==="zh-TW")||zh[0]||null;}
+function chunks(t){const out=[];let s="";
+  t.replace(/\s+/g," ").split(/(?<=[。！？；：])/).forEach(p=>{
+    if((s+p).length>140){if(s)out.push(s);s=p}else s+=p});
+  if(s.trim())out.push(s);return out.filter(x=>x.trim());}
+function cardText(el){
+  const t=el.querySelector(".ct span").textContent.trim();
+  let s="爭點。"+t+"。";
+  el.querySelectorAll(".line").forEach(l=>{
+    const tg=l.querySelector(".tg").getAttribute("title");
+    s+=tg+"。"+l.querySelector(".tx").textContent.trim()+"。";});
+  return s;
+}
+function speakNext(){
+  if(!playing||qi>=queue.length){stopAll();return;}
+  const it=queue[qi];
+  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
+  if(it.el){it.el.classList.add("now");it.el.scrollIntoView({block:"center",behavior:"smooth"});}
+  const u=new SpeechSynthesisUtterance(it.text);
+  u.lang="zh-TW";u.rate=parseFloat(document.getElementById("rate").value);
+  const v=best(); if(v)u.voice=v;
+  u.onend=()=>{qi++;speakNext();};
+  u.onerror=()=>{qi++;speakNext();};
+  document.getElementById("st").textContent=(qi+1)+" / "+queue.length;
+  speechSynthesis.speak(u);
+}
+function start(list){
+  speechSynthesis.cancel(); queue=[];qi=0;
+  list.forEach(el=>chunks(cardText(el)).forEach(c=>queue.push({text:c,el})));
+  if(!queue.length)return;
+  playing=true; document.getElementById("pp").textContent="⏸ 暫停";
+  clearInterval(keep); keep=setInterval(()=>{if(playing&&speechSynthesis.speaking)speechSynthesis.resume()},7000);
+  speakNext();
+}
+function stopAll(){playing=false;speechSynthesis.cancel();clearInterval(keep);
+  document.getElementById("pp").textContent="▶ 朗讀本頁";
+  document.getElementById("st").textContent="";
+  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));}
+/* ── 事件 ── */
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");cur=b.dataset.s;stopAll();render();scrollTo(0,0);});
+document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");lv=+b.dataset.lv;render();});
+document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render();};
+document.getElementById("app").addEventListener("click",e=>{
+  const b=e.target.closest(".play"); if(!b)return;
+  const card=b.closest(".card"); stopAll(); start([card]);});
+document.getElementById("pp").onclick=()=>{
+  if(playing){ if(speechSynthesis.paused){speechSynthesis.resume();document.getElementById("pp").textContent="⏸ 暫停";}
+    else{speechSynthesis.pause();document.getElementById("pp").textContent="▶ 繼續";} return;}
+  start(window.__rows||[]);};
+document.getElementById("stop").onclick=stopAll;
+document.getElementById("voice").onchange=e=>{pref=e.target.value;localStorage.setItem("mb_voice",pref);};
+loadVoices(); if(speechSynthesis.onvoiceschanged!==undefined)speechSynthesis.onvoiceschanged=loadVoices;
+document.getElementById("tot").textContent=Object.values(window.MOBAN).reduce((a,s)=>a+s.b.reduce((x,b)=>x+b.r.length,0),0);
+render();
+</script></body></html>
