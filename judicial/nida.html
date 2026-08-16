@@ -52,6 +52,7 @@ em{font-style:normal;font-weight:700;color:#8e1b1b}
 .now{outline:2px solid var(--acc);outline-offset:3px;border-radius:4px}
 .empty{text-align:center;color:var(--sub);padding:40px 0}
 .btns{display:flex;gap:5px;align-items:center;white-space:nowrap}
+#allsd{padding:5px 11px;font-size:12.5px}
 .tb{border:1px solid var(--line);background:transparent;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:12px;color:var(--sub)}
 .tb.on{background:var(--red);color:#fff;border-color:var(--red)}
 .sd{margin-top:6px}
@@ -74,6 +75,7 @@ background:var(--bg);color:var(--ink);font:inherit;font-size:13.6px;line-height:
 <h1>✍️ 行政法題型擬答<small>上榜答題體例　按…次按…查本案中…綜上所述　共 <span id="tot">—</span> 題</small></h1>
 <div class="row">
 <button id="tocbtn">☰ 目錄</button>
+<button id="allsd" class="tb">⚡ 全部速讀</button>
 <input id="q" placeholder="搜尋題型、條號、關鍵字…">
 <span class="mini" id="cnt"></span>
 </div>
@@ -100,7 +102,7 @@ function bodyHTML(t,mode){
   let h="",a=0,b=0;
   if(mode==="sd"){
     const d=(window.SUDU||{})[t.code];
-    if(!d)return '<div class="empty" style="padding:22px 0">此題速讀版尚未製作<br><span style="font-size:12px">（目前只有 1-1-1，說一聲我照這個規格全部補齊）</span></div>';
+    if(!d)return '<div class="empty" style="padding:22px 0">此題速讀版尚未製作</div>';
     h='<div class="sd">';
     d.forEach(([k,v])=>{h+='<div class="r k'+k+'"><span class="lb L'+k+'">'+k+'</span><span class="bd">'+rich(v)+'</span></div>';});
     return h+'</div>';
@@ -160,7 +162,14 @@ function syncTOC(){
 }
 document.getElementById("tocbtn").onclick=()=>document.getElementById("toc").classList.toggle("open");
 addEventListener("scroll",()=>{clearTimeout(window.__st);window.__st=setTimeout(syncTOC,80)},{passive:true});
-document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render()};
+document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render();syncTOC()};
+function allMode(){const v=window.NIDA.every(t=>(localStorage.getItem("nidamode_"+t.code)||"full")==="sd");
+  const b=document.getElementById("allsd"); b.classList.toggle("on",v);
+  b.textContent=v?"📄 全部擬答":"⚡ 全部速讀"; return v;}
+document.getElementById("allsd").onclick=()=>{
+  const toFull=allMode();
+  window.NIDA.forEach(t=>localStorage.setItem("nidamode_"+t.code,toFull?"full":"sd"));
+  stopAll();render();allMode();syncTOC();};
 const PLAYLABEL="▶ 朗讀全部";
 
 /* ── 朗讀引擎（防 GC／防 15 秒斷線／watchdog 續播） ── */
@@ -221,16 +230,30 @@ function highlight(it){
   const el=document.getElementById("t"+it.i);
   if(el){el.classList.add("now"); if(it.first)el.scrollIntoView({block:"start",behavior:"smooth"});}
 }
+const LBN={"爭":"爭點","據":"依據","實":"實務見解","說":"學說","採":"本文見解","攝":"涵攝","結":"結論","訣":"口訣"};
 function topicText(idx){
-  const t=window.NIDA[idx];const no=document.getElementById("notip").checked;
-  let s="題型"+t.code.replace(/-/g,"之")+"。"+t.title+"。";let a=0,b=0;
-  t.items.forEach(it=>{
-    if(it.k==="lead")s+=it.t;
-    else if(it.k==="h1"){a++;b=0;s+=CN[a-1]+"、"+it.t+"。"}
-    else if(it.k==="h2"){b++;s+="第"+CN[b-1]+"款。"+it.t+"。"}
-    else if(it.k==="p")s+=it.t;
-    else if(it.k==="tip"&&!no)s+="考場提示。"+it.t;
-  });return s;
+  const card=document.getElementById("t"+idx); if(!card)return "";
+  const t=window.NIDA[idx], no=document.getElementById("notip").checked;
+  let s="題型"+t.code.replace(/-/g,"之")+"。"+t.title+"。";
+  const body=card.querySelector(".body"); if(!body)return s;
+  if(card.dataset.mode==="sd"){
+    body.querySelectorAll(".r").forEach(r=>{
+      const lb=(r.querySelector(".lb")||{}).textContent||"";
+      if(no&&lb==="訣")return;
+      const bd=(r.querySelector(".bd")||r).innerText.trim();
+      if(bd)s+=(LBN[lb]||"")+"。"+bd+"。";
+    });
+    if(!body.querySelector(".r"))s+=body.innerText.trim();
+  }else{
+    let a=0,b=0;
+    body.querySelectorAll(".lead,.h1x,.h2x,.p,.tip").forEach(el=>{
+      const tx=el.innerText.trim(); if(!tx)return;
+      if(el.classList.contains("tip")){ if(!no)s+="考場提示。"+tx.replace(/^【考場提示】/,"")+"。"; return;}
+      s+=tx+(/[。！？]$/.test(tx)?"":"。");
+    });
+    if(!body.querySelector(".lead,.h1x,.p"))s+=body.innerText.trim();
+  }
+  return s;
 }
 function buildQueue(list){
   list.forEach(i=>chunks(topicText(i)).forEach((c,k)=>queue.push({text:c,i:i,first:k===0})));
@@ -241,7 +264,7 @@ app.addEventListener("click",e=>{
   const sw=e.target.closest(".sw");
   if(sw){const card=sw.closest(".tp"),c=card.dataset.code;
     const nm=card.dataset.mode==="sd"?"full":"sd";
-    localStorage.setItem("nidamode_"+c,nm);stopAll();render();syncTOC();
+    localStorage.setItem("nidamode_"+c,nm);stopAll();render();allMode();syncTOC();
     const el=document.querySelector('[data-code="'+c+'"]'); if(el)el.scrollIntoView({block:"start"});
     return;}
   const ed=e.target.closest(".ed");
@@ -298,5 +321,5 @@ document.getElementById("stop").onclick=stopAll;
 document.getElementById("voice").onchange=e=>{pref=e.target.value;localStorage.setItem("mb_voice",pref)};
 loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSynthesis.onvoiceschanged=loadVoices;
 document.getElementById("tot").textContent=window.NIDA.length;
-buildTOC();render();syncTOC();
+buildTOC();render();allMode();syncTOC();
 </script></body></html>
