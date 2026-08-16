@@ -42,7 +42,9 @@ main{flex:1;min-width:0;padding:12px 16px 92px;max-width:860px}
 .p.d2{margin-left:2.8em}
 .tip{background:rgba(212,172,13,.12);border-left:3px solid var(--gold);padding:8px 12px;margin:12px 0 2px;font-size:13.3px;color:var(--gold);border-radius:0 6px 6px 0}
 em{font-style:normal;font-weight:700;color:#8e1b1b}
-@media(prefers-color-scheme:dark){em{color:#f1948a}}
+b.kk{color:#c0392b;font-weight:700}
+body.nokk b.kk{color:inherit;font-weight:inherit}
+@media(prefers-color-scheme:dark){em{color:#f1948a}b.kk{color:#ec7063}}
 .play{border:1px solid var(--line);background:transparent;border-radius:6px;padding:2px 9px;cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:8px 12px;display:flex;gap:8px;align-items:center;z-index:30;flex-wrap:wrap}
 .bar b{font-size:12.5px;color:var(--sub);font-weight:500}
@@ -76,6 +78,7 @@ background:var(--bg);color:var(--ink);font:inherit;font-size:13.6px;line-height:
 <div class="row">
 <button id="tocbtn">☰ 目錄</button>
 <button id="allsd" class="tb">⚡ 全部速讀</button>
+<button id="kk" class="tb">🔴 重點紅字</button>
 <input id="q" placeholder="搜尋題型、條號、關鍵字…">
 <span class="mini" id="cnt"></span>
 </div>
@@ -94,13 +97,28 @@ background:var(--bg);color:var(--ink);font:inherit;font-size:13.6px;line-height:
 </div>
 <script src="nida-data.js"></script>
 <script src="sudu-data.js"></script>
+<script src="key-data.js"></script>
 <script>
 const EM=/(§\s*\d+[-\d]*[ⅠⅡⅢⅣⅤ]*|釋字第[一二三四五六七八九十百○\d]+號|憲判字第\d+號|第[一二三四五六七八九十百千\d]+條(?:第[一二三四五六七八九十\d]+項)?(?:第[一二三四五六七八九十\d]+款)?|行政程序法|行政訴訟法|訴願法|行政罰法|行政執行法|國家賠償法|地方制度法|教師法|房屋稅條例|政府採購法|原住民族工作權保障法|傳染病防治法|公務人員保障法|公務人員任用法|公務人員陞遷法|法院組織法|最高行政法院[^，。；、）]{0,20}|庭長法官聯席會議)/g;
 const CN="一二三四五六七八九十";
 const esc=s=>s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
-const rich=s=>esc(s).replace(EM,'<em>$1</em>');
+const reEsc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+let KEYRE=null;
+function setKeys(code){
+  const ks=((window.KEYS||{})[code]||[]).slice().sort((a,b)=>b.length-a.length);
+  KEYRE = ks.length ? new RegExp("("+ks.map(esc).map(reEsc).join("|")+")","g") : null;
+}
+function rich(s){
+  let h=esc(s).replace(EM,'<em>$1</em>');
+  if(KEYRE){
+    h=h.split(/(<em>[\s\S]*?<\/em>)/).map(part=>
+      part.startsWith("<em>")?part:part.replace(KEYRE,'<b class="kk">$1</b>')).join("");
+  }
+  return h;
+}
 let kw="";
 function bodyHTML(t,mode){
+  setKeys(t.code);
   let h="",a=0,b=0;
   if(mode==="sd"){
     const d=(window.SUDU||{})[t.code];
@@ -127,6 +145,7 @@ function render(){
     n++;
     if(t.ch!==lastCh){html+='<div class="ch">'+esc(t.ch)+'</div>';lastCh=t.ch;lastSec="";}
     if(t.sec!==lastSec){html+='<div class="sec">'+esc(t.sec)+'</div>';lastSec=t.sec;}
+    setKeys(t.code);
     const mode=localStorage.getItem("nidamode_"+t.code)||"full";
     const saved=localStorage.getItem(K(t.code,mode));
     const note=localStorage.getItem(KN(t.code))||"";
@@ -168,6 +187,12 @@ document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();
 function allMode(){const v=window.NIDA.every(t=>(localStorage.getItem("nidamode_"+t.code)||"full")==="sd");
   const b=document.getElementById("allsd"); b.classList.toggle("on",v);
   b.textContent=v?"📄 全部擬答":"⚡ 全部速讀"; return v;}
+(function(){const b=document.getElementById("kk");
+  const off=localStorage.getItem("nida_nokk")==="1";
+  document.body.classList.toggle("nokk",off); b.classList.toggle("on",!off);
+  b.onclick=()=>{const n=!document.body.classList.contains("nokk");
+    document.body.classList.toggle("nokk",n);
+    localStorage.setItem("nida_nokk",n?"1":"0"); b.classList.toggle("on",!n);};})();
 document.getElementById("allsd").onclick=()=>{
   const toFull=allMode();
   window.NIDA.forEach(t=>localStorage.setItem("nidamode_"+t.code,toFull?"full":"sd"));
