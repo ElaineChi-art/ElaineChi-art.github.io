@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-14",
+  "updated": "2026-08-16",
   "lessons": [
     {
       "id": 1,
@@ -194,10 +194,10 @@
       "category": "backend",
       "topic": "資料庫架構規劃",
       "title": "設計一張資料表之前要先想清楚的三件事：正規化、索引、未來擴充",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-16",
+      "url": "posts/daily/2026-08-16.html",
+      "slides": 1
     },
     {
       "id": 19,

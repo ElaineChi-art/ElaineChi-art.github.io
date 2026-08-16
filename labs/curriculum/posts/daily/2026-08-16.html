@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>設計一張資料表之前要先想清楚的三件事：正規化、索引、未來擴充｜技能實驗室・每日課程</title>
+<meta name="description" content="開新資料表之前，先想清楚三件事，之後才不會傷筋動骨：正規化（把資料拆成不重複儲存的表，換取一致性）、索引（像書的目錄，加快查詢但拖慢寫入）、未來擴充（預留欄位與資料量成長的空間）。用玉山/91APP 的訂單表情境拆解怎麼落地，並釐清最常答錯的坑：過度正規化、亂加索引、以及用 email 當主鍵這種把設計寫死的決定。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-16</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・後端與資料庫</div>
+  <h1>設計一張資料表之前要先想清楚的三件事：正規化、索引、未來擴充</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-16</span>
+    <span>約 8 分鐘</span>
+    <span>對應真專案主題：資料庫架構規劃</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>開一張新資料表之前，先想清楚三件事，比事後改省太多力氣：<b>正規化</b>（把資料拆成不重複儲存的表，同一份資料只存一處，換取「改一次就到處都對」的一致性）、<b>索引</b>（像書後面的索引頁，讓資料庫查資料不用整本翻，代價是寫入變慢、也多佔空間，所以要挑常拿來查的欄位建）、<b>未來擴充</b>（一開始就想好這張表之後會不會長出新欄位、資料量會不會爆量，別把設計寫死）。這三件事全都是<b>取捨</b>，不是「越多越好」——正規化過頭查詢會很累、索引亂加寫入會拖慢、擴充留太多又變成過度設計。先把取捨想清楚，資料表才不會養到一半動不了。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-18-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260816" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260816" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260816)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260816)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M5 · 後端與資料庫  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">開表之前先想清楚：<tspan fill="#4D9FFF">正規化・索引・未來擴充</tspan></text>
+
+      <!-- 卡1：正規化 -->
+      <rect x="64" y="140" width="352" height="392" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="64" y="140" width="352" height="5" rx="2.5" fill="url(#topbarD20260816)"/>
+      <text x="86" y="184" font-size="19" font-weight="800" fill="#4D9FFF">① 正規化＝不重複存</text>
+      <text x="86" y="216" font-size="16" fill="#8FA1C0">同一份資料只存一處</text>
+      <text x="86" y="262" font-size="17" fill="#C7D2E4">✗ 訂單表裡抄一份會員姓名</text>
+      <text x="86" y="288" font-size="16" fill="#8FA1C0">改名字要一筆一筆改，一定漏</text>
+      <text x="86" y="336" font-size="17" fill="#C7D2E4">✓ 訂單只存 user_id</text>
+      <text x="86" y="362" font-size="16" fill="#8FA1C0">姓名放會員表，要用再 JOIN</text>
+      <text x="86" y="426" font-size="17" fill="#F2A33C">換取：改一次就到處都對</text>
+      <text x="86" y="452" font-size="16" fill="#8FA1C0">代價：查詢要多接幾張表</text>
+      <text x="86" y="510" font-size="16" font-weight="700" fill="#7E8CA8">→ 資料一致性優先才拆表。</text>
+
+      <!-- 卡2：索引 -->
+      <rect x="440" y="140" width="400" height="392" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="462" y="184" font-size="19" font-weight="800" fill="#F5F8FF">② 索引＝資料庫的目錄</text>
+      <text x="462" y="216" font-size="16" fill="#8FA1C0">查資料不用整本翻</text>
+
+      <rect x="462" y="238" width="356" height="66" rx="10" fill="rgba(53,192,142,.10)" stroke="#35C08E" stroke-width="1.5"/>
+      <text x="482" y="266" font-size="16" font-weight="700" fill="#35C08E">好處：WHERE / JOIN 的欄位變快</text>
+      <text x="482" y="290" font-size="15" fill="#8FA1C0">從整表掃 → 直接翻到那頁</text>
+
+      <rect x="462" y="316" width="356" height="66" rx="10" fill="rgba(242,163,60,.10)" stroke="#F2A33C" stroke-width="1.5"/>
+      <text x="482" y="344" font-size="16" font-weight="700" fill="#F2A33C">代價：寫入變慢、多佔空間</text>
+      <text x="482" y="368" font-size="15" fill="#8FA1C0">每次新增修改都要維護索引</text>
+
+      <text x="462" y="418" font-size="17" fill="#C7D2E4">挑「常拿來查」的欄位建：</text>
+      <text x="462" y="446" font-size="16" fill="#8FA1C0">user_id、email、建立時間…</text>
+      <text x="462" y="510" font-size="16" font-weight="700" fill="#7E8CA8">→ 不是欄位越多索引越好，是取捨。</text>
+
+      <!-- 卡3：未來擴充 -->
+      <rect x="864" y="140" width="352" height="392" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="864" y="140" width="352" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="886" y="184" font-size="19" font-weight="800" fill="#F2A33C">③ 未來擴充＝別寫死</text>
+      <text x="886" y="216" font-size="16" fill="#8FA1C0">現在的設計會不會卡住半年後</text>
+      <text x="886" y="262" font-size="17" fill="#C7D2E4">・主鍵用穩定的 id</text>
+      <text x="886" y="288" font-size="16" fill="#8FA1C0">別拿 email、手機當主鍵</text>
+      <text x="886" y="336" font-size="17" fill="#C7D2E4">・狀態欄想好會不會變多</text>
+      <text x="886" y="362" font-size="16" fill="#8FA1C0">訂單狀態之後可能新增幾種</text>
+      <text x="886" y="410" font-size="17" fill="#C7D2E4">・資料量爆量怎麼辦</text>
+      <text x="886" y="436" font-size="16" fill="#8FA1C0">先想分頁、封存、之後分表</text>
+      <text x="886" y="510" font-size="16" font-weight="700" fill="#7E8CA8">→ 留餘地，但別過度設計。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：資料表不是欄位湊一湊，是先想清楚三個取捨——一致性、查詢速度、未來彈性。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">正規化換一致性、索引換查詢速度、擴充換未來彈性；三者都要付代價，先想清楚才不會養到一半動不了。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-18-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-16-1.mp3"></audio>
+    <p>這張圖在講的是，設計一張資料表之前，先想清楚三件事。左邊是正規化，把資料拆成不重複儲存的表，避免同一份資料抄很多份、改的時候漏改。中間是索引，它像一本書的目錄，讓查詢不用一頁一頁翻，代價是寫入會變慢、也佔空間，所以要挑常拿來查的欄位建。右邊是未來擴充，一開始就想好這張表之後會不會長出新欄位、資料量會不會爆量，別把設計寫死。整張圖的主張是：資料表不是欄位湊一湊就好，而是先想清楚正規化、索引、未來擴充這三件事的取捨，之後要改才不會傷筋動骨。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>設計資料表，就是先決定「你的資料要怎麼被拆開、存進哪幾張表、怎麼互相對應」。一張資料表（table）你可以想成一張 Excel 表格：每一欄（column）是一種資訊（姓名、email、金額），每一列（row）是一筆紀錄。但跟隨手記的 Excel 不同，正式的資料表在開下去之前，有三個決定會一路影響到半年後——<b>正規化、索引、未來擴充</b>。這三件事不是語法，是設計判斷，改起來的成本遠比先想清楚高。</p>
+  <p>先用一句話定義這三件事。<b>正規化</b>（把資料拆成「不重複儲存」的表設計，換取資料一致性）——同一份資料只存一個地方，別在很多張表裡各抄一份。<b>索引</b>（index，像書後面的索引頁，資料庫靠它快速定位，不用把整張表從頭掃到尾）——它讓查詢變快，但每次寫入都要順便維護它，所以不是免費的。<b>未來擴充</b>——現在這個設計，撐不撐得住之後新增的需求和暴增的資料量。三者的共同點是：它們全都是<b>取捨（trade-off）</b>，沒有一個是「開越多越好」，這也是這一課真正想讓你記住的心法。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎資料表設計，是因為它是<b>整個系統最難反悔的一層</b>。程式邏輯寫錯了，改一支函式、重新部署就好；但資料表結構一旦上線、裝了幾百萬筆真實資料，要再改欄位、拆表，等於要一邊搬家一邊營業，風險和成本高一個量級。所以資深工程師會說「schema（資料表結構）是技術債裡利息最貴的一種」——這是常識性的工程經驗，不是引用特定報告的數字。前期多花半小時想清楚三個取捨，換的是後面不用停機搬資料的半年安寧。</p>
+  <p>這也正好對上 104 人力銀行《AI 人才趨勢報告》一直強調的方向：求職者要能打通<b>完整應用情境</b>，而不是只會孤立的單一技能。資料表設計就是「完整情境」裡很關鍵的一環——你不只是會用 SQL 把資料查出來，而是能想清楚「這些資料一開始該怎麼存，前端要的畫面、後端要的效能、之後的新需求，才能一起被滿足」。一個只會寫 CRUD（增刪改查）的人，和一個開表前會先問「這欄之後會不會變、這個查詢頻不頻繁、這份資料會不會被抄成很多份」的人，在面試桌上的差距非常明顯。前者是照著需求打字，後者是真的在做設計。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到玉山網銀或 91APP 這類產品，假設我要設計「會員」和「訂單」這兩張表，我會這樣套用三個取捨。<b>正規化</b>：訂單表裡我<b>不會</b>把會員姓名、地址整份抄進去，只存一個 <code>user_id</code> 指向會員表；因為姓名地址是會變的，如果每張訂單都抄一份，會員改個地址就得回頭更新他所有歷史訂單，一定會漏改、資料就開始「打架」。要顯示訂單上的收件人時，再用 <code>JOIN</code> 把會員表接回來查。<b>索引</b>：我會在「常拿來查」的欄位上建索引——<code>orders</code> 表的 <code>user_id</code>（因為「查某會員的所有訂單」是超高頻操作）、還有建立時間（要按時間排序、撈區間）；但像「訂單備註」這種幾乎不會拿來當查詢條件的欄位，就不浪費索引。<b>未來擴充</b>：訂單狀態我不會只寫死「已付款／未付款」兩種，會預期之後可能新增「退款中」「部分出貨」，所以狀態欄的設計要留得下新值。</p>
+  <p>對我這種法律金融跨域背景的人，最能連回本業的一點，是把正規化理解成<b>「單一事實來源（single source of truth）」</b>——這跟法遵在意的東西一模一樣。做合規時最怕的就是「同一個事實在不同文件裡記得不一樣」：這份寫甲、那份寫乙，稽核時對不起來、也不知道哪個才算數。正規化在做的就是同一件事：一個事實只存一個權威位置，其他地方全部用「指過去」的方式引用，要改只改那一處。放到金融系統這點特別重要，因為金額、身分、交易狀態這些資料出現不一致，不只是體驗問題，是會出帳、會被監理盯的問題。放到國際遠端全端職缺，能講清楚「我為什麼這樣拆表」也很加分——遠端協作沒辦法隨時解釋，一個結構清楚、意圖明確的 schema，本身就是最好的溝通。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易踩、也最常被追問的坑，是<b>把三件事都當成「越多越好」</b>，忘了它們全是取捨。第一個是<b>正規化過頭</b>：新手學會正規化後，容易把資料拆得太細、拆成十幾張小表，結果每個查詢都要 <code>JOIN</code> 一大串，效能和可讀性都變差。實務上會有「反正規化（denormalization）」——在效能吃緊、或某份資料幾乎不會變的情況下，<b>刻意</b>把資料多存一份來換查詢速度。重點是「刻意」：你要知道自己在拿一致性換速度，而不是不小心抄重複。第二個是<b>索引亂加</b>：索引不是免費的，每建一個，寫入（新增／修改）就多一份維護成本、也多佔儲存空間。如果在一張寫入很頻繁的表上把每個欄位都加索引，查詢也許快了，但寫入會被拖慢。所以正確的做法是「先看實際的查詢長什麼樣，再決定索引建在哪」，而不是先狂加一輪。</p>
+  <p>另一個很值得先想清楚的追問，是<b>「主鍵（primary key，每一列的唯一身分證）該用什麼」</b>。乍看用 email 或手機號當主鍵很直覺——反正它們也不重複。但這其實是把設計寫死的典型錯誤：使用者<b>會換 email、換手機</b>，而主鍵一旦被其他表拿去當外鍵（foreign key，指向另一張表主鍵的欄位）引用，改起來就要牽動一大片。所以業界的通則是主鍵要用一個<b>本身沒有業務含義、永遠不會變</b>的值，例如自動遞增的 id 或隨機產生的識別碼，讓 email 只是一個「可以改、可以查、但不負責當身分」的普通欄位。這一題我知道原則、也能講清楚為什麼，但坦白說我目前多是在自己的小專案裡實作過，還沒在真正大流量、需要考慮分表分庫的系統裡踩過完整的坑；被追問到那個層級時，我會誠實說明我掌握的設計原則，並說我會怎麼查團隊既有的規範來對齊，而不是硬掰。</p>
+
+  <p>設計一張資料表，講到底不是把想到的欄位湊一湊，而是開表前先誠實回答三個取捨題：<b>這份資料要不要拆開存（一致性）、哪些欄位值得建索引（查詢速度）、這個結構撐不撐得過半年後的新需求（未來彈性）。</b>把這三題想清楚，你交出去的就不是一張能存資料的表，而是一個之後改起來不傷筋動骨的設計。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「什麼是正規化？可以用白話講一下嗎？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂正規化到底在解決什麼問題，還是只會背第一正規化、第二正規化。</span>
+        <span class="a">她可以怎麼答：正規化白話講就是「同一份資料只存一個地方」。比方訂單表裡我不會把會員姓名整份抄進去，只存一個 user_id 指向會員表，姓名放在會員表。這樣做的好處是資料一致性：會員改名字只要改一處，所有訂單自動都對；如果每張訂單都抄一份姓名，改名就得一筆一筆更新、一定會漏改，資料就開始打架。代價是查詢時要多用 JOIN 把幾張表接回來。所以正規化的核心是拿「查詢方便一點」去換「資料不會不一致」。</span>
+      </li>
+      <li>
+        <span class="q">「索引是什麼？為什麼不乾脆每個欄位都加索引？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道索引是有代價的取捨，不是免費加速。</span>
+        <span class="a">她可以怎麼答：索引就像書後面的索引頁，讓資料庫查資料時不用把整張表從頭掃到尾，直接翻到那一頁，所以查詢會變快。但它不是免費的：每建一個索引，之後每次新增或修改資料，資料庫都要順便維護那個索引，寫入就變慢，而且也多佔儲存空間。所以不能每個欄位都加，正確做法是先看實際的查詢長什麼樣，把索引建在常出現在 WHERE 或 JOIN 條件的欄位上，比如 user_id、建立時間，其他很少拿來查的欄位就不加。</span>
+      </li>
+      <li>
+        <span class="q">「你會用 email 當主鍵嗎？為什麼？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道主鍵要用穩定、沒有業務含義的值。</span>
+        <span class="a">她可以怎麼答：我不會。因為 email 雖然不重複，但使用者是會換 email 的，而主鍵一旦被其他表拿去當外鍵引用，要改就會牽動一大片。所以我會用一個本身沒有業務含義、永遠不會變的值當主鍵，比如自動遞增的 id 或隨機產生的識別碼，讓 email 只是一個可以改、可以拿來查、但不負責當身分的普通欄位。這樣之後使用者換 email，也不會動到整個資料表之間的關聯。</span>
+      </li>
+      <li>
+        <span class="q">「聽過反正規化嗎？什麼時候你會故意不正規化？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂正規化是取捨，能不能判斷什麼時候該反過來。</span>
+        <span class="a">她可以怎麼答：反正規化就是刻意把資料多存一份、不完全正規化，用來換查詢速度。我會考慮它的情況通常是：某個查詢很高頻、又要 JOIN 很多張表導致變慢，或是某份資料幾乎不會變動。這時候我可能會把常一起查的資料多存一份在同一張表，減少 JOIN。關鍵是「刻意」——我很清楚自己是拿資料一致性去換速度，而不是不小心抄重複。老實說這在我目前的小專案裡比較少真的需要用到，多是理解原理，實戰上大規模的取捨我還在累積經驗。</span>
+      </li>
+      <li>
+        <span class="q">「如果一張表資料量爆量，你設計初期會先想什麼？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有未來擴充的意識，不是只顧眼前跑得動。</span>
+        <span class="a">她可以怎麼答：我設計初期會先想幾件事：主鍵用穩定、不會變的 id，避免之後改起來牽動關聯；常查的欄位先建好索引，避免資料一多查詢就慢；狀態這類欄位預留之後新增值的空間，不要寫死。至於資料量真的爆量，我會先想分頁查詢、把舊資料封存，之後再考慮分表這種比較重的手段。坦白說分表分庫這種大流量的實作我還沒實際做過，目前是懂方向；但設計初期先留餘地、別把結構寫死這個意識我是有的，也會避免另一個極端，就是為了還沒發生的需求過度設計。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-14.html"><span class="dir">上一課</span>← RESTful API設計的第一課：資源、動詞與狀態碼怎麼對應真實需求</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>
