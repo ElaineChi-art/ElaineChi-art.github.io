@@ -67,8 +67,16 @@ body.nokk b.kk{color:inherit;font-weight:inherit}
 .tools button{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:3px 9px;cursor:pointer;font-size:12.5px}
 .body[contenteditable="true"]{outline:2px dashed var(--acc);outline-offset:6px;border-radius:6px;background:rgba(93,173,226,.04)}
 .note{margin-top:10px}
+.note{position:relative}
 .note textarea{width:100%;min-height:62px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;
-background:var(--bg);color:var(--ink);font:inherit;font-size:calc(13.6px * var(--sc,1));line-height:1.7;resize:vertical}
+background:var(--bg);color:var(--ink);font:inherit;font-size:calc(13.6px * var(--sc,1));line-height:1.75;
+resize:vertical;overflow:hidden;transition:max-height .18s}
+.note.clip textarea{max-height:96px;overflow:auto}
+.note.clip:after{content:"";position:absolute;left:1px;right:1px;bottom:30px;height:34px;pointer-events:none;
+background:linear-gradient(to bottom,transparent,var(--card))}
+.note .hd{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.note .tg2{border:1px solid var(--line);background:transparent;border-radius:6px;padding:2px 10px;
+cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .note .hd{font-size:12px;color:var(--sub);margin-bottom:3px}
 .edited{font-size:11px;color:var(--gold);margin-left:6px}
 </style></head><body>
@@ -150,12 +158,15 @@ function render(){
       '<button class="tb ed" data-i="'+idx+'">✏️</button>'+
       '<button class="tb play" data-i="'+idx+'">🔊</button></span></div>'+
       '<div class="body">'+(saved||bodyHTML(t,mode))+'</div>'+
-      '<div class="note"><div class="hd">📝 我的筆記（自動儲存）</div>'+
+      '<div class="note'+(note.length>120&&localStorage.getItem("nidaopen_"+t.code)!=="1"?" clip":"")+'" data-code="'+esc(t.code)+'">'+
+      '<div class="hd"><span>📝 我的筆記（自動儲存）'+(note?'　<span style="opacity:.7">'+note.length+' 字</span>':'')+'</span>'+
+      '<button class="tg2" data-code="'+esc(t.code)+'">'+(localStorage.getItem("nidaopen_"+t.code)==="1"?"▴ 收合":"▾ 展開全部")+'</button></div>'+
       '<textarea data-code="'+esc(t.code)+'" placeholder="貼上或寫下你自己的補充…">'+esc(note)+'</textarea></div>'+
       '</div>';
   });
   app.innerHTML=html||'<div class="empty">找不到符合的題型</div>';
   document.getElementById("cnt").textContent="顯示 "+n+" 題";
+  setTimeout(fitAll,0);
 }
 function buildTOC(){
   let h="",lc="",ls="";
@@ -325,9 +336,27 @@ app.addEventListener("click",e=>{
   const i=+b.dataset.i, vis=visibleIdx(), pos=vis.indexOf(i);
   const cont=document.getElementById("contall").checked;
   stopAll(); start(cont&&pos>=0?vis.slice(pos):[i]);});
+function fit(ta){ if(!ta)return;
+  const box=ta.closest(".note"); if(box&&box.classList.contains("clip"))return;
+  ta.style.height="auto"; ta.style.height=(ta.scrollHeight+4)+"px"; }
+function fitAll(){ document.querySelectorAll(".note textarea").forEach(fit); }
+window.fitAll=fitAll;
 app.addEventListener("input",e=>{
   const ta=e.target.closest(".note textarea"); if(!ta)return;
-  localStorage.setItem(KN(ta.dataset.code),ta.value);});
+  localStorage.setItem(KN(ta.dataset.code),ta.value); fit(ta);
+  const c=ta.closest(".note").querySelector(".hd span");
+  if(c)c.innerHTML='📝 我的筆記（自動儲存）'+(ta.value?'　<span style="opacity:.7">'+ta.value.length+' 字</span>':'');});
+app.addEventListener("focusin",e=>{const ta=e.target.closest(".note textarea");
+  if(ta){const b=ta.closest(".note"); b.classList.remove("clip");
+    localStorage.setItem("nidaopen_"+ta.dataset.code,"1");
+    const btn=b.querySelector(".tg2"); if(btn)btn.textContent="▴ 收合"; fit(ta);}});
+app.addEventListener("click",e=>{
+  const t2=e.target.closest(".tg2"); if(!t2)return;
+  const box=t2.closest(".note"), ta=box.querySelector("textarea");
+  const open=box.classList.toggle("clip")===false;
+  localStorage.setItem("nidaopen_"+t2.dataset.code,open?"1":"0");
+  t2.textContent=open?"▴ 收合":"▾ 展開全部";
+  if(open)fit(ta); else ta.style.height="";});
 function toggleEdit(card){
   const body=card.querySelector(".body"), on=body.getAttribute("contenteditable")==="true";
   const c=card.dataset.code, m=card.dataset.mode;
@@ -376,7 +405,8 @@ document.getElementById("voice").onchange=e=>{pref=e.target.value;localStorage.s
   let sc=parseFloat(localStorage.getItem("mb_scale")||"1");
   const v=document.getElementById("fsv");
   const app=()=>{document.documentElement.style.setProperty("--sc",sc);
-    if(v)v.textContent=Math.round(sc*100)+"%";localStorage.setItem("mb_scale",sc);};
+    if(v)v.textContent=Math.round(sc*100)+"%";localStorage.setItem("mb_scale",sc);
+    if(window.fitAll)setTimeout(window.fitAll,30);};
   document.getElementById("fsp").onclick=()=>{sc=Math.min(2,+(sc+0.1).toFixed(2));app();};
   document.getElementById("fsm").onclick=()=>{sc=Math.max(0.8,+(sc-0.1).toFixed(2));app();};
   app();
