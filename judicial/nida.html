@@ -1,0 +1,144 @@
+<!doctype html><html lang="zh-Hant"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>✍️ 行政法題型擬答 ‧ 司法官律師平台</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1c2833;--sub:#5d6d7e;--line:#e5e8e8;--acc:#1b4f72;--red:#7b241c;--gold:#7d6608}
+@media(prefers-color-scheme:dark){:root{--bg:#151a1f;--card:#1d242b;--ink:#e8eef3;--sub:#9fb0bf;--line:#2c353d;--acc:#5dade2;--red:#e59a92;--gold:#d4ac0d}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 -apple-system,"PingFang TC","Noto Sans TC",serif}
+header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);padding:10px 14px}
+h1{margin:0 0 8px;font-size:17px}
+h1 small{font-weight:400;color:var(--sub);font-size:12px;margin-left:6px}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+button,select,input{font:inherit;color:inherit}
+#q{flex:1;min-width:160px;padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+#jump{padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:var(--bg);max-width:60%}
+main{padding:12px 16px 92px;max-width:860px;margin:0 auto}
+.ch{margin:26px 0 8px;font-weight:700;color:#fff;background:var(--acc);padding:8px 13px;border-radius:7px;font-size:15px}
+.sec{margin:16px 0 6px;font-weight:700;color:var(--acc);background:rgba(93,173,226,.13);padding:6px 12px;border-radius:6px;font-size:14px}
+.tp{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:9px;padding:12px 15px;margin:12px 0}
+.tt{font-weight:700;font-size:15.5px;color:var(--red);display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}
+.lead{text-indent:2em;margin:8px 0 12px;font-size:14.6px}
+.h1x{font-weight:700;color:var(--acc);margin:14px 0 6px;font-size:14.8px}
+.h2x{font-weight:700;margin:10px 0 4px 1.4em;font-size:14.4px}
+.p{text-indent:2em;margin:6px 0 6px 1.4em;font-size:14.4px}
+.p.d2{margin-left:2.8em}
+.tip{background:rgba(212,172,13,.12);border-left:3px solid var(--gold);padding:8px 12px;margin:12px 0 2px;font-size:13.3px;color:var(--gold);border-radius:0 6px 6px 0}
+em{font-style:normal;font-weight:700;color:#8e1b1b}
+@media(prefers-color-scheme:dark){em{color:#f1948a}}
+.play{border:1px solid var(--line);background:transparent;border-radius:6px;padding:2px 9px;cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:8px 12px;display:flex;gap:8px;align-items:center;z-index:30;flex-wrap:wrap}
+.bar b{font-size:12.5px;color:var(--sub);font-weight:500}
+.bar button{padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:transparent;cursor:pointer}
+.bar button.p2{background:var(--acc);color:#fff;border-color:var(--acc)}
+.mini{font-size:12px;color:var(--sub)}
+.now{outline:2px solid var(--acc);outline-offset:3px;border-radius:4px}
+.empty{text-align:center;color:var(--sub);padding:40px 0}
+</style></head><body>
+<header>
+<h1>✍️ 行政法題型擬答<small>上榜答題體例　按…次按…查本案中…綜上所述　共 <span id="tot">—</span> 題</small></h1>
+<div class="row">
+<select id="jump"><option value="">跳到題型…</option></select>
+<input id="q" placeholder="搜尋題型、條號、關鍵字…">
+<span class="mini" id="cnt"></span>
+</div>
+</header>
+<main id="app"></main>
+<div class="bar">
+<button id="pp" class="p2">▶ 朗讀全部</button>
+<button id="stop">■ 停</button>
+<b>語速</b><input id="rate" type="range" min="0.7" max="1.6" step="0.1" value="1.05" style="width:88px">
+<b>聲音</b><select id="voice" style="max-width:148px;padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"></select>
+<label class="mini"><input type="checkbox" id="notip"> 不念考場提示</label>
+<span class="mini" id="st"></span>
+</div>
+<script src="nida-data.js"></script>
+<script>
+const EM=/(§\s*\d+[-\d]*[ⅠⅡⅢⅣⅤ]*|釋字第[一二三四五六七八九十百○\d]+號|憲判字第\d+號|第[一二三四五六七八九十百千\d]+條(?:第[一二三四五六七八九十\d]+項)?(?:第[一二三四五六七八九十\d]+款)?|行政程序法|行政訴訟法|訴願法|行政罰法|行政執行法|國家賠償法|地方制度法|教師法|房屋稅條例|政府採購法|原住民族工作權保障法|傳染病防治法|公務人員保障法|公務人員任用法|公務人員陞遷法|法院組織法|最高行政法院[^，。；、）]{0,20}|庭長法官聯席會議)/g;
+const CN="一二三四五六七八九十";
+const esc=s=>s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+const rich=s=>esc(s).replace(EM,'<em>$1</em>');
+let kw="";
+function render(){
+  const app=document.getElementById("app");let html="",lastCh="",lastSec="",n=0;
+  window.NIDA.forEach((t,idx)=>{
+    const blob=(t.code+t.title+t.items.map(i=>i.t).join("")).toLowerCase();
+    if(kw&&!blob.includes(kw))return;
+    n++;
+    if(t.ch!==lastCh){html+='<div class="ch">'+esc(t.ch)+'</div>';lastCh=t.ch;lastSec="";}
+    if(t.sec!==lastSec){html+='<div class="sec">'+esc(t.sec)+'</div>';lastSec=t.sec;}
+    html+='<div class="tp" id="t'+idx+'" data-i="'+idx+'"><div class="tt"><span>題型 '+esc(t.code)+'　'+esc(t.title)+'</span><button class="play" data-i="'+idx+'">🔊</button></div>';
+    let a=0,b=0;
+    t.items.forEach(it=>{
+      if(it.k==="lead")html+='<div class="lead">'+rich(it.t)+'</div>';
+      else if(it.k==="h1"){a++;b=0;html+='<div class="h1x">'+CN[a-1]+'、'+rich(it.t)+'</div>';}
+      else if(it.k==="h2"){b++;html+='<div class="h2x">（'+CN[b-1]+'）'+rich(it.t)+'</div>';}
+      else if(it.k==="p")html+='<div class="p'+(b?' d2':'')+'">'+rich(it.t)+'</div>';
+      else if(it.k==="tip")html+='<div class="tip">【考場提示】'+esc(it.t)+'</div>';
+    });
+    html+='</div>';
+  });
+  app.innerHTML=html||'<div class="empty">找不到符合的題型</div>';
+  document.getElementById("cnt").textContent="顯示 "+n+" 題";
+}
+const sel=document.getElementById("jump");
+window.NIDA.forEach((t,i)=>{const o=document.createElement("option");o.value="t"+i;o.textContent="題型 "+t.code+"　"+t.title;sel.appendChild(o)});
+sel.onchange=e=>{const el=document.getElementById(e.target.value);if(el)el.scrollIntoView({block:"start",behavior:"smooth"})};
+document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render()};
+/* 朗讀 */
+let voices=[],pref=localStorage.getItem("mb_voice")||"",queue=[],qi=0,playing=false,keep=null;
+function loadVoices(){try{voices=speechSynthesis.getVoices()||[]}catch(e){voices=[]}
+  const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));const s=document.getElementById("voice");s.innerHTML="";
+  zh.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name;s.appendChild(o)});
+  const mj=zh.find(v=>/Meijia|美佳/i.test(v.name));if(!pref&&mj)pref=mj.name;if(pref)s.value=pref;}
+function best(){const zh=voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
+  return zh.find(v=>v.name===pref)||zh.find(v=>/Meijia|美佳/i.test(v.name))||zh.find(v=>v.lang==="zh-TW")||zh[0]||null;}
+function chunks(t){const out=[];let s="";t.replace(/\s+/g," ").split(/(?<=[。！？；：])/).forEach(p=>{
+  if((s+p).length>140){if(s)out.push(s);s=p}else s+=p});if(s.trim())out.push(s);return out.filter(x=>x.trim());}
+function topicText(idx){
+  const t=window.NIDA[idx];const no=document.getElementById("notip").checked;
+  let s="題型"+t.code.replace(/-/g,"之")+"。"+t.title+"。";let a=0,b=0;
+  t.items.forEach(it=>{
+    if(it.k==="lead")s+=it.t;
+    else if(it.k==="h1"){a++;b=0;s+=CN[a-1]+"、"+it.t+"。"}
+    else if(it.k==="h2"){b++;s+="第"+CN[b-1]+"款。"+it.t+"。"}
+    else if(it.k==="p")s+=it.t;
+    else if(it.k==="tip"&&!no)s+="考場提示。"+it.t;
+  });return s;
+}
+function speakNext(){
+  if(!playing||qi>=queue.length){stopAll();return;}
+  const it=queue[qi];
+  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
+  const el=document.getElementById("t"+it.i);
+  if(el){el.classList.add("now");if(it.first)el.scrollIntoView({block:"start",behavior:"smooth"});}
+  const u=new SpeechSynthesisUtterance(it.text);u.lang="zh-TW";
+  u.rate=parseFloat(document.getElementById("rate").value);
+  const v=best();if(v)u.voice=v;
+  u.onend=()=>{qi++;speakNext()};u.onerror=()=>{qi++;speakNext()};
+  document.getElementById("st").textContent=(qi+1)+" / "+queue.length;
+  speechSynthesis.speak(u);
+}
+function start(list){
+  speechSynthesis.cancel();queue=[];qi=0;
+  list.forEach(i=>chunks(topicText(i)).forEach((c,k)=>queue.push({text:c,i:i,first:k===0})));
+  if(!queue.length)return;
+  playing=true;document.getElementById("pp").textContent="⏸ 暫停";
+  clearInterval(keep);keep=setInterval(()=>{if(playing&&speechSynthesis.speaking)speechSynthesis.resume()},7000);
+  speakNext();
+}
+function stopAll(){playing=false;speechSynthesis.cancel();clearInterval(keep);
+  document.getElementById("pp").textContent="▶ 朗讀全部";document.getElementById("st").textContent="";
+  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));}
+document.getElementById("app").addEventListener("click",e=>{
+  const b=e.target.closest(".play");if(!b)return;stopAll();start([+b.dataset.i]);});
+document.getElementById("pp").onclick=()=>{
+  if(playing){if(speechSynthesis.paused){speechSynthesis.resume();document.getElementById("pp").textContent="⏸ 暫停";}
+    else{speechSynthesis.pause();document.getElementById("pp").textContent="▶ 繼續";}return;}
+  const vis=[...document.querySelectorAll(".tp")].map(e=>+e.dataset.i);start(vis);};
+document.getElementById("stop").onclick=stopAll;
+document.getElementById("voice").onchange=e=>{pref=e.target.value;localStorage.setItem("mb_voice",pref)};
+loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSynthesis.onvoiceschanged=loadVoices;
+document.getElementById("tot").textContent=window.NIDA.length;
+render();
+</script></body></html>
