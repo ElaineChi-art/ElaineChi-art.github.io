@@ -13,7 +13,24 @@ h1 small{font-weight:400;color:var(--sub);font-size:12px;margin-left:6px}
 button,select,input{font:inherit;color:inherit}
 #q{flex:1;min-width:160px;padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
 #jump{padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:var(--bg);max-width:60%}
-main{padding:12px 16px 92px;max-width:860px;margin:0 auto}
+.wrap{display:flex;gap:0;align-items:flex-start}
+#toc{position:sticky;top:96px;flex:0 0 268px;max-height:calc(100vh - 130px);overflow:auto;
+padding:10px 8px 20px 14px;border-right:1px solid var(--line);font-size:13px}
+#toc .tch{font-weight:700;color:#fff;background:var(--acc);padding:5px 9px;border-radius:5px;margin:12px 0 6px;font-size:12.6px}
+#toc .tsec{font-weight:700;color:var(--acc);margin:9px 0 3px;font-size:12.6px}
+#toc a{display:block;padding:4px 7px 4px 12px;color:var(--sub);text-decoration:none;border-left:2px solid transparent;border-radius:0 5px 5px 0;line-height:1.5}
+#toc a:hover{background:rgba(93,173,226,.13);color:var(--ink)}
+#toc a.on{border-left-color:var(--red);color:var(--red);font-weight:700;background:rgba(123,36,28,.08)}
+#toc .code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;opacity:.75;margin-right:4px}
+main{flex:1;min-width:0;padding:12px 16px 92px;max-width:860px}
+#tocbtn{display:none}
+@media(max-width:880px){
+ #toc{position:fixed;left:0;top:0;bottom:0;z-index:40;width:80%;max-width:310px;max-height:none;
+ background:var(--card);box-shadow:0 0 30px rgba(0,0,0,.35);transform:translateX(-102%);transition:.25s;padding-top:16px}
+ #toc.open{transform:none}
+ #tocbtn{display:inline-block;padding:6px 11px;border:1px solid var(--line);background:transparent;border-radius:8px;cursor:pointer}
+ main{padding-bottom:96px}
+}
 .ch{margin:26px 0 8px;font-weight:700;color:#fff;background:var(--acc);padding:8px 13px;border-radius:7px;font-size:15px}
 .sec{margin:16px 0 6px;font-weight:700;color:var(--acc);background:rgba(93,173,226,.13);padding:6px 12px;border-radius:6px;font-size:14px}
 .tp{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:9px;padding:12px 15px;margin:12px 0}
@@ -38,12 +55,12 @@ em{font-style:normal;font-weight:700;color:#8e1b1b}
 <header>
 <h1>✍️ 行政法題型擬答<small>上榜答題體例　按…次按…查本案中…綜上所述　共 <span id="tot">—</span> 題</small></h1>
 <div class="row">
-<select id="jump"><option value="">跳到題型…</option></select>
+<button id="tocbtn">☰ 目錄</button>
 <input id="q" placeholder="搜尋題型、條號、關鍵字…">
 <span class="mini" id="cnt"></span>
 </div>
 </header>
-<main id="app"></main>
+<div class="wrap"><nav id="toc"></nav><main id="app"></main></div>
 <div class="bar">
 <button id="pp" class="p2">▶ 朗讀全部</button>
 <button id="stop">■ 停</button>
@@ -81,9 +98,26 @@ function render(){
   app.innerHTML=html||'<div class="empty">找不到符合的題型</div>';
   document.getElementById("cnt").textContent="顯示 "+n+" 題";
 }
-const sel=document.getElementById("jump");
-window.NIDA.forEach((t,i)=>{const o=document.createElement("option");o.value="t"+i;o.textContent="題型 "+t.code+"　"+t.title;sel.appendChild(o)});
-sel.onchange=e=>{const el=document.getElementById(e.target.value);if(el)el.scrollIntoView({block:"start",behavior:"smooth"})};
+function buildTOC(){
+  let h="",lc="",ls="";
+  window.NIDA.forEach((t,i)=>{
+    if(t.ch!==lc){h+='<div class="tch">'+esc(t.ch)+'</div>';lc=t.ch;ls="";}
+    if(t.sec!==ls){h+='<div class="tsec">'+esc(t.sec)+'</div>';ls=t.sec;}
+    h+='<a href="#t'+i+'" data-i="'+i+'"><span class="code">'+esc(t.code)+'</span>'+esc(t.title)+'</a>';
+  });
+  const n=document.getElementById("toc");n.innerHTML=h;
+  n.addEventListener("click",e=>{const a=e.target.closest("a");if(!a)return;
+    e.preventDefault();const el=document.getElementById("t"+a.dataset.i);
+    if(el)el.scrollIntoView({block:"start",behavior:"smooth"});
+    n.classList.remove("open");});
+}
+function syncTOC(){
+  const tops=[...document.querySelectorAll(".tp")].map(e=>({i:e.dataset.i,y:e.getBoundingClientRect().top}));
+  const act=tops.filter(t=>t.y<160).pop()||tops[0];
+  document.querySelectorAll("#toc a").forEach(a=>a.classList.toggle("on",act&&a.dataset.i===act.i));
+}
+document.getElementById("tocbtn").onclick=()=>document.getElementById("toc").classList.toggle("open");
+addEventListener("scroll",()=>{clearTimeout(window.__st);window.__st=setTimeout(syncTOC,80)},{passive:true});
 document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render()};
 /* 朗讀 */
 let voices=[],pref=localStorage.getItem("mb_voice")||"",queue=[],qi=0,playing=false,keep=null;
@@ -140,5 +174,5 @@ document.getElementById("stop").onclick=stopAll;
 document.getElementById("voice").onchange=e=>{pref=e.target.value;localStorage.setItem("mb_voice",pref)};
 loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSynthesis.onvoiceschanged=loadVoices;
 document.getElementById("tot").textContent=window.NIDA.length;
-render();
+buildTOC();render();syncTOC();
 </script></body></html>

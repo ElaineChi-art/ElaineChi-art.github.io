@@ -17,7 +17,23 @@ button,select,input{font:inherit;color:inherit}
 .chip{padding:4px 10px;border:1px solid var(--line);background:transparent;border-radius:14px;cursor:pointer;font-size:12.5px}
 .chip.on{background:var(--ink);color:var(--bg)}
 #q{flex:1;min-width:150px;padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
-main{padding:12px 14px 90px;max-width:900px;margin:0 auto}
+.wrap{display:flex;align-items:flex-start}
+#toc{position:sticky;top:104px;flex:0 0 250px;max-height:calc(100vh - 140px);overflow:auto;
+padding:10px 8px 20px 14px;border-right:1px solid var(--line);font-size:13px}
+#toc .subj{font-weight:700;color:#fff;background:var(--acc);padding:5px 9px;border-radius:5px;margin:6px 0 8px;font-size:12.6px}
+#toc a{display:block;padding:4px 7px 4px 11px;color:var(--sub);text-decoration:none;border-left:2px solid transparent;border-radius:0 5px 5px 0;line-height:1.5}
+#toc a:hover{background:rgba(93,173,226,.13);color:var(--ink)}
+#toc a.on{border-left-color:var(--c);color:var(--c);font-weight:700;background:rgba(176,58,46,.08)}
+#toc .num{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;opacity:.7;margin-right:5px}
+#toc .qty{float:right;font-size:11px;opacity:.6}
+main{flex:1;min-width:0;padding:12px 14px 90px;max-width:900px}
+#tocbtn{display:none}
+@media(max-width:880px){
+ #toc{position:fixed;left:0;top:0;bottom:0;z-index:40;width:78%;max-width:300px;max-height:none;
+ background:var(--card);box-shadow:0 0 30px rgba(0,0,0,.35);transform:translateX(-102%);transition:.25s;padding-top:16px}
+ #toc.open{transform:none}
+ #tocbtn{display:inline-block;padding:5px 10px;border:1px solid var(--line);background:transparent;border-radius:8px;cursor:pointer;font-size:12.5px}
+}
 .band{margin:22px 0 10px;font-weight:700;font-size:15px;color:#fff;background:var(--acc);padding:7px 12px;border-radius:7px}
 .card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:9px;padding:11px 13px;margin:9px 0}
 .ct{font-weight:700;font-size:15px;display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
@@ -49,6 +65,7 @@ padding:8px 12px;display:flex;gap:8px;align-items:center;z-index:30;flex-wrap:wr
 <input id="q" placeholder="搜尋爭點、條號、關鍵字…">
 </div>
 <div class="row">
+<button id="tocbtn">☰ 目錄</button>
 <button class="chip on" data-lv="0">全部</button>
 <button class="chip" data-lv="3">★★★ 必考</button>
 <button class="chip" data-lv="2">★★ 中頻</button>
@@ -56,7 +73,7 @@ padding:8px 12px;display:flex;gap:8px;align-items:center;z-index:30;flex-wrap:wr
 <span class="mini" id="cnt"></span>
 </div>
 </header>
-<main id="app"></main>
+<div class="wrap"><nav id="toc"></nav><main id="app"></main></div>
 <div class="bar">
 <button id="pp" class="p">▶ 朗讀本頁</button>
 <button id="stop">■ 停</button>
@@ -96,6 +113,28 @@ function render(){
   app.innerHTML=html||'<div class="empty">找不到符合的爭點</div>';
   document.getElementById("cnt").textContent="顯示 "+n+" 則";
   window.__rows=[...app.querySelectorAll(".card")];
+  buildTOC();
+}
+function buildTOC(){
+  const D=window.MOBAN[cur];
+  let h='<div class="subj">'+esc(D.t)+'</div>';
+  [...document.querySelectorAll(".band")].forEach((b,i)=>{
+    b.id="b"+i;
+    const nm=b.textContent, m=nm.match(/^(\d{2})｜(.*)$/)||["","",nm];
+    let q=0,n=b.nextElementSibling;
+    while(n&&n.classList.contains("card")){q++;n=n.nextElementSibling;}
+    h+='<a href="#b'+i+'" data-b="'+i+'"><span class="num">'+m[1]+'</span>'+esc(m[2])+'<span class="qty">'+q+'</span></a>';
+  });
+  const t=document.getElementById("toc");t.innerHTML=h;
+  t.onclick=e=>{const a=e.target.closest("a");if(!a)return;e.preventDefault();
+    const el=document.getElementById("b"+a.dataset.b);
+    if(el)el.scrollIntoView({block:"start",behavior:"smooth"});
+    t.classList.remove("open");};
+}
+function syncTOC(){
+  const bs=[...document.querySelectorAll(".band")].map((e,i)=>({i:String(i),y:e.getBoundingClientRect().top}));
+  const act=bs.filter(b=>b.y<170).pop()||bs[0];
+  document.querySelectorAll("#toc a").forEach(a=>a.classList.toggle("on",act&&a.dataset.b===act.i));
 }
 /* ── 朗讀 ── */
 let voices=[],pref=localStorage.getItem("mb_voice")||"",queue=[],qi=0,playing=false,keep=null;
@@ -162,8 +201,10 @@ document.getElementById("pp").onclick=()=>{
     else{speechSynthesis.pause();document.getElementById("pp").textContent="▶ 繼續";} return;}
   start(window.__rows||[]);};
 document.getElementById("stop").onclick=stopAll;
+document.getElementById("tocbtn").onclick=()=>document.getElementById("toc").classList.toggle("open");
+addEventListener("scroll",()=>{clearTimeout(window.__st);window.__st=setTimeout(syncTOC,80)},{passive:true});
 document.getElementById("voice").onchange=e=>{pref=e.target.value;localStorage.setItem("mb_voice",pref);};
 loadVoices(); if(speechSynthesis.onvoiceschanged!==undefined)speechSynthesis.onvoiceschanged=loadVoices;
 document.getElementById("tot").textContent=Object.values(window.MOBAN).reduce((a,s)=>a+s.b.reduce((x,b)=>x+b.r.length,0),0);
-render();
+render();syncTOC();
 </script></body></html>
