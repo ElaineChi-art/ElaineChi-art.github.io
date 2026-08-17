@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-16",
+  "updated": "2026-08-17",
   "lessons": [
     {
       "id": 1,
@@ -205,10 +205,10 @@
       "category": "backend",
       "topic": "初探 SQL",
       "title": "SQL不只是查資料：一個JOIN背後的效能代價",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-17",
+      "url": "posts/daily/2026-08-17.html",
+      "slides": 1
     },
     {
       "id": 20,

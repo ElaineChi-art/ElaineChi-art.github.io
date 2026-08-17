@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL不只是查資料：一個JOIN背後的效能代價｜技能實驗室・每日課程</title>
+<meta name="description" content="JOIN 是把分開存的兩張表，靠一個共同欄位對起來、湊成一張完整結果。會寫得出來只是第一步——JOIN 之所以慢，是因為資料庫要「配對」兩張表的資料，如果對應欄位沒有索引，它可能得拿一張表的每一筆去掃另一張表的每一筆，資料量一大就爆。用玉山/91APP 訂單接會員的情境拆解怎麼讓 JOIN 變快，並釐清最常答錯的坑：以為 JOIN 是免費的、SELECT * 撈整包、以及在沒索引的欄位上硬 JOIN。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-17</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・後端與資料庫</div>
+  <h1>SQL不只是查資料：一個JOIN背後的效能代價</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-17</span>
+    <span>約 8 分鐘</span>
+    <span>對應真專案主題：初探 SQL</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p><b>JOIN</b>（把分開存的兩張表，靠一個共同的欄位對起來、湊成一張完整結果）看起來只是一行 SQL，但它是整句查詢裡最容易變慢的地方。原因是資料庫得幫你「<b>配對</b>」兩張表：如果被對應的欄位沒有<b>索引</b>（像書後面的目錄，讓資料庫不用整本翻），它可能得拿一張表的每一筆，去掃另一張表的每一筆——資料量一大，配對次數就是相乘暴增。所以會寫 <code>JOIN</code> 只是第一步，面試真正在考的是：你知不知道它<b>為什麼慢、慢在哪、怎麼讓它變快</b>（在 JOIN 的欄位上建索引、只撈需要的欄位、必要時才 JOIN）。這一課的心法一句話：<b>JOIN 不是免費的，它是拿「把資料拆開存」換來的、之後要付利息的方便。</b></p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-19-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260817" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260817" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260817)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260817)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M5 · 後端與資料庫  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">一個 JOIN 背後：<tspan fill="#4D9FFF">資料庫其實在「配對」兩張表</tspan></text>
+
+      <!-- 卡1：JOIN 在做什麼 -->
+      <rect x="64" y="140" width="352" height="392" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="64" y="140" width="352" height="5" rx="2.5" fill="url(#topbarD20260817)"/>
+      <text x="86" y="184" font-size="19" font-weight="800" fill="#4D9FFF">① JOIN＝把兩張表對起來</text>
+      <text x="86" y="216" font-size="16" fill="#8FA1C0">靠一個共同欄位湊成一張表</text>
+      <text x="86" y="262" font-size="17" fill="#C7D2E4">orders（只存 user_id）</text>
+      <text x="86" y="288" font-size="16" fill="#8FA1C0">訂單表不抄會員姓名</text>
+      <text x="86" y="336" font-size="17" fill="#C7D2E4">users（id → 姓名）</text>
+      <text x="86" y="362" font-size="16" fill="#8FA1C0">要顯示收件人再接回來</text>
+      <text x="86" y="426" font-size="17" fill="#F2A33C">ON orders.user_id = users.id</text>
+      <text x="86" y="452" font-size="16" fill="#8FA1C0">這行就是「怎麼配對」的規則</text>
+      <text x="86" y="510" font-size="16" font-weight="700" fill="#7E8CA8">→ 正規化拆開存，用時再接。</text>
+
+      <!-- 卡2：代價在哪 -->
+      <rect x="440" y="140" width="400" height="392" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="462" y="184" font-size="19" font-weight="800" fill="#F5F8FF">② 代價：配對要花力氣</text>
+      <text x="462" y="216" font-size="16" fill="#8FA1C0">兩張表怎麼一筆一筆對起來</text>
+
+      <rect x="462" y="238" width="356" height="66" rx="10" fill="rgba(242,163,60,.10)" stroke="#F2A33C" stroke-width="1.5"/>
+      <text x="482" y="266" font-size="16" font-weight="700" fill="#F2A33C">沒索引：整表配整表</text>
+      <text x="482" y="290" font-size="15" fill="#8FA1C0">1萬 × 1萬＝掃一億次，會爆</text>
+
+      <rect x="462" y="316" width="356" height="66" rx="10" fill="rgba(53,192,142,.10)" stroke="#35C08E" stroke-width="1.5"/>
+      <text x="482" y="344" font-size="16" font-weight="700" fill="#35C08E">有索引：直接翻到那筆</text>
+      <text x="482" y="368" font-size="15" fill="#8FA1C0">不用掃整張表，快一個量級</text>
+
+      <text x="462" y="418" font-size="17" fill="#C7D2E4">慢的不是 JOIN 這個字，</text>
+      <text x="462" y="446" font-size="16" fill="#8FA1C0">是「配對方式」被逼成暴力比對。</text>
+      <text x="462" y="510" font-size="16" font-weight="700" fill="#7E8CA8">→ 用 EXPLAIN 看它到底怎麼配。</text>
+
+      <!-- 卡3：怎麼讓它變快 -->
+      <rect x="864" y="140" width="352" height="392" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="864" y="140" width="352" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="886" y="184" font-size="19" font-weight="800" fill="#F2A33C">③ 怎麼讓它變快</text>
+      <text x="886" y="216" font-size="16" fill="#8FA1C0">不是不能 JOIN，是要會 JOIN</text>
+      <text x="886" y="262" font-size="17" fill="#C7D2E4">・在 JOIN 的欄位建索引</text>
+      <text x="886" y="288" font-size="16" fill="#8FA1C0">user_id 這種對應鍵優先</text>
+      <text x="886" y="336" font-size="17" fill="#C7D2E4">・只撈需要的欄位</text>
+      <text x="886" y="362" font-size="16" fill="#8FA1C0">別 SELECT *，撈越少越快</text>
+      <text x="886" y="410" font-size="17" fill="#C7D2E4">・先過濾再 JOIN</text>
+      <text x="886" y="436" font-size="16" fill="#8FA1C0">WHERE 先砍掉大半，再去配</text>
+      <text x="886" y="510" font-size="16" font-weight="700" fill="#7E8CA8">→ 讓資料庫少配幾次就好。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：JOIN 不是免費的——它是拿「把資料拆開存」換來的、之後要付利息的方便。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">會寫 JOIN 只是第一步；知道它為什麼慢、怎麼靠索引與只撈必要欄位讓它變快，才是後端真正被考的地方。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-19-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-17-1.mp3"></audio>
+    <p>這張圖在講的是，一句看起來很單純的 SQL JOIN，背後其實藏著效能代價。左邊是 JOIN 在做的事：把分開存的兩張表，靠一個共同的欄位對起來，湊成一張完整的結果。中間點出關鍵——資料庫要怎麼把兩張表配對，如果被對應的欄位沒有索引，它可能得拿一張表的每一筆去掃另一張表的每一筆，資料量一大就會很慢。右邊是實務上的止血方式：在 JOIN 的欄位上建索引、只撈需要的欄位、必要時才用 JOIN。整張圖的主張是：JOIN 不是免費的，寫得出來只是第一步，知道它慢在哪、怎麼讓它變快，才是後端真正被考的地方。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p><code>JOIN</code> 就是「把兩張分開存的表，靠一個共同的欄位對起來，臨時湊成一張完整的表」。因為做了正規化（把資料拆成不重複儲存的表設計，換取一致性），同一份資料常常被拆到不同表裡：會員資料一張表、訂單資料另一張表，訂單表只存一個 <code>user_id</code> 指回會員。這樣存很乾淨，但當你要「一次看到訂單＋下單者的姓名」時，資料就不在同一張表了——這時候就用 <code>JOIN</code> 把兩張表接回來。你可以把它想成兩份名單對點名：一份是訂單、一份是會員，靠學號（<code>user_id</code>）把同一個人的兩筆資料湊在一起。</p>
+  <p>關鍵的那一行是 <code>ON</code>，它寫的是「兩張表要用什麼規則配對」。例如 <code>SELECT * FROM orders JOIN users ON orders.user_id = users.id</code>，意思是「拿訂單表的每一筆，去找 <code>users</code> 裡 <code>id</code> 相同的那一筆，接起來」。這句白話讀起來很順，但重點在後面那半句——「<b>去找相同的那一筆</b>」這個動作，資料庫到底是怎麼找的？是把整張會員表從頭翻到尾比對，還是靠索引直接翻到那一頁？這個差別，就是 <code>JOIN</code> 快與慢的全部關鍵，也是這一課真正要你記住的東西。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎 <code>JOIN</code>，是因為它是「查詢從跑得動到跑不動」最常見的分水嶺。一句 <code>JOIN</code> 在開發環境、只有幾百筆假資料時跑得飛快，你根本感覺不到問題；等它上線、資料長到幾百萬筆，同一句查詢可能就從幾毫秒變成好幾秒，甚至把整個資料庫拖垮。慢在哪？慢在<b>配對的次數</b>。如果 <code>ON</code> 對應的欄位沒有索引，資料庫最笨的做法是拿左表的每一筆，去掃右表的每一筆——兩張各一萬筆，最壞情況就是一億次比對；資料量一放大，這個相乘會非常可怕。有了索引，它就能「直接翻到那一頁」，不用整表掃，效能差一個量級。這是常識性的資料庫知識，不是引用特定報告的數字，但它是後端面試最愛用來分辨「會用 SQL」和「懂 SQL」的一題。</p>
+  <p>這也正好對上 104 人力銀行《AI 人才趨勢報告》一直強調的方向：求職者要能打通<b>完整應用情境</b>，而不是只會孤立的單一技能。<code>JOIN</code> 就是「完整情境」裡很典型的一環——你不只是會把 <code>SELECT</code>、<code>JOIN</code> 這些字拼出來，而是能連起來想：資料一開始為什麼要拆開存（正規化）、拆開之後查的時候要付什麼代價（JOIN 的效能）、這個代價又要靠什麼補回來（索引）。一個只會把查詢寫出來、能跑就交的人，和一個交之前會先問「這句在百萬筆資料下還跑得動嗎、要不要加索引」的人，在面試桌上的差距非常明顯。前者是照著需求打字，後者是在對系統之後的效能負責。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到玉山網銀或 91APP 這類產品，假設我要做一個「訂單列表」畫面，要一次顯示每筆訂單和下單會員的姓名，我會這樣處理 <code>JOIN</code> 的效能。第一，我<b>不會</b>因為怕慢就把會員姓名整份抄進訂單表——那會犧牲資料一致性（會員改名要回頭改所有歷史訂單）；我還是讓訂單只存 <code>user_id</code>，顯示時用 <code>JOIN</code> 接回會員表。第二，我會確認 <code>ON</code> 用到的欄位有索引：<code>orders.user_id</code> 和 <code>users.id</code>（主鍵通常本來就有索引）都要能被快速定位，這是讓這句 <code>JOIN</code> 不會退化成整表掃的關鍵。第三，我<b>不會用 <code>SELECT *</code></b>，只撈畫面真正要用的欄位（訂單編號、金額、狀態、會員姓名），撈的資料越少、傳輸和記憶體負擔越小。第四，如果這個列表本來就有條件（例如「這個月的訂單」），我會讓 <code>WHERE</code> 先把資料砍掉大半，再去 <code>JOIN</code>，而不是先把全部訂單和全部會員配好再來過濾——先過濾能讓要配對的資料量小很多。</p>
+  <p>對我這種法律金融跨域背景的人，最能連回本業的一點，是把 <code>JOIN</code> 理解成<b>「用時才調閱、平常分開歸檔」</b>——這跟做合規、做案件管理時的資料組織方式很像。你不會把當事人的完整基本資料，重抄進每一份文件裡（那樣改一個地址要翻遍所有卷宗）；你會把基本資料歸在一處，每份文件只寫一個案號／識別碼，需要看全貌時再「調閱」把它們兜起來。<code>JOIN</code> 做的就是這件「調閱兜資料」的事，而它的效能問題，本質上就是「你這份索引（目錄）建得好不好、調閱起來要不要一頁一頁翻」。放到金融系統這點特別重要，因為交易、帳務這些表動輒百萬千萬筆，一句沒調好的 <code>JOIN</code> 可能就讓一個報表頁卡到逾時。放到國際遠端全端職缺，能講清楚「我為什麼這樣寫這句查詢、它在大資料量下會怎樣」也很加分——遠端協作沒辦法隨時當面解釋，一句你講得出效能考量的 SQL，本身就是專業度的證明。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易踩、也最常被追問的坑，是<b>把 <code>JOIN</code> 當成免費的、以為「反正資料庫很強，接幾張表都無所謂」</b>。實際上每多接一張表、每一次配對，資料庫都要付出成本，尤其在對應欄位沒索引時成本會暴增。所以正確的心態不是「能不 JOIN 就好」，而是「<b>知道自己在 JOIN 什麼、配對的欄位有沒有被索引撐住</b>」。這裡有個很實用、也很容易被追問的工具叫 <code>EXPLAIN</code>：在查詢前面加上它，資料庫會告訴你「這句它打算怎麼執行」——有沒有用到索引、還是在做全表掃描（full table scan，把整張表從頭掃到尾）。如果面試官問「你怎麼知道一句 SQL 慢在哪」，能講出「我會用 <code>EXPLAIN</code> 看它的執行計畫、確認有沒有走索引」，就明顯是懂門道的答法。</p>
+  <p>另一個很值得先想清楚的追問，是<b><code>SELECT *</code> 為什麼在正式環境不建議用</b>。乍看 <code>SELECT *</code>（撈出所有欄位）很方便，反正全撈就不會漏。但它有幾個實際代價：一是撈了很多用不到的欄位，白白增加傳輸量和記憶體；二是欄位一多、又跨表 <code>JOIN</code>，可能撈進大型欄位（例如備註、內容）拖慢整句；三是它讓查詢跟資料表結構「綁死」，之後表加一個欄位，這句的行為就悄悄跟著變。所以實務通則是「<b>要什麼撈什麼</b>」。不過我要誠實說：這一題我知道原則、也能講清楚為什麼，但目前多是在自己的小專案和練習資料裡實作過，還沒在真正百萬千萬筆、需要細調執行計畫的生產環境裡踩過完整的坑；被追問到那個層級時，我會誠實說明我掌握的原理，並說我會怎麼用 <code>EXPLAIN</code> 和實際的慢查詢紀錄去驗證，而不是硬掰數字。</p>
+
+  <p>一句 <code>JOIN</code> 寫得出來只是入門，真正的分水嶺是你知不知道它背後在做什麼：<b>資料庫在幫你配對兩張表，而配對快不快，全看對應的欄位有沒有索引撐著。</b>把這件事想清楚，你交出去的就不只是一句能跑的查詢，而是一句你敢保證在百萬筆資料下也撐得住的查詢。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「可以用白話解釋一下 JOIN 在做什麼嗎？」</span>
+        <span class="hint">👉 這題其實在問：你是真的理解 JOIN，還是只會照樣造句把它拼進 SQL。</span>
+        <span class="a">她可以怎麼答：JOIN 就是把兩張分開存的表，靠一個共同的欄位對起來、臨時湊成一張完整的表。舉例來說，訂單表為了不重複存，只存了 user_id，沒有抄會員姓名；當我要一次顯示訂單和下單者姓名時，就用 JOIN，靠 user_id 去會員表把對應的姓名接回來。我會用 ON 這行寫清楚配對規則，比如 ON orders.user_id = users.id，意思就是拿訂單的每一筆，去找會員表裡 id 相同的那一筆接起來。所以 JOIN 本質是「平常拆開存、要用時再兜回來」。</span>
+      </li>
+      <li>
+        <span class="q">「為什麼有時候一句 JOIN 會很慢？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道慢的根源是配對成本和有沒有索引，而不是 JOIN 這個字本身。</span>
+        <span class="a">她可以怎麼答：慢通常不是 JOIN 這個字的問題，是資料庫「配對兩張表」的方式。如果 ON 對應的欄位沒有索引，最壞情況資料庫得拿一張表的每一筆，去掃另一張表的每一筆，兩張各一萬筆就是一億次比對，資料量一放大就爆。如果那個欄位有索引，它就能直接翻到對應那筆、不用整表掃，快一個量級。所以我看到 JOIN 慢，第一個會檢查的就是：配對用的欄位有沒有建索引、查詢有沒有走到索引。</span>
+      </li>
+      <li>
+        <span class="q">「你怎麼知道一句 SQL 到底慢在哪？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有實際排查效能的方法，還是只會猜。</span>
+        <span class="a">她可以怎麼答：我會用 EXPLAIN，在查詢前面加上它，資料庫就會告訴我它打算怎麼執行這句——有沒有用到索引，還是在做全表掃描、把整張表從頭掃到尾。如果看到本該走索引的 JOIN 卻在做全表掃描，那就是要補索引或調整查詢的訊號。老實說我目前主要是在自己的專案和練習資料上用過 EXPLAIN，還沒在超大流量的生產環境細調過執行計畫，但排查的方法和要看什麼我是清楚的。</span>
+      </li>
+      <li>
+        <span class="q">「為什麼正式環境不建議用 SELECT *？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有「只撈需要的資料」這種效能與維護意識。</span>
+        <span class="a">她可以怎麼答：主要有幾個原因。一是 SELECT * 會把用不到的欄位也撈出來，白白增加傳輸量和記憶體負擔，尤其跨表 JOIN 時可能撈進備註、內容這種大欄位拖慢整句。二是它讓查詢跟資料表結構綁死，之後表加一個欄位，這句的行為就悄悄跟著變、不好維護。所以我的習慣是要什麼撈什麼，只選畫面或邏輯真正會用到的欄位，撈得越少越快、也越好維護。</span>
+      </li>
+      <li>
+        <span class="q">「如果一個列表頁要 JOIN 好幾張大表，你會怎麼優化？」</span>
+        <span class="hint">👉 這題其實在問：你手上有沒有一套具體、可操作的優化順序。</span>
+        <span class="a">她可以怎麼答：我會照幾個方向處理。第一，確認每個 JOIN 對應的欄位都有索引，這是最關鍵的一步。第二，讓 WHERE 先過濾——比如只撈這個月的訂單，先把資料量砍下來再去配對，而不是全部配好再過濾。第三，不要 SELECT *，只撈畫面要用的欄位。第四，用 EXPLAIN 確認它真的有走索引、沒有全表掃描。如果這樣還是慢，我會再考慮分頁、或針對高頻又固定的查詢做適度反正規化來換速度。坦白說最後這種大規模的取捨我還在累積實戰經驗，但前面這套排查順序我是能實際動手做的。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-16.html"><span class="dir">上一課</span>← 設計一張資料表之前要先想清楚的三件事：正規化、索引、未來擴充</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>
