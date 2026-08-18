@@ -162,7 +162,7 @@
       "category": "backend",
       "topic": "Python：網站安全與權限認證",
       "t": "為什麼密碼不能直接存：雜湊、鹽值與權限認證的最低防線",
-      "status": "todo"
+      "status": "done 2026-08-18"
     },
     {
       "id": 21,

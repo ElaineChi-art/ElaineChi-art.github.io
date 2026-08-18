@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-17",
+  "updated": "2026-08-18",
   "lessons": [
     {
       "id": 1,
@@ -216,10 +216,10 @@
       "category": "backend",
       "topic": "Python：網站安全與權限認證",
       "title": "為什麼密碼不能直接存：雜湊、鹽值與權限認證的最低防線",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-18",
+      "url": "posts/daily/2026-08-18.html",
+      "slides": 1
     },
     {
       "id": 21,
