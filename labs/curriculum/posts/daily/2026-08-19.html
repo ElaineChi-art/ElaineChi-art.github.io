@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>從git push到上線：CI/CD管線省下的是哪一種風險｜技能實驗室・每日課程</title>
+<meta name="description" content="CI/CD 是一條「你把程式碼推上去，剩下的建置、測試、部署自動接手」的自動化管線。CI（持續整合）負責每次 push 都自動把程式碼合起來、跑測試，趁早抓出壞掉的地方；CD（持續部署／交付）負責把通過檢查的版本自動、可重複地送上線。它省下的不是打字時間，而是「人為疏漏的風險」：忘了跑測試、手動部署漏了一步、上線出包卻回不去。用玉山/91APP 的上線情境拆解，並釐清最常答錯的坑：以為 CI/CD 就是自動化腳本、以為有了管線就不會出事。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-19</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・後端與資料庫</div>
+  <h1>從git push到上線：CI/CD管線省下的是哪一種風險</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-19</span>
+    <span>約 8 分鐘</span>
+    <span>對應真專案主題：CI/CD 與部署</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>CI/CD 是一條<b>「你把程式碼推上去，剩下的建置、測試、部署都自動接手」</b>的生產線。<b>CI</b>（持續整合，Continuous Integration）負責每次有人 push，就自動把大家的程式碼合起來、跑測試、確認沒把東西弄壞——趁改動還小、還熱的時候抓錯，而不是等到上線前一次爆一堆。<b>CD</b>（持續部署／交付，Continuous Deployment/Delivery）負責把通過檢查的版本，用一套<b>固定、可重複、能一鍵回退</b>的方式送上線，不靠某個人記得「先關服務、再上傳、再重啟」這種手動步驟。所以它真正省下的，<b>不是打字或部署的時間，而是「人為疏漏」這種風險</b>：忘了跑測試、手滑漏一步、上線出包卻回不去。一句話心法：<b>CI/CD 是把「靠人記得、靠人小心」的流程，換成「靠機器每次都一樣」的流程。</b></p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-21-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260819" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260819" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260819" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260819)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260819)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M5 · 後端與資料庫  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">從 git push 到上線：<tspan fill="#4D9FFF">一條每次都一樣的自動化生產線</tspan></text>
+
+      <!-- ===== 管線流程 ===== -->
+      <!-- Stage 1: git push -->
+      <rect x="64" y="150" width="234" height="120" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="181" y="192" font-size="19" font-weight="800" fill="#F5F8FF" text-anchor="middle">① git push</text>
+      <text x="181" y="222" font-size="16" fill="#8FA1C0" text-anchor="middle">工程師把改動推上去</text>
+      <text x="181" y="246" font-size="15" fill="#7E8CA8" text-anchor="middle">人的動作，到這裡為止</text>
+
+      <line x1="298" y1="210" x2="366" y2="210" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260819)"/>
+
+      <!-- Stage 2: CI -->
+      <rect x="370" y="150" width="234" height="120" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="370" y="150" width="234" height="5" rx="2.5" fill="url(#topbarD20260819)"/>
+      <text x="487" y="192" font-size="19" font-weight="800" fill="#4D9FFF" text-anchor="middle">② CI 持續整合</text>
+      <text x="487" y="222" font-size="16" fill="#C7D2E4" text-anchor="middle">自動建置＋跑測試</text>
+      <text x="487" y="246" font-size="15" fill="#7E8CA8" text-anchor="middle">壞了就擋下，不放行</text>
+
+      <line x1="604" y1="210" x2="672" y2="210" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260819)"/>
+
+      <!-- Stage 3: CD -->
+      <rect x="676" y="150" width="234" height="120" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="676" y="150" width="234" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="793" y="192" font-size="19" font-weight="800" fill="#35C08E" text-anchor="middle">③ CD 持續部署</text>
+      <text x="793" y="222" font-size="16" fill="#C7D2E4" text-anchor="middle">固定步驟自動上架</text>
+      <text x="793" y="246" font-size="15" fill="#7E8CA8" text-anchor="middle">可重複・能一鍵回退</text>
+
+      <line x1="910" y1="210" x2="978" y2="210" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260819)"/>
+
+      <!-- Stage 4: 上線 -->
+      <rect x="982" y="150" width="234" height="120" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="1099" y="192" font-size="19" font-weight="800" fill="#F5F8FF" text-anchor="middle">④ 上線 production</text>
+      <text x="1099" y="222" font-size="16" fill="#8FA1C0" text-anchor="middle">使用者看到的版本</text>
+      <text x="1099" y="246" font-size="15" fill="#7E8CA8" text-anchor="middle">出事要能立刻退回</text>
+
+      <!-- ===== 下方兩張對照卡 ===== -->
+      <!-- 卡A：手動上線的風險 -->
+      <rect x="64" y="316" width="560" height="250" rx="14" fill="#131D2E" stroke="#E5556E" stroke-width="2"/>
+      <rect x="64" y="316" width="560" height="5" rx="2.5" fill="#E5556E"/>
+      <text x="88" y="360" font-size="19" font-weight="800" fill="#E5556E">✕ 靠人記得、靠人小心（手動上線）</text>
+      <text x="88" y="396" font-size="16" fill="#C7D2E4">・忘了跑測試就上，壞的程式直接見客</text>
+      <text x="88" y="428" font-size="16" fill="#C7D2E4">・部署七步驟，手滑漏一步就半殘</text>
+      <text x="88" y="460" font-size="16" fill="#C7D2E4">・「在我電腦上明明可以」——環境不一致</text>
+      <text x="88" y="492" font-size="16" fill="#C7D2E4">・出包想退回，卻不記得上一版長怎樣</text>
+      <text x="88" y="536" font-size="16" font-weight="700" fill="#7E8CA8">→ 風險藏在「這次剛好沒注意到」。</text>
+
+      <!-- 卡B：CI/CD 各守住什麼 -->
+      <rect x="656" y="316" width="560" height="250" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="656" y="316" width="560" height="5" rx="2.5" fill="url(#topbarD20260819)"/>
+      <text x="680" y="360" font-size="19" font-weight="800" fill="#4D9FFF">✓ 靠機器每次都一樣（CI/CD）</text>
+      <text x="680" y="396" font-size="16" fill="#C7D2E4">・每次 push 都<tspan font-weight="700" fill="#F5F8FF">強制</tspan>跑測試，沒過不給上</text>
+      <text x="680" y="428" font-size="16" fill="#C7D2E4">・部署寫成腳本，機器照做、不會漏步</text>
+      <text x="680" y="460" font-size="16" fill="#C7D2E4">・同一份流程跑測試站、正式站，環境一致</text>
+      <text x="680" y="492" font-size="16" fill="#C7D2E4">・每個版本留紀錄，一鍵退回上一版</text>
+      <text x="680" y="536" font-size="16" font-weight="700" fill="#35C08E">→ 把偶發的疏漏，變成不可能發生。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：CI/CD 省下的不是時間，是「人為疏漏」這種風險。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">CI 趁早抓壞掉的程式、CD 讓上線每次都一樣還能回退——把「靠人記得」換成「靠機器每次都一樣」。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-21-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-19-1.mp3"></audio>
+    <p>這張圖在講的是，從你 git push 之後，程式碼是怎麼一路被送到上線的。最上面那條生產線有四關：你把改動推上去、CI 自動建置加跑測試、CD 用固定步驟自動部署、最後才上線給使用者看。重點是中間兩關會把關，測試沒過就擋下來，不會放行。下面兩張卡是對照。左邊紅色的是靠人手動上線的樣子：可能忘了跑測試、部署七步驟手滑漏一步、在我電腦上明明可以但換環境就壞、出包想退回卻不記得上一版長怎樣。這些風險都藏在「這次剛好沒注意到」。右邊藍色的是交給 CI/CD：每次 push 強制跑測試、部署寫成腳本機器照做、同一份流程跑測試站和正式站、每個版本留紀錄能一鍵退回。所以整張圖的主張是，CI/CD 省下的不是時間，是人為疏漏這種風險，把靠人記得換成靠機器每次都一樣。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>CI/CD 是一條<b>自動化的生產線</b>，接在「工程師把程式碼推上去（git push）」之後，把「建置、測試、部署到上線」這些原本要靠人手動做的步驟，交給機器每次都照同一套流程跑一遍。它其實是兩件事拼起來。前半段 <b>CI</b>（持續整合，Continuous Integration）指的是：每當有人把改動推上共用的程式碼倉庫，系統就自動把大家的程式碼合在一起、重新建置、把測試全部跑一遍，確認這次改動沒把別的地方弄壞。重點在「持續」——不是等到快上線才一次整合，而是<b>每天、每次小改動都整合一次</b>，趁問題還小、還好找的時候就抓出來。</p>
+  <p>後半段 <b>CD</b> 是把通過檢查的版本<b>自動、可重複地送出去</b>。CD 有兩個很接近但不完全一樣的意思：<b>持續交付</b>（Continuous Delivery）是「隨時都準備好可以上線，但按不按下上線那顆按鈕由人決定」；<b>持續部署</b>（Continuous Deployment）則更進一步，「通過所有檢查就自動一路上到正式環境，連按鈕都省了」。不管哪一種，核心承諾都一樣：<b>上線這件事變成一個固定、可重複、出事能一鍵退回的動作</b>，而不是某個工程師半夜手動 SSH 進伺服器、憑記憶敲七八個指令。你可以把整條管線想成機場的行李輸送帶：包裹（你的程式碼）放上去之後，一路自動過安檢（測試）、分流、送到登機口（上線），中間哪一關不過就被攔下來退回，而不是靠一個人抱著行李用跑的、還要自己記得每個轉彎。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎 CI/CD，是因為它把「上線」從一件<b>提心吊膽的大事</b>變成一件<b>無聊的例行小事</b>——而在軟體交付裡，「無聊」是最高的讚美。沒有 CI/CD 的團隊，上線往往是這樣：改動累積一大包，選一個「大家都在」的時段，某個資深工程師手動操作，全公司屏息看它會不會爆；一旦出事，還要臨時翻歷史、猜哪一行害的、想辦法退回去。這整套流程的風險，全押在「這次剛好沒有人出錯」上。CI/CD 解決的正是這個：它讓每次改動都小、都自動測過、都用同一套步驟上線，於是<b>上線可以一天很多次、每次都很小、出事影響範圍也小、還能立刻回退</b>。這不是玄學，是這幾年業界公認的工程實務方向，也是「能不能穩定交付」的分水嶺。</p>
+  <p>這件事也剛好對上 104 人力銀行《AI 人才趨勢報告》一直強調的<b>「打通完整應用情境」</b>——它把 CI/CD 這類「自動化流程」列為需求成長最快的方向之一，重點正是求職者要能連起整條交付流程，而不是只會孤立地寫功能。CI/CD 就是後端與全端「完整情境」裡很典型的最後一段：你不只是會把功能寫出來、在自己電腦上跑得動，而是能想到——這段程式怎麼自動被測試、怎麼被安全地送上正式環境、萬一上線出包怎麼在幾分鐘內退回。一個只會在本機把功能做完就喊「好了」的人，和一個會接著問「這要怎麼安全上線、壞了怎麼退回」的人，在面試桌上的成熟度差很多。前者交的是一段程式碼，後者交的是一段<b>能被團隊反覆、安全地送到使用者手上的流程</b>。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到玉山網銀或 91APP 這類產品，假設我做完一個功能、要讓它上線，有了 CI/CD 之後大致會是這樣。第一步，我把改動推到一個新分支、開一個<b>合併請求</b>（Pull Request，請團隊把我的分支併回主線前先審查）。這一推，CI 就自動被觸發——例如用 GitHub Actions 這類工具，照著我們寫好的設定檔，自動幫我安裝環境、建置、把單元測試整批跑過。如果測試有一條沒過，或有人動到的地方壞了，PR 上會直接標紅、擋住不給合併，我當下就知道要修，而不是等它上線炸給使用者看。第二步，等我修到全綠、也通過同事 code review，改動併進主線。這時 CD 接手：把這個通過檢查的版本，用固定腳本自動部署到<b>預備環境</b>（staging，一個跟正式環境長得幾乎一樣、給人先試的站），確認沒問題後再上正式站——像金融這種高風險場景，最後這一步通常會保留「由人按一下確認」的閘門，也就是持續交付而非全自動部署。第三步，萬一上線後才發現有狀況，因為每個版本都有紀錄、部署又是可重複的動作，我可以<b>一鍵回退到上一個好的版本</b>，把災情控制在幾分鐘內，而不是手忙腳亂地反向操作。</p>
+  <p>對我這種法律金融跨域背景的人，CI/CD 最能連回本業直覺的一點，是它本質上是一套<b>「稽核軌跡＋內控」</b>的工程版本。做合規、做內控時你最在意的往往不是「這次有沒有做對」，而是「這件事有沒有一套每次都會被強制執行、而且留得下紀錄可回溯的流程」——不能靠某個人今天心情好、記性好。CI/CD 的精神完全一樣：測試是「上線前一定會被跑、不能跳過的檢查關卡」，部署腳本是「白紙黑字、機器照做、不會因人而異的標準作業程序」，版本紀錄則是「誰在什麼時候上了什麼、出事能查」的軌跡。放到金融系統，這種「流程強制、可回溯、可回退」的要求特別要命，因為改壞的東西動到的是真金白銀和法遵責任。放到國際遠端全端職缺也很加分——遠端團隊沒辦法圍在一台電腦前一起盯著上線，所以更需要靠一條自動化管線，讓「上線」這件事不依賴任何人剛好在線上、剛好記得步驟。能講清楚「我為什麼要用 CI/CD、它幫團隊擋掉了哪種風險」，本身就是專業度的證明。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易踩、也最常被追問的坑，是<b>把「有了 CI/CD」等於「不會出事」</b>。CI/CD 不是一個保證品質的魔法，它只是一台<b>忠實的執行機器</b>：它會每次都乖乖跑你叫它跑的測試——但如果你的測試本來就寫得很淺、根本沒涵蓋到會出錯的地方，那管線再自動、再快，也只是<b>又快又穩地把爛東西送上線</b>而已。CI/CD 的價值上限，是由你的測試品質和部署設計決定的；它保證的是「流程每次都一樣、沒有人為漏步」，不是「程式一定對」。正確的講法是：<b>CI/CD 消滅的是「疏漏型」的風險（忘了測、漏了步、退不回），不是「你根本沒想到的 bug」</b>。如果面試官問「那有了 CI/CD 是不是就不會有線上事故了」，能回答「不會，它保證的是流程一致與可回退，程式對不對還是取決於測試寫得夠不夠、以及我們對變更的謹慎」，就是懂門道的答法。</p>
+  <p>另一個很值得先想清楚的分界，是<b>「CI/CD 跟寫一個自動化部署腳本，差在哪？」</b>。乍看很像——都是「用程式自動做本來手動的事」，好像寫個一鍵部署的 shell script 就叫 CI/CD 了。但差別在<b>「持續」與「把關」這兩個字</b>：CI/CD 的重點不只是「自動執行」，而是<b>每一次改動都自動被整合、被測試把關、被記錄，通過了才放行下一關</b>——它是一條有檢查閘門、有觸發條件、有回退機制的流水線，不是一顆你想到才手動去按的按鈕。一個只會「自動」但不會「把關」的腳本，跟 CI/CD 的精神其實是兩回事。不過我要誠實說：這一題我理解原理、也能講清楚 CI 跟 CD 各自在解決什麼、為什麼要有測試閘門和回退機制，但目前主要是在自己的小專案上用過像 GitHub Actions 這種現成工具接測試與自動部署，還沒在真正大團隊、多環境、要處理資料庫遷移（migration）、藍綠部署或上線出事應變這種生產規模的管線裡實戰過；被追問到那個層級時，我會誠實說明我掌握的原理與會怎麼上手，而不是硬掰經驗。</p>
+
+  <p>把功能寫出來、在自己電腦上跑得動，只是交付的一半；另一半是它能不能<b>每次都用同一套、測過、可回退的流程被安全地送到使用者手上</b>。CI/CD 真正省下的從來不是打字或部署的那幾分鐘，而是「這次剛好有人忘了、剛好漏了一步、剛好退不回去」的那種風險——它把靠人記得、靠人小心的流程，換成靠機器每次都一樣。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「你可以用白話解釋一下什麼是 CI/CD 嗎？」</span>
+        <span class="hint">👉 這題其實在問：你是真的懂它在解決什麼，還是只會背「持續整合、持續部署」這幾個字。</span>
+        <span class="a">她可以怎麼答：CI/CD 是接在 git push 之後的一條自動化生產線。CI 是持續整合，每次有人把改動推上去，系統就自動把程式碼合起來、重新建置、把測試全部跑一遍，趁改動還小的時候就抓出有沒有把東西弄壞。CD 是持續交付或部署，把通過檢查的版本用一套固定、可重複、能一鍵回退的流程送上線，不靠某個人手動記得每個步驟。它真正的價值不是省打字時間，而是把「靠人記得、靠人小心」的上線流程，換成「靠機器每次都一樣」，消滅掉忘了測、漏了步、退不回這類人為疏漏的風險。</span>
+      </li>
+      <li>
+        <span class="q">「CI 跟 CD 差在哪？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得清「把關」跟「送出」是管線的兩段不同工作。</span>
+        <span class="a">她可以怎麼答：CI 管的是前半段——整合跟把關。每次改動推上來就自動建置、跑測試，確認沒把別的地方弄壞，重點在「趁早、每次都測」。CD 管的是後半段——把通過檢查的版本自動、可重複地送上線。CD 還細分兩種：持續交付是隨時準備好可以上線、但按不按上線由人決定；持續部署是通過所有檢查就自動一路上到正式環境。簡單說 CI 負責「這版能不能上」，CD 負責「怎麼把它安全地送上去、出事怎麼退回」。</span>
+      </li>
+      <li>
+        <span class="q">「有了 CI/CD 是不是就不會有線上事故了？」</span>
+        <span class="hint">👉 這題其實在問：你會不會過度神化工具，懂不懂它的能力邊界。</span>
+        <span class="a">她可以怎麼答：不會。CI/CD 是一台忠實的執行機器，它保證的是流程每次都一樣、沒有人為漏步、而且出事能回退，但它保證不了程式一定對。如果測試本來就寫得很淺，沒涵蓋到會出錯的地方，那管線只是又快又穩地把爛東西送上線而已。所以它消滅的是「疏漏型」的風險——忘了測、漏了步、退不回——不是那種你根本沒想到的 bug。它的價值上限，是由測試品質和部署設計決定的。</span>
+      </li>
+      <li>
+        <span class="q">「那 CI/CD 跟自己寫一個一鍵部署腳本，差在哪？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂 CI/CD 的核心不只是「自動」，還有「持續」跟「把關」。</span>
+        <span class="a">她可以怎麼答：差在「持續」跟「把關」。一個部署腳本是你想到才手動去按的一顆按鈕，只做「自動執行」。CI/CD 是一條每一次改動都會被自動觸發、被測試閘門把關、被記錄，通過了才放行下一關的流水線，還帶回退機制。重點不只是自動做完，而是每次改動都強制走同一套檢查、留下軌跡。所以一個只會自動、不會把關的腳本，跟 CI/CD 的精神其實是兩回事。</span>
+      </li>
+      <li>
+        <span class="q">「你實際上有用過哪些 CI/CD 工具？做到什麼程度？」</span>
+        <span class="hint">👉 這題其實在問：你的經驗是紙上談兵還是真的動過手，而且你誠不誠實。</span>
+        <span class="a">她可以怎麼答：老實說我目前主要是在自己的小專案上用過 GitHub Actions，接了推上去自動跑測試、還有簡單的自動部署，所以 CI 跟基本 CD 的流程和它在解決什麼問題我是清楚的。但我還沒在大團隊、多環境、要處理資料庫遷移、藍綠部署或上線出事應變這種生產規模的管線裡實戰過。如果這份工作會碰到那個層級，我會先讀懂團隊現有的管線設定和上線流程，從跟著跑一次完整部署、看它每一關在檢查什麼開始上手，而不是一來就大改。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-18.html"><span class="dir">上一課</span>← 為什麼密碼不能直接存：雜湊、鹽值與權限認證的最低防線</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

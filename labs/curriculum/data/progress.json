@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-18",
+  "updated": "2026-08-19",
   "lessons": [
     {
       "id": 1,
@@ -227,10 +227,10 @@
       "category": "backend",
       "topic": "CI/CD 與部署",
       "title": "從git push到上線：CI/CD管線省下的是哪一種風險",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-19",
+      "url": "posts/daily/2026-08-19.html",
+      "slides": 1
     },
     {
       "id": 22,
