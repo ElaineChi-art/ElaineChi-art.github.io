@@ -70,6 +70,11 @@ body.nokk b.kk{color:inherit;font-weight:inherit}
 .body[contenteditable="true"]{outline:2px dashed var(--acc);outline-offset:6px;border-radius:6px;background:rgba(93,173,226,.04)}
 .note{margin-top:10px}
 .note{position:relative}
+.secnote{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold);
+border-radius:9px;padding:11px 14px;margin:14px 0 26px}
+.secnote .hd{font-size:12.6px;color:var(--gold);font-weight:700}
+.secnote .nb{min-height:70px}
+@media(prefers-color-scheme:dark){.secnote{background:rgba(212,172,13,.06)}}
 .nb{width:100%;min-height:62px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;
 background:var(--bg);color:var(--ink);font:inherit;font-size:calc(13.6px * var(--sc,1));line-height:1.75;
 overflow:hidden;transition:max-height .18s;outline:none}
@@ -156,6 +161,16 @@ function bodyHTML(t,mode){
   });
   return h;
 }
+function secNoteHTML(ch,sec){
+  const code="§"+ch+"｜"+sec;
+  const open=localStorage.getItem("nidaopen_"+px()+code)==="1";
+  return '<div class="note secnote'+(open?"":" clip")+'" data-code="'+esc(code)+'">'+
+    '<div class="hd"><span data-lb="📔 '+esc(sec||ch)+'　章節筆記（自動儲存）">📔 '+esc(sec||ch)+'　章節筆記（自動儲存）</span>'+
+    '<span><button class="tg2" data-code="'+esc(code)+'">'+(open?"▴ 收合":"▾ 展開全部")+'</button> '+
+    '<button class="tg2 pic" data-code="'+esc(code)+'">📷 插入照片</button></span></div>'+
+    '<div class="nb" contenteditable="true" data-code="'+esc(code)+'" '+
+    'data-ph="這一節的整體心得、老師補充、考古題整理、拍下的板書…"></div></div>';
+}
 const K=(c,m)=>"nida_"+px()+c+"_"+m, KN=c=>"nidanote_"+px()+c;
 const IDB=(()=>{let db=null;
   function open(){return new Promise((res,rej)=>{ if(db)return res(db);
@@ -181,8 +196,8 @@ async function loadNotes(){
 function updHd(box){
   const nb=box.querySelector(".nb"); if(!nb)return;
   const n=nb.innerText.trim().length, im=nb.querySelectorAll("img").length;
-  const c=box.querySelector(".hd span");
-  if(c)c.innerHTML='📝 我的筆記（自動儲存）'+((n||im)?'　<span style="opacity:.7">'+(n?n+' 字':'')+(im?(n?'・':'')+im+' 張圖':'')+'</span>':'');
+  const c=box.querySelector(".hd span[data-lb]");
+  if(c)c.innerHTML=esc(c.dataset.lb)+((n||im)?'　<span style="opacity:.7">'+(n?n+' 字':'')+(im?(n?'・':'')+im+' 張圖':'')+'</span>':'');
 }
 function render(){
   const app=document.getElementById("app");let html="",lastCh="",lastSec="",n=0;
@@ -190,6 +205,7 @@ function render(){
     const blob=(t.code+t.title+t.items.map(i=>i.t).join("")).toLowerCase();
     if(kw&&!blob.includes(kw))return;
     n++;
+    if(t.sec!==lastSec&&lastSec){html+=secNoteHTML(lastCh,lastSec);}
     if(t.ch!==lastCh){html+='<div class="ch">'+esc(t.ch)+'</div>';lastCh=t.ch;lastSec="";}
     if(t.sec!==lastSec){html+='<div class="sec">'+esc(t.sec)+'</div>';lastSec=t.sec;}
     setKeys(t.code);
@@ -204,12 +220,13 @@ function render(){
       '<button class="tb play" data-i="'+idx+'">🔊</button></span></div>'+
       '<div class="body">'+(saved||bodyHTML(t,mode))+'</div>'+
       '<div class="note'+(note.length>120&&localStorage.getItem("nidaopen_"+px()+t.code)!=="1"?" clip":"")+'" data-code="'+esc(t.code)+'">'+
-      '<div class="hd"><span>📝 我的筆記（自動儲存）'+(note?'　<span style="opacity:.7">'+note.length+' 字</span>':'')+'</span>'+
+      '<div class="hd"><span data-lb="📝 我的筆記（自動儲存）">📝 我的筆記（自動儲存）'+(note?'　<span style="opacity:.7">'+note.length+' 字</span>':'')+'</span>'+
       '<span><button class="tg2" data-code="'+esc(t.code)+'">'+(localStorage.getItem("nidaopen_"+px()+t.code)==="1"?"▴ 收合":"▾ 展開全部")+'</button> '+
       '<button class="tg2 pic" data-code="'+esc(t.code)+'">📷 插入照片</button></span></div>'+
       '<div class="nb" contenteditable="true" data-code="'+esc(t.code)+'" data-ph="貼上文字或照片（⌘V）、也可把圖片拖進來…"></div></div>'+
       '</div>';
   });
+  if(lastSec)html+=secNoteHTML(lastCh,lastSec);
   app.innerHTML=html||'<div class="empty">找不到符合的題型</div>';
   document.getElementById("cnt").textContent="顯示 "+n+" 題";
   setTimeout(()=>{loadNotes();},0);
