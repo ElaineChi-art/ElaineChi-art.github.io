@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-Hant"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>✍️ 行政法題型擬答 ‧ 司法官律師平台</title>
+<title>✍️ 題型擬答 ‧ 司法官律師平台</title>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1c2833;--sub:#5d6d7e;--line:#e5e8e8;--acc:#1b4f72;--red:#7b241c;--gold:#7d6608}
 @media(prefers-color-scheme:dark){:root{--bg:#151a1f;--card:#1d242b;--ink:#e8eef3;--sub:#9fb0bf;--line:#2c353d;--acc:#5dade2;--red:#e59a92;--gold:#d4ac0d}}
@@ -54,6 +54,8 @@ body.nokk b.kk{color:inherit;font-weight:inherit}
 .empty{text-align:center;color:var(--sub);padding:40px 0}
 .btns{display:flex;gap:5px;align-items:center;white-space:nowrap}
 #allsd{padding:5px 11px;font-size:12.5px}
+.sbj{padding:6px 15px;border:1px solid var(--line);background:transparent;border-radius:20px;cursor:pointer;font-size:13.5px}
+.sbj.on{background:var(--red);color:#fff;border-color:var(--red)}
 .tb{border:1px solid var(--line);background:transparent;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:12px;color:var(--sub)}
 .tb.on{background:var(--red);color:#fff;border-color:var(--red)}
 .sd{margin-top:6px}
@@ -88,7 +90,10 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .edited{font-size:11px;color:var(--gold);margin-left:6px}
 </style></head><body>
 <header>
-<h1>✍️ 行政法題型擬答<small>上榜答題體例　按…次按…查本案中…綜上所述　共 <span id="tot">—</span> 題</small></h1>
+<h1>✍️ <span id="subjname">行政法</span>擬答<small>上榜答題體例　按…次按…查本案中…綜上所述　共 <span id="tot">—</span> 題</small></h1>
+<div class="row" style="margin-bottom:6px">
+<button class="sbj on" data-s="xz">行政法</button><button class="sbj" data-s="ms">民事訴訟法</button>
+</div>
 <div class="row">
 <button id="tocbtn">☰ 目錄</button>
 <button id="allsd" class="tb">⚡ 全部速讀</button>
@@ -116,13 +121,16 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 <script src="nida-data.js"></script>
 <script src="sudu-data.js"></script>
 <script src="key-data.js"></script>
+<script src="minsu-data.js"></script>
+<script src="minsu-sudu-data.js"></script>
+<script src="minsu-key-data.js"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
 const reEsc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
 let KEYRE=null;
 function setKeys(code){
-  const ks=((window.KEYS||{})[code]||[]).slice().sort((a,b)=>b.length-a.length);
+  const ks=((KEYD()[code])||[]).slice().sort((a,b)=>b.length-a.length);
   KEYRE = ks.length ? new RegExp("("+ks.map(esc).map(reEsc).join("|")+")","g") : null;
 }
 /* 擬答版：標紅（＝該題速讀版的內容）；速讀版與標題：不標 */
@@ -133,7 +141,7 @@ function bodyHTML(t,mode){
   setKeys(t.code);
   let h="",a=0,b=0;
   if(mode==="sd"){
-    const d=(window.SUDU||{})[t.code];
+    const d=SUDUD()[t.code];
     if(!d)return '<div class="empty" style="padding:22px 0">此題速讀版尚未製作</div>';
     h='<div class="sd">';
     d.forEach(([k,v])=>{h+='<div class="r k'+k+'"><span class="lb L'+k+'">'+k+'</span><span class="bd">'+plain(v)+'</span></div>';});
@@ -148,7 +156,7 @@ function bodyHTML(t,mode){
   });
   return h;
 }
-const K=(c,m)=>"nida_"+c+"_"+m, KN=c=>"nidanote_"+c;
+const K=(c,m)=>"nida_"+px()+c+"_"+m, KN=c=>"nidanote_"+px()+c;
 const IDB=(()=>{let db=null;
   function open(){return new Promise((res,rej)=>{ if(db)return res(db);
     const r=indexedDB.open("nidaNotes",1);
@@ -164,9 +172,9 @@ const IDB=(()=>{let db=null;
 async function loadNotes(){
   for(const box of document.querySelectorAll(".note")){
     const c=box.dataset.code, nb=box.querySelector(".nb"); if(!nb)continue;
-    let v=await IDB.get(c);
+    let v=await IDB.get(px()+c);
     if(!v){ const old=localStorage.getItem(KN(c));
-      if(old){ v=esc(old).replace(/\n/g,"<br>"); await IDB.set(c,v); } }
+      if(old){ v=esc(old).replace(/\n/g,"<br>"); await IDB.set(px()+c,v); } }
     nb.innerHTML=v||""; updHd(box); fit(nb);
   }
 }
@@ -178,26 +186,26 @@ function updHd(box){
 }
 function render(){
   const app=document.getElementById("app");let html="",lastCh="",lastSec="",n=0;
-  window.NIDA.forEach((t,idx)=>{
+  DATA().forEach((t,idx)=>{
     const blob=(t.code+t.title+t.items.map(i=>i.t).join("")).toLowerCase();
     if(kw&&!blob.includes(kw))return;
     n++;
     if(t.ch!==lastCh){html+='<div class="ch">'+esc(t.ch)+'</div>';lastCh=t.ch;lastSec="";}
     if(t.sec!==lastSec){html+='<div class="sec">'+esc(t.sec)+'</div>';lastSec=t.sec;}
     setKeys(t.code);
-    const mode=localStorage.getItem("nidamode_"+t.code)||"full";
+    const mode=localStorage.getItem("nidamode_"+px()+t.code)||"full";
     const saved=localStorage.getItem(K(t.code,mode));
     const note=localStorage.getItem(KN(t.code))||"";
     html+='<div class="tp" id="t'+idx+'" data-i="'+idx+'" data-code="'+t.code+'" data-mode="'+mode+'">'+
-      '<div class="tt"><span>題型 '+esc(t.code)+'　'+esc(t.title)+
+      '<div class="tt"><span>'+CUR().label+' '+esc(t.code)+'　'+esc(t.title)+
       (saved?'<span class="edited">已編輯</span>':'')+'</span><span class="btns">'+
       '<button class="tb sw'+(mode==="sd"?" on":"")+'" data-i="'+idx+'">'+(mode==="sd"?"📄 擬答":"⚡ 速讀")+'</button>'+
       '<button class="tb ed" data-i="'+idx+'">✏️</button>'+
       '<button class="tb play" data-i="'+idx+'">🔊</button></span></div>'+
       '<div class="body">'+(saved||bodyHTML(t,mode))+'</div>'+
-      '<div class="note'+(note.length>120&&localStorage.getItem("nidaopen_"+t.code)!=="1"?" clip":"")+'" data-code="'+esc(t.code)+'">'+
+      '<div class="note'+(note.length>120&&localStorage.getItem("nidaopen_"+px()+t.code)!=="1"?" clip":"")+'" data-code="'+esc(t.code)+'">'+
       '<div class="hd"><span>📝 我的筆記（自動儲存）'+(note?'　<span style="opacity:.7">'+note.length+' 字</span>':'')+'</span>'+
-      '<span><button class="tg2" data-code="'+esc(t.code)+'">'+(localStorage.getItem("nidaopen_"+t.code)==="1"?"▴ 收合":"▾ 展開全部")+'</button> '+
+      '<span><button class="tg2" data-code="'+esc(t.code)+'">'+(localStorage.getItem("nidaopen_"+px()+t.code)==="1"?"▴ 收合":"▾ 展開全部")+'</button> '+
       '<button class="tg2 pic" data-code="'+esc(t.code)+'">📷 插入照片</button></span></div>'+
       '<div class="nb" contenteditable="true" data-code="'+esc(t.code)+'" data-ph="貼上文字或照片（⌘V）、也可把圖片拖進來…"></div></div>'+
       '</div>';
@@ -208,7 +216,7 @@ function render(){
 }
 function buildTOC(){
   let h="",lc="",ls="";
-  window.NIDA.forEach((t,i)=>{
+  DATA().forEach((t,i)=>{
     if(t.ch!==lc){h+='<div class="tch">'+esc(t.ch)+'</div>';lc=t.ch;ls="";}
     if(t.sec!==ls){h+='<div class="tsec">'+esc(t.sec)+'</div>';ls=t.sec;}
     h+='<a href="#t'+i+'" data-i="'+i+'"><span class="code">'+esc(t.code)+'</span>'+esc(t.title)+'</a>';
@@ -227,7 +235,7 @@ function syncTOC(){
 document.getElementById("tocbtn").onclick=()=>document.getElementById("toc").classList.toggle("open");
 addEventListener("scroll",()=>{clearTimeout(window.__st);window.__st=setTimeout(syncTOC,80)},{passive:true});
 document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render();allMode();syncTOC();reapplyNow()};
-function allMode(){const v=window.NIDA.every(t=>(localStorage.getItem("nidamode_"+t.code)||"full")==="sd");
+function allMode(){const v=DATA().length>0&&DATA().every(t=>(localStorage.getItem("nidamode_"+px()+t.code)||"full")==="sd");
   const b=document.getElementById("allsd"); b.classList.toggle("on",v);
   b.textContent=v?"📄 全部擬答":"⚡ 全部速讀"; return v;}
 (function(){const b=document.getElementById("kk");
@@ -236,9 +244,16 @@ function allMode(){const v=window.NIDA.every(t=>(localStorage.getItem("nidamode_
   b.onclick=()=>{const n=!document.body.classList.contains("nokk");
     document.body.classList.toggle("nokk",n);
     localStorage.setItem("nida_nokk",n?"1":"0"); b.classList.toggle("on",!n);};})();
+document.querySelectorAll(".sbj").forEach(b=>b.onclick=()=>{
+  if(b.dataset.s===sj)return;
+  document.querySelectorAll(".sbj").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); sj=b.dataset.s; localStorage.setItem("nida_subj",sj);
+  document.getElementById("subjname").textContent=CUR().name;
+  document.getElementById("tot").textContent=DATA().length;
+  stopAll(); buildTOC(); render(); allMode(); syncTOC(); scrollTo(0,0);});
 document.getElementById("allsd").onclick=()=>{
   const toFull=allMode();
-  window.NIDA.forEach(t=>localStorage.setItem("nidamode_"+t.code,toFull?"full":"sd"));
+  DATA().forEach(t=>localStorage.setItem("nidamode_"+px()+t.code,toFull?"full":"sd"));
   render();allMode();syncTOC();
   if(playing&&readMode()==="screen"){
     const from=queue[qi]?queue[qi].i:null, vis=visibleIdx(), pos=vis.indexOf(from);
@@ -324,17 +339,26 @@ function highlight(it){
   document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
   const el=document.getElementById("t"+it.i);
   if(el){el.classList.add("now"); if(it.first&&!window.__noscroll)el.scrollIntoView({block:"start",behavior:"smooth"});}
-  const t=window.NIDA[it.i], nw=document.getElementById("nowt");
+  const t=DATA()[it.i], nw=document.getElementById("nowt");
   if(nw&&t){ const ids=[...new Set(queue.filter(x=>!x.silent).map(x=>x.i))];
     nw.textContent="🔊 "+t.code+"　"+(modeOf(t.code)==="sd"?"速讀":"擬答")+"　題 "+(ids.indexOf(it.i)+1)+"/"+ids.length; }
 }
 function reapplyNow(){ if(playing&&queue[qi]){window.__noscroll=true;highlight(queue[qi]);window.__noscroll=false;} }
+const SUBJ={
+  xz:{name:"行政法",label:"題型",D:()=>window.NIDA||[],S:()=>window.SUDU||{},K:()=>window.KEYS||{}},
+  ms:{name:"民事訴訟法",label:"爭點",D:()=>window.MINSU||[],S:()=>window.MINSU_SUDU||{},K:()=>window.MINSU_KEYS||{}}
+};
+let sj=localStorage.getItem("nida_subj")||"xz";
+if(!SUBJ[sj])sj="xz";
+const CUR=()=>SUBJ[sj];
+const DATA=()=>CUR().D(), SUDUD=()=>CUR().S(), KEYD=()=>CUR().K();
+const px=()=>(sj==="xz"?"":sj+"_");
 const LBN={"爭":"爭點","據":"依據","實":"實務見解","說":"學說","採":"本文見解","攝":"涵攝","結":"結論","訣":"口訣"};
 function readMode(){return localStorage.getItem("nida_readmode")||"screen";}
 function modeOf(code){
   let m=readMode();
-  if(m==="screen")m=localStorage.getItem("nidamode_"+code)||"full";
-  if(m==="sd"&&!(window.SUDU||{})[code])m="full";
+  if(m==="screen")m=localStorage.getItem("nidamode_"+px()+code)||"full";
+  if(m==="sd"&&!SUDUD()[code])m="full";
   return m;
 }
 function stripHTML(html,no){
@@ -344,13 +368,13 @@ function stripHTML(html,no){
           .map(x=>/[。！？；：]$/.test(x)?x:x+"。").join("");
 }
 function topicText(idx){
-  const t=window.NIDA[idx], no=document.getElementById("notip").checked;
+  const t=DATA()[idx], no=document.getElementById("notip").checked;
   const m=modeOf(t.code);
-  let s="題型"+t.code.replace(/-/g,"之")+"。"+t.title+"。";
+  let s=CUR().label+t.code.replace(/-/g,"之")+"。"+t.title+"。";
   const saved=localStorage.getItem("nida_"+t.code+"_"+m);
   if(saved)return s+stripHTML(saved,no);
   if(m==="sd"){
-    ((window.SUDU||{})[t.code]||[]).forEach(([k,v])=>{ if(no&&k==="訣")return;
+    ((SUDUD()[t.code])||[]).forEach(([k,v])=>{ if(no&&k==="訣")return;
       s+=(LBN[k]||"")+"。"+v+(/[。！？]$/.test(v)?"":"。"); });
   }else{
     let a=0,b=0;
@@ -373,7 +397,7 @@ app.addEventListener("click",e=>{
   const sw=e.target.closest(".sw");
   if(sw){const card=sw.closest(".tp"),c=card.dataset.code;
     const nm=card.dataset.mode==="sd"?"full":"sd";
-    localStorage.setItem("nidamode_"+c,nm);render();allMode();syncTOC();
+    localStorage.setItem("nidamode_"+px()+c,nm);render();allMode();syncTOC();
     const idx=+card.dataset.i, curIdx=(playing&&queue[qi])?queue[qi].i:null;
     if(playing&&readMode()==="screen"&&curIdx===idx){
       const vis=visibleIdx(),pos=vis.indexOf(idx);
@@ -394,7 +418,7 @@ function fitAll(){ document.querySelectorAll(".nb").forEach(fit); }
 window.fitAll=fitAll;
 let saveT=null;
 function saveNote(box){ const nb=box.querySelector(".nb"); if(!nb)return;
-  clearTimeout(saveT); saveT=setTimeout(()=>IDB.set(box.dataset.code,nb.innerHTML),250);
+  clearTimeout(saveT); saveT=setTimeout(()=>IDB.set(px()+box.dataset.code,nb.innerHTML),250);
   updHd(box); fit(nb); }
 function shrink(file,cb){
   const fr=new FileReader();
@@ -433,7 +457,7 @@ app.addEventListener("drop",e=>{
 });
 app.addEventListener("focusin",e=>{const nb=e.target.closest(".nb");
   if(nb){const b=nb.closest(".note"); b.classList.remove("clip");
-    localStorage.setItem("nidaopen_"+nb.dataset.code,"1");
+    localStorage.setItem("nidaopen_"+px()+nb.dataset.code,"1");
     const btn=b.querySelector(".tg2"); if(btn)btn.textContent="▴ 收合"; fit(nb);}});
 app.addEventListener("click",e=>{
   const im=e.target.closest(".nb img");
@@ -447,7 +471,7 @@ app.addEventListener("click",e=>{
   const t2=e.target.closest(".tg2"); if(!t2||t2.classList.contains("pic"))return;
   const box=t2.closest(".note"), nb=box.querySelector(".nb");
   const open=box.classList.toggle("clip")===false;
-  localStorage.setItem("nidaopen_"+t2.dataset.code,open?"1":"0");
+  localStorage.setItem("nidaopen_"+px()+t2.dataset.code,open?"1":"0");
   t2.textContent=open?"▴ 收合":"▾ 展開全部";
   if(open)fit(nb); else nb.style.height="";});
 function toggleEdit(card){
@@ -521,7 +545,9 @@ rm.onchange=e=>{localStorage.setItem("nida_readmode",e.target.value);
   if(playing){const from=queue[qi]?queue[qi].i:null, vis=visibleIdx(), pos=vis.indexOf(from);
     stopAll(); start(pos>=0?vis.slice(pos):vis);}};
 loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSynthesis.onvoiceschanged=loadVoices;
-document.getElementById("tot").textContent=window.NIDA.length;
+document.getElementById("tot").textContent=DATA().length;
+document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
+document.getElementById("subjname").textContent=CUR().name;
 buildTOC();render();allMode();syncTOC();
 </script>
 </body></html>
