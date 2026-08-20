@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-19",
+  "updated": "2026-08-20",
   "lessons": [
     {
       "id": 1,
@@ -238,10 +238,10 @@
       "category": "quant",
       "topic": "爬蟲入門學程",
       "title": "量化交易的第一步：把散落的市場資料變成一張乾淨的表",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-20",
+      "url": "posts/daily/2026-08-20.html",
+      "slides": 1
     },
     {
       "id": 23,

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>量化交易的第一步：把散落的市場資料變成一張乾淨的表｜技能實驗室・每日課程</title>
+<meta name="description" content="量化交易真正的第一步不是寫策略，而是把散落各處、格式不一的市場資料，收成一張乾淨、對得起來的表。資料的來源多、格式亂、有缺漏、時間對不齊，硬拼在一起就會算錯。這一課用爬蟲抓資料、清洗、對齊時間三步，拆解「乾淨的表」長什麼樣、業界為什麼把它當地基，並釐清最常答錯的坑：以為策略聰明就會賺、忽略未來函數與時間對齊。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-20</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・量化交易</div>
+  <h1>量化交易的第一步：把散落的市場資料變成一張乾淨的表</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-20</span>
+    <span>約 8 分鐘</span>
+    <span>對應真專案主題：爬蟲入門學程</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>量化交易的第一步，<b>不是寫一個聰明的策略，而是把散落各處的市場資料，收成一張乾淨、對得起來的表</b>。真實世界的資料很亂：股價在這個網站、財報在那個公告、成交量又是另一種格式，日期有的寫「2026/8/20」、有的寫「20260820」，還常常缺幾天、混進錯字。<b>你不先把這些抓下來、洗乾淨、對齊到同一個時間軸，後面再厲害的策略都是建在沙上</b>。這件事的核心心法就一句話：<b>垃圾進、垃圾出（garbage in, garbage out）</b>——策略的準確度，常常不是輸在不夠聰明，而是輸在資料根本沒對齊。所以「爬蟲＋資料清洗」不是量化的雜活，而是<b>整個系統的地基</b>：一張每一列都是「同一個標的、同一個時間點」的乾淨表，就是你之後所有回測與策略的立足點。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-22-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260820" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260820" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260820" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260820)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260820)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M6 · 量化交易  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">量化的第一步：<tspan fill="#4D9FFF">把散落的資料，收成一張乾淨的表</tspan></text>
+
+      <!-- ===== 左：原始亂資料 ===== -->
+      <rect x="64" y="150" width="300" height="416" rx="14" fill="#131D2E" stroke="#E5556E" stroke-width="2"/>
+      <rect x="64" y="150" width="300" height="5" rx="2.5" fill="#E5556E"/>
+      <text x="88" y="192" font-size="19" font-weight="800" fill="#E5556E">✕ 原始資料：散、亂、缺</text>
+      <text x="88" y="228" font-size="16" fill="#C7D2E4">・股價在 A 網站</text>
+      <text x="88" y="256" font-size="16" fill="#C7D2E4">・成交量在 B 檔案</text>
+      <text x="88" y="284" font-size="16" fill="#C7D2E4">・財報在公告 PDF</text>
+      <text x="88" y="312" font-size="16" fill="#C7D2E4">・新聞是純文字</text>
+      <text x="88" y="352" font-size="16" fill="#8FA1C0">日期格式各寫各的：</text>
+      <text x="88" y="380" font-size="15" fill="#7E8CA8">2026/8/20 · 20260820 · 8-20</text>
+      <text x="88" y="416" font-size="16" fill="#8FA1C0">缺漏與雜訊：</text>
+      <text x="88" y="444" font-size="15" fill="#7E8CA8">停牌日空白、欄位對不齊</text>
+      <text x="88" y="472" font-size="15" fill="#7E8CA8">單位不同、混進錯字</text>
+      <text x="88" y="538" font-size="16" font-weight="700" fill="#7E8CA8">→ 硬拼在一起就會對錯行。</text>
+
+      <!-- 箭頭進管線 -->
+      <line x1="364" y1="358" x2="432" y2="358" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260820)"/>
+
+      <!-- ===== 中：三步管線 ===== -->
+      <rect x="440" y="150" width="360" height="416" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="440" y="150" width="360" height="5" rx="2.5" fill="url(#topbarD20260820)"/>
+      <text x="464" y="192" font-size="19" font-weight="800" fill="#4D9FFF">■ 資料管線：三個動作</text>
+
+      <rect x="464" y="214" width="312" height="96" rx="12" fill="#0E1726" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="484" y="246" font-size="17" font-weight="800" fill="#F5F8FF">① 抓下來（爬蟲／API）</text>
+      <text x="484" y="274" font-size="15" fill="#8FA1C0">把各來源的資料自動撈回本地</text>
+      <text x="484" y="296" font-size="15" fill="#7E8CA8">先存原始檔，不要邊抓邊改</text>
+
+      <rect x="464" y="322" width="312" height="96" rx="12" fill="#0E1726" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="484" y="354" font-size="17" font-weight="800" fill="#F5F8FF">② 洗乾淨（清洗）</text>
+      <text x="484" y="382" font-size="15" fill="#8FA1C0">統一格式、補缺漏、去重複</text>
+      <text x="484" y="404" font-size="15" fill="#7E8CA8">改對型別、標記缺值怎麼處理</text>
+
+      <rect x="464" y="430" width="312" height="96" rx="12" fill="#0E1726" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="484" y="462" font-size="17" font-weight="800" fill="#F5F8FF">③ 對齊時間（對表）</text>
+      <text x="484" y="490" font-size="15" fill="#8FA1C0">用同一條時間軸把來源接起來</text>
+      <text x="484" y="512" font-size="15" fill="#7E8CA8">每列＝同標的、同時間點一筆</text>
+
+      <!-- 箭頭出管線 -->
+      <line x1="800" y1="358" x2="868" y2="358" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260820)"/>
+
+      <!-- ===== 右：乾淨的表 ===== -->
+      <rect x="876" y="150" width="340" height="416" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="876" y="150" width="340" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="900" y="192" font-size="19" font-weight="800" fill="#35C08E">✓ 乾淨的表：策略的地基</text>
+
+      <!-- mini table -->
+      <rect x="900" y="214" width="292" height="34" rx="6" fill="#0E1726" stroke="#35C08E" stroke-width="1.2"/>
+      <text x="914" y="236" font-size="14" font-weight="800" fill="#9FE7C8">date</text>
+      <text x="998" y="236" font-size="14" font-weight="800" fill="#9FE7C8">close</text>
+      <text x="1076" y="236" font-size="14" font-weight="800" fill="#9FE7C8">volume</text>
+      <text x="900" y="278" font-size="14" fill="#C7D2E4">2026-08-18</text>
+      <text x="998" y="278" font-size="14" fill="#C7D2E4">102.5</text>
+      <text x="1076" y="278" font-size="14" fill="#C7D2E4">1,240,000</text>
+      <text x="900" y="308" font-size="14" fill="#C7D2E4">2026-08-19</text>
+      <text x="998" y="308" font-size="14" fill="#C7D2E4">103.1</text>
+      <text x="1076" y="308" font-size="14" fill="#C7D2E4">1,058,000</text>
+      <text x="900" y="338" font-size="14" fill="#C7D2E4">2026-08-20</text>
+      <text x="998" y="338" font-size="14" fill="#C7D2E4">101.8</text>
+      <text x="1076" y="338" font-size="14" fill="#C7D2E4">1,411,000</text>
+      <line x1="900" y1="356" x2="1192" y2="356" stroke="#263B5C" stroke-width="1"/>
+
+      <text x="900" y="392" font-size="16" fill="#C7D2E4">・一行＝一個時間點</text>
+      <text x="900" y="422" font-size="16" fill="#C7D2E4">・欄位固定、型別一致</text>
+      <text x="900" y="452" font-size="16" fill="#C7D2E4">・沒有缺漏、對得起來</text>
+      <text x="900" y="482" font-size="16" fill="#C7D2E4">・可直接餵回測與策略</text>
+      <text x="900" y="538" font-size="16" font-weight="700" fill="#35C08E">→ 準確度贏在這裡，不在策略。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：量化的第一步是資料工程，不是策略——垃圾進、垃圾出。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">抓下來、洗乾淨、對齊時間，把散落的資料收成一張每列都對得起來的乾淨表，才是策略的地基。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-22-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-20-1.mp3"></audio>
+    <p>這張圖在講的是，量化交易的第一步不是寫策略，而是把散落各處的市場資料，收成一張乾淨、對得起來的表。左邊是原始資料的樣子：來源很多，有股價、成交量、財報、新聞，每個來源的日期格式、欄位名稱、缺漏都不一樣，硬拼在一起就會對錯行。中間這條管線做三件事：抓下來、洗乾淨、對齊時間，把每一列都變成同一個標的、同一個時間點的一筆紀錄。右邊才是你熟悉的乾淨表，一行一個時間點，欄位固定、型別一致、沒有缺漏，策略跟回測都建在它上面。所以整張圖的主張是，量化的準確度不是贏在策略多聰明，而常常是輸在資料沒對齊——垃圾進，就垃圾出。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>量化交易的第一步，其實是一件很不「量化」的苦工：<b>把散落在各處、格式亂七八糟的市場資料，收成一張乾淨、每一列都對得起來的表</b>。大家想到量化，腦中浮現的通常是聰明的策略、漂亮的績效曲線，但那些都是後面的事。在那之前，你手上只有一堆<b>原始資料</b>：股價在某個網站、成交量在另一個檔案、財報藏在公告 PDF、市場情緒又躲在一堆新聞裡。這些資料來源不同、格式不同、更新頻率不同，甚至連「日期」都各寫各的——有的寫「2026/8/20」，有的寫「20260820」，有的乾脆只給「8-20」。你要做的，就是把它們一筆一筆抓下來、洗乾淨、對齊到同一條時間軸上。</p>
+  <p>這件事拆開來就是三個動作：<b>抓下來、洗乾淨、對齊時間</b>。「抓下來」靠的是<b>爬蟲</b>（自動把網頁或介面上的資料撈回本地的程式）或官方提供的 <b>API</b>（一種讓程式直接跟服務要資料的正式管道）；先把原始資料原封不動存起來，不要邊抓邊改。「洗乾淨」是<b>資料清洗</b>：統一日期與單位格式、把缺漏的日子補上或標記、去掉重複的列、把「數字被當成文字」這種型別問題改對。「對齊時間」是最容易被低估的一步——把不同來源用同一條時間軸接起來，讓最後那張表的<b>每一列都代表「同一個標的、同一個時間點」的一筆完整紀錄</b>。做完這三步，你手上才會有一張可以直接餵給策略和回測的乾淨表。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎這一步，是因為<b>策略的準確度，常常不是贏在多聰明，而是輸在資料沒對齊</b>——這在資料領域有個很老實的說法叫「垃圾進、垃圾出」（garbage in, garbage out）：你餵進去的資料是髒的，再厲害的模型也只會又快又穩地算出一個錯的結論。量化尤其吃這一套，因為它的每一個決策都是機器根據資料自動下的，人不會在中間用常識擋一下。如果某一天的成交量因為抓取失敗變成 0、或某檔股票的除權息沒有調整、或兩個來源的日期差了一天沒對齊，策略不會「覺得怪怪的」，它會照著錯的數字算下去、下出錯的單。所以在真實的量化團隊裡，<b>抓資料、清洗、對齊這件「雜活」，其實是整個系統最底層的地基</b>，地基歪一公分，樓上全垮。</p>
+  <p>這也正好呼應 104 人力銀行《AI 人才趨勢報告》一直強調的<b>「打通完整應用情境」</b>——不要只會孤立地學一個技術點，而要能把一整條流程串起來。爬蟲和資料清洗，就是「資料應用」這條完整情境的最前段：一個只會套現成乾淨資料集、跑跑模型的人，跟一個能<b>從零把散落的真實資料抓下來、洗成能用的樣子、再接到後面的分析</b>的人，職場成熟度差很多。前者交的是一段跑在乾淨資料上的程式，後者交的是<b>一條能持續把混亂真實世界變成可用資料的管線</b>。對想做全端或量化的人來說，「我能自己搞定資料從哪來、怎麼變乾淨」本身就是很有說服力的能力證明。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到玉山、國泰這類金融科技，或一個要處理市場資料的量化／資料職缺，這件事大致會長這樣。假設我要做一個「觀察某些標的每日行情」的小系統，第一步我會<b>優先找官方或正式的 API</b>——例如證交所、櫃買中心這類單位提供的公開資料介面，用 Python 定時去要資料；只有在沒有 API 的情況下，才退而用爬蟲去解析網頁。抓回來的原始資料，我會<b>原封不動先存一份</b>（例如存成一個個帶日期的原始檔），這樣之後清洗邏輯改了，還能從原始資料重跑，不會把來源弄髒。第二步清洗，我通常會用 pandas（Python 處理表格資料最常用的工具）把資料讀成一張表，統一日期格式、把數字型別轉對、處理停牌或假日造成的缺值、去掉重複列。第三步對齊，我會用日期當索引，把股價、成交量這些不同來源<b>合併（join）成一張以時間為主軸的寬表</b>，確認每一列都是同一天、同一標的的完整一筆，才交給後面回測。</p>
+  <p>對我這種法律金融跨域背景的人，這一步其實特別有共鳴，因為它本質上是一套<b>「資料的盡職調查與勾稽」</b>。做法遵、做盡職調查時，你最在意的從來不是「數字好不好看」，而是「這個數字的<b>來源可不可靠、口徑一不一致、對不對得起來</b>」——同一家公司在兩份文件上的數字兜不攏，那就是要查清楚的紅旗。資料清洗的精神一模一樣：兩個來源的成交量對不上、某天的價格明顯異常、日期兜不齊，這些都是「先別急著算，先查清楚」的訊號。把「勾稽、可回溯、有憑有據」這套我本來就熟的直覺，搬到資料工程上，反而是我相對別人有優勢的地方——尤其在金融場景，資料錯了動到的是真金白銀和法遵責任，這種「不放過對不齊」的龜毛，正是他們要的。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最容易踩、也最容易在面試被戳破的坑，是<b>把「有一張表」當成「有一張乾淨、能用的表」</b>。很多人抓完資料、拼成一個 DataFrame 就以為完工了，但真正的魔鬼藏在你看不到的地方：<b>缺值怎麼處理？除權息有沒有還原？兩個來源的時區與收盤時間對得上嗎？</b>舉個量化最經典、也最致命的錯——<b>未來函數</b>（look-ahead bias，在回測某一天時，不小心用到了那一天之後才會知道的資訊）。比方說你用「經過事後修正的財報數字」去回測發布當天的決策，績效會漂亮得不真實，因為你偷看了未來。這種錯不會報錯、不會當機，它只會給你一條假的漂亮曲線，等你真的拿去交易才發現全是幻覺。所以「資料乾不乾淨」的真正考題，不是欄位齊不齊，而是<b>「在每一個時間點，你的資料是不是只包含那個當下真的能拿到的資訊」</b>。</p>
+  <p>另一個誠實要先想清楚的分界，是<b>「爬蟲抓得到」不等於「你可以拿去用」</b>。技術上能不能抓，和法律上、規範上能不能抓、能不能用，是兩件事：很多網站的使用條款禁止自動化抓取，有些資料有著作權或授權限制，抓得太兇還可能對人家伺服器造成負擔。這點我因為法律背景反而會特別留意——實務上會<b>優先用官方 API 和公開授權的資料源、控制抓取頻率、看清楚 robots.txt 與使用條款</b>，而不是有技術就硬爬。不過我要誠實說：這一題我目前主要是在自己的練習專案上，用過官方公開資料 API 加上 pandas 做過抓取與清洗的完整小流程，原理和常見的坑我講得清楚；但還沒在真正生產規模、要每天穩定更新、處理大量標的與異常監控的資料管線裡實戰過。被追問到那個層級時，我會誠實說明我掌握的原理與會怎麼上手驗證，而不是硬掰經驗。</p>
+
+  <p>寫策略之前，先把資料收乾淨——量化真正的第一步，是把混亂真實世界裡散落的市場資料，變成一張每一列都對得起來的乾淨表。因為到頭來，策略再聰明，也贏不過餵給它的資料有多乾淨：垃圾進，就垃圾出。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「你會怎麼開始做一個量化交易的資料流程？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道量化的第一步是資料工程，而不是一上來就寫策略。</span>
+        <span class="a">她可以怎麼答：我會先把資料搞定，再談策略。第一步是抓下來，優先找官方 API，沒有才用爬蟲，抓回來的原始資料先原封不動存一份。第二步是洗乾淨，用 pandas 統一日期和單位格式、把型別轉對、處理停牌或假日的缺值、去掉重複。第三步是對齊時間，用日期當索引把不同來源合併成一張以時間為主軸的表，確認每一列都是同一天、同一標的的完整一筆。做完這三步才會有一張能餵回測的乾淨表。因為策略的準確度常常不是贏在多聰明，而是輸在資料沒對齊，垃圾進就垃圾出。</span>
+      </li>
+      <li>
+        <span class="q">「資料清洗你具體會做哪些事？」</span>
+        <span class="hint">👉 這題其實在問：你是真的洗過髒資料，還是只用過現成的乾淨資料集。</span>
+        <span class="a">她可以怎麼答：主要是統一格式、補缺、去重、改型別這幾類。日期格式各家不一樣，要統一成同一種；數字常常被當成文字讀進來，要轉成數值型別；停牌日、假日會有缺值，要決定是補前一天、還是標記為缺、還是整列丟掉，這個決定會影響後面計算；重複的列要去掉；還有明顯的異常值，比如成交量突然變 0，要先查是真的還是抓取失敗。重點是每一個處理都要想清楚它對後面計算的影響，而不是隨手填一個 0 或平均值就算了。</span>
+      </li>
+      <li>
+        <span class="q">「什麼是未來函數（look-ahead bias）？你怎麼避免？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂回測最經典、最會給人假績效的那個陷阱。</span>
+        <span class="a">她可以怎麼答：未來函數就是在回測某一天的決策時，不小心用到了那一天之後才會知道的資訊。最典型的例子是用事後修正過的財報數字去回測發布當天的決策，或是用當天收盤後才確定的價格去做當天盤中的判斷。它可怕的地方是不會報錯，只會給你一條漂亮到不真實的績效曲線，等你真的拿去交易才發現是幻覺。避免的核心原則是，在每一個時間點，資料只能包含那個當下真的能拿到的資訊，所以我會特別注意資料的時間戳記到底是什麼時候真正可得的。</span>
+      </li>
+      <li>
+        <span class="q">「你為什麼優先用 API 而不是直接爬？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂爬蟲的技術能力和它的法律、規範邊界是兩回事。</span>
+        <span class="a">她可以怎麼答：因為 API 是資料方正式開放的管道，格式穩定、比較不會突然改版壞掉，而且授權關係清楚。爬蟲雖然技術上抓得到，但抓得到不等於可以拿去用：很多網站的使用條款禁止自動化抓取，有些資料有著作權或授權限制，抓太兇還會給人家伺服器造成負擔。我因為法律背景會特別留意這塊，實務上會優先用官方 API 和公開授權的資料源、控制抓取頻率、看清楚 robots.txt 和使用條款，而不是有技術就硬爬。</span>
+      </li>
+      <li>
+        <span class="q">「你實際做過的資料流程到什麼程度？」</span>
+        <span class="hint">👉 這題其實在問：你的經驗是紙上談兵還是真的動過手，而且你誠不誠實。</span>
+        <span class="a">她可以怎麼答：老實說我目前主要是在自己的練習專案上，用官方公開資料 API 加上 pandas 做過從抓取、清洗到對齊時間的完整小流程，所以資料工程的原理和常見的坑，像缺值處理、時間對齊、未來函數，我是講得清楚的。但我還沒在真正生產規模、要每天穩定更新、處理大量標的還要做異常監控的資料管線裡實戰過。如果這份工作會碰到那個層級，我會先讀懂團隊現有的資料流程和資料品質檢查是怎麼做的，從跟著跑一次、看它每一關在驗什麼開始上手，而不是一來就自己另開一套。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-19.html"><span class="dir">上一課</span>← 從git push到上線：CI/CD管線省下的是哪一種風險</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>
