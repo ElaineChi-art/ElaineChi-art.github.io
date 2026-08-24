@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-23",
+  "updated": "2026-08-24",
   "lessons": [
     {
       "id": 1,
@@ -260,10 +260,10 @@
       "category": "quant",
       "topic": "自動化交易進階實戰學程",
       "title": "策略活不過實盤的常見原因：過度擬合與交易成本被忽略",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-24",
+      "url": "posts/daily/2026-08-24.html",
+      "slides": 1
     },
     {
       "id": 25,
