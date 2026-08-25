@@ -96,6 +96,11 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 
 /* ── 多益 TOEIC ── */
 .tew .pt{margin:16px 0 4px;padding:6px 11px;background:linear-gradient(90deg,rgba(155,29,45,.14),transparent);border-left:4px solid var(--red);border-radius:0 6px 6px 0;font-weight:700;color:var(--acc);font-size:calc(15px * var(--sc,1))}
+.tew .pt{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tew .pt .pb{flex:0 0 auto;font-size:11.5px;font-family:system-ui;font-weight:400;padding:3px 10px;border-radius:20px;border:1px solid var(--line);background:var(--bg);color:inherit;cursor:pointer;white-space:nowrap}
+.tew .pt .pb:hover{border-color:var(--red);color:var(--red)}
+.tew .pt.on{box-shadow:inset 0 0 0 1px var(--red)}
+.tew .pt.on .pb{background:var(--red);color:#fff;border-color:var(--red)}
 .tew .pin{margin:2px 0 8px 4px;font-size:calc(13.4px * var(--sc,1));opacity:.82}
 .tew .seg{margin:6px 0 14px;border-left:2px dashed var(--line);padding-left:11px}
 .tew .sh{cursor:pointer;margin:9px 0 5px;font-size:calc(14px * var(--sc,1));color:var(--acc);user-select:none}
@@ -205,10 +210,12 @@ function teHTML(t,mode){
     return h+'</div>';
   }
   const xp=localStorage.getItem("nidax_"+t.code)==="1";
-  let h='<div class="tew'+(xp?" xall":"")+'">',op=false;
+  let h='<div class="tew'+(xp?" xall":"")+'">',op=false,pi=0;
   t.items.forEach(it=>{
     if(it.k==="lead")h+='<div class="lead">'+esc(it.t)+'</div>';
-    else if(it.k==="h1"){if(op){h+='</div>';op=false;}h+='<div class="pt">'+esc(it.ic||"")+' '+esc(it.t)+'</div>';}
+    else if(it.k==="h1"){if(op){h+='</div>';op=false;}pi++;
+      h+='<div class="pt" id="pt-'+esc(t.code)+'-'+pi+'"><span>'+esc(it.ic||"")+' '+esc(it.t)+'</span>'+
+         '<button class="pb" data-code="'+esc(t.code)+'" data-p="'+pi+'">🔊 念這個 Part</button></div>';}
     else if(it.k==="p")h+='<div class="pin">'+esc(it.t)+'</div>';
     else if(it.k==="h2"){if(op)h+='</div>';op=true;
       h+='<div class="seg"><div class="sh">'+esc(it.ic||"")+' <b>'+esc(it.t)+'</b>　'+esc(it.d||"")+'<span class="xc">＋解析</span></div>';}
@@ -449,15 +456,25 @@ function stopAll(){playing=false;clearInterval(keep);clearInterval(poll);clearTi
   try{speechSynthesis.cancel()}catch(e){}
   const pp=document.getElementById("pp"); if(pp)pp.textContent=PLAYLABEL;
   const st=document.getElementById("st"); if(st)st.textContent="";
-  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));}
+  document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
+  document.querySelectorAll(".pt.on").forEach(e=>e.classList.remove("on"));}
 
+function partName(t,p){ let n=0,r="";
+  (t.items||[]).forEach(i=>{ if(i.k==="h1"){n++; if(n===p)r=i.t;} }); return r; }
 function highlight(it){
   document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
   const el=document.getElementById("t"+it.i);
-  if(el){el.classList.add("now"); if(it.first&&!window.__noscroll)el.scrollIntoView({block:"start",behavior:"smooth"});}
+  if(el){el.classList.add("now");
+    if(it.first&&!window.__noscroll){
+      const t0=DATA()[it.i];
+      const ph=(it.p!=null&&t0)?document.getElementById("pt-"+t0.code+"-"+it.p):null;
+      (ph||el).scrollIntoView({block:"start",behavior:"smooth"});}}
+  document.querySelectorAll(".pt.on").forEach(e=>e.classList.remove("on"));
   const t=DATA()[it.i], nw=document.getElementById("nowt");
+  if(t&&it.p!=null){const ph=document.getElementById("pt-"+t.code+"-"+it.p); if(ph)ph.classList.add("on");}
   if(nw&&t){ const ids=[...new Set(queue.filter(x=>!x.silent).map(x=>x.i))];
-    nw.textContent="🔊 "+t.code+"　"+(modeOf(t.code)==="sd"?"速讀":"擬答")+"　題 "+(ids.indexOf(it.i)+1)+"/"+ids.length; }
+    nw.textContent="🔊 "+t.code+(it.p!=null?"　"+partName(t,it.p).replace(/\s*\(.*\)/,""):"　"+(modeOf(t.code)==="sd"?"速讀":"擬答"))+
+      "　"+(sj==="te"?"情境":"題")+" "+(ids.indexOf(it.i)+1)+"/"+ids.length; }
 }
 function reapplyNow(){ if(playing&&queue[qi]){window.__noscroll=true;highlight(queue[qi]);window.__noscroll=false;} }
 const SUBJ={
@@ -485,16 +502,22 @@ function stripHTML(html,no){
           .map(x=>/[。！？；：]$/.test(x)?x:x+"。").join("");
 }
 const cleanEN=s=>String(s).replace(/\*\*/g,"").replace(/—\[\d+\]—/g,"").replace(/\s+/g," ").trim();
-function topicText(idx){
+function topicText(idx,pidx){
   const t=DATA()[idx], no=document.getElementById("notip").checked;
   const m=modeOf(t.code);
   if(sj==="te"){
     if(m==="sd"){const d=SUDUD()[t.code]||{};return (d.say||[]).map(cleanEN).join(" ");}
     const sv=localStorage.getItem(K(t.code,m));
     if(sv){const dv=document.createElement("div");dv.innerHTML=sv;
-      const es=[...dv.querySelectorAll(".et")].map(e=>cleanEN(e.innerText));
+      let p2=0; const es=[];
+      dv.querySelectorAll(".pt,.et").forEach(e=>{
+        if(e.classList.contains("pt"))p2++;
+        else if(pidx==null||p2===pidx)es.push(cleanEN(e.innerText)); });
       if(es.length)return es.join(" ");}
-    return t.items.filter(i=>i.k==="en").map(i=>cleanEN(i.t)).join(" ");
+    let pi=0; const out=[];
+    t.items.forEach(i=>{ if(i.k==="h1")pi++;
+      else if(i.k==="en"&&(pidx==null||pi===pidx))out.push(cleanEN(i.t)); });
+    return out.join(" ");
   }
   let s=CUR().label+t.code.replace(/-/g,"之")+"。"+t.title+"。";
   const saved=localStorage.getItem("nida_"+t.code+"_"+m);
@@ -515,7 +538,10 @@ function topicText(idx){
   return s;
 }
 function buildQueue(list){
-  list.forEach(i=>chunks(topicText(i),sj==="te").forEach((c,k)=>queue.push({text:c,i:i,first:k===0})));
+  list.forEach(x=>{
+    const i=(typeof x==="object")?x.i:x, p=(typeof x==="object")?x.p:null;
+    chunks(topicText(i,p),sj==="te").forEach((c,k)=>queue.push({text:c,i:i,p:p,first:k===0}));
+  });
 }
 function visibleIdx(){return [...document.querySelectorAll(".tp")].map(e=>+e.dataset.i);}
 const app=document.getElementById("app");
@@ -541,6 +567,10 @@ app.addEventListener("click",e=>{
     xb.classList.toggle("on",!on);
     if(!on)card.querySelectorAll(".seg,.en").forEach(x=>x.classList.remove("op"));
     return;}
+  const pb=e.target.closest(".pb");
+  if(pb){ const i=+pb.closest(".tp").dataset.i, p=+pb.dataset.p;
+    const on=playing&&queue[qi]&&queue[qi].i===i&&queue[qi].p===p;
+    stopAll(); if(!on)start([{i:i,p:p}]); return; }
   const qa=e.target.closest(".qa");
   if(qa){const z=qa.closest(".qz");z.classList.toggle("op");
     qa.textContent=z.classList.contains("op")?"▴ 收合解析":"▾ 顯示答案與解析";return;}
