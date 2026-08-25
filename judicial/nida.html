@@ -379,11 +379,24 @@ const PLAYLABEL="▶ 朗讀全部";
 let voices=[],pref=localStorage.getItem("mb_voice")||"",prefEN=localStorage.getItem("mb_voice_en")||"",queue=[],qi=0,playing=false,keep=null,wd=null,poll=null;
 let utterRefs=[];               // 保留參考，避免被 GC 掉導致 onend 不觸發
 const isEN=()=>typeof sj!=="undefined"&&sj==="te";
-function vlist(){return isEN()?voices.filter(v=>/^en/i.test(v.lang)):voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));}
+const JUNK=/Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Good News|Hysterical|Jester|Junior|Kathy|Organ|Superstar|Ralph|Trinoids|Whisper|Wobble|Zarvox|Fred|Grandma|Grandpa|Rocko|Princess|Bruce|Agnes|Victoria|Alice|Alva/i;
+const ACC={"en-US":"🇺🇸 美式","en-CA":"🇨🇦 加拿大","en-GB":"🇬🇧 英式","en-AU":"🇦🇺 澳洲","en-IE":"🇮🇪 愛爾蘭","en-IN":"🇮🇳 印度","en-ZA":"🇿🇦 南非","en-NZ":"🇳🇿 紐西蘭"};
+const ORD=["en-US","en-CA","en-GB","en-AU","en-IE","en-NZ","en-ZA","en-IN"];
+function vlist(){
+  if(!isEN())return voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
+  const en=voices.filter(v=>/^en/i.test(v.lang)&&!JUNK.test(v.name));
+  return en.sort((x,y)=>{
+    const sx=/Samantha/i.test(x.name)?-1:0, sy=/Samantha/i.test(y.name)?-1:0;
+    if(sx!==sy)return sx-sy;
+    const ix=ORD.indexOf(x.lang), iy=ORD.indexOf(y.lang);
+    if(ix!==iy)return (ix<0?99:ix)-(iy<0?99:iy);
+    return x.name.localeCompare(y.name);});}
 function loadVoices(){try{voices=speechSynthesis.getVoices()||[]}catch(e){voices=[]}
   const zh=vlist();const s=document.getElementById("voice");
   if(!s)return; s.innerHTML="";
-  zh.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name+(isEN()?"（"+v.lang+"）":"");s.appendChild(o)});
+  zh.forEach(v=>{const o=document.createElement("option");o.value=v.name;
+    o.textContent=v.name+(isEN()?"　"+(ACC[v.lang]||v.lang)+(/Samantha/i.test(v.name)?"（標準）":""):"");
+    s.appendChild(o)});
   if(isEN()){const d=zh.find(v=>/Samantha/i.test(v.name))||zh.find(v=>v.lang==="en-US");
     if(!prefEN&&d)prefEN=d.name; if(prefEN)s.value=prefEN;}
   else{const mj=zh.find(v=>/Meijia|美佳/i.test(v.name));if(!pref&&mj)pref=mj.name;if(pref)s.value=pref;}}
