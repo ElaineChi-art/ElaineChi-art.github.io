@@ -380,11 +380,13 @@ let voices=[],pref=localStorage.getItem("mb_voice")||"",prefEN=localStorage.getI
 let utterRefs=[];               // 保留參考，避免被 GC 掉導致 onend 不觸發
 const isEN=()=>typeof sj!=="undefined"&&sj==="te";
 const JUNK=/Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Good News|Hysterical|Jester|Junior|Kathy|Organ|Superstar|Ralph|Trinoids|Whisper|Wobble|Zarvox|Fred|Grandma|Grandpa|Rocko|Princess|Bruce|Agnes|Victoria|Alice|Alva/i;
-const ACC={"en-US":"🇺🇸 美式","en-CA":"🇨🇦 加拿大","en-GB":"🇬🇧 英式","en-AU":"🇦🇺 澳洲","en-IE":"🇮🇪 愛爾蘭","en-IN":"🇮🇳 印度","en-ZA":"🇿🇦 南非","en-NZ":"🇳🇿 紐西蘭"};
-const ORD=["en-US","en-CA","en-GB","en-AU","en-IE","en-NZ","en-ZA","en-IN"];
+const ACC={"en-US":"🇺🇸 美式","en-CA":"🇨🇦 加拿大","en-GB":"🇬🇧 英式","en-AU":"🇦🇺 澳洲"};
+const ORD=["en-US","en-CA","en-GB","en-AU"];          /* 多益只考這四種口音 */
 function vlist(){
   if(!isEN())return voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
-  const en=voices.filter(v=>/^en/i.test(v.lang)&&!JUNK.test(v.name));
+  const ok=voices.filter(v=>/^en/i.test(v.lang)&&!JUNK.test(v.name));
+  let en=ok.filter(v=>ORD.indexOf(v.lang)>=0);
+  if(!en.length)en=ok.length?ok:voices.filter(v=>/^en/i.test(v.lang));
   return en.sort((x,y)=>{
     const sx=/Samantha/i.test(x.name)?-1:0, sy=/Samantha/i.test(y.name)?-1:0;
     if(sx!==sy)return sx-sy;
