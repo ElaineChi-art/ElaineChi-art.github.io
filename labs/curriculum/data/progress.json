@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-24",
+  "updated": "2026-08-26",
   "lessons": [
     {
       "id": 1,
@@ -282,10 +282,10 @@
       "category": "ml",
       "topic": "機器學習概念",
       "title": "監督式與非監督式的分界：機器學習問題的第一個分類判斷",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-26",
+      "url": "posts/daily/2026-08-26.html",
+      "slides": 1
     },
     {
       "id": 27,

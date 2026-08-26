@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>把法遵背景變優勢：量化交易系統裡監理與風控該長在哪裡｜技能實驗室・每日課程</title>
+<meta name="description" content="量化交易系統裡的監理與風控，不是最後補一個章，而是從資料、下單前、成交到事後監控，一路長在整條流程上。這一課用一張系統圖拆解事前風控（部位上限、集中度、禁止交易名單）、事後監控與稽核軌跡該接在哪，並說明法律金融跨域背景在這條線上為什麼是加分——因為法遵的職業直覺就是問『這筆決策能不能被檢查、有沒有留證據』。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-25</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・量化交易</div>
+  <h1>把法遵背景變優勢：量化交易系統裡監理與風控該長在哪裡</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-25</span>
+    <span>約 8 分鐘</span>
+    <span>對應真專案主題：專案實作：量化金融</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>量化交易系統裡的監理與風控，<b>不是上線前補蓋一個章，而是從頭到尾長在整條流程上</b>。資料進來要驗來源合法與品質；<b>下單之前要有「事前風控」</b>（pre-trade risk，在單子送出去撮合前先擋一次——部位有沒有超限、單一標的是不是壓太重、有沒有碰到禁止交易的名單）；成交之後要有<b>事後監控與稽核軌跡</b>（audit trail，每一筆都能回溯是誰、依什麼規則、在什麼時間做的）。我法律金融跨域的背景在這條線上剛好是加分——因為法遵的職業直覺，問的正是<b>「這筆決策能不能被檢查、有沒有留下證據」</b>。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-25-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260825" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260825" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260825" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260825)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260825)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M6 · 量化交易  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">監理與風控，<tspan fill="#4D9FFF">該長在系統的哪一段？</tspan></text>
+
+      <!-- ===== 主流程五格 ===== -->
+      <text x="66" y="150" font-size="18" font-weight="800" fill="#8FA1C0">主流程：一筆交易從資料到留痕</text>
+
+      <rect x="64" y="166" width="208" height="76" rx="12" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="168" y="200" font-size="18" font-weight="800" fill="#F5F8FF" text-anchor="middle">① 資料</text>
+      <text x="168" y="224" font-size="15" fill="#8FA1C0" text-anchor="middle">行情・基本面進來</text>
+      <line x1="272" y1="204" x2="300" y2="204" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260825)"/>
+
+      <rect x="308" y="166" width="208" height="76" rx="12" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="412" y="200" font-size="18" font-weight="800" fill="#F5F8FF" text-anchor="middle">② 訊號・策略</text>
+      <text x="412" y="224" font-size="15" fill="#8FA1C0" text-anchor="middle">算出該買該賣</text>
+      <line x1="516" y1="204" x2="544" y2="204" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260825)"/>
+
+      <rect x="552" y="166" width="208" height="76" rx="12" fill="#173154" stroke="#4D9FFF" stroke-width="2"/>
+      <text x="656" y="200" font-size="18" font-weight="800" fill="#4D9FFF" text-anchor="middle">③ 下單前把關</text>
+      <text x="656" y="224" font-size="15" fill="#C7D2E4" text-anchor="middle">事前風控在這攔</text>
+      <line x1="760" y1="204" x2="788" y2="204" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260825)"/>
+
+      <rect x="796" y="166" width="208" height="76" rx="12" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="900" y="200" font-size="18" font-weight="800" fill="#F5F8FF" text-anchor="middle">④ 送單・撮合</text>
+      <text x="900" y="224" font-size="15" fill="#8FA1C0" text-anchor="middle">下到市場成交</text>
+      <line x1="1004" y1="204" x2="1032" y2="204" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260825)"/>
+
+      <rect x="1040" y="166" width="176" height="76" rx="12" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="1128" y="200" font-size="18" font-weight="800" fill="#F5F8FF" text-anchor="middle">⑤ 留痕</text>
+      <text x="1128" y="224" font-size="15" fill="#8FA1C0" text-anchor="middle">紀錄每一筆</text>
+
+      <!-- ===== 三個風控卡 ===== -->
+      <rect x="64" y="280" width="368" height="270" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="64" y="280" width="368" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="88" y="320" font-size="19" font-weight="800" fill="#35C08E">A. 資料端：來源與品質</text>
+      <text x="88" y="352" font-size="16" fill="#C7D2E4">・這份資料是不是合法取得、可用</text>
+      <text x="88" y="380" font-size="16" fill="#C7D2E4">・有沒有缺漏、跳動、餵進髒資料</text>
+      <text x="88" y="408" font-size="16" fill="#C7D2E4">・非公開資訊有沒有混進來</text>
+      <text x="88" y="452" font-size="15" fill="#7E8CA8">→ 錯的資料會讓後面每一步都錯，</text>
+      <text x="88" y="476" font-size="15" fill="#7E8CA8">　 而且事後查不出問題出在哪。</text>
+      <text x="88" y="520" font-size="15" font-weight="700" fill="#7E8CA8">關鍵字：資料治理・來源合法性</text>
+
+      <rect x="456" y="280" width="368" height="270" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="456" y="280" width="368" height="5" rx="2.5" fill="#4D9FFF"/>
+      <text x="480" y="320" font-size="19" font-weight="800" fill="#4D9FFF">B. 下單前：事前風控</text>
+      <text x="480" y="352" font-size="16" fill="#C7D2E4">・部位上限：單子會不會爆過額度</text>
+      <text x="480" y="380" font-size="16" fill="#C7D2E4">・集中度：單一標的是不是壓太重</text>
+      <text x="480" y="408" font-size="16" fill="#C7D2E4">・禁止名單：碰到不能交易的就擋</text>
+      <text x="480" y="452" font-size="15" fill="#7E8CA8">→ 在單子送出去「之前」攔，</text>
+      <text x="480" y="476" font-size="15" fill="#7E8CA8">　 錯單一旦成交就收不回來。</text>
+      <text x="480" y="520" font-size="15" font-weight="700" fill="#7E8CA8">關鍵字：pre-trade risk・硬性限額</text>
+
+      <rect x="848" y="280" width="368" height="270" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="2"/>
+      <rect x="848" y="280" width="368" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="872" y="320" font-size="19" font-weight="800" fill="#F2A33C">C. 成交後：監控與稽核</text>
+      <text x="872" y="352" font-size="16" fill="#C7D2E4">・監控異常下單、突發大額</text>
+      <text x="872" y="380" font-size="16" fill="#C7D2E4">・稽核軌跡：誰・依什麼規則・何時</text>
+      <text x="872" y="408" font-size="16" fill="#C7D2E4">・每一筆都能回溯、能重建過程</text>
+      <text x="872" y="452" font-size="15" fill="#7E8CA8">→ 出事時能證明「我當初照規則」，</text>
+      <text x="872" y="476" font-size="15" fill="#7E8CA8">　 這是面對監理最實際的底氣。</text>
+      <text x="872" y="520" font-size="15" font-weight="700" fill="#7E8CA8">關鍵字：audit trail・可回溯</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：風控不是最後補的章，是長在整條流程上的三道關——資料、下單前、成交後。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">法遵的職業直覺，問的正是每一關「能不能被檢查、有沒有留下證據」——這在量化系統裡是加分不是包袱。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-25-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-25-1.mp3"></audio>
+    <p>這張圖在講的是，一套量化交易系統裡，監理與風控不是最後補一個章，而是從頭到尾長在每一段。上面那排是主流程：資料進來、算出訊號、決定要不要下單、送去撮合成交，最後留下紀錄。下面三張卡標出風控該接在哪。資料端要驗品質與來源合法性；下單之前要有事前風控，檢查部位上限、單一標的集中度、有沒有碰到禁止交易的名單，重點是在單子送出去「之前」攔，因為錯單一旦成交就收不回來；成交之後要有事後監控，抓異常下單、留完整的稽核軌跡，讓每一筆都能回溯是誰、依什麼規則、在什麼時間做的。我的法遵背景在這裡是加分，因為我習慣問的就是，這筆決策能不能被檢查、有沒有留下證據。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>先說結論：<b>「監理與風控」在量化系統裡，指的是一整套「在自動下單的每一段流程上，防止系統做出違規或超額危險交易」的機制</b>。量化交易的特色是「機器照規則自動下單」，速度快、量大、沒有人在每一筆前面按確認鍵——這正是它的效率，也是它的風險：一段程式邏輯寫錯、一個參數填錯，可能在幾秒內送出上百筆錯單。所以風控不是「跑完策略再想」的附加品，而是要<b>像護欄一樣，事先鋪在整條路上</b>。</p>
+  <p>把它拆開看，其實就是三道關接在主流程的不同位置。<b>第一道在資料端</b>：這份資料是不是合法取得、品質乾淨（正規化與品質檢查前一課提過，髒資料會讓後面全錯）。<b>第二道在「下單之前」，叫事前風控</b>（pre-trade risk）：策略算出要下的單，先過一層硬性檢查——超過部位上限、單一標的壓太重、碰到禁止交易的標的，就直接擋下，不讓它出門。<b>第三道在「成交之後」</b>：監控有沒有異常下單，並且把每一筆的來龍去脈完整記錄成稽核軌跡（audit trail），讓事後能回溯「這筆是誰、依哪條規則、在什麼時間做的」。監理（compliance）是外部規則，風控（risk control）是內部防線，兩者在系統裡是同一條線上的事。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎，是因為<b>在金融場景，一次失控的自動交易，代價是真實、即時、而且對外的——會賠錢，也會賠掉合規紀錄</b>。純技術團隊常把重心放在「策略能不能賺」，但在國泰、玉山這種受金管會監理的機構，一個同等重要、甚至更前置的問題是<b>「這套系統會不會做出我們不能對監理機關交代的事」</b>。歷史上國際市場就出現過因為自動交易程式失控、短時間內送出海量錯單而造成鉅額虧損、甚至拖垮公司的案例——這類事件的共同教訓不是「策略不好」，而是「沒有一道能在事前把危險單擋下來的護欄」。這屬於常識性的產業認知，我不去引用特定數字，但方向是明確的：風控失效的代價，量級上遠大於策略少賺一點。</p>
+  <p>更關鍵的是，<b>這正好連到一個完整應用情境，而不是孤立技術點</b>。104 人力銀行《AI 人才趨勢報告》一再強調，企業要的是能打通整條流程的人。一個只會寫策略的人，交出來的是「這個會賺」；一個懂得把監理與風控接進系統的人，交出來的是<b>「這個策略會賺，而且它下的每一筆單都過了事前限額、留了稽核軌跡、出事時我能證明我們照規則走」</b>。對金融科技團隊來說，後者才是能真正上線的東西——因為在受監理的環境裡，一個沒有風控護欄的漂亮策略，根本不會被允許碰真錢。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到玉山、國泰這類金融科技，或一個要碰交易系統的量化職缺，這套東西大致會長這樣。第一，<b>事前風控要做成「硬性限額」，而且和策略邏輯分開</b>：策略只管「想下什麼單」，風控模組獨立地在單子送出前檢查部位上限、單一標的集中度、當日累計量、禁止交易名單，任何一條踩線就擋下並記錄原因。把它跟策略解耦很重要——策略常改，護欄不能跟著策略一起被改鬆。第二，<b>每一筆都要留稽核軌跡</b>：下單的時間、依據的訊號、當下的風控檢查結果、成交回報，全部記下來，做到「任何一筆都能事後重建」。第三，<b>設好熔斷與人工介入點</b>：例如短時間虧損超過門檻、或下單速率異常，系統自動暫停並通報人，而不是讓它繼續跑。</p>
+  <p>對我這種法律金融跨域背景的人，這一整套其實就是我熟悉的思路換了個場景。<b>做法遵、做盡職調查的核心動作，就是「要求每個決策可回溯、可檢查、留得下證據」</b>——這和稽核軌跡要解決的是同一件事。我看一套交易系統，直覺會問的不是「它跑多快」，而是<b>「如果金管會來查某一筆交易，我能不能把它是誰、依什麼規則、在什麼時間做的完整還原出來」</b>。同樣地，「事前風控要獨立於策略」這種設計，對應的就是法律上「利益衝突要用制度隔開、不能靠自律」的直覺。所以在量化系統的風控這條線上，我的背景不是要補的短板，反而是我比純工程背景的人更早會問對問題的地方。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最常見、也最危險的誤區，是<b>把風控做成「事後報表」而不是「事前護欄」</b>。很多人以為有做風控，指的是每天收盤後跑一份報表看有沒有超限——但那時候錯單早就成交了，錢也賠了，報表只能告訴你「已經出事」。真正能救命的是<b>事前風控（pre-trade）：在單子送進市場「之前」就攔下來</b>。這兩者差在一個「時間點」，卻是天差地別：事後監控負責發現與交代，事前風控才負責「根本不讓危險單出門」。被追問時要能清楚分辨這兩層，並且知道兩層都要有——事前擋、事後查，缺一不可。</p>
+  <p>另一個容易答錯的追問是<b>「風控是不是越嚴越好？」——不是</b>。限額設得太死，會把正常、該做的交易也一起擋掉，讓策略失去彈性甚至錯過該進場的時機；設得太鬆，護欄就形同虛設。真正的功夫在<b>「把限額訂在有依據的水準」</b>：根據資金規模、標的流動性、可承受的最大虧損去計算，而不是憑感覺填一個數字。我要誠實說：這一題我目前是把原理和該有的環節講清楚——事前／事後兩層、稽核軌跡、限額與熔斷該接在系統哪裡，我知道每一環在防什麼；但我還沒有在真實受監理的交易系統上實作或校準過這些限額。真被追問到那個層級，我會誠實說明我掌握的架構，並說我會從讀懂團隊現有的風控規則和監理要求開始上手，把我的法遵直覺對進他們既有的制度，而不是假裝有實戰經驗。</p>
+
+  <p>會賺的策略，不裝護欄就不能上線——量化系統真正的門檻，往往不在演算法，而在你能不能證明每一筆單都被檢查過、留得下證據。一句話：策略決定賺多少，風控決定你能不能一直待在牌桌上。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「一套量化交易系統，你會把風控放在哪些地方？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道風控是長在整條流程上，不是最後補一個報表。</span>
+        <span class="a">她可以怎麼答：我會把它接在三個位置。第一在資料端，驗來源合法性和品質，因為髒資料會讓後面每一步都錯。第二在下單之前，也就是事前風控，策略算出要下的單，先過一層硬性檢查——部位上限、單一標的集中度、有沒有碰到禁止交易名單，踩線就擋下，因為錯單一旦成交就收不回來。第三在成交之後，做監控和稽核軌跡，把每一筆的時間、依據、風控結果、成交回報都記下來，讓任何一筆都能事後重建。事前擋、事後查，兩層都要有。</span>
+      </li>
+      <li>
+        <span class="q">「事前風控（pre-trade）和事後監控差在哪？為什麼強調事前？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂「時間點」的差別，還是把風控當成收盤後跑報表。</span>
+        <span class="a">她可以怎麼答：差在攔截的時間點。事後監控是成交之後才發現有沒有超限，但那時候錯單早就成交、錢也賠了，它只能負責發現和交代。事前風控是在單子送進市場之前就擋下來，負責的是根本不讓危險單出門。一個常見的誤區就是把風控做成事後報表，以為有看就叫有做，其實救不了命。真正能防止災難的是事前這一層，所以兩層都要有，但事前特別關鍵。</span>
+      </li>
+      <li>
+        <span class="q">「稽核軌跡（audit trail）為什麼重要？你會記哪些東西？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂受監理環境下「可回溯、留證據」的價值。</span>
+        <span class="a">她可以怎麼答：稽核軌跡的價值是讓每一筆交易都能回溯，出事時能證明我們當初是照規則走的。我會記下單的時間、依據的訊號、當下事前風控的檢查結果、以及成交回報，目標是做到任何一筆都能事後完整重建。這在受金管會監理的機構特別重要，因為監理機關來查某一筆交易時，你要能把它是誰、依什麼規則、在什麼時間做的還原出來。這其實跟我法遵背景要求的可回溯、可檢查是同一件事。</span>
+      </li>
+      <li>
+        <span class="q">「風控是不是設得越嚴越好？」</span>
+        <span class="hint">👉 這題其實在問：你會不會只知道要嚴，卻不懂限額要有依據。</span>
+        <span class="a">她可以怎麼答：不是越嚴越好。限額設得太死，會把正常、該做的交易也擋掉，讓策略失去彈性、錯過該進場的時機；設得太鬆，護欄又形同虛設。功夫在把限額訂在有依據的水準，根據資金規模、標的流動性、可承受的最大虧損去計算，而不是憑感覺填一個數字。另外我會把事前風控和策略邏輯解耦，因為策略常改，護欄不能跟著策略一起被改鬆。</span>
+      </li>
+      <li>
+        <span class="q">「你的法律背景，對做量化系統的風控有什麼幫助？」</span>
+        <span class="hint">👉 這題其實在問：你的跨域背景是加分還是不相關，你講不講得出連結。</span>
+        <span class="a">她可以怎麼答：幫助在於我習慣的問題剛好就是風控要解決的問題。做法遵和盡職調查的核心動作，是要求每個決策可回溯、可檢查、留得下證據，這跟稽核軌跡要做的是同一件事。我看一套交易系統，直覺會問的不是它跑多快，而是如果監理機關來查某一筆，我能不能完整還原它。像事前風控要獨立於策略這種設計，對應的也是法律上利益衝突要用制度隔開、不能靠自律的直覺。老實說我還沒在真實受監理的系統上校準過這些限額，但我會從讀懂團隊現有的風控規則和監理要求開始，把這套直覺對進他們既有的制度。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-24.html"><span class="dir">上一課</span>← 策略活不過實盤的常見原因：過度擬合與交易成本被忽略</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>監督式與非監督式的分界：機器學習問題的第一個分類判斷｜技能實驗室・每日課程</title>
+<meta name="description" content="拿到一個機器學習問題，第一個要下的判斷不是選演算法，而是問『我手上有沒有標準答案（標籤）』。這一課用一張決策圖拆解監督式與非監督式的分界：有標籤就是監督式（學題目加解答的對應規則，能算對錯），只有特徵沒答案就是非監督式（自己找結構、分群、抓異常）。並用信用卡盜刷偵測這個金融場景，說明為什麼第一步判斷錯了，後面整條技術路線都會走歪。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-26</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・機器學習核心</div>
+  <h1>監督式與非監督式的分界：機器學習問題的第一個分類判斷</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-26</span>
+    <span>約 7 分鐘</span>
+    <span>對應真專案主題：機器學習概念</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>拿到一個機器學習問題，<b>第一個要下的判斷不是「用哪個演算法」，而是「我手上有沒有標準答案」</b>——也就是有沒有標籤（label，每筆資料附帶的正確答案，例如這封信是不是詐騙）。<b>有標籤，就是監督式學習</b>（supervised，從「題目＋解答」學出一套對應規則，之後看到新題目能自己給答案，而且答對答錯量得出來）；<b>只有特徵、沒有答案，就是非監督式學習</b>（unsupervised，機器自己在沒有解答的情況下找出結構，例如把相似的客戶分群、抓出異常）。這一步判斷錯了，後面選模型、切資料、評估好壞的整條路線全都會走歪，所以它是每個 ML 問題的第一個岔路口。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-26-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260826" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260826" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBD20260826" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+        <marker id="arrGD20260826" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#35C08E"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260826)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260826)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M7 · 機器學習核心  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="36" font-weight="900" fill="#F5F8FF">第一個岔路口：<tspan fill="#4D9FFF">我手上有沒有標準答案？</tspan></text>
+
+      <!-- ===== 中央決策問句 ===== -->
+      <rect x="404" y="140" width="472" height="70" rx="14" fill="rgba(46,107,255,.12)" stroke="#2E6BFF" stroke-width="1.8"/>
+      <text x="640" y="174" font-size="20" font-weight="800" fill="#F5F8FF" text-anchor="middle">每一筆資料，有沒有附「正確答案（標籤）」？</text>
+      <text x="640" y="198" font-size="15" fill="#8FA1C0" text-anchor="middle">← 這一句話，決定你走左邊還是右邊</text>
+
+      <!-- 兩條分流箭頭 -->
+      <line x1="470" y1="212" x2="300" y2="250" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBD20260826)"/>
+      <text x="360" y="236" font-size="15" font-weight="700" fill="#4D9FFF">有標籤</text>
+      <line x1="810" y1="212" x2="980" y2="250" stroke="#35C08E" stroke-width="2.5" marker-end="url(#arrGD20260826)"/>
+      <text x="880" y="236" font-size="15" font-weight="700" fill="#35C08E">沒標籤</text>
+
+      <!-- ===== 左：監督式 ===== -->
+      <rect x="64" y="258" width="536" height="292" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="2"/>
+      <rect x="64" y="258" width="536" height="5" rx="2.5" fill="#4D9FFF"/>
+      <text x="88" y="298" font-size="21" font-weight="900" fill="#4D9FFF">監督式學習 Supervised</text>
+      <text x="88" y="326" font-size="16" fill="#C7D2E4">資料＝特徵 ＋ <tspan font-weight="700" fill="#F5F8FF">每筆都有正確答案</tspan></text>
+      <text x="88" y="356" font-size="16" font-weight="700" fill="#8FA1C0">在學什麼：</text>
+      <text x="88" y="380" font-size="16" fill="#C7D2E4">從「題目＋解答」學出一套對應規則，</text>
+      <text x="88" y="404" font-size="16" fill="#C7D2E4">看到新題目能自己給答案。</text>
+      <text x="88" y="440" font-size="16" font-weight="700" fill="#8FA1C0">兩種題型：</text>
+      <text x="88" y="464" font-size="16" fill="#C7D2E4">・<tspan font-weight="700" fill="#F5F8FF">分類</tspan>：答案是類別（盜刷／正常）</text>
+      <text x="88" y="488" font-size="16" fill="#C7D2E4">・<tspan font-weight="700" fill="#F5F8FF">迴歸</tspan>：答案是數字（房價、額度）</text>
+      <text x="88" y="524" font-size="15" font-weight="700" fill="#35C08E">✓ 有答案 → 算得出對錯 → 能量準確率</text>
+
+      <!-- ===== 右：非監督式 ===== -->
+      <rect x="680" y="258" width="536" height="292" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="2"/>
+      <rect x="680" y="258" width="536" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="704" y="298" font-size="21" font-weight="900" fill="#35C08E">非監督式學習 Unsupervised</text>
+      <text x="704" y="326" font-size="16" fill="#C7D2E4">資料＝只有特徵，<tspan font-weight="700" fill="#F5F8FF">沒有答案</tspan></text>
+      <text x="704" y="356" font-size="16" font-weight="700" fill="#8FA1C0">在學什麼：</text>
+      <text x="704" y="380" font-size="16" fill="#C7D2E4">沒人給解答，機器自己在資料裡</text>
+      <text x="704" y="404" font-size="16" fill="#C7D2E4">找出結構、把相似的東西歸在一起。</text>
+      <text x="704" y="440" font-size="16" font-weight="700" fill="#8FA1C0">常見任務：</text>
+      <text x="704" y="464" font-size="16" fill="#C7D2E4">・<tspan font-weight="700" fill="#F5F8FF">分群</tspan>：把客戶自動分成幾種樣子</text>
+      <text x="704" y="488" font-size="16" fill="#C7D2E4">・<tspan font-weight="700" fill="#F5F8FF">異常偵測</tspan>：找出跟大家都不一樣的</text>
+      <text x="704" y="524" font-size="15" font-weight="700" fill="#F2A33C">⚠ 沒答案 → 好壞難量 → 需人工判讀</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：ML 問題的第一步不是選演算法，是先問「我有沒有標籤」。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">有標籤走監督式（能算對錯）、沒標籤走非監督式（自己找結構）——這一刀切錯，後面選模型、評估全跟著錯。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-26-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-26-1.mp3"></audio>
+    <p>這張圖在講的是，拿到一個機器學習問題，第一個要做的分類判斷，就是問你手上有沒有標準答案，也就是有沒有標籤。如果每一筆資料都附了正確答案，像是這封信是不是詐騙、這個客戶有沒有違約，那就是監督式學習，機器要從題目加解答裡學出一套對應規則，之後看到新題目能自己給答案。如果資料只有特徵、沒有任何標準答案，你想做的是把相似的東西分群、或找出異常，那就是非監督式學習，機器得在沒有解答的情況下自己找出結構。分界的關鍵不是資料多不多、演算法炫不炫，而是這一句：我有沒有標籤。標籤決定了你能不能算對錯、能不能訓練，也決定你整條技術路線往哪走。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>先講結論：<b>監督式與非監督式的分界，只看一件事——「訓練資料裡，每一筆有沒有附上正確答案」</b>。這個「正確答案」在機器學習裡叫標籤（label）。有標籤，就是監督式學習；沒標籤，就是非監督式學習。所有更炫的演算法選擇，都是在你先答完這一題之後才輪得到。</p>
+  <p>監督式學習，就是「拿一堆題目連同標準解答，教機器學出對應規則」。打個精準的比方：像老師給你一疊考古題，每一題都附了正解，你反覆對照後學會一套解法，之後遇到沒看過的新題也能作答。它又分兩種題型——<b>分類</b>（答案是「哪一類」，例如這筆交易是盜刷還是正常）和<b>迴歸</b>（答案是「一個數字」，例如這間房子該賣多少錢）。關鍵是：因為每筆都有標準答案，機器答完你就能一筆一筆對，算得出它多常答對，也就有明確的「準確率」可以優化。</p>
+  <p>非監督式學習，是「只給機器一堆資料、不給任何答案，要它自己找出裡面的結構」。這裡沒有老師、沒有解答本，機器要做的是把相似的資料歸在一起（分群，clustering），或找出跟大多數都不一樣的少數（異常偵測）。它最大的特色——同時也是最大的麻煩——是<b>「沒有標準答案，所以你很難直接說它做得對不對」</b>，好壞往往得靠人回頭判讀，看分出來的群「合不合理、對業務有沒有用」。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎，是因為<b>這一步判斷是整個機器學習專案的「地基」——它錯了，後面每一個技術決定都建在歪的基礎上</b>。你選哪種模型、資料要不要留一份當考卷（測試集）、最後用什麼指標評估好壞，全都取決於這是監督式還是非監督式。把一個其實沒有標籤的問題硬當成監督式來做，你會卡在「根本沒有答案可以訓練」；把一個明明有答案的問題當成非監督式，你則白白丟掉了最寶貴的資訊，繞遠路還做得更差。</p>
+  <p>更實際的是，<b>這一步直接連到「資料要花多少成本」這個真實的專案問題，而不是孤立的技術點</b>。104 人力銀行《AI 人才趨勢報告》一再強調，企業要的是能打通完整應用情境的人——而在真實專案裡，「有沒有標籤」常常不是天上掉下來的，而是要花錢花人力去標。監督式雖然效果通常更明確可控，但它的前提是「你得先有一批標好答案的資料」，這件事在很多場景又慢又貴（例如要人工一筆筆判定「這筆是不是盜刷」）。所以一個成熟的工程師，看到問題不會只想「用什麼演算法」，而會先問「我有沒有標籤、標籤要花多少代價拿到、拿不到的話能不能退而用非監督式先做起來」——這種從資料現實往回推技術路線的思路，正是能真正把專案落地的人跟只會跑範例的人之間的差別。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到玉山、國泰這類金融科技，或一個要碰資料的國際遠端全端職缺，這個判斷會非常具體地出現在專案一開始。舉一個貼近我背景的例子：<b>信用卡盜刷偵測</b>。如果公司歷史資料裡，每一筆交易都已經被標記過「事後確認是不是盜刷」，那我手上就有標籤，這是一個典型的<b>監督式分類</b>問題——我可以拿這些「交易特徵＋是不是盜刷」的資料去訓練一個模型，之後對新交易預測風險，而且因為有答案，我能明確地量它抓得準不準。但現實常常是另一種：新型態的盜刷手法還沒被標記過、或根本來不及標，這時我沒有可靠的標籤，就得轉向<b>非監督式的異常偵測</b>——不預設「什麼叫盜刷」，而是讓模型學出「正常交易長什麼樣」，把明顯偏離的挑出來給風控人員複核。</p>
+  <p>同一個「防盜刷」目標，因為「有沒有標籤」不同，走的是兩條完全不同的技術路線——這就是為什麼第一步判斷這麼關鍵。對我這種法律金融跨域背景的人，這裡其實有個天然的切入點：<b>我對「金融場景裡哪些資料標得到、標一筆要多少成本、合規上能不能用」特別敏感</b>。判斷一個問題該走監督式還是非監督式，很大一部分不是純技術題，而是「這個領域的資料現實允許你走哪條路」——而這正好是我能比純工程背景的人更早問對問題的地方。面試時我會這樣講：我不會一上來就秀演算法，我會先確認我們手上到底有沒有可信的標籤、拿標籤的代價多大，再決定整條路線怎麼走。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最常見、乍看懂了其實會答錯的誤區，是<b>把「監督式／非監督式」跟「資料量多少」或「難不難」混為一談</b>——它們完全是兩件事。分界只看「有沒有標籤」，跟資料是幾百筆還是幾億筆無關，也跟問題簡單或複雜無關。你可能有海量資料卻一個標籤都沒有（那還是非監督式），也可能只有幾千筆但每筆都標好了（那就是監督式）。被追問時要能一刀切乾淨：<b>唯一的判準是標籤的有無，不是資料的多寡</b>。</p>
+  <p>另一個容易被追問到卡住的點是：<b>「那如果只有一小部分資料有標籤呢？」——這時候並不是二選一，中間還有一塊叫半監督式（semi-supervised）</b>。真實世界很常是「一小撮標好的、加上一大堆沒標的」，因為標籤貴、沒標的資料便宜又多，於是有一整類方法專門吃這種組合。我要誠實說：監督式和非監督式的定義、判準、以及它們怎麼決定後面路線，我已經能清楚講明白；但半監督式、還有另一支「靠獎懲互動去學」的強化學習（reinforcement learning），我目前是知道它們存在、知道各自大概解決什麼場景，還沒有實作經驗。真被追問到那個層級，我會誠實說明我掌握到哪、把邊界講清楚，而不是硬掰——因為這一課的重點，是先把「第一個岔路口」判斷得又快又準，這是所有後續選擇的地基。</p>
+
+  <p>選演算法之前，先問一句「我手上有沒有標準答案」——這一刀切對了，後面的路才不會白走。一句話：機器學習的第一個判斷不是技術題，是資料題。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「監督式和非監督式學習，差在哪？」</span>
+        <span class="hint">👉 這題其實在問：你能不能一句話切乾淨兩者的分界，而不是背一堆特徵。</span>
+        <span class="a">她可以怎麼答：只差一件事——訓練資料裡每一筆有沒有附上正確答案，也就是有沒有標籤。有標籤就是監督式，機器從「題目加解答」學出一套對應規則，之後看到新題目能自己給答案，而且因為有答案，我能算得出它多常答對。沒標籤就是非監督式，機器要自己在資料裡找出結構，例如把相似的分成一群、或抓出異常，但因為沒有標準答案，好壞很難直接量，常要靠人回頭判讀。分界只看標籤的有無，跟資料量多少無關。</span>
+      </li>
+      <li>
+        <span class="q">「給你一個問題，你怎麼判斷該用哪一種？」</span>
+        <span class="hint">👉 這題其實在問：你面對真實問題時，第一步的思考流程對不對。</span>
+        <span class="a">她可以怎麼答：我第一步不會先想演算法，我會先問「我手上有沒有可信的標籤」。以信用卡盜刷為例，如果歷史交易每一筆都已經標記過事後確認是不是盜刷，那我有標籤，這是監督式分類，我可以拿它訓練模型再對新交易預測，而且能明確量準不準。如果是新手法、根本還沒被標記過，我沒有可靠標籤，就轉向非監督式的異常偵測，讓模型學出正常交易長什麼樣，把偏離的挑出來給人複核。同一個目標，因為標籤有沒有，走的是兩條路。</span>
+      </li>
+      <li>
+        <span class="q">「分類和迴歸差在哪？兩個都是監督式嗎？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道監督式底下還分兩種題型。</span>
+        <span class="a">她可以怎麼答：兩個都是監督式，因為都有標籤，差別在答案是什麼型態。分類的答案是「哪一類」，例如這筆交易是盜刷還是正常、這封信是不是詐騙；迴歸的答案是「一個數字」，例如這間房子該賣多少錢、該給多少信用額度。判準一樣是有沒有標準答案，只是一個在預測類別、一個在預測數值。</span>
+      </li>
+      <li>
+        <span class="q">「非監督式沒有答案，那你怎麼知道模型做得好不好？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂非監督式最麻煩的地方就是評估。</span>
+        <span class="a">她可以怎麼答：這正是非監督式最難的地方——沒有標準答案，就沒辦法像監督式那樣直接算準確率。它的好壞很大一部分要回頭靠人判讀，看分出來的群合不合理、對業務有沒有用，例如分群分出來的客戶樣子，業務端認不認得出、用不用得上。也有一些數學上的內部指標可以參考分群的緊密和分離程度，但最終還是要對回實際場景才算數。我會誠實說，我知道評估難是它的核心痛點，實際校準這件事我還需要在專案裡累積經驗。</span>
+      </li>
+      <li>
+        <span class="q">「如果只有一小部分資料有標籤呢？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道現實常不是二選一，中間還有半監督式。</span>
+        <span class="a">她可以怎麼答：這時候不是二選一，中間還有一塊叫半監督式。真實世界很常是一小撮標好的、加上一大堆沒標的，因為標籤貴、沒標的資料便宜又多，所以有一整類方法專門吃這種組合，用少量標籤帶動大量未標資料。我要誠實說，監督式和非監督式的定義和判準我能講清楚，但半監督式和強化學習我目前是知道它們存在、知道大概解決什麼場景，還沒有實作經驗。真要用到，我會從讀懂它的前提假設開始上手，而不是假裝有經驗。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-25.html"><span class="dir">上一課</span>← 把法遵背景變優勢：量化交易系統裡監理與風控該長在哪裡</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>
