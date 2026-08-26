@@ -101,6 +101,9 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .tew .pt .pb:hover{border-color:var(--red);color:var(--red)}
 .tew .pt.on{box-shadow:inset 0 0 0 1px var(--red)}
 .tew .pt.on .pb{background:var(--red);color:#fff;border-color:var(--red)}
+.tew .doc{border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:0 8px 8px 0;padding:9px 13px;margin:8px 0 4px;background:rgba(127,140,141,.06);font-family:Georgia,serif}
+.tew .doc .dt{font-weight:700;letter-spacing:.06em;font-size:calc(13.6px * var(--sc,1));margin-bottom:3px}
+.tew .doc .dl{font-size:calc(13.2px * var(--sc,1));line-height:1.72;opacity:.9}
 .tew .pin{margin:2px 0 8px 4px;font-size:calc(13.4px * var(--sc,1));opacity:.82}
 .tew .seg{margin:6px 0 14px;border-left:2px dashed var(--line);padding-left:11px}
 .tew .sh{cursor:pointer;margin:9px 0 5px;font-size:calc(14px * var(--sc,1));color:var(--acc);user-select:none}
@@ -127,6 +130,10 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .tew .seg.op .zx,.tew .seg.op .voc,.tew .seg.op .tip{display:block}
 .tew.xall .zx,.tew.xall .voc,.tew.xall .tip{display:block}
 .tew .en.op + .zx{display:block}
+.tb.star{padding:4px 9px;font-size:14px;line-height:1}
+.tb.star.on{color:#f1c40f;border-color:#f1c40f;background:rgba(241,196,15,.12)}
+#onlystar.on{background:#f1c40f;border-color:#f1c40f;color:#4a3b00}
+#toc a .stm{color:#f1c40f;margin-left:4px}
 .tb.xpb.on{background:var(--red);color:#fff;border-color:var(--red)}
 .sdte .tvt{font-weight:700;color:var(--acc);margin:14px 0 7px;font-size:calc(14.6px * var(--sc,1));border-bottom:1px solid var(--line);padding-bottom:4px}
 .sdte .tree{white-space:pre;overflow-x:auto;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:calc(12.4px * var(--sc,1));line-height:1.85;background:rgba(127,140,141,.07);border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin:0}
@@ -151,6 +158,7 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 <button id="tocbtn">☰ 目錄</button>
 <button id="allsd" class="tb">⚡ 全部速讀</button>
 <button id="kk" class="tb">🔴 重點紅字</button>
+<button id="onlystar" class="tb">⭐ 只看星號</button>
 <input id="q" placeholder="搜尋題型、條號、關鍵字…">
 <span class="mini" id="cnt"></span>
 </div>
@@ -217,6 +225,7 @@ function teHTML(t,mode){
       h+='<div class="pt" id="pt-'+esc(t.code)+'-'+pi+'"><span>'+esc(it.ic||"")+' '+esc(it.t)+'</span>'+
          '<button class="pb" data-code="'+esc(t.code)+'" data-p="'+pi+'">🔊 念這個 Part</button></div>';}
     else if(it.k==="p")h+='<div class="pin">'+esc(it.t)+'</div>';
+    else if(it.k==="doc")h+='<div class="doc">'+(it.v||[]).map(x=>'<div class="'+(x.k==="t"?"dt":"dl")+'">'+esc(x.v)+'</div>').join("")+'</div>';
     else if(it.k==="h2"){if(op)h+='</div>';op=true;
       h+='<div class="seg"><div class="sh">'+esc(it.ic||"")+' <b>'+esc(it.t)+'</b>　'+esc(it.d||"")+'<span class="xc">＋解析</span></div>';}
     else if(it.k==="tip")h+='<div class="tip">本段考點　'+esc(it.t)+'</div>';
@@ -262,6 +271,10 @@ function secNoteHTML(ch,sec){
     'data-ph="這一節的整體心得、老師補充、考古題整理、拍下的板書…"></div></div>';
 }
 const K=(c,m)=>"nida_"+px()+c+"_"+m, KN=c=>"nidanote_"+px()+c;
+const SK=c=>"nidastar_"+px()+c;
+const SR=c=>localStorage.getItem(SK(c))==="1";
+const starOnly=()=>localStorage.getItem("nida_staronly")==="1";
+const nStar=()=>DATA().filter(t=>SR(t.code)).length;
 const IDB=(()=>{let db=null;
   function open(){return new Promise((res,rej)=>{ if(db)return res(db);
     const r=indexedDB.open("nidaNotes",1);
@@ -292,8 +305,9 @@ function updHd(box){
 function render(){
   const app=document.getElementById("app");let html="",lastCh="",lastSec="",n=0;
   DATA().forEach((t,idx)=>{
-    const blob=(t.code+t.title+t.items.map(i=>i.t).join("")).toLowerCase();
+    const blob=(t.code+t.title+t.items.map(i=>(i.t||"")+(i.zh||"")+((i.v||[]).map(x=>(x.w||"")+(x.zh||"")+(x.v||"")).join(""))).join("")).toLowerCase();
     if(kw&&!blob.includes(kw))return;
+    if(starOnly()&&!SR(t.code))return;
     n++;
     if(t.sec!==lastSec&&lastSec){html+=secNoteHTML(lastCh,lastSec);}
     if(t.ch!==lastCh){html+='<div class="ch">'+esc(t.ch)+'</div>';lastCh=t.ch;lastSec="";}
@@ -305,6 +319,7 @@ function render(){
     html+='<div class="tp" id="t'+idx+'" data-i="'+idx+'" data-code="'+t.code+'" data-mode="'+mode+'">'+
       '<div class="tt"><span>'+CUR().label+' '+esc(t.code)+'　'+esc(t.title)+
       (saved?'<span class="edited">已編輯</span>':'')+'</span><span class="btns">'+
+      '<button class="tb star'+(SR(t.code)?" on":"")+'" data-i="'+idx+'" title="標為重要">'+(SR(t.code)?"★":"☆")+'</button>'+
       (sj==="te"?'<button class="tb xpb'+(localStorage.getItem("nidax_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'">🔍 全面解析</button>':'')+
       '<button class="tb sw'+(mode==="sd"?" on":"")+'" data-i="'+idx+'">'+(mode==="sd"?(sj==="te"?"📄 原文":"📄 擬答"):(sj==="te"?"🌲 速讀":"⚡ 速讀"))+'</button>'+
       '<button class="tb ed" data-i="'+idx+'">✏️</button>'+
@@ -325,9 +340,11 @@ function render(){
 function buildTOC(){
   let h="",lc="",ls="";
   DATA().forEach((t,i)=>{
+    if(starOnly()&&!SR(t.code))return;
     if(t.ch!==lc){h+='<div class="tch">'+esc(t.ch)+'</div>';lc=t.ch;ls="";}
     if(t.sec!==ls){h+='<div class="tsec">'+esc(t.sec)+'</div>';ls=t.sec;}
-    h+='<a href="#t'+i+'" data-i="'+i+'"><span class="code">'+esc(t.code)+'</span>'+esc(t.title)+'</a>';
+    h+='<a href="#t'+i+'" data-i="'+i+'"><span class="code">'+esc(t.code)+'</span>'+esc(t.title)+
+      (SR(t.code)?'<span class="stm">★</span>':'')+'</a>';
   });
   const n=document.getElementById("toc");n.innerHTML=h;
   n.addEventListener("click",e=>{const a=e.target.closest("a");if(!a)return;
@@ -359,7 +376,12 @@ document.querySelectorAll(".sbj").forEach(b=>b.onclick=()=>{
   document.getElementById("subjname").textContent=CUR().name;
   setHd();
   document.getElementById("tot").textContent=DATA().length;
-  stopAll(); initRate(); loadVoices(); buildTOC(); render(); allMode(); syncTOC(); scrollTo(0,0);});
+  stopAll(); initRate(); loadVoices(); starBtn(); buildTOC(); render(); allMode(); syncTOC(); scrollTo(0,0);});
+document.getElementById("onlystar").onclick=()=>{
+  const on=starOnly();
+  if(!on&&nStar()===0){alert("目前這一科還沒有標星號的區塊。\n先按各區塊右上角的 ☆ 標記重要的，再回來篩選。");return;}
+  localStorage.setItem("nida_staronly",on?"0":"1");
+  stopAll(); starBtn(); buildTOC(); render(); allMode(); syncTOC();};
 document.getElementById("allsd").onclick=()=>{
   const toFull=allMode();
   DATA().forEach(t=>localStorage.setItem("nidamode_"+px()+t.code,toFull?"full":"sd"));
@@ -373,6 +395,9 @@ function setHd(){
   if(m)m.textContent=sj==="te"?"原文全解":"擬答";
   if(sb)sb.innerHTML=(sj==="te"?"Part 3／4／7 全文＋STAR 四段拆解　點句子看解析　朗讀只念英文原句　共 ":"上榜答題體例　按…次按…查本案中…綜上所述　共 ")+'<span id="tot">'+DATA().length+"</span> "+(sj==="te"?"個情境":"題");
 }
+function starBtn(){const b=document.getElementById("onlystar"); if(!b)return;
+  const on=starOnly(); b.classList.toggle("on",on);
+  b.textContent=(on?"⭐ 只看星號":"☆ 只看星號")+"（"+nStar()+"）";}
 const PLAYLABEL="▶ 朗讀全部";
 
 /* ── 朗讀引擎（防 GC／防 15 秒斷線／watchdog 續播） ── */
@@ -574,6 +599,12 @@ app.addEventListener("click",e=>{
     return;}
   const ed=e.target.closest(".ed");
   if(ed){toggleEdit(ed.closest(".tp"));return;}
+  const sb=e.target.closest(".star");
+  if(sb){ const card=sb.closest(".tp"), c=card.dataset.code, on=SR(c);
+    localStorage.setItem(SK(c),on?"0":"1");
+    sb.classList.toggle("on",!on); sb.textContent=on?"☆":"★";
+    if(starOnly()){render();allMode();syncTOC();reapplyNow();}
+    buildTOC(); syncTOC(); starBtn(); return; }
   const xb=e.target.closest(".xpb");
   if(xb){const card=xb.closest(".tp"),c=card.dataset.code;
     const on=localStorage.getItem("nidax_"+c)==="1";
@@ -734,6 +765,6 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-setHd();buildTOC();render();allMode();syncTOC();
+setHd();starBtn();buildTOC();render();allMode();syncTOC();
 </script>
 </body></html>
