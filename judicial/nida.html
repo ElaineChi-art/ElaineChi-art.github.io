@@ -149,6 +149,12 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .cc.r .ci{border-left-color:var(--gold)}
 .cs{display:block;color:var(--acc);margin-bottom:1px}
 .cc.r .cs{color:var(--gold)}
+.hl{background:linear-gradient(transparent 55%,rgba(241,196,15,.62) 55%);color:inherit;padding:0 1px;border-radius:2px;font-weight:600}
+body.nokk .hl{background:none;font-weight:inherit}
+.cc.r .hl{background:linear-gradient(transparent 55%,rgba(46,134,193,.34) 55%)}
+@media(prefers-color-scheme:dark){.hl{background:linear-gradient(transparent 55%,rgba(241,196,15,.34) 55%)}
+  .cc.r .hl{background:linear-gradient(transparent 55%,rgba(93,173,226,.32) 55%)}}
+#allcmp.on{background:var(--gold);border-color:var(--gold);color:#3a2f00}
 .tb.cmb.on{background:var(--gold);color:#3a2f00;border-color:var(--gold)}
 @media(max-width:860px){.crow{grid-template-columns:1fr;gap:8px}.crow.chd{display:none}}
 .vov{display:none;border:1px solid var(--line);border-radius:9px;margin:10px 0 2px;background:rgba(127,140,141,.05)}
@@ -197,6 +203,7 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 <div class="row">
 <button id="tocbtn">☰ 目錄</button>
 <button id="allsd" class="tb">⚡ 全部速讀</button>
+<button id="allcmp" class="tb">⚖ 全部對照</button>
 <button id="kk" class="tb">🔴 重點紅字</button>
 <button id="onlystar" class="tb">⭐ 只看星號</button>
 <input id="q" placeholder="搜尋題型、條號、關鍵字…">
@@ -212,7 +219,7 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 <b>圖片</b><select id="imgsz" style="padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"><option value="200">小</option><option value="320">中</option><option value="480">大</option><option value="9999">原寬</option></select>
 <b>字級</b><button id="fsm" style="padding:4px 9px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer">A－</button><span class="mini" id="fsv" style="min-width:42px;display:inline-block;text-align:center"></span><button id="fsp" style="padding:4px 9px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer">A＋</button>
 <b>朗讀</b><select id="rmode" style="padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)">
-<option value="screen">跟著畫面</option><option value="sd">一律速讀</option><option value="full">一律擬答</option></select>
+<option value="screen">跟著畫面</option><option value="sd">一律速讀</option><option value="full">一律擬答</option><option value="cmp">一律對照</option></select>
 <b>對照唸</b><select id="cmpside" style="padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)">
 <option value="r">💬 只念白話（右）</option><option value="l">⚖️ 只念學理（左）</option><option value="b">左右都念</option></select>
 <label class="mini"><input type="checkbox" id="contall" checked> 點一題從該題念到底</label>
@@ -228,6 +235,7 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 <script src="minsu-sudu-data.js"></script>
 <script src="minsu-key-data.js"></script>
 <script src="minsu-cmp-data.js"></script>
+<script src="minsu-cmpkey-data.js"></script>
 <script src="toeic-data.js"></script>
 <script src="toeic-sudu-data.js"></script>
 <script>
@@ -312,20 +320,35 @@ function vocPanel(t){
   });
   return h+'</div></div>';
 }
-function cmpCell(items){
+let CKRE=null;
+function setCmpKeys(code){
+  const ks=(((window.MINSU_CMPKEY||{})[code])||[]).slice().sort((a,b)=>b.length-a.length);
+  CKRE = ks.length ? new RegExp("("+ks.map(esc).map(reEsc).join("|")+")","g") : null;
+}
+/* 先標粗體（**），再標螢光，最後才換成標籤，避免打到 HTML */
+function mkHL(t,hl){
+  let h=esc(t).replace(/\*\*(.+?)\*\*/g,"\u0001$1\u0002");
+  if(hl&&CKRE)h=h.replace(CKRE,"\u0003$1\u0004");
+  return h.replace(/\u0001/g,'<b class="kk">').replace(/\u0002/g,"</b>")
+          .replace(/\u0003/g,'<mark class="hl">').replace(/\u0004/g,"</mark>");
+}
+const HLROW={"學說對決":1,"兩邊在吵什麼":1,"本文見解（理由）":1,"考場挺哪說（理由）":1};
+function cmpCell(items,hl){
   return (items||[]).map(x=> x.s
-    ? '<div class="ci"><b class="cs">'+esc(x.s)+'</b>'+mk(x.t)+'</div>'
-    : '<div class="cp">'+mk(x.t)+'</div>').join("");
+    ? '<div class="ci"><b class="cs">'+esc(x.s)+'</b>'+mkHL(x.t,hl)+'</div>'
+    : '<div class="cp">'+mkHL(x.t,hl)+'</div>').join("");
 }
 function cmpHTML(t){
   const d=CMPD()[t.code];
   if(!d)return '<div class="empty" style="padding:22px 0">此爭點尚無左右對照版</div>';
+  setCmpKeys(t.code);
   let h='<div class="cmp"><div class="cmpt">'+esc(d.t)+'</div>'+
         '<div class="crow chd"><div class="cc l"><span>⚖️ 學理原文・申論輸出</span></div>'+
         '<div class="cc r"><span>💬 白話速記・考場反射</span></div></div>';
   (d.rows||[]).forEach(r=>{
-    h+='<div class="crow"><div class="cc l"><div class="clab">'+esc(r.ll)+'</div>'+cmpCell(r.l)+'</div>'+
-       '<div class="cc r"><div class="clab">'+esc(r.rl)+'</div>'+cmpCell(r.r)+'</div></div>';
+    const hl=!!(HLROW[r.ll]||HLROW[r.rl]);
+    h+='<div class="crow'+(hl?" hlrow":"")+'"><div class="cc l"><div class="clab">'+esc(r.ll)+'</div>'+cmpCell(r.l,hl)+'</div>'+
+       '<div class="cc r"><div class="clab">'+esc(r.rl)+'</div>'+cmpCell(r.r,hl)+'</div></div>';
   });
   return h+'</div>';
 }
@@ -453,6 +476,14 @@ function syncTOC(){
 document.getElementById("tocbtn").onclick=()=>document.getElementById("toc").classList.toggle("open");
 addEventListener("scroll",()=>{clearTimeout(window.__st);window.__st=setTimeout(syncTOC,80)},{passive:true});
 document.getElementById("q").oninput=e=>{kw=e.target.value.trim().toLowerCase();render();allMode();syncTOC();reapplyNow()};
+function cmpCodes(){const C=CMPD();return DATA().filter(t=>C[t.code]).map(t=>t.code);}
+function allCmp(){const cs=cmpCodes();
+  const on=cs.length>0&&cs.every(c=>localStorage.getItem("nidamode_"+px()+c)==="cmp");
+  const b=document.getElementById("allcmp");
+  if(b){ b.style.display=cs.length?"":"none";
+         b.classList.toggle("on",on);
+         b.textContent=(on?"📄 全部擬答":"⚖ 全部對照")+(cs.length?"（"+cs.length+"）":""); }
+  return on;}
 function allMode(){const v=DATA().length>0&&DATA().every(t=>(localStorage.getItem("nidamode_"+px()+t.code)||"full")==="sd");
   const b=document.getElementById("allsd"); b.classList.toggle("on",v);
   b.textContent=v?"📄 全部擬答":"⚡ 全部速讀"; return v;}
@@ -469,16 +500,24 @@ document.querySelectorAll(".sbj").forEach(b=>b.onclick=()=>{
   document.getElementById("subjname").textContent=CUR().name;
   setHd();
   document.getElementById("tot").textContent=DATA().length;
-  stopAll(); initRate(); loadVoices(); starBtn(); buildTOC(); render(); allMode(); syncTOC(); scrollTo(0,0);});
+  stopAll(); initRate(); loadVoices(); starBtn(); buildTOC(); render(); allMode(); allCmp(); syncTOC(); scrollTo(0,0);});
 document.getElementById("onlystar").onclick=()=>{
   const on=starOnly();
   if(!on&&nStar()===0){alert("目前這一科還沒有標星號的區塊。\n先按各區塊右上角的 ☆ 標記重要的，再回來篩選。");return;}
   localStorage.setItem("nida_staronly",on?"0":"1");
   stopAll(); starBtn(); buildTOC(); render(); allMode(); syncTOC();};
+document.getElementById("allcmp").onclick=()=>{
+  const toFull=allCmp(), cs=cmpCodes();
+  cs.forEach(c=>localStorage.setItem("nidamode_"+px()+c,toFull?"full":"cmp"));
+  render(); allMode(); allCmp(); syncTOC();
+  if(playing&&readMode()==="screen"){
+    const from=queue[qi]?queue[qi].i:null, vis=visibleIdx(), pos=vis.indexOf(from);
+    stopAll(); start(pos>=0?vis.slice(pos):vis);
+  }else reapplyNow();};
 document.getElementById("allsd").onclick=()=>{
   const toFull=allMode();
   DATA().forEach(t=>localStorage.setItem("nidamode_"+px()+t.code,toFull?"full":"sd"));
-  render();allMode();syncTOC();
+  render();allMode();allCmp();syncTOC();
   if(playing&&readMode()==="screen"){
     const from=queue[qi]?queue[qi].i:null, vis=visibleIdx(), pos=vis.indexOf(from);
     stopAll(); start(pos>=0?vis.slice(pos):vis);
@@ -904,6 +943,6 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-setHd();starBtn();buildTOC();render();allMode();syncTOC();
+setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
 </script>
 </body></html>
