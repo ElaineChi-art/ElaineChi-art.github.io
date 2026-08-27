@@ -130,6 +130,25 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .tew .seg.op .zx,.tew .seg.op .voc,.tew .seg.op .tip{display:block}
 .tew.xall .zx,.tew.xall .voc,.tew.xall .tip{display:block}
 .tew .en.op + .zx{display:block}
+.vp{display:none;border:1px solid var(--line);border-radius:9px;margin:10px 0 2px;background:rgba(127,140,141,.05)}
+.vp.open{display:block}
+.vp .vhd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.6px;font-weight:700;color:var(--acc)}
+.vp .vbody{padding:6px 12px 11px;max-height:62vh;overflow-y:auto}
+.vp .vpt{font-size:11.8px;font-weight:700;color:var(--acc);opacity:.85;margin:10px 0 3px;border-bottom:1px dashed var(--line);padding-bottom:2px}
+.vp .vrow{margin:6px 0;padding-bottom:5px;border-bottom:1px dotted var(--line)}
+.vp .vrow:last-child{border-bottom:0}
+.vp .vw b{font-family:Georgia,serif;font-size:calc(14.6px * var(--sc,1));color:#c0392b}
+.vp .vw i{font-style:normal;font-size:11.5px;border:1px solid var(--line);border-radius:4px;padding:0 5px;margin:0 6px;opacity:.75}
+.vp .vw span.zh{font-size:calc(13.4px * var(--sc,1))}
+.vp .vs,.vp .vp2,.vp .vr{font-size:calc(12.6px * var(--sc,1));margin-top:2px;line-height:1.62;padding-left:10px}
+.vp .vs{color:var(--acc)}.vp .vp2{opacity:.85}.vp .vr{color:#c0392b;font-weight:600}
+.vp.nozh .zh{display:none}
+.vp.nozh .vrow{cursor:pointer;border-radius:5px}
+.vp.nozh .vrow:hover{background:rgba(155,29,45,.06)}
+.vp.nozh .vrow.on .zh{display:block}
+.vp.nozh .vrow.on span.zh{display:inline}
+.tb.vbb.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+@media(prefers-color-scheme:dark){.vp .vw b,.vp .vr{color:#ec7063}}
 .tb.star{padding:4px 9px;font-size:14px;line-height:1}
 .tb.star.on{color:#f1c40f;border-color:#f1c40f;background:rgba(241,196,15,.12)}
 #onlystar.on{background:#f1c40f;border-color:#f1c40f;color:#4a3b00}
@@ -240,6 +259,35 @@ function teHTML(t,mode){
   if(op)h+='</div>';
   return h+'</div>';
 }
+function vocList(t){
+  const out=[],seen={}; let pi=0,pn="";
+  (t.items||[]).forEach(it=>{
+    if(it.k==="h1"){pi++;pn=it.t;}
+    else if(it.k==="voc")(it.v||[]).forEach(v=>{
+      const k=(v.w||"").toLowerCase().trim(); if(!k||seen[k])return; seen[k]=1;
+      out.push(Object.assign({},v,{p:pi,pn:pn}));});
+  });
+  return out;
+}
+function vocPanel(t){
+  const L=vocList(t); if(!L.length)return "";
+  const open=localStorage.getItem("nidavoc_"+t.code)==="1";
+  const nozh=localStorage.getItem("nida_te_nozh")==="1";
+  let h='<div class="vp'+(open?" open":"")+(nozh?" nozh":"")+'" data-code="'+esc(t.code)+'">'+
+    '<div class="vhd"><span>📝 核心字彙總覽　'+L.length+' 組</span>'+
+    '<span><button class="tg2 zhtg">'+(nozh?"👁 顯示中文":"🙈 隱藏中文")+'</button></span></div>'+
+    '<div class="vbody">';
+  let last=-1;
+  L.forEach(v=>{
+    if(v.p!==last){last=v.p;h+='<div class="vpt">'+esc(v.pn)+'</div>';}
+    h+='<div class="vrow"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+
+       (v.zh?'<span class="zh">'+esc(v.zh)+'</span>':'')+'</div>'+
+       (v.syn?'<div class="vs">同義代換　'+esc(v.syn)+'</div>':'')+
+       (v.tip?'<div class="vp2 zh">'+esc(v.tip)+'</div>':'')+
+       (v.trap?'<div class="vr zh">⚠ 防雷陷阱　'+esc(v.trap)+'</div>':'')+'</div>';
+  });
+  return h+'</div></div>';
+}
 function bodyHTML(t,mode){
   if(sj==="te")return teHTML(t,mode);
   setKeys(t.code);
@@ -320,11 +368,13 @@ function render(){
       '<div class="tt"><span>'+CUR().label+' '+esc(t.code)+'　'+esc(t.title)+
       (saved?'<span class="edited">已編輯</span>':'')+'</span><span class="btns">'+
       '<button class="tb star'+(SR(t.code)?" on":"")+'" data-i="'+idx+'" title="標為重要">'+(SR(t.code)?"★":"☆")+'</button>'+
+      (sj==="te"?'<button class="tb vbb'+(localStorage.getItem("nidavoc_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'" title="核心字彙總覽">📝 字彙</button>':'')+
       (sj==="te"?'<button class="tb xpb'+(localStorage.getItem("nidax_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'">🔍 全面解析</button>':'')+
       '<button class="tb sw'+(mode==="sd"?" on":"")+'" data-i="'+idx+'">'+(mode==="sd"?(sj==="te"?"📄 原文":"📄 擬答"):(sj==="te"?"🌲 速讀":"⚡ 速讀"))+'</button>'+
       '<button class="tb ed" data-i="'+idx+'">✏️</button>'+
       '<button class="tb play" data-i="'+idx+'">🔊</button></span></div>'+
       '<div class="body">'+(saved||bodyHTML(t,mode))+'</div>'+
+      (sj==="te"?vocPanel(t):"")+
       '<div class="note'+(note.length>120&&localStorage.getItem("nidaopen_"+px()+t.code)!=="1"?" clip":"")+'" data-code="'+esc(t.code)+'">'+
       '<div class="hd"><span data-lb="📝 我的筆記（自動儲存）">📝 我的筆記（自動儲存）'+(note?'　<span style="opacity:.7">'+note.length+' 字</span>':'')+'</span>'+
       '<span><button class="tg2" data-code="'+esc(t.code)+'">'+(localStorage.getItem("nidaopen_"+px()+t.code)==="1"?"▴ 收合":"▾ 展開全部")+'</button> '+
@@ -605,6 +655,22 @@ app.addEventListener("click",e=>{
     sb.classList.toggle("on",!on); sb.textContent=on?"☆":"★";
     if(starOnly()){render();allMode();syncTOC();reapplyNow();}
     buildTOC(); syncTOC(); starBtn(); return; }
+  const vb=e.target.closest(".vbb");
+  if(vb){ const card=vb.closest(".tp"), c=card.dataset.code, on=localStorage.getItem("nidavoc_"+c)==="1";
+    localStorage.setItem("nidavoc_"+c,on?"0":"1");
+    const pl=card.querySelector(".vp"); if(pl)pl.classList.toggle("open",!on);
+    vb.classList.toggle("on",!on);
+    if(!on&&pl)pl.scrollIntoView({block:"nearest",behavior:"smooth"});
+    return; }
+  const zt=e.target.closest(".zhtg");
+  if(zt){ const on=localStorage.getItem("nida_te_nozh")==="1";
+    localStorage.setItem("nida_te_nozh",on?"0":"1");
+    document.querySelectorAll(".vp").forEach(x=>{x.classList.toggle("nozh",!on);
+      x.querySelectorAll(".vrow.on").forEach(r=>r.classList.remove("on"));});
+    document.querySelectorAll(".zhtg").forEach(b=>b.textContent=on?"🙈 隱藏中文":"👁 顯示中文");
+    return; }
+  const vr=e.target.closest(".vp.nozh .vrow");
+  if(vr){ vr.classList.toggle("on"); return; }
   const xb=e.target.closest(".xpb");
   if(xb){const card=xb.closest(".tp"),c=card.dataset.code;
     const on=localStorage.getItem("nidax_"+c)==="1";
