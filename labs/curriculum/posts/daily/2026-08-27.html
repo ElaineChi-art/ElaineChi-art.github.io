@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>準確率會騙人：不平衡資料集下該看哪些指標｜技能實驗室・每日課程</title>
+<meta name="description" content="當一類資料遠多於另一類（例如1000筆交易只有10筆盜刷），準確率會嚴重誤導：一個全猜『正常』的模型準確率高達99%，卻一個盜刷都抓不到。這一課用混淆矩陣拆解該看的指標——精確率（別亂報）、召回率（別漏抓）、F1（兼顧兩者），並用信用卡盜刷偵測這個金融場景，說明為什麼在不平衡資料下要盯著召回率與混淆矩陣，而不是準確率。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-27</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・機器學習核心</div>
+  <h1>準確率會騙人：不平衡資料集下該看哪些指標</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-27</span>
+    <span>約 7 分鐘</span>
+    <span>對應真專案主題：分類與辨識概念與實作</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p>當一類資料遠比另一類多（叫做<b>不平衡資料集</b>，例如一千筆交易裡只有十筆是盜刷），<b>「準確率」這個看起來最直覺的指標會嚴重騙人</b>。因為只要模型偷懶、把每一筆都猜成「正常」，它的準確率就有 990/1000＝99%——數字漂亮到不行，但它<b>一個盜刷都沒抓到</b>，等於完全沒用。這時候該看的不是準確率，而是把對錯拆成四格的<b>混淆矩陣</b>，以及從裡面算出來的兩個指標：<b>精確率</b>（我報是盜刷的，有多少真的是盜刷，管的是「別亂冤枉」）和<b>召回率</b>（真正的盜刷，我抓到了多少，管的是「別漏抓」）。哪個重要，看業務願意承受哪種錯——這才是面試裡真正被追問的地方。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-27-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260827" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260827" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260827)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260827)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M7 · 機器學習核心  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="34" font-weight="900" fill="#F5F8FF">99% 準確率的陷阱：<tspan fill="#4D9FFF">卻一個盜刷都沒抓到</tspan></text>
+
+      <!-- ===== 頂部陷阱情境帶 ===== -->
+      <rect x="64" y="128" width="1152" height="86" rx="14" fill="rgba(242,163,60,.12)" stroke="#F2A33C" stroke-width="1.6"/>
+      <text x="88" y="162" font-size="18" font-weight="800" fill="#F2A33C">■ 陷阱：1000 筆交易，只有 10 筆是盜刷（1%）</text>
+      <text x="88" y="192" font-size="16" fill="#C7D2E4">模型偷懶，把每一筆都猜「正常」 → 準確率 990/1000 = <tspan font-weight="800" fill="#F5F8FF">99%</tspan>，看起來超強 —— 但盜刷抓到 <tspan font-weight="800" fill="#F2A33C">0</tspan> 個，完全沒用。</text>
+
+      <!-- ===== 左：混淆矩陣 ===== -->
+      <text x="88" y="256" font-size="19" font-weight="900" fill="#4D9FFF">混淆矩陣：把對錯拆成四格</text>
+
+      <!-- 欄標題 -->
+      <text x="330" y="292" font-size="15" font-weight="700" fill="#8FA1C0" text-anchor="middle">預測：正常</text>
+      <text x="476" y="292" font-size="15" font-weight="700" fill="#8FA1C0" text-anchor="middle">預測：盜刷</text>
+      <!-- 列標題 -->
+      <text x="248" y="352" font-size="15" font-weight="700" fill="#8FA1C0" text-anchor="end">實際正常</text>
+      <text x="248" y="450" font-size="15" font-weight="700" fill="#8FA1C0" text-anchor="end">實際盜刷</text>
+
+      <!-- TN -->
+      <rect x="260" y="304" width="140" height="88" rx="10" fill="#131D2E" stroke="#35C08E" stroke-width="1.8"/>
+      <text x="330" y="336" font-size="16" font-weight="800" fill="#35C08E" text-anchor="middle">TN 猜對</text>
+      <text x="330" y="362" font-size="14" fill="#8FA1C0" text-anchor="middle">正常判正常</text>
+      <text x="330" y="382" font-size="14" fill="#8FA1C0" text-anchor="middle">✓ 沒事就沒事</text>
+      <!-- FP -->
+      <rect x="408" y="304" width="140" height="88" rx="10" fill="#131D2E" stroke="#F2A33C" stroke-width="1.8"/>
+      <text x="478" y="336" font-size="16" font-weight="800" fill="#F2A33C" text-anchor="middle">FP 誤報</text>
+      <text x="478" y="362" font-size="14" fill="#8FA1C0" text-anchor="middle">正常被當盜刷</text>
+      <text x="478" y="382" font-size="14" fill="#8FA1C0" text-anchor="middle">✗ 冤枉好客戶</text>
+      <!-- FN -->
+      <rect x="260" y="400" width="140" height="88" rx="10" fill="#131D2E" stroke="#FF6B6B" stroke-width="1.8"/>
+      <text x="330" y="432" font-size="16" font-weight="800" fill="#FF6B6B" text-anchor="middle">FN 漏抓</text>
+      <text x="330" y="458" font-size="14" fill="#8FA1C0" text-anchor="middle">盜刷被放行</text>
+      <text x="330" y="478" font-size="14" fill="#8FA1C0" text-anchor="middle">✗ 錢真的飛了</text>
+      <!-- TP -->
+      <rect x="408" y="400" width="140" height="88" rx="10" fill="#131D2E" stroke="#4D9FFF" stroke-width="1.8"/>
+      <text x="478" y="432" font-size="16" font-weight="800" fill="#4D9FFF" text-anchor="middle">TP 抓對</text>
+      <text x="478" y="458" font-size="14" fill="#8FA1C0" text-anchor="middle">盜刷判盜刷</text>
+      <text x="478" y="478" font-size="14" fill="#8FA1C0" text-anchor="middle">✓ 成功攔下</text>
+
+      <text x="88" y="524" font-size="15" fill="#7E8CA8">準確率只把「兩個 ✓」加起來除以全部 —— 資料一不平衡，就被大量 TN 灌水。</text>
+
+      <!-- ===== 右：三個真正該看的指標 ===== -->
+      <rect x="612" y="240" width="604" height="86" rx="12" fill="#131D2E" stroke="#4D9FFF" stroke-width="1.8"/>
+      <rect x="612" y="240" width="604" height="5" rx="2.5" fill="#4D9FFF"/>
+      <text x="634" y="276" font-size="18" font-weight="800" fill="#4D9FFF">精確率 Precision＝TP /（TP＋FP）</text>
+      <text x="634" y="304" font-size="15" fill="#C7D2E4">我「報是盜刷」的裡面，真的盜刷佔多少 —— 管「別亂冤枉」。</text>
+
+      <rect x="612" y="338" width="604" height="86" rx="12" fill="#131D2E" stroke="#35C08E" stroke-width="1.8"/>
+      <rect x="612" y="338" width="604" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="634" y="374" font-size="18" font-weight="800" fill="#35C08E">召回率 Recall＝TP /（TP＋FN）</text>
+      <text x="634" y="402" font-size="15" fill="#C7D2E4">真正的盜刷裡，我抓到了多少 —— 管「別漏抓」。</text>
+
+      <rect x="612" y="436" width="604" height="112" rx="12" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <text x="634" y="472" font-size="18" font-weight="800" fill="#F5F8FF">F1＝精確率與召回率的調和平均</text>
+      <text x="634" y="500" font-size="15" fill="#C7D2E4">想用一個數字兼顧兩者時看它；只要有一邊很低，</text>
+      <text x="634" y="522" font-size="15" fill="#C7D2E4">F1 就會被拉低，比單看準確率誠實得多。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：資料不平衡時別看準確率，看混淆矩陣、召回率跟精確率。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">哪個指標優先，取決於業務怕哪種錯：怕漏抓盜刷就顧召回率，怕冤枉客戶就顧精確率。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-27-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-27-1.mp3"></audio>
+    <p>這張圖在講的是，資料不平衡的時候，準確率這個指標會嚴重騙人。看上面這個例子，一千筆交易只有十筆是盜刷，我只要做一個一律猜正常的模型，就能答對九百九十筆，準確率高達 99%，數字很漂亮，可是它一個盜刷都沒抓到，完全沒用。要看穿這件事，得把對錯攤成中間這張混淆矩陣，分成抓對、漏抓、誤報、猜對四格。準確率只把兩個猜對加起來，所以被大量正常交易灌水。右邊才是真正該看的：精確率是我報是盜刷的裡面有多少真的是盜刷，管別亂冤枉；召回率是真正的盜刷我抓到多少，管別漏抓；想用一個數字兼顧兩者就看 F1。哪個優先，看業務怕哪種錯。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>先講結論：<b>「準確率」（accuracy，猜對的筆數佔全部的比例）在資料不平衡的時候會嚴重誤導，因為它會被數量龐大的那一類「灌水」</b>。所謂不平衡資料集，就是要分的兩類數量差很多，例如交易裡絕大多數是正常、只有極少數是盜刷。這種場景在真實世界反而是常態，不是特例。</p>
+  <p>用一個具體的數字就看得很清楚。假設一千筆交易裡只有十筆是盜刷（佔 1%），我做一個最偷懶的模型——不管看到什麼，一律猜「正常」。它會答對九百九十筆正常的，準確率是 990/1000，也就是 99%。<b>光看這個數字，會以為模型強到爆，但它其實一個盜刷都沒抓到，對「防盜刷」這個真正的目的完全無用</b>。問題出在準確率把「猜對正常」和「猜對盜刷」混在一起算，而正常太多了，光靠猜對正常就能把分數撐得很高。</p>
+  <p>要看穿這件事，得先把對錯攤開成<b>混淆矩陣</b>（confusion matrix，一張 2×2 的表，把預測結果按「實際是什麼、預測成什麼」拆成四格）。四格分別是：真正例 TP（是盜刷、也抓成盜刷）、真反例 TN（是正常、也判成正常）、假正例 FP（正常被誤判成盜刷，冤枉了客戶）、假反例 FN（盜刷被放過，錢真的飛了）。準確率＝(TP＋TN)／全部——你會發現它嚴重依賴那個超大的 TN。真正該盯的是另外兩個指標：<b>精確率＝TP／(TP＋FP)</b>，意思是「我報是盜刷的裡面，有多少真的是盜刷」；<b>召回率＝TP／(TP＋FN)</b>，意思是「真正的盜刷裡，我抓到了多少」。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎，是因為<b>真實世界裡「最值錢的事情」幾乎都是不平衡的少數類——盜刷、詐騙、違約、重大疾病、機台故障</b>，而這些正是模型最該抓、抓不到代價最大的。如果拿準確率當唯一指標，模型會很自然地學會「討好多數類」，在報表上拿到漂亮分數，卻在真正要它出手的少數類上全面失守。這不是模型不夠聰明，而是我們用錯了尺，等於考卷改錯了方向。</p>
+  <p>更關鍵的是，<b>選哪個指標優先，本質上是一個業務決策，不是純技術問題</b>——這正好連到「完整應用情境」而不是孤立技術點。104 人力銀行《AI 人才趨勢報告》一再強調，企業要的是能打通完整情境的人；而在這裡，情境就是「這個錯，公司賠得起哪一種」。精確率和召回率通常會互相拉扯：想抓到更多盜刷（拉高召回率），往往得把判斷標準放寬，結果誤傷更多正常客戶（精確率下降）；反過來想少冤枉人，就得放過一些真盜刷。到底往哪邊調，得看業務願意承受哪種痛：漏抓一筆盜刷損失多少錢、誤攔一個好客戶又會流失多少信任。<b>一個成熟的人不會只丟一個「準確率 99%」交差，而會拿混淆矩陣跟業務一起討論這條取捨線該畫在哪</b>。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到玉山、國泰這類金融科技，或一個要碰資料的國際遠端全端職缺，這件事會非常具體地決定專案怎麼被驗收。還是用<b>信用卡盜刷偵測</b>當例子：盜刷天生就是極少數，資料嚴重不平衡。如果我上線時只跟主管報「模型準確率 99%」，稍微內行的人一定馬上追問：「那它到底抓到幾成盜刷？」——因為他們知道 99% 可能只是「幾乎都猜正常」換來的假象。所以我實務上會這樣做：先攤開混淆矩陣，明確報「這一版在測試資料上，真正的盜刷我們抓到了幾成（召回率），而被我們攔下來的交易裡有幾成是真盜刷、幾成是誤傷（精確率）」，讓大家看到的是真實的攔截能力，不是被正常交易灌水的分數。</p>
+  <p>接著才是那條取捨線該畫在哪。對我這種法律金融跨域背景的人，這裡有個天然切入點：<b>我對「誤攔一個正常客戶」在金融場景的真實代價特別有感——那不只是一個 FP，而是客訴、信任流失，甚至可能牽涉到不當拒絕交易的合規爭議</b>。所以我不會抽象地喊「召回率越高越好」，而會問清楚：這張卡的盜刷若漏抓，銀行實際要吸收多少損失？誤攔一次，客戶體驗和申訴成本又是多少？把這兩個代價擺上桌，才有辦法決定門檻要調到偏「寧可錯殺」還是偏「寧可放過」。面試時我會這樣講：面對不平衡資料，我第一件事是把準確率放一邊、攤開混淆矩陣，然後跟業務一起把「怕哪種錯」講清楚——這一步做對了，指標才選得對。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最常見、乍看懂了其實會答錯的誤區，是<b>把「準確率高」直接當成「模型好」</b>。只要資料一不平衡，這個等號就不成立——準確率高，很可能只代表模型學會了「一直猜多數類」。被追問時要能一句切中要害：<b>在不平衡資料下，準確率是最容易騙人的指標，我會先看混淆矩陣，再看精確率和召回率</b>，而不是被那個漂亮的百分比牽著走。</p>
+  <p>另一個容易被追問到卡住的點是：<b>「那我到底該優先看精確率還是召回率？」——正確答案是「看場景，不能一概而論」</b>，而且要能舉出方向相反的例子。盜刷、重病篩檢這類「漏掉代價極大」的情境，通常優先顧召回率，寧可多攔幾個、多複查幾個，也不要放過真的那一個；但像是「自動把交易直接封鎖、完全不經人工」這種誤傷代價很高的情境，就得把精確率拉上來，不然天天冤枉好客戶。想用一個數字兼顧兩者時，會看 <b>F1</b>（精確率和召回率的調和平均，只要有一邊很低就會被拉下來，比準確率誠實）。我要誠實說：精確率、召回率、F1、混淆矩陣這幾個核心指標我已經能清楚講明白、也知道怎麼依場景取捨；但再進一步、把不同門檻下的表現整條畫出來的 PR 曲線與 ROC-AUC，還有實際在不平衡資料上調門檻、做重採樣的實戰經驗，我目前是知道概念、還沒有大量實作。真被追問到那個層級，我會把邊界講清楚、說明我會怎麼上手驗證，而不是硬掰。</p>
+
+  <p>資料不平衡的時候，準確率是最會騙人的那個數字——先攤開混淆矩陣、問清楚「怕哪種錯」，指標才選得對。一句話：選指標之前，先搞懂這個錯，公司賠得起哪一種。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「為什麼準確率在不平衡資料下不可靠？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂準確率會被多數類灌水這個核心陷阱。</span>
+        <span class="a">她可以怎麼答：因為準確率是猜對的筆數除以全部，當一類遠多於另一類時，它會被那個大類撐起來。舉例，一千筆交易只有十筆盜刷，我做一個一律猜「正常」的模型，就能答對九百九十筆，準確率 99%，但它一個盜刷都沒抓到，對防盜刷完全沒用。所以資料一不平衡，我不會看準確率，會先攤開混淆矩陣，再看召回率和精確率，才知道模型在真正重要的少數類上到底行不行。</span>
+      </li>
+      <li>
+        <span class="q">「精確率和召回率差在哪？」</span>
+        <span class="hint">👉 這題其實在問：你能不能用一句大白話分清楚這兩個最容易搞混的指標。</span>
+        <span class="a">她可以怎麼答：兩個都用抓盜刷來講最清楚。精確率是「我報是盜刷的裡面，有多少真的是盜刷」，公式是 TP 除以 TP 加 FP，管的是別亂冤枉。召回率是「真正的盜刷裡，我抓到了多少」，公式是 TP 除以 TP 加 FN，管的是別漏抓。一個看我出手準不準，一個看我有沒有漏網，通常會互相拉扯，拉高一邊常會犧牲另一邊。</span>
+      </li>
+      <li>
+        <span class="q">「盜刷偵測你會優先顧哪個指標？為什麼？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道選指標是業務決策，會不會連到真實代價。</span>
+        <span class="a">她可以怎麼答：盜刷這種漏抓代價很大的情境，我通常會優先顧召回率，因為放過一筆真盜刷，銀行要實際吸收損失。但我不會盲目衝召回率，因為召回率拉太高會誤傷更多正常客戶，精確率掉下來，對金融場景來說一次誤攔就是客訴、信任流失，甚至可能有不當拒絕交易的爭議。所以我會把「漏抓一筆的損失」和「誤攔一次的成本」擺上桌，跟業務一起決定門檻偏哪邊。這一步是業務決策，不是純技術題。</span>
+      </li>
+      <li>
+        <span class="q">「什麼時候該看 F1？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道 F1 是幹嘛的、跟準確率差在哪。</span>
+        <span class="a">她可以怎麼答：當我想用一個數字同時兼顧精確率和召回率、又不想被準確率騙的時候，就看 F1。它是兩者的調和平均，特色是只要有任何一邊很低，F1 就會被拉下來，不像準確率可以靠猜多數類撐高。不過 F1 是把兩者當成一樣重要，如果業務其實明顯更在乎其中一邊，我還是會回去分開看精確率和召回率，不會只丟一個 F1 交差。</span>
+      </li>
+      <li>
+        <span class="q">「除了這些指標，還有什麼可以看不平衡分類的表現？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道還有 PR 曲線、ROC-AUC 這一層，邊界在哪。</span>
+        <span class="a">她可以怎麼答：我要誠實講我的掌握程度。精確率、召回率、F1 和混淆矩陣這幾個核心指標，還有它們怎麼依場景取捨，我能講清楚也能判斷。再上一層，把不同判斷門檻下的精確率、召回率整條畫出來的 PR 曲線，還有 ROC-AUC，我目前是懂概念、知道它們是用來看模型在各種門檻下的整體表現，但還沒有大量在真實不平衡資料上調門檻、做重採樣的實戰經驗。真要用到，我會從讀懂它的假設開始，用手上的測試資料實際畫一次來驗證，而不是假裝有經驗。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-26.html"><span class="dir">上一課</span>← 監督式與非監督式的分界：機器學習問題的第一個分類判斷</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-26",
+  "updated": "2026-08-27",
   "lessons": [
     {
       "id": 1,
@@ -293,10 +293,10 @@
       "category": "ml",
       "topic": "分類與辨識概念與實作",
       "title": "準確率會騙人：不平衡資料集下該看哪些指標",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-27",
+      "url": "posts/daily/2026-08-27.html",
+      "slides": 1
     },
     {
       "id": 28,
