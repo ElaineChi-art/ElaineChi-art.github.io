@@ -52,7 +52,9 @@ body.nokk b.kk{color:inherit;font-weight:inherit}
 .mini{font-size:12px;color:var(--sub)}
 .now{outline:2px solid var(--acc);outline-offset:3px;border-radius:4px}
 .empty{text-align:center;color:var(--sub);padding:40px 0}
-.btns{display:flex;gap:5px;align-items:center;white-space:nowrap}
+.btns{display:flex;gap:5px;align-items:center;white-space:nowrap;flex:0 0 auto;flex-wrap:wrap;justify-content:flex-end}
+.btns .tb{flex:0 0 auto}
+.tt>span:first-child{min-width:0}
 #allsd{padding:5px 11px;font-size:12.5px}
 .sbj{padding:6px 15px;border:1px solid var(--line);background:transparent;border-radius:20px;cursor:pointer;font-size:13.5px}
 .sbj.on{background:var(--red);color:#fff;border-color:var(--red)}
@@ -130,25 +132,25 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .tew .seg.op .zx,.tew .seg.op .voc,.tew .seg.op .tip{display:block}
 .tew.xall .zx,.tew.xall .voc,.tew.xall .tip{display:block}
 .tew .en.op + .zx{display:block}
-.vp{display:none;border:1px solid var(--line);border-radius:9px;margin:10px 0 2px;background:rgba(127,140,141,.05)}
-.vp.open{display:block}
-.vp .vhd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.6px;font-weight:700;color:var(--acc)}
-.vp .vbody{padding:6px 12px 11px;max-height:62vh;overflow-y:auto}
-.vp .vpt{font-size:11.8px;font-weight:700;color:var(--acc);opacity:.85;margin:10px 0 3px;border-bottom:1px dashed var(--line);padding-bottom:2px}
-.vp .vrow{margin:6px 0;padding-bottom:5px;border-bottom:1px dotted var(--line)}
-.vp .vrow:last-child{border-bottom:0}
-.vp .vw b{font-family:Georgia,serif;font-size:calc(14.6px * var(--sc,1));color:#c0392b}
-.vp .vw i{font-style:normal;font-size:11.5px;border:1px solid var(--line);border-radius:4px;padding:0 5px;margin:0 6px;opacity:.75}
-.vp .vw span.zh{font-size:calc(13.4px * var(--sc,1))}
-.vp .vs,.vp .vp2,.vp .vr{font-size:calc(12.6px * var(--sc,1));margin-top:2px;line-height:1.62;padding-left:10px}
-.vp .vs{color:var(--acc)}.vp .vp2{opacity:.85}.vp .vr{color:#c0392b;font-weight:600}
-.vp.nozh .zh{display:none}
-.vp.nozh .vrow{cursor:pointer;border-radius:5px}
-.vp.nozh .vrow:hover{background:rgba(155,29,45,.06)}
-.vp.nozh .vrow.on .zh{display:block}
-.vp.nozh .vrow.on span.zh{display:inline}
+.vov{display:none;border:1px solid var(--line);border-radius:9px;margin:10px 0 2px;background:rgba(127,140,141,.05)}
+.vov.open{display:block}
+.vov .vhd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.6px;font-weight:700;color:var(--acc)}
+.vov .vbody{padding:6px 12px 11px;max-height:62vh;overflow-y:auto}
+.vov .vpt{font-size:11.8px;font-weight:700;color:var(--acc);opacity:.85;margin:10px 0 3px;border-bottom:1px dashed var(--line);padding-bottom:2px}
+.vov .vrow{margin:6px 0;padding-bottom:5px;border-bottom:1px dotted var(--line)}
+.vov .vrow:last-child{border-bottom:0}
+.vov .vw b{font-family:Georgia,serif;font-size:calc(14.6px * var(--sc,1));color:#c0392b}
+.vov .vw i{font-style:normal;font-size:11.5px;border:1px solid var(--line);border-radius:4px;padding:0 5px;margin:0 6px;opacity:.75}
+.vov .vw span.zh{font-size:calc(13.4px * var(--sc,1))}
+.vov .vs,.vov .vtip,.vov .vr{font-size:calc(12.6px * var(--sc,1));margin-top:2px;line-height:1.62;padding-left:10px}
+.vov .vs{color:var(--acc)}.vov .vtip{opacity:.85}.vov .vr{color:#c0392b;font-weight:600}
+.vov.nozh .zh{display:none}
+.vov.nozh .vrow{cursor:pointer;border-radius:5px}
+.vov.nozh .vrow:hover{background:rgba(155,29,45,.06)}
+.vov.nozh .vrow.on .zh{display:block}
+.vov.nozh .vrow.on span.zh{display:inline}
 .tb.vbb.on{background:var(--acc);color:#fff;border-color:var(--acc)}
-@media(prefers-color-scheme:dark){.vp .vw b,.vp .vr{color:#ec7063}}
+@media(prefers-color-scheme:dark){.vov .vw b,.vov .vr{color:#ec7063}}
 .tb.star{padding:4px 9px;font-size:14px;line-height:1}
 .tb.star.on{color:#f1c40f;border-color:#f1c40f;background:rgba(241,196,15,.12)}
 #onlystar.on{background:#f1c40f;border-color:#f1c40f;color:#4a3b00}
@@ -273,7 +275,7 @@ function vocPanel(t){
   const L=vocList(t); if(!L.length)return "";
   const open=localStorage.getItem("nidavoc_"+t.code)==="1";
   const nozh=localStorage.getItem("nida_te_nozh")==="1";
-  let h='<div class="vp'+(open?" open":"")+(nozh?" nozh":"")+'" data-code="'+esc(t.code)+'">'+
+  let h='<div class="vov'+(open?" open":"")+(nozh?" nozh":"")+'" data-code="'+esc(t.code)+'">'+
     '<div class="vhd"><span>📝 核心字彙總覽　'+L.length+' 組</span>'+
     '<span><button class="tg2 zhtg">'+(nozh?"👁 顯示中文":"🙈 隱藏中文")+'</button></span></div>'+
     '<div class="vbody">';
@@ -283,7 +285,7 @@ function vocPanel(t){
     h+='<div class="vrow"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+
        (v.zh?'<span class="zh">'+esc(v.zh)+'</span>':'')+'</div>'+
        (v.syn?'<div class="vs">同義代換　'+esc(v.syn)+'</div>':'')+
-       (v.tip?'<div class="vp2 zh">'+esc(v.tip)+'</div>':'')+
+       (v.tip?'<div class="vtip zh">'+esc(v.tip)+'</div>':'')+
        (v.trap?'<div class="vr zh">⚠ 防雷陷阱　'+esc(v.trap)+'</div>':'')+'</div>';
   });
   return h+'</div></div>';
@@ -658,18 +660,18 @@ app.addEventListener("click",e=>{
   const vb=e.target.closest(".vbb");
   if(vb){ const card=vb.closest(".tp"), c=card.dataset.code, on=localStorage.getItem("nidavoc_"+c)==="1";
     localStorage.setItem("nidavoc_"+c,on?"0":"1");
-    const pl=card.querySelector(".vp"); if(pl)pl.classList.toggle("open",!on);
+    const pl=card.querySelector(".vov"); if(pl)pl.classList.toggle("open",!on);
     vb.classList.toggle("on",!on);
     if(!on&&pl)pl.scrollIntoView({block:"nearest",behavior:"smooth"});
     return; }
   const zt=e.target.closest(".zhtg");
   if(zt){ const on=localStorage.getItem("nida_te_nozh")==="1";
     localStorage.setItem("nida_te_nozh",on?"0":"1");
-    document.querySelectorAll(".vp").forEach(x=>{x.classList.toggle("nozh",!on);
+    document.querySelectorAll(".vov").forEach(x=>{x.classList.toggle("nozh",!on);
       x.querySelectorAll(".vrow.on").forEach(r=>r.classList.remove("on"));});
     document.querySelectorAll(".zhtg").forEach(b=>b.textContent=on?"🙈 隱藏中文":"👁 顯示中文");
     return; }
-  const vr=e.target.closest(".vp.nozh .vrow");
+  const vr=e.target.closest(".vov.nozh .vrow");
   if(vr){ vr.classList.toggle("on"); return; }
   const xb=e.target.closest(".xpb");
   if(xb){const card=xb.closest(".tp"),c=card.dataset.code;
