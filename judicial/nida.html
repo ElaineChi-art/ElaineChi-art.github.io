@@ -213,6 +213,8 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 <b>字級</b><button id="fsm" style="padding:4px 9px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer">A－</button><span class="mini" id="fsv" style="min-width:42px;display:inline-block;text-align:center"></span><button id="fsp" style="padding:4px 9px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer">A＋</button>
 <b>朗讀</b><select id="rmode" style="padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)">
 <option value="screen">跟著畫面</option><option value="sd">一律速讀</option><option value="full">一律擬答</option></select>
+<b>對照唸</b><select id="cmpside" style="padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)">
+<option value="r">💬 只念白話（右）</option><option value="l">⚖️ 只念學理（左）</option><option value="b">左右都念</option></select>
 <label class="mini"><input type="checkbox" id="contall" checked> 點一題從該題念到底</label>
 <label class="mini"><input type="checkbox" id="notip"> 不念考場提示</label>
 <span class="mini" id="nowt"></span><span class="mini" id="st"></span>
@@ -604,7 +606,8 @@ function highlight(it){
   const t=DATA()[it.i], nw=document.getElementById("nowt");
   if(t&&it.p!=null){const ph=document.getElementById("pt-"+t.code+"-"+it.p); if(ph)ph.classList.add("on");}
   if(nw&&t){ const ids=[...new Set(queue.filter(x=>!x.silent).map(x=>x.i))];
-    const MN={sd:"速讀",cmp:"對照白話",full:"擬答"};
+    const CS={r:"對照白話",l:"對照學理",b:"對照左右"};
+    const MN={sd:"速讀",cmp:CS[cmpSide()]||"對照",full:"擬答"};
     nw.textContent="🔊 "+t.code+(it.p!=null?"　"+partName(t,it.p).replace(/\s*\(.*\)/,""):"　"+(MN[modeOf(t.code)]||"擬答"))+
       "　"+(sj==="te"?"情境":"題")+" "+(ids.indexOf(it.i)+1)+"/"+ids.length; }
 }
@@ -622,6 +625,7 @@ const CMPD=()=>(CUR().C?CUR().C():{});
 const px=()=>(sj==="xz"?"":sj+"_");
 const LBN={"爭":"爭點","據":"依據","實":"實務見解","說":"學說","採":"本文見解","攝":"涵攝","結":"結論","訣":"口訣"};
 function readMode(){return localStorage.getItem("nida_readmode")||"screen";}
+function cmpSide(){return localStorage.getItem("nida_cmpside")||"r";}
 function modeOf(code){
   let m=readMode();
   if(m==="screen")m=localStorage.getItem("nidamode_"+px()+code)||"full";
@@ -657,10 +661,13 @@ function topicText(idx,pidx){
   const saved=localStorage.getItem("nida_"+t.code+"_"+m);
   if(saved)return s+stripHTML(saved,no);
   if(m==="cmp"){
-    const d=CMPD()[t.code]||{};
-    s=CUR().label+t.code+"。白話對照版。"+(d.t||t.title)+"。";
-    (d.rows||[]).forEach(r=>{ s+=(r.rl||"")+"。";
-      (r.r||[]).forEach(x=>{ s+=(x.s?x.s+"。":"")+String(x.t).replace(/\*\*/g,""); }); });
+    const d=CMPD()[t.code]||{}, sd=cmpSide();
+    const say=list=>(list||[]).map(x=>(x.s?x.s+"。":"")+String(x.t).replace(/\*\*/g,"")).join("");
+    s=CUR().label+t.code+"。"+(sd==="l"?"學理對照版":sd==="b"?"左右對照版":"白話對照版")+"。"+(d.t||t.title)+"。";
+    (d.rows||[]).forEach(r=>{
+      if(sd==="l"||sd==="b") s+=(r.ll||"")+"。"+say(r.l);
+      if(sd==="r"||sd==="b") s+=(r.rl||"")+"。"+say(r.r);
+    });
     return s;
   }
   if(m==="sd"){
@@ -885,6 +892,10 @@ document.getElementById("voice").onchange=e=>{if(isEN()){prefEN=e.target.value;l
 ["contall","notip"].forEach(id=>{const el=document.getElementById(id);if(!el)return;
   const sv=localStorage.getItem("mb_"+id); if(sv!==null)el.checked=sv==="1";
   el.addEventListener("change",()=>localStorage.setItem("mb_"+id,el.checked?"1":"0"));});
+const cs=document.getElementById("cmpside"); cs.value=cmpSide();
+cs.onchange=e=>{localStorage.setItem("nida_cmpside",e.target.value);
+  if(playing){const from=queue[qi]?queue[qi].i:null, vis=visibleIdx(), pos=vis.indexOf(from);
+    stopAll(); start(pos>=0?vis.slice(pos):vis);}};
 const rm=document.getElementById("rmode"); rm.value=readMode();
 rm.onchange=e=>{localStorage.setItem("nida_readmode",e.target.value);
   if(playing){const from=queue[qi]?queue[qi].i:null, vis=visibleIdx(), pos=vis.indexOf(from);
