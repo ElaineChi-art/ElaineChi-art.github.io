@@ -147,6 +147,9 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .cp{font-size:calc(14.2px * var(--sc,1));line-height:1.8;margin:5px 0}
 .ci{font-size:calc(14.2px * var(--sc,1));line-height:1.8;margin:6px 0;padding-left:10px;border-left:2px solid var(--line)}
 .cc.r .ci{border-left-color:var(--gold)}
+.ch2{font-weight:700;font-size:calc(12.6px * var(--sc,1));color:var(--acc);opacity:.78;margin:9px 0 2px;letter-spacing:.02em}
+.cp.d1,.ci.d1{margin-left:12px}
+.cp.d2,.ci.d2{margin-left:24px;font-size:calc(13.6px * var(--sc,1))}
 .cs{display:block;color:var(--acc);margin-bottom:1px}
 .cc.r .cs{color:var(--gold)}
 .hl{background:linear-gradient(transparent 55%,rgba(241,196,15,.62) 55%);color:inherit;padding:0 1px;border-radius:2px;font-weight:600}
@@ -332,11 +335,14 @@ function mkHL(t,hl){
   return h.replace(/\u0001/g,'<b class="kk">').replace(/\u0002/g,"</b>")
           .replace(/\u0003/g,'<mark class="hl">').replace(/\u0004/g,"</mark>");
 }
-const HLROW={"學說對決":1,"兩邊在吵什麼":1,"本文見解（理由）":1,"考場挺哪說（理由）":1};
+const HLROW={"學說對決":1,"兩邊在吵什麼":1,"本文見解（理由）":1,"考場挺哪說（理由）":1,"本文見解":1,"考場挺哪說":1};
 function cmpCell(items,hl){
-  return (items||[]).map(x=> x.s
-    ? '<div class="ci"><b class="cs">'+esc(x.s)+'</b>'+mkHL(x.t,hl)+'</div>'
-    : '<div class="cp">'+mkHL(x.t,hl)+'</div>').join("");
+  return (items||[]).map(x=>{
+    if(x.h)return '<div class="ch2">'+esc(x.h)+'</div>';
+    const d=" d"+(x.d||0);
+    return x.s ? '<div class="ci'+d+'"><b class="cs">'+esc(x.s)+'</b>'+mkHL(x.t,hl)+'</div>'
+               : '<div class="cp'+d+'">'+mkHL(x.t,hl)+'</div>';
+  }).join("");
 }
 function cmpHTML(t){
   const d=CMPD()[t.code];
