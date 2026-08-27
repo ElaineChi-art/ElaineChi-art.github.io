@@ -132,6 +132,25 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .tew .seg.op .zx,.tew .seg.op .voc,.tew .seg.op .tip{display:block}
 .tew.xall .zx,.tew.xall .voc,.tew.xall .tip{display:block}
 .tew .en.op + .zx{display:block}
+.cmp{margin-top:4px}
+.cmpt{font-weight:700;color:var(--acc);font-size:calc(14.8px * var(--sc,1));margin:2px 0 8px;line-height:1.55}
+.crow{display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:10px 0;border-top:1px dashed var(--line)}
+.crow.chd{border-top:0;padding:0 0 4px}
+.crow.chd .cc{background:none;padding:0}
+.crow.chd span{font-size:12px;font-weight:700;letter-spacing:.03em}
+.crow.chd .cc.l span{color:var(--red)}
+.crow.chd .cc.r span{color:var(--gold)}
+.cc{min-width:0}
+.cc.r{background:rgba(212,172,13,.08);border-radius:8px;padding:8px 11px}
+.clab{font-size:11.8px;font-weight:700;color:var(--acc);margin-bottom:4px;opacity:.9}
+.cc.r .clab{color:var(--gold)}
+.cp{font-size:calc(14.2px * var(--sc,1));line-height:1.8;margin:5px 0}
+.ci{font-size:calc(14.2px * var(--sc,1));line-height:1.8;margin:6px 0;padding-left:10px;border-left:2px solid var(--line)}
+.cc.r .ci{border-left-color:var(--gold)}
+.cs{display:block;color:var(--acc);margin-bottom:1px}
+.cc.r .cs{color:var(--gold)}
+.tb.cmb.on{background:var(--gold);color:#3a2f00;border-color:var(--gold)}
+@media(max-width:860px){.crow{grid-template-columns:1fr;gap:8px}.crow.chd{display:none}}
 .vov{display:none;border:1px solid var(--line);border-radius:9px;margin:10px 0 2px;background:rgba(127,140,141,.05)}
 .vov.open{display:block}
 .vov .vhd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.6px;font-weight:700;color:var(--acc)}
@@ -206,6 +225,7 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 <script src="minsu-data.js"></script>
 <script src="minsu-sudu-data.js"></script>
 <script src="minsu-key-data.js"></script>
+<script src="minsu-cmp-data.js"></script>
 <script src="toeic-data.js"></script>
 <script src="toeic-sudu-data.js"></script>
 <script>
@@ -290,8 +310,26 @@ function vocPanel(t){
   });
   return h+'</div></div>';
 }
+function cmpCell(items){
+  return (items||[]).map(x=> x.s
+    ? '<div class="ci"><b class="cs">'+esc(x.s)+'</b>'+mk(x.t)+'</div>'
+    : '<div class="cp">'+mk(x.t)+'</div>').join("");
+}
+function cmpHTML(t){
+  const d=CMPD()[t.code];
+  if(!d)return '<div class="empty" style="padding:22px 0">此爭點尚無左右對照版</div>';
+  let h='<div class="cmp"><div class="cmpt">'+esc(d.t)+'</div>'+
+        '<div class="crow chd"><div class="cc l"><span>⚖️ 學理原文・申論輸出</span></div>'+
+        '<div class="cc r"><span>💬 白話速記・考場反射</span></div></div>';
+  (d.rows||[]).forEach(r=>{
+    h+='<div class="crow"><div class="cc l"><div class="clab">'+esc(r.ll)+'</div>'+cmpCell(r.l)+'</div>'+
+       '<div class="cc r"><div class="clab">'+esc(r.rl)+'</div>'+cmpCell(r.r)+'</div></div>';
+  });
+  return h+'</div>';
+}
 function bodyHTML(t,mode){
   if(sj==="te")return teHTML(t,mode);
+  if(mode==="cmp")return cmpHTML(t);
   setKeys(t.code);
   let h="",a=0,b=0;
   if(mode==="sd"){
@@ -369,6 +407,7 @@ function render(){
     html+='<div class="tp" id="t'+idx+'" data-i="'+idx+'" data-code="'+t.code+'" data-mode="'+mode+'">'+
       '<div class="tt"><span>'+CUR().label+' '+esc(t.code)+'　'+esc(t.title)+
       (saved?'<span class="edited">已編輯</span>':'')+'</span><span class="btns">'+
+      (CMPD()[t.code]?'<button class="tb cmb'+(mode==="cmp"?" on":"")+'" data-i="'+idx+'" title="左右對照（學理／白話）">⚖ 對照</button>':'')+
       '<button class="tb star'+(SR(t.code)?" on":"")+'" data-i="'+idx+'" title="標為重要">'+(SR(t.code)?"★":"☆")+'</button>'+
       (sj==="te"?'<button class="tb vbb'+(localStorage.getItem("nidavoc_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'" title="核心字彙總覽">📝 字彙</button>':'')+
       (sj==="te"?'<button class="tb xpb'+(localStorage.getItem("nidax_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'">🔍 全面解析</button>':'')+
@@ -565,19 +604,21 @@ function highlight(it){
   const t=DATA()[it.i], nw=document.getElementById("nowt");
   if(t&&it.p!=null){const ph=document.getElementById("pt-"+t.code+"-"+it.p); if(ph)ph.classList.add("on");}
   if(nw&&t){ const ids=[...new Set(queue.filter(x=>!x.silent).map(x=>x.i))];
-    nw.textContent="🔊 "+t.code+(it.p!=null?"　"+partName(t,it.p).replace(/\s*\(.*\)/,""):"　"+(modeOf(t.code)==="sd"?"速讀":"擬答"))+
+    const MN={sd:"速讀",cmp:"對照白話",full:"擬答"};
+    nw.textContent="🔊 "+t.code+(it.p!=null?"　"+partName(t,it.p).replace(/\s*\(.*\)/,""):"　"+(MN[modeOf(t.code)]||"擬答"))+
       "　"+(sj==="te"?"情境":"題")+" "+(ids.indexOf(it.i)+1)+"/"+ids.length; }
 }
 function reapplyNow(){ if(playing&&queue[qi]){window.__noscroll=true;highlight(queue[qi]);window.__noscroll=false;} }
 const SUBJ={
   xz:{name:"行政法",label:"題型",D:()=>window.NIDA||[],S:()=>window.SUDU||{},K:()=>window.KEYS||{}},
-  ms:{name:"民事訴訟法",label:"爭點",D:()=>window.MINSU||[],S:()=>window.MINSU_SUDU||{},K:()=>window.MINSU_KEYS||{}},
+  ms:{name:"民事訴訟法",label:"爭點",D:()=>window.MINSU||[],S:()=>window.MINSU_SUDU||{},K:()=>window.MINSU_KEYS||{},C:()=>window.MINSU_CMP||{}},
   te:{name:"多益 TOEIC",label:"情境",D:()=>window.TOEIC||[],S:()=>window.TOEIC_SUDU||{},K:()=>({})}
 };
 let sj=localStorage.getItem("nida_subj")||"xz";
 if(!SUBJ[sj])sj="xz";
 const CUR=()=>SUBJ[sj];
 const DATA=()=>CUR().D(), SUDUD=()=>CUR().S(), KEYD=()=>CUR().K();
+const CMPD=()=>(CUR().C?CUR().C():{});
 const px=()=>(sj==="xz"?"":sj+"_");
 const LBN={"爭":"爭點","據":"依據","實":"實務見解","說":"學說","採":"本文見解","攝":"涵攝","結":"結論","訣":"口訣"};
 function readMode(){return localStorage.getItem("nida_readmode")||"screen";}
@@ -585,6 +626,7 @@ function modeOf(code){
   let m=readMode();
   if(m==="screen")m=localStorage.getItem("nidamode_"+px()+code)||"full";
   if(m==="sd"&&!SUDUD()[code])m="full";
+  if(m==="cmp"&&!CMPD()[code])m="full";
   return m;
 }
 function stripHTML(html,no){
@@ -614,6 +656,13 @@ function topicText(idx,pidx){
   let s=CUR().label+t.code.replace(/-/g,"之")+"。"+t.title+"。";
   const saved=localStorage.getItem("nida_"+t.code+"_"+m);
   if(saved)return s+stripHTML(saved,no);
+  if(m==="cmp"){
+    const d=CMPD()[t.code]||{};
+    s=CUR().label+t.code+"。白話對照版。"+(d.t||t.title)+"。";
+    (d.rows||[]).forEach(r=>{ s+=(r.rl||"")+"。";
+      (r.r||[]).forEach(x=>{ s+=(x.s?x.s+"。":"")+String(x.t).replace(/\*\*/g,""); }); });
+    return s;
+  }
   if(m==="sd"){
     ((SUDUD()[t.code])||[]).forEach(([k,v])=>{ if(no&&k==="訣")return;
       s+=(LBN[k]||"")+"。"+v+(/[。！？]$/.test(v)?"":"。"); });
@@ -651,6 +700,17 @@ app.addEventListener("click",e=>{
     return;}
   const ed=e.target.closest(".ed");
   if(ed){toggleEdit(ed.closest(".tp"));return;}
+  const cb=e.target.closest(".cmb");
+  if(cb){ const card=cb.closest(".tp"), c=card.dataset.code;
+    const nm=card.dataset.mode==="cmp"?"full":"cmp";
+    localStorage.setItem("nidamode_"+px()+c,nm); render(); allMode(); syncTOC();
+    const idx=+card.dataset.i, cu=(playing&&queue[qi])?queue[qi].i:null;
+    if(playing&&readMode()==="screen"&&cu===idx){
+      const vis=visibleIdx(),pos=vis.indexOf(idx);
+      stopAll(); start(pos>=0&&document.getElementById("contall").checked?vis.slice(pos):[idx]);
+    }else reapplyNow();
+    const el=document.querySelector('[data-code="'+c+'"]'); if(el)el.scrollIntoView({block:"start"});
+    return; }
   const sb=e.target.closest(".star");
   if(sb){ const card=sb.closest(".tp"), c=card.dataset.code, on=SR(c);
     localStorage.setItem(SK(c),on?"0":"1");
