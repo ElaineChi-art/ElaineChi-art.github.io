@@ -289,7 +289,7 @@ function teHTML(t,mode){
     else if(it.k==="voc"){h+='<div class="voc"><div class="vt">📝 核心字彙與考點解密</div>';
       (it.v||[]).forEach(v=>{h+='<div class="v"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+(v.zh?'<span>'+esc(v.zh)+'</span>':'')+'</div>'+
         (v.syn?'<div class="vs">同義代換　'+esc(v.syn)+'</div>':'')+
-        (v.tip?'<div class="vp">解題技巧　'+esc(v.tip)+'</div>':'')+
+        (v.tip?'<div class="vp">'+esc(v.tip)+'</div>':'')+
         (v.trap?'<div class="vr">⚠ 防雷陷阱　'+esc(v.trap)+'</div>':'')+'</div>';});
       h+='</div>';}
   });
