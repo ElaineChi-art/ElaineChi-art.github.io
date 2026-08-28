@@ -234,6 +234,8 @@ body.nokk .hl{background:none;font-weight:inherit}
 <script src="nida-data.js"></script>
 <script src="sudu-data.js"></script>
 <script src="key-data.js"></script>
+<script src="nida-cmp-data.js"></script>
+<script src="nida-cmpkey-data.js"></script>
 <script src="minsu-data.js"></script>
 <script src="minsu-sudu-data.js"></script>
 <script src="minsu-key-data.js"></script>
@@ -325,17 +327,35 @@ function vocPanel(t){
 }
 let CKRE=null;
 function setCmpKeys(code){
-  const ks=(((window.MINSU_CMPKEY||{})[code])||[]).slice().sort((a,b)=>b.length-a.length);
+  const ks=((((CUR().CK?CUR().CK():{})[code])||[])).slice().sort((a,b)=>b.length-a.length);
   CKRE = ks.length ? new RegExp("("+ks.map(esc).map(reEsc).join("|")+")","g") : null;
 }
-/* 先標粗體（**），再標螢光，最後才換成標籤，避免打到 HTML */
+/* 字元層級上標：先拆出粗體旗標，再比對螢光句（可跨越粗體），最後依區段輸出，標籤保證正確巢套 */
 function mkHL(t,hl){
-  let h=esc(t).replace(/\*\*(.+?)\*\*/g,"\u0001$1\u0002");
-  if(hl&&CKRE)h=h.replace(CKRE,"\u0003$1\u0004");
-  return h.replace(/\u0001/g,'<b class="kk">').replace(/\u0002/g,"</b>")
-          .replace(/\u0003/g,'<mark class="hl">').replace(/\u0004/g,"</mark>");
+  const ch=[],bd=[]; let i=0,b=false;
+  while(i<t.length){
+    if(t[i]==="*"&&t[i+1]==="*"){b=!b;i+=2;continue;}
+    ch.push(t[i]);bd.push(b);i++;
+  }
+  const p=ch.join(""), mk=new Array(p.length).fill(false);
+  if(hl&&CKRE){ CKRE.lastIndex=0; let m;
+    while((m=CKRE.exec(p))!==null){
+      for(let k=m.index;k<m.index+m[0].length;k++)mk[k]=true;
+      if(m.index===CKRE.lastIndex)CKRE.lastIndex++;
+    } }
+  let out="",cb=null,cm=null,buf="";
+  const flush=()=>{ if(!buf)return;
+    let x=esc(buf);
+    if(cb)x='<b class="kk">'+x+'</b>';
+    if(cm)x='<mark class="hl">'+x+'</mark>';
+    out+=x;buf=""; };
+  for(let k=0;k<p.length;k++){
+    if(bd[k]!==cb||mk[k]!==cm){flush();cb=bd[k];cm=mk[k];}
+    buf+=p[k];
+  }
+  flush(); return out;
 }
-const HLROW={"學說對決":1,"兩邊在吵什麼":1,"本文見解（理由）":1,"考場挺哪說（理由）":1,"本文見解":1,"考場挺哪說":1};
+const HLROW={"學說對決":1,"學說與實務對決":1,"兩邊在吵什麼":1,"本文見解（理由）":1,"考場挺哪說（理由）":1,"本文見解":1,"考場挺哪說":1};
 function cmpCell(items,hl){
   return (items||[]).map(x=>{
     if(x.h)return '<div class="ch2">'+esc(x.h)+'</div>';
@@ -658,8 +678,8 @@ function highlight(it){
 }
 function reapplyNow(){ if(playing&&queue[qi]){window.__noscroll=true;highlight(queue[qi]);window.__noscroll=false;} }
 const SUBJ={
-  xz:{name:"行政法",label:"題型",D:()=>window.NIDA||[],S:()=>window.SUDU||{},K:()=>window.KEYS||{}},
-  ms:{name:"民事訴訟法",label:"爭點",D:()=>window.MINSU||[],S:()=>window.MINSU_SUDU||{},K:()=>window.MINSU_KEYS||{},C:()=>window.MINSU_CMP||{}},
+  xz:{name:"行政法",label:"題型",D:()=>window.NIDA||[],S:()=>window.SUDU||{},K:()=>window.KEYS||{},C:()=>window.NIDA_CMP||{},CK:()=>window.NIDA_CMPKEY||{}},
+  ms:{name:"民事訴訟法",label:"爭點",D:()=>window.MINSU||[],S:()=>window.MINSU_SUDU||{},K:()=>window.MINSU_KEYS||{},C:()=>window.MINSU_CMP||{},CK:()=>window.MINSU_CMPKEY||{}},
   te:{name:"多益 TOEIC",label:"情境",D:()=>window.TOEIC||[],S:()=>window.TOEIC_SUDU||{},K:()=>({})}
 };
 let sj=localStorage.getItem("nida_subj")||"xz";
