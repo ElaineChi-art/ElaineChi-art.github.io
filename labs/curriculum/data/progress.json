@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-27",
+  "updated": "2026-08-28",
   "lessons": [
     {
       "id": 1,
@@ -304,10 +304,10 @@
       "category": "ml",
       "topic": "時間序列概念與實作",
       "title": "時間序列預測的陷阱：為什麼不能隨便切訓練/測試集",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-28",
+      "url": "posts/daily/2026-08-28.html",
+      "slides": 2
     },
     {
       "id": 29,

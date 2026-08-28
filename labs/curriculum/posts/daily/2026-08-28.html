@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>時間序列預測的陷阱：為什麼不能隨便切訓練/測試集｜技能實驗室・每日課程</title>
+<meta name="description" content="時間序列資料有先後順序，不能像一般資料那樣打散再隨機切訓練/測試集——那等於讓模型偷看未來去預測過去（未來資訊洩漏）。這一課說明為什麼時間序列一定要照時間切、更嚴謹要用往前滾動的驗證（walk-forward），並用玉山/國泰的違約與營收預測、91APP 的流量預測等金融/電商場景，講清楚做對時間切分為什麼是預測站得住腳的第一道關卡。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-28</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・機器學習核心</div>
+  <h1>時間序列預測的陷阱：為什麼不能隨便切訓練/測試集</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-28</span>
+    <span>約 8 分鐘</span>
+    <span>對應真專案主題：時間序列概念與實作</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p><b>一般資料可以打散再隨機抽一部分當測試集，但時間序列（依時間先後排列的資料，例如每天的營收、每月的違約率）絕對不行</b>。因為時間有先後，你一旦打散，就會把「未來」的資料混進訓練集，等於讓模型<b>先偷看答案，再回頭去預測過去</b>——這叫<b>未來資訊洩漏（data leakage / look-ahead bias）</b>。當下測試分數會漂亮到不可思議，一上線卻整組壞掉。正確做法很簡單：<b>照時間切，前面一段訓練、後面一段測試，模型只能用過去預測未來</b>，跟真實上線的處境一致；要更嚴謹就用「往前滾動」的驗證。這一題面試很愛問，因為它一秒看穿你是「跑過範例」還是「真的懂資料」。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-28-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260828" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260828" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260828)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260828)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M7 · 機器學習核心  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="34" font-weight="900" fill="#F5F8FF">時間序列不能隨便切：<tspan fill="#4D9FFF">界線是時間，不是隨機</tspan></text>
+
+      <!-- ===== 左：錯誤做法 ===== -->
+      <rect x="64" y="132" width="556" height="392" rx="14" fill="#131D2E" stroke="#FF6B6B" stroke-width="1.8"/>
+      <rect x="64" y="132" width="556" height="5" rx="2.5" fill="#FF6B6B"/>
+      <text x="88" y="172" font-size="20" font-weight="900" fill="#FF6B6B">✗ 錯：打散後隨機切</text>
+      <text x="88" y="200" font-size="16" fill="#C7D2E4">把整條時間序列洗牌，再隨機抽 20% 當測試。</text>
+
+      <!-- 時間軸（打散示意） -->
+      <text x="88" y="240" font-size="15" font-weight="700" fill="#8FA1C0">原本的時間順序（一月 → 十二月）</text>
+      <rect x="88" y="252" width="508" height="30" rx="6" fill="#0E1626" stroke="#263B5C" stroke-width="1"/>
+      <line x1="596" y1="267" x2="88" y2="267" stroke="#4D9FFF" stroke-width="0"/>
+      <text x="342" y="272" font-size="14" fill="#8FA1C0" text-anchor="middle">1 2 3 4 5 6 7 8 9 10 11 12</text>
+
+      <text x="88" y="316" font-size="15" font-weight="700" fill="#8FA1C0">洗牌後（訓練🔵／測試🟠 混在一起）</text>
+      <g>
+        <rect x="88"  y="328" width="40" height="30" rx="6" fill="rgba(77,159,255,.22)" stroke="#4D9FFF" stroke-width="1.3"/>
+        <rect x="132" y="328" width="40" height="30" rx="6" fill="rgba(242,163,60,.22)" stroke="#F2A33C" stroke-width="1.3"/>
+        <rect x="176" y="328" width="40" height="30" rx="6" fill="rgba(77,159,255,.22)" stroke="#4D9FFF" stroke-width="1.3"/>
+        <rect x="220" y="328" width="40" height="30" rx="6" fill="rgba(77,159,255,.22)" stroke="#4D9FFF" stroke-width="1.3"/>
+        <rect x="264" y="328" width="40" height="30" rx="6" fill="rgba(242,163,60,.22)" stroke="#F2A33C" stroke-width="1.3"/>
+        <rect x="308" y="328" width="40" height="30" rx="6" fill="rgba(77,159,255,.22)" stroke="#4D9FFF" stroke-width="1.3"/>
+        <rect x="352" y="328" width="40" height="30" rx="6" fill="rgba(242,163,60,.22)" stroke="#F2A33C" stroke-width="1.3"/>
+        <rect x="396" y="328" width="40" height="30" rx="6" fill="rgba(77,159,255,.22)" stroke="#4D9FFF" stroke-width="1.3"/>
+      </g>
+
+      <rect x="88" y="384" width="508" height="60" rx="10" fill="rgba(255,107,107,.10)" stroke="#FF6B6B" stroke-width="1.3"/>
+      <text x="104" y="410" font-size="16" font-weight="800" fill="#FF6B6B">問題：訓練集裡藏著「未來」的月份</text>
+      <text x="104" y="432" font-size="15" fill="#C7D2E4">模型偷看了未來 → 未來資訊洩漏（look-ahead bias）。</text>
+
+      <text x="88" y="474" font-size="15" fill="#C7D2E4">測試分數：<tspan font-weight="800" fill="#F5F8FF">高到不真實</tspan>　一上線：<tspan font-weight="800" fill="#FF6B6B">整組壞掉</tspan></text>
+      <text x="88" y="502" font-size="15" fill="#7E8CA8">因為真實世界你永遠拿不到明天的資料來訓練。</text>
+
+      <!-- ===== 右：正確做法 ===== -->
+      <rect x="660" y="132" width="556" height="392" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="1.8"/>
+      <rect x="660" y="132" width="556" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="684" y="172" font-size="20" font-weight="900" fill="#35C08E">✓ 對：照時間切</text>
+      <text x="684" y="200" font-size="16" fill="#C7D2E4">前面一段訓練、後面一段測試，界線是「一個時間點」。</text>
+
+      <text x="684" y="244" font-size="15" font-weight="700" fill="#8FA1C0">用過去 → 預測未來（跟上線一致）</text>
+      <g>
+        <rect x="684" y="256" width="308" height="34" rx="6" fill="rgba(77,159,255,.22)" stroke="#4D9FFF" stroke-width="1.3"/>
+        <text x="838" y="279" font-size="15" font-weight="800" fill="#4D9FFF" text-anchor="middle">訓練：1～9 月</text>
+        <rect x="996" y="256" width="196" height="34" rx="6" fill="rgba(242,163,60,.22)" stroke="#F2A33C" stroke-width="1.3"/>
+        <text x="1094" y="279" font-size="15" font-weight="800" fill="#F2A33C" text-anchor="middle">測試：10～12 月</text>
+      </g>
+      <line x1="994" y1="248" x2="994" y2="298" stroke="#F5F8FF" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="994" y="314" font-size="13" fill="#8FA1C0" text-anchor="middle">切點＝一個時間</text>
+
+      <text x="684" y="352" font-size="15" font-weight="700" fill="#8FA1C0">更嚴謹：往前滾動驗證（walk-forward）</text>
+      <g font-size="13" fill="#C7D2E4">
+        <rect x="684" y="364" width="150" height="22" rx="5" fill="rgba(77,159,255,.22)" stroke="#4D9FFF" stroke-width="1"/>
+        <rect x="838" y="364" width="60" height="22" rx="5" fill="rgba(242,163,60,.22)" stroke="#F2A33C" stroke-width="1"/>
+        <rect x="684" y="392" width="214" height="22" rx="5" fill="rgba(77,159,255,.22)" stroke="#4D9FFF" stroke-width="1"/>
+        <rect x="902" y="392" width="60" height="22" rx="5" fill="rgba(242,163,60,.22)" stroke="#F2A33C" stroke-width="1"/>
+        <rect x="684" y="420" width="278" height="22" rx="5" fill="rgba(77,159,255,.22)" stroke="#4D9FFF" stroke-width="1"/>
+        <rect x="966" y="420" width="60" height="22" rx="5" fill="rgba(242,163,60,.22)" stroke="#F2A33C" stroke-width="1"/>
+      </g>
+      <text x="684" y="462" font-size="14" fill="#7E8CA8">訓練窗口一次比一次長，每次都只往後預測一小段。</text>
+
+      <rect x="684" y="476" width="508" height="34" rx="8" fill="rgba(53,192,142,.10)" stroke="#35C08E" stroke-width="1.2"/>
+      <text x="700" y="499" font-size="15" font-weight="700" fill="#35C08E">測試分數比較難看，但那才是「上線後的真實分數」。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：時間序列的訓練/測試界線是「時間」，不是「隨機」。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">只要打散再切，就等於偷看未來——分數會假得漂亮，上線就現形。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-28-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-28-1.mp3"></audio>
+    <p>這張圖在講的是，時間序列資料不能像一般資料那樣隨便切訓練測試集。左邊是常見的錯誤做法：把資料打散再隨機抽一部分當測試，這在照片分類沒問題，但在時間序列會出大事，因為你等於讓模型先偷看了未來，再回頭去預測過去，這叫做未來資訊洩漏。右邊才是對的：一定要照時間先後切，前面一段當訓練，後面一段當測試，模型只能用過去去預測未來，跟真實上線的情況一致。更嚴謹的做法是往前滾動驗證，訓練窗口一次比一次長，每次都往後預測一小段。記住一句話：時間序列的訓練測試集，界線是時間，不是隨機。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-28-2').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bg2D20260828" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbar2D20260828" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bg2D20260828)"/>
+      <rect width="1280" height="6" fill="url(#topbar2D20260828)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M7 · 機器學習核心  ›  SLIDE 1-數據</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="34" font-weight="900" fill="#F5F8FF">為什麼值得學：<tspan fill="#4D9FFF">預測分析需求 5 年 +168%</tspan></text>
+
+      <text x="88" y="150" font-size="16" fill="#8FA1C0">四個成長最快的硬技能・過去 5 年需求成長幅度（時間序列預測＝「預測分析」的核心）</text>
+
+      <!-- 長條圖 -->
+      <!-- 基準線 -->
+      <line x1="300" y1="200" x2="300" y2="512" stroke="#33415C" stroke-width="1.5"/>
+
+      <!-- 流程自動化 +233% -->
+      <text x="284" y="234" font-size="17" font-weight="700" fill="#C7D2E4" text-anchor="end">流程自動化</text>
+      <rect x="300" y="212" width="760" height="40" rx="8" fill="rgba(126,140,168,.30)" stroke="#7E8CA8" stroke-width="1.3"/>
+      <text x="1074" y="238" font-size="18" font-weight="900" fill="#C7D2E4">+233%</text>
+
+      <!-- 預測分析 +168%（highlight） -->
+      <text x="284" y="304" font-size="17" font-weight="900" fill="#4D9FFF" text-anchor="end">預測分析 ★</text>
+      <rect x="300" y="282" width="548" height="40" rx="8" fill="rgba(77,159,255,.32)" stroke="#4D9FFF" stroke-width="2"/>
+      <text x="862" y="308" font-size="18" font-weight="900" fill="#4D9FFF">+168%</text>
+
+      <!-- NLP +147% -->
+      <text x="284" y="374" font-size="17" font-weight="700" fill="#C7D2E4" text-anchor="end">自然語言處理</text>
+      <rect x="300" y="352" width="480" height="40" rx="8" fill="rgba(126,140,168,.30)" stroke="#7E8CA8" stroke-width="1.3"/>
+      <text x="794" y="378" font-size="18" font-weight="900" fill="#C7D2E4">+147%</text>
+
+      <!-- 機器學習演算法 +64% -->
+      <text x="284" y="444" font-size="17" font-weight="700" fill="#C7D2E4" text-anchor="end">機器學習演算法</text>
+      <rect x="300" y="422" width="209" height="40" rx="8" fill="rgba(126,140,168,.30)" stroke="#7E8CA8" stroke-width="1.3"/>
+      <text x="523" y="448" font-size="18" font-weight="900" fill="#C7D2E4">+64%</text>
+
+      <!-- 註解卡 -->
+      <rect x="300" y="490" width="760" height="66" rx="10" fill="#131D2E" stroke="#263B5C" stroke-width="1.4"/>
+      <text x="320" y="518" font-size="16" font-weight="800" fill="#F5F8FF">★ 企業要的是「能對營收、違約、流量做出可信預測」的人。</text>
+      <text x="320" y="542" font-size="15" fill="#8FA1C0">而做對時間切分，正是這種預測站得住腳的第一道關卡——先別被漂亮分數騙了。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：預測分析是第二熱的硬技能，而它的地基是「別讓模型偷看未來」。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">數據來源：104 人力銀行《AI 人才趨勢報告》（2026 年 7 月），需求成長為近 5 年比較。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1-數據</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-28-2">
+    <div class="lbl">SLIDE 1-數據 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-28-2.mp3"></audio>
+    <p>這張圖在講的是，為什麼值得把時間序列學好。這是根據 104 人力銀行 2026 年 7 月的 AI 人才趨勢報告，四個成長最快的硬技能過去五年的需求成長幅度。流程自動化成長最多，達到 +233%；預測分析成長 +168%，排第二，而時間序列預測正是預測分析的核心；接著是自然語言處理 +147%，機器學習演算法 +64%。重點是預測分析這條，企業要的是能對營收、違約、流量做出可信預測的人，而做對時間切分，正是這種預測站得住腳的第一道關卡。把這個做扎實，比多學十個花俏模型更能在面試裡加分。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>先講結論：<b>時間序列資料有「先後順序」這個一般資料沒有的特性，所以切訓練/測試集時，界線必須是一個「時間點」，而不是隨機抽樣</b>。所謂時間序列，就是依時間排列、順序有意義的資料——每天的營收、每月的違約率、每小時的網站流量、每分鐘的股價。它跟一疊照片最大的差別在於：照片誰先誰後無所謂，但時間序列一旦打亂順序，資料本身的意義就被破壞了。</p>
+  <p>問題出在「隨機切」會把未來混進訓練集。一般機器學習教學都教你把資料打散（shuffle）再切 8:2，這在照片分類完全沒問題。但套到時間序列上，打散之後，訓練集裡就會夾雜著十二月的資料，而你要預測的測試集卻是十月——<b>等於讓模型先看過了未來的答案，再回頭去「預測」比較早的過去</b>。這種偷看未來的現象有個正式名字：未來資訊洩漏（data leakage），也叫 look-ahead bias（前視偏誤）。</p>
+  <p>正確做法反而更單純：<b>照時間切，前面一段當訓練、後面一段當測試，模型只能拿過去去預測未來</b>，這才跟真實上線的處境一模一樣——因為你上線那天，手上永遠只有「今天以前」的資料。想更嚴謹，就用<b>往前滾動驗證（walk-forward / TimeSeriesSplit）</b>：訓練窗口一次比一次長，每次都只往後預測一小段，反覆做很多次取平均，比只切一刀更能反映模型在不同時期的穩定度。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎，是因為<b>企業真正要花錢的預測，幾乎都是時間序列——營收預測、違約率預測、流量與庫存預測、風險預警</b>，而這些一旦掉進資料洩漏的坑，代價是「決策全建立在一個假分數上」。根據 104 人力銀行《AI 人才趨勢報告》（2026 年 7 月），預測分析的需求在近五年成長約 168%，是成長第二快的硬技能，僅次於流程自動化的 233%；而時間序列預測正是預測分析的核心骨幹。換句話說，市場很需要會做預測的人，但更需要「預測站得住腳」的人。</p>
+  <p>更關鍵的是，<b>資料洩漏最可怕的地方在於它不會報錯，反而給你一個漂亮到讓你放鬆警覺的分數</b>。這正好扣回「完整應用情境」而不是孤立技術點——104 的報告一再強調企業要的是能打通完整情境的人。一個只跑過範例的人，看到測試準確率 98% 會很開心地上線；一個真的懂資料的人，看到 98% 反而會先起疑：「這分數會不會太好了？是不是哪裡讓模型偷看了未來？」這種「對好分數保持懷疑」的直覺，遠比多背幾個模型名字值錢，也是面試官想從一個資料人身上看到的成熟度。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到玉山、國泰這類金融科技，或一個要碰資料的國際遠端全端職缺，這個陷阱會直接決定一個預測專案能不能上線。舉一個貼近我背景的例子：假設我在銀行做<b>信用卡違約預測</b>——用持卡人過去幾個月的行為，預測他下個月會不會違約。如果我不小心用了「隨機切」，訓練資料裡就會混進未來月份的還款結果，模型驗證時準到不可思議；可是真正上線那天，我手上根本沒有下個月的資料，模型立刻現形。更隱蔽的洩漏還有：<b>把整個資料集一起做標準化（用了含未來的平均值/標準差）、用「未來才知道」的欄位當特徵</b>（例如拿「這筆最後有沒有被催收」去預測「會不會違約」），這些都是 look-ahead bias 的變形。</p>
+  <p>所以我實務上會這樣做，而且面試時就這樣講：<b>第一步先照時間切，切點之前的所有資料（含標準化用的統計量）才准拿來訓練，切點之後只拿來測試，絕不讓任何未來資訊回流</b>；第二步用 walk-forward 驗證，模擬「每個月重新訓練、預測下個月」的真實節奏，看模型在不同時期穩不穩，而不是靠運氣切到好切點。對我這種法律金融跨域背景的人，這裡有個天然優勢：<b>我對「用了不該有的資訊」這件事特別敏感——這跟法律上「事後之明」「證據取得時點」的概念是相通的</b>，一個預測若偷用了預測當下根本拿不到的資訊，它在商業決策上就跟一份取證程序有瑕疵的報告一樣，不能採信。這個類比讓我在跟業務解釋「為什麼分數變難看反而是好事」時特別有說服力。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最常見、乍看懂了其實會答錯的誤區，是<b>以為「只要用了交叉驗證就很嚴謹」</b>。一般的 k-fold 交叉驗證（把資料切成 k 份輪流當測試）預設會打散資料，這在時間序列上正是災難——它每一折都在讓模型偷看未來。被追問時要能一句切中要害：<b>時間序列不能用普通的隨機 k-fold，要用「往前滾動」的時間序列交叉驗證（像 sklearn 的 TimeSeriesSplit），只用過去的折去預測後面的折</b>，這樣才沒有洩漏。</p>
+  <p>另一個容易被追問到卡住的點是：<b>「除了切分方式，還有哪些地方會偷偷洩漏未來？」</b>——這題想聽的是你知不知道洩漏藏在很多細節裡，不只切分那一刀。要能舉例：<b>資料前處理（標準化、填補缺失值）如果用了整份資料的統計量，就把未來資訊灌進了訓練集，正確做法是只用訓練段的統計量、再套到測試段</b>；還有特徵工程時不小心用了「當下還拿不到、要等未來才揭曉」的欄位。我要誠實說：時間切分、避免 look-ahead、walk-forward 驗證、以及前處理要在切分後才做，這些原理與判斷我已經能清楚講明白；但把它們寫成一套沒有洩漏的完整 pipeline、實際跑過 ARIMA 或 LSTM 這類時間序列模型並調參，我目前是懂概念、動手經驗還不多。真被追問到那個層級，我會把邊界講清楚、說明我會怎麼從一個小資料集實作驗證起，而不是硬掰有經驗。</p>
+
+  <p>時間序列最容易踩的坑不是模型不夠炫，而是「不小心讓模型偷看了未來」——記住一句話：界線是時間，不是隨機，分數變難看，往往才是變誠實。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「時間序列資料為什麼不能像一般資料那樣隨機切訓練/測試集？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂「順序有意義」跟「未來資訊洩漏」這個核心。</span>
+        <span class="a">她可以怎麼答：因為時間序列的資料有先後順序，順序本身就是資訊。一旦打散再隨機切，訓練集裡就會夾到比測試集更晚的資料，等於讓模型先看過未來的答案，再回頭去預測比較早的過去，這叫未來資訊洩漏，也叫 look-ahead bias。結果是驗證分數高到不真實，但一上線就壞掉，因為真實世界你永遠只有今天以前的資料。所以時間序列一定要照時間切，前面訓練、後面測試，模型只能用過去預測未來。</span>
+      </li>
+      <li>
+        <span class="q">「那正確的切分或驗證方式是什麼？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道 walk-forward / TimeSeriesSplit，而不是只會說「別打散」。</span>
+        <span class="a">她可以怎麼答：最基本就是照時間切一刀，切點之前訓練、之後測試。更嚴謹我會用往前滾動的驗證，也就是 sklearn 的 TimeSeriesSplit：訓練窗口一次比一次長，每次都只往後預測一小段，重複很多次取平均，模擬「每期重新訓練、預測下一期」的真實節奏。這樣既沒有洩漏，又能看出模型在不同時期穩不穩，比只切一刀、賭到一個好切點可靠得多。</span>
+      </li>
+      <li>
+        <span class="q">「一般的 k-fold 交叉驗證可以用在時間序列上嗎？」</span>
+        <span class="hint">👉 這題其實在問：你會不會誤以為「用了 CV 就安全」這個常見陷阱。</span>
+        <span class="a">她可以怎麼答：不行，這正是常見的坑。普通的 k-fold 預設會把資料打散再輪流當測試，每一折都可能拿到比訓練集更晚的資料，等於每一折都在偷看未來。時間序列要用專門的時間序列交叉驗證，像 TimeSeriesSplit，規則是永遠只用過去的折去預測後面的折，絕不讓後面的資料回流到前面。所以我不會看到「有做交叉驗證」就放心，還要看它是不是有維持時間順序。</span>
+      </li>
+      <li>
+        <span class="q">「除了切分那一刀，還有哪些地方會偷偷洩漏未來資訊？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道洩漏藏在前處理與特徵，不只在切分。</span>
+        <span class="a">她可以怎麼答：有幾個常見的隱藏洩漏。第一是前處理，像標準化或填缺失值，如果用了整份資料的平均值和標準差，就把測試段的未來資訊灌進了訓練，正確做法是只用訓練段算統計量，再套到測試段。第二是特徵工程，不小心用了預測當下根本還拿不到、要等未來才揭曉的欄位，例如拿「最後有沒有被催收」去預測「會不會違約」。所以我會養成習慣：所有前處理都要在切分之後、只根據訓練段來做。</span>
+      </li>
+      <li>
+        <span class="q">「如果你的模型在測試集上表現好到不真實，你會怎麼想？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有「對好分數保持懷疑」的資料直覺。</span>
+        <span class="a">她可以怎麼答：我會先起疑，而不是先開心。分數好到不真實，最常見的原因就是資料洩漏，尤其在時間序列裡多半是不小心讓模型偷看了未來。我會回頭檢查三件事：切分有沒有維持時間順序、前處理的統計量是不是只用了訓練段、有沒有用到未來才知道的特徵。我要誠實說，這套排查的原理和判斷我已經能清楚講，但把它寫成一條完全沒有洩漏的完整 pipeline、實際跑 ARIMA 或 LSTM 調參的動手經驗我還不多，真要做我會從一個小資料集實作驗證起。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-27.html"><span class="dir">上一課</span>← 準確率會騙人：不平衡資料集下該看哪些指標</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>
