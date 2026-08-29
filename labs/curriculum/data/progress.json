@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-28",
+  "updated": "2026-08-29",
   "lessons": [
     {
       "id": 1,
@@ -315,10 +315,10 @@
       "category": "ml",
       "topic": "樹狀演算法概念與實作",
       "title": "決策樹到隨機森林：為什麼「一堆爛模型」投票會變準",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-29",
+      "url": "posts/daily/2026-08-29.html",
+      "slides": 1
     },
     {
       "id": 30,
