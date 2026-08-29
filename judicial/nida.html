@@ -426,7 +426,59 @@ const IDB=(()=>{let db=null;
     const q=d.transaction("notes","readwrite").objectStore("notes").put(v,k);
     q.onsuccess=()=>r(1); q.onerror=()=>r(0);});}catch(e){try{localStorage.setItem(KN(k),v)}catch(_){ }}}
   return {get,set};})();
+/* 章節重編後，將舊章節筆記搬到新章節（只做一次，且僅在新位置為空時搬） */
+const MIGR={
+"Chapter 02　法院｜Section 1　審判權":"Chapter 02　法院｜Section 1　審判權與管轄權",
+"Chapter 02　法院｜Section 2　管轄權":"Chapter 02　法院｜Section 1　審判權與管轄權",
+"Chapter 02　法院｜Section 3　法官迴避":"Chapter 02　法院｜Section 2　迴避",
+"Chapter 03　多數當事人訴訟｜Section 1　共同訴訟":"Chapter 04　共同訴訟｜Section 1　共同訴訟之類型與效果",
+"Chapter 03　多數當事人訴訟｜Section 2　訴之主觀預備合併":"Chapter 04　共同訴訟｜Section 3　主觀預備合併",
+"Chapter 03　多數當事人訴訟｜Section 3　訴訟參加與主參加訴訟":"Chapter 05　主參加訴訟與訴訟參加｜Section 1　訴訟參加與主參加訴訟",
+"Chapter 03　多數當事人訴訟｜Section 4　當事人":"Chapter 03　訴訟主體｜Section 1　當事人確定",
+"Chapter 03　多數當事人訴訟｜Section 5　當事人能力與適格（團體）":"Chapter 03　訴訟主體｜Section 2　當事人能力、當事人適格、訴訟擔當",
+"Chapter 03　多數當事人訴訟｜Section 6　訴訟擔當之具體類型":"Chapter 03　訴訟主體｜Section 2　當事人能力、當事人適格、訴訟擔當",
+"Chapter 03　多數當事人訴訟｜Section 7　團體訴訟":"Chapter 03　訴訟主體｜Section 3　團體訴訟",
+"Chapter 04　證據｜Section 1　證據總論":"Chapter 11　證據｜Section 1　舉證責任概論",
+"Chapter 04　證據｜Section 2　舉證責任":"Chapter 11　證據｜Section 1　舉證責任概論",
+"Chapter 04　證據｜Section 3　證據調查程序":"Chapter 11　證據｜Section 3　事證蒐集手段",
+"Chapter 04　證據｜Section 4　證據保全":"Chapter 11　證據｜Section 3　事證蒐集手段",
+"Chapter 05　救濟程序｜Section 1　第二審程序":"Chapter 14　救濟程序｜Section 1　二審",
+"Chapter 05　救濟程序｜Section 2　第三審程序":"Chapter 14　救濟程序｜Section 2　三審",
+"Chapter 05　救濟程序｜Section 3　抗告程序":"Chapter 14　救濟程序｜Section 6　抗告程序",
+"Chapter 05　救濟程序｜Section 4　再審程序":"Chapter 14　救濟程序｜Section 3　再審",
+"Chapter 05　救濟程序｜Section 5　情事變更判決":"Chapter 14　救濟程序｜Section 4　情事變更判決",
+"Chapter 05　救濟程序｜Section 6　第三人撤銷訴訟":"Chapter 14　救濟程序｜Section 5　第三人撤銷訴訟",
+"Chapter 05　救濟程序｜Section 7　簡易小額程序與一造辯論":"Chapter 14　救濟程序｜Section 7　簡易小額程序與一造辯論",
+"Chapter 06　督促程序與保全程序｜Section 1　督促程序":"Chapter 15　特殊程序｜Section 1　督促程序",
+"Chapter 06　督促程序與保全程序｜Section 2　保全程序":"Chapter 15　特殊程序｜Section 2　保全程序",
+"Chapter 07　訴訟代理與程序法上義務｜Section 1　訴訟代理與送達":"Chapter 06　訴訟代理人｜Section 1　訴訟代理與送達",
+"Chapter 07　訴訟代理與程序法上義務｜Section 2　爭點整理":"Chapter 09　爭點整理｜Section 1　爭點整理方法",
+"Chapter 07　訴訟代理與程序法上義務｜Section 3　闡明義務":"Chapter 10　言詞辯論｜Section 1　闡明義務",
+"Chapter 07　訴訟代理與程序法上義務｜Section 4　訴訟促進義務":"Chapter 10　言詞辯論｜Section 2　訴訟促進義務之違反與失權",
+"Chapter 08　訴訟客體｜Section 1　訴之種類":"Chapter 07　訴訟客體｜Section 1　訴之種類",
+"Chapter 08　訴訟客體｜Section 2　訴之聲明與訴訟標的":"Chapter 07　訴訟客體｜Section 2　訴之聲明與訴訟標的",
+"Chapter 08　訴訟客體｜Section 3　訴之客觀合併":"Chapter 07　訴訟客體｜Section 3　訴之客觀合併",
+"Chapter 08　訴訟客體｜Section 4　訴之變更追加":"Chapter 07　訴訟客體｜Section 4　訴之變更追加",
+"Chapter 08　訴訟客體｜Section 5　反訴":"Chapter 07　訴訟客體｜Section 5　反訴",
+"Chapter 08　訴訟客體｜Section 6　重複起訴禁止":"Chapter 08　訴訟開始之效力｜Section 1　重複起訴禁止原則",
+"Chapter 08　訴訟客體｜Section 7　當事人恆定":"Chapter 08　訴訟開始之效力｜Section 2　當事人恆定"};
+async function migrateSecNotes(){
+  if(sj!=="ms"||localStorage.getItem("nida_ms_secmigr")==="1")return;
+  let moved=0;
+  for(const [oldk,newk] of Object.entries(MIGR)){
+    try{
+      const ov=await IDB.get("ms_§"+oldk); if(!ov)continue;
+      const nv=await IDB.get("ms_§"+newk);
+      if(nv&&nv.trim()){ if(nv.indexOf(ov)<0) await IDB.set("ms_§"+newk,nv+"<br>"+ov); }
+      else await IDB.set("ms_§"+newk,ov);
+      moved++;
+    }catch(e){}
+  }
+  localStorage.setItem("nida_ms_secmigr","1");
+  if(moved)console.log("章節筆記已搬遷",moved,"則");
+}
 async function loadNotes(){
+  await migrateSecNotes();
   for(const box of document.querySelectorAll(".note")){
     const c=box.dataset.code, nb=box.querySelector(".nb"); if(!nb)continue;
     let v=await IDB.get(px()+c);
