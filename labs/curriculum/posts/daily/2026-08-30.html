@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pandas 的資料處理心法：一行程式碼背後的向量化思維｜技能實驗室・每日課程</title>
+<meta name="description" content="在 pandas 裡自己寫 for 迴圈一列一列處理，往往比一行向量化寫法慢上幾十倍。這一課用白話講清楚向量化是什麼：把「對整欄做同一件事」交給底層用 C 寫好的迴圈一次跑完，而不是讓 Python 一列一列慢慢跑。搭配國泰/玉山對帳、91APP 交易清洗等金融/電商場景，說明向量化的思維怎麼轉、實務怎麼用、面試被問到時怎麼講清楚，並拆解「向量化一定比較快」「apply 就是向量化」這兩個常見誤區。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-30</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・Python與爬蟲</div>
+  <h1>pandas 的資料處理心法：一行程式碼背後的向量化思維</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-30</span>
+    <span>約 8 分鐘</span>
+    <span>對應真專案主題：Python 進階套件</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p><b>在 pandas 裡自己寫 for 迴圈一列一列處理資料，往往比一行向量化寫法慢上幾十倍</b>——這不是因為你程式寫得爛，而是 Python 這種語言逐列跑本來就慢。<b>向量化（vectorization，把「對整欄做同一件事」當成一個指令交給底層一次算完）的核心思維是：不要想「這一列怎麼算」，要想「這一整欄要做什麼變換」</b>。當你寫 <code>df['金額'] * 1.05</code>，你不是在跑一個 Python 迴圈，而是把整欄丟給底層用 C 寫好的迴圈一次處理完，資料在連續的記憶體上批次運算，速度天差地遠。<b>一句話：向量化不是語法糖，而是把運算從慢的 Python 這層，搬到快的 C 那層去跑。</b>學會這個思維，你寫的資料處理程式會又短又快，面試被問到「為什麼不要在 pandas 裡寫迴圈」時也答得出真正的原因。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-30-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260830" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260830" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260830)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260830)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M8 · Python與爬蟲  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="34" font-weight="900" fill="#F5F8FF">同一件事，<tspan fill="#4D9FFF">為什麼一行比迴圈快幾十倍？</tspan></text>
+
+      <!-- ===== 左：逐列迴圈 ===== -->
+      <rect x="64" y="132" width="556" height="392" rx="14" fill="#131D2E" stroke="#FF6B6B" stroke-width="1.8"/>
+      <rect x="64" y="132" width="556" height="5" rx="2.5" fill="#FF6B6B"/>
+      <text x="88" y="172" font-size="20" font-weight="900" fill="#FF6B6B">✗ 逐列迴圈：Python 一列一列跑</text>
+      <text x="88" y="200" font-size="16" fill="#C7D2E4">for i in range(len(df)): df手動算第 i 列</text>
+
+      <!-- 逐列示意 -->
+      <g>
+        <rect x="104" y="228" width="140" height="34" rx="7" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+        <text x="174" y="250" font-size="15" fill="#C7D2E4" text-anchor="middle">第 1 列 → 算</text>
+        <line x1="174" y1="262" x2="174" y2="282" stroke="#7E8CA8" stroke-width="1.4"/>
+        <rect x="104" y="284" width="140" height="34" rx="7" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+        <text x="174" y="306" font-size="15" fill="#C7D2E4" text-anchor="middle">第 2 列 → 算</text>
+        <line x1="174" y1="318" x2="174" y2="338" stroke="#7E8CA8" stroke-width="1.4"/>
+        <rect x="104" y="340" width="140" height="34" rx="7" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+        <text x="174" y="362" font-size="15" fill="#C7D2E4" text-anchor="middle">第 3 列 → 算</text>
+        <text x="174" y="400" font-size="15" fill="#7E8CA8" text-anchor="middle">…一路跑到第 N 列</text>
+      </g>
+
+      <text x="420" y="248" font-size="15" fill="#8FA1C0">每一步都要在 Python 這層：</text>
+      <text x="420" y="274" font-size="15" fill="#C7D2E4">・解譯這行程式碼</text>
+      <text x="420" y="300" font-size="15" fill="#C7D2E4">・把數字拆箱、算完再裝箱</text>
+      <text x="420" y="326" font-size="15" fill="#C7D2E4">・做型別檢查</text>
+      <text x="420" y="352" font-size="15" fill="#8FA1C0">這些固定開銷 × N 列</text>
+
+      <rect x="88" y="436" width="508" height="72" rx="10" fill="rgba(255,107,107,.10)" stroke="#FF6B6B" stroke-width="1.3"/>
+      <text x="104" y="463" font-size="16" font-weight="800" fill="#FF6B6B">問題：慢，而且資料越大越慢</text>
+      <text x="104" y="486" font-size="15" fill="#C7D2E4">開銷不在「算」，在「一列一列反覆進出 Python」。</text>
+      <text x="104" y="504" font-size="14" fill="#7E8CA8">百萬列時，可能是數十倍的差距。</text>
+
+      <!-- ===== 右：向量化 ===== -->
+      <rect x="660" y="132" width="556" height="392" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="1.8"/>
+      <rect x="660" y="132" width="556" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="684" y="172" font-size="20" font-weight="900" fill="#35C08E">✓ 向量化：整欄一次交給底層</text>
+      <text x="684" y="200" font-size="16" fill="#C7D2E4">df['金額'] * 1.05　# 一行，對整欄</text>
+
+      <!-- 整欄示意 -->
+      <rect x="700" y="236" width="220" height="120" rx="10" fill="#1A2740" stroke="#35C08E" stroke-width="1.5"/>
+      <text x="810" y="266" font-size="15" fill="#8FA1C0" text-anchor="middle">整欄（連續記憶體）</text>
+      <g fill="#35C08E">
+        <rect x="720" y="284" width="30" height="24" rx="4"/>
+        <rect x="756" y="284" width="30" height="24" rx="4"/>
+        <rect x="792" y="284" width="30" height="24" rx="4"/>
+        <rect x="828" y="284" width="30" height="24" rx="4"/>
+        <rect x="864" y="284" width="30" height="24" rx="4"/>
+      </g>
+      <text x="810" y="336" font-size="14" fill="#7E8CA8" text-anchor="middle">一次批次處理，不進出 Python</text>
+
+      <line x1="924" y1="296" x2="988" y2="296" stroke="#35C08E" stroke-width="2.5"/>
+      <path d="M986,290 L998,296 L986,302 Z" fill="#35C08E"/>
+      <rect x="1000" y="264" width="180" height="64" rx="10" fill="#1A2740" stroke="#4D9FFF" stroke-width="1.5"/>
+      <text x="1090" y="292" font-size="16" font-weight="800" fill="#4D9FFF" text-anchor="middle">NumPy 底層</text>
+      <text x="1090" y="314" font-size="14" fill="#8FA1C0" text-anchor="middle">C 寫好的迴圈跑完</text>
+
+      <rect x="684" y="402" width="508" height="106" rx="10" fill="rgba(53,192,142,.10)" stroke="#35C08E" stroke-width="1.3"/>
+      <text x="700" y="430" font-size="16" font-weight="800" fill="#35C08E">為什麼會快？</text>
+      <text x="700" y="454" font-size="15" fill="#C7D2E4">迴圈搬到 C 那層跑，省掉逐列的 Python 開銷。</text>
+      <text x="700" y="476" font-size="15" fill="#C7D2E4">資料連續存放，CPU 批次算、快取命中高。</text>
+      <text x="700" y="498" font-size="15" font-weight="700" fill="#F5F8FF">你描述「要做什麼」，把「怎麼跑得快」交給底層。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：向量化不是語法糖，是把運算從 Python 這層搬到 C 那層。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">思維轉換：別想「這一列怎麼算」，要想「這一整欄要做什麼變換」——描述變換，交給底層執行。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-30-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-30-1.mp3"></audio>
+    <p>這張圖在講的是，pandas 為什麼要你少寫 for 迴圈、改用向量化。左邊是逐列迴圈的做法：Python 一列一列地跑，每一步都要在 Python 這層解譯、拆箱再裝箱，資料一大就慢得離譜。右邊是向量化：你把「對整欄做同一件事」當成一個指令交給 pandas，底層由 NumPy 用 C 寫好的迴圈一次跑完，資料在連續的記憶體上批次處理，速度常常差到幾十倍。關鍵的思維轉換是，不要想這一列怎麼算，要想這一整欄要做什麼變換。你描述的是要做什麼，把怎麼跑得快交給底層。記住一句話：向量化不是語法糖，是把運算從 Python 這層搬到 C 那層。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>先講結論：<b>向量化就是「對整欄資料下一個指令，讓底層一次算完」，而不是自己寫 Python 迴圈一列一列處理</b>。舉個最小的例子：你有一欄「金額」，要每筆都乘上 1.05（加 5% 手續費）。土法煉鋼的寫法是開一個 for 迴圈，一列一列取出數字、乘完再塞回去；向量化的寫法只有一行 <code>df['金額'] * 1.05</code>。兩種做法算出來的結果一樣，但底層跑的方式完全不同。</p>
+  <p>差別在於「這行程式碼實際上是誰在跑」。你寫 Python 迴圈時，是 Python 這個直譯器一列一列地跑——每一步它都要重新解譯這行指令、把數字從 Python 物件拆箱出來、算完再裝箱回去、順便做型別檢查。<b>這些固定開銷本身不大，但你有幾百萬列，它就重複幾百萬次</b>。而向量化的一行，其實是把整欄資料交給 pandas 底層的 NumPy，由它用 C 語言早就編譯好的迴圈一次跑完，中間完全不回到 Python 這層。</p>
+  <p>所以向量化真正的心法，是一個思維上的轉向：<b>不要想「這一列怎麼算」，要想「這一整欄要做什麼變換」</b>。你不是在指揮電腦「先做第一列、再做第二列」，而是在描述「這一整欄乘以 1.05」「這兩欄相加」「這一欄裡符合某條件的挑出來」。你負責描述「要做什麼」，把「怎麼跑得快」交給底層。想通這件事，你會發現大部分資料清洗其實都能寫成幾個整欄變換的組合，程式又短又快。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎，是因為資料量一大，向量化與否的差距會從「差一點」變成「能不能跑完」。<b>在量級上，向量化寫法比逐列 Python 迴圈快上數十倍是很常見的事，資料越大差距越明顯</b>（這是 pandas／NumPy 生態的常識性技術知識，實際倍數會依運算種類、資料型別而變，不是固定數字）。原因前面講過：省掉的不是「算」的時間，而是「一列一列反覆進出 Python 直譯器」的固定開銷。當你要處理的是一天幾百萬筆交易紀錄，這個差距就是「跑三秒」跟「跑五分鐘」的差別，甚至是記憶體撐不撐得住的差別。</p>
+  <p>更重要的是，這正是「打通完整應用情境」而不是「零散學單一語法」的分水嶺。<b>104 人力銀行《AI 人才趨勢報告》一再強調企業要的是能把技術接到真實資料流程的人，而不是只會背 API 的人</b>。會呼叫 pandas 的人很多，但能講清楚「為什麼這樣寫會慢、慢在哪一層、該怎麼改」的人，才是真的能在正式資料管線裡把效能問題解掉的人。資料清洗、特徵工程、報表產出，這些都是機器學習與分析專案的地基——地基寫得慢又吃記憶體，後面全都卡住。向量化思維就是讓你有能力在這個地基上寫出跑得動、也維護得動的程式。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到玉山、國泰這類金融科技，或 91APP 這種電商，向量化最常出現在「大批資料要做同一種變換」的場景。舉一個貼近我背景的例子：假設我在銀行做<b>對帳與交易清洗</b>——手上有一整個月、上百萬筆的信用卡交易，我要算每筆的實收金額（原金額扣掉分潤與手續費）、把外幣交易依當日匯率換算成台幣、再把「可疑」的交易依幾個條件標記出來。如果我一列一列跑 for 迴圈，光是換算那一步就可能跑到讓人不想等。改成向量化，我會把「扣手續費」寫成整欄相乘、把「換匯」寫成兩欄相乘、把「標記可疑」寫成一個布林條件（<code>df[df['金額'] &gt; 門檻]</code>）去篩選——每一步都是對整欄下指令，整批一次算完。</p>
+  <p>所以我實務上會這樣做，面試時也這樣講：<b>先問自己「這個操作能不能寫成對整欄的變換」，能的話就絕不寫迴圈</b>。對我這種法律金融跨域背景的人，這裡有個好懂的類比：向量化很像「發一份統一格式的公文給全部門，一次處理完」，逐列迴圈則像「把每個人的案子一件一件叫進來、當面辦完再叫下一個」——後者每一件都要重新招呼、確認身分、收尾，光是這些例行動作累積起來就慢得驚人。不過要注意，這個類比是幫助理解「固定開銷 × 次數」的直覺，真正讓向量化快的是底層 C 迴圈與連續記憶體，不是「一次辦很多件」這麼簡單。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最常見、乍看懂了其實會答錯的誤區，是<b>以為「用了 <code>df.apply()</code> 就是向量化了」</b>。這是很多人踩的坑。<code>apply</code> 的寫法看起來很像一行、很「pandas」，但它骨子裡多半還是一列一列地在 Python 這層呼叫你給的那個函式——它是把迴圈藏起來，不是把迴圈搬到 C 那層。<b>所以 <code>apply</code> 通常只比手寫 for 迴圈快一點點，跟真正的向量化（整欄的算術、比較、內建字串／時間方法）差一個量級</b>。被追問時要能一句切中：真正的向量化是「整欄運算下沉到 NumPy 的 C 迴圈」，而 <code>apply</code> 大多數情況只是語法上包裝過的逐列呼叫，效能不能混為一談。</p>
+  <p>另一個容易被追問到卡住的點是：<b>「那是不是所有情況都該向量化？向量化有沒有代價？」</b>——這題想聽的是你知不知道它的邊界，而不是把它當萬靈丹。要能講清楚兩件事：第一，<b>向量化通常會一次把整欄的中間結果都算出來、放進記憶體，所以它是拿記憶體換速度</b>；資料大到記憶體吃緊時，反而要考慮分塊處理或改用別的工具。第二，<b>有些邏輯天生就是「這一列的結果依賴上一列」（例如某些逐筆累積、狀態機式的計算），這種順序相依的運算很難純向量化</b>，硬湊反而讓程式難懂。我要誠實說：向量化的原理、為什麼快、跟 <code>apply</code> 的差別，這些我已經能清楚講明白；但真正拿幾百萬列的資料去實測不同寫法的時間與記憶體、抓出哪一步是瓶頸的完整實戰，我目前是懂概念、動手還不多。真被追問到那個層級，我會把邊界講清楚、說明我會怎麼用計時與記憶體量測一步步驗證，而不是宣稱有我還沒有的經驗。</p>
+
+  <p>pandas 的向量化教會我一件事：寫資料處理程式時，別再想著「怎麼一列一列跑」，改成問「這一整欄要做什麼變換」——記住一句話，向量化不是語法糖，是把運算從慢的 Python 這層，搬到快的 C 那層。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「為什麼在 pandas 裡不要自己寫 for 迴圈一列一列處理？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂慢的原因是「逐列進出 Python 直譯器」的固定開銷。</span>
+        <span class="a">她可以怎麼答：因為 Python 逐列跑本來就慢，慢的不是計算本身，而是每一列都要重新在 Python 這層解譯指令、把數字拆箱裝箱、做型別檢查，這些固定開銷乘上幾百萬列就很可觀。向量化的一行是把整欄交給底層 NumPy，用 C 早就編譯好的迴圈一次跑完，中間不回到 Python 這層，資料又放在連續記憶體上批次算。所以同一件事，向量化寫法在量級上常常快幾十倍，資料越大差越多。一句話，向量化是把運算從慢的 Python 層搬到快的 C 層。</span>
+      </li>
+      <li>
+        <span class="q">「向量化到底是什麼？跟寫迴圈算出來的結果不是一樣嗎？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道結果一樣但底層執行方式完全不同。</span>
+        <span class="a">她可以怎麼答：結果一樣，但底層跑的方式完全不同，這正是重點。向量化是對整欄下一個指令，例如整欄乘 1.05、兩欄相加、用一個布林條件篩選，這些操作會下沉到 NumPy 的 C 迴圈一次算完。手寫迴圈則是 Python 直譯器一列一列跑。思維上的差別是，我不再想「這一列怎麼算」，而是想「這一整欄要做什麼變換」，我負責描述要做什麼，把怎麼跑得快交給底層。大部分資料清洗其實都能拆成幾個整欄變換的組合。</span>
+      </li>
+      <li>
+        <span class="q">「那我用 df.apply() 是不是就等於向量化了？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得清 apply 是包裝過的逐列呼叫，不是真向量化。</span>
+        <span class="a">她可以怎麼答：不是，這是很常見的誤會。apply 看起來像一行、很 pandas，但它骨子裡多半還是一列一列在 Python 這層呼叫我給的函式，它只是把迴圈藏起來，沒有把迴圈搬到 C 那層。所以 apply 通常只比手寫 for 迴圈快一點，跟真正的向量化差一個量級。真正的向量化是整欄的算術、比較、內建的字串或時間方法，那些才會下沉到 C。我會盡量把邏輯改寫成整欄運算，只有真的沒辦法向量化時才退而用 apply。</span>
+      </li>
+      <li>
+        <span class="q">「向量化有沒有代價？是不是所有情況都該用？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道它拿記憶體換速度、以及順序相依運算的限制。</span>
+        <span class="a">她可以怎麼答：向量化不是萬靈丹，主要有兩個邊界。第一，它通常會一次把整欄的中間結果都算出來放進記憶體，等於是拿記憶體換速度，資料大到記憶體吃緊時反而要考慮分塊處理。第二，有些邏輯天生是這一列依賴上一列的結果，像某些逐筆累積或狀態機式的計算，這種順序相依很難純向量化，硬湊反而讓程式難懂。所以我的原則是：能寫成整欄變換的就向量化，遇到順序相依或記憶體受限的情況再另想辦法。</span>
+      </li>
+      <li>
+        <span class="q">「你實際用 pandas 處理過多大的資料、做過效能調校嗎？」</span>
+        <span class="hint">👉 這題其實在問：你是真的動手實測過，還是只懂原理，誠實度也在被看。</span>
+        <span class="a">她可以怎麼答：我要誠實說，向量化的原理、為什麼快、跟 apply 的差別，這些我已經能清楚講；但拿幾百萬列的真實資料去實測不同寫法的時間跟記憶體、抓出哪一步是瓶頸，這種效能調校的完整實戰我動手經驗還不多。如果要我上手，我會先用計時工具量每一步花多久、用記憶體量測看哪一步吃最兇，把逐列迴圈的地方逐一改成整欄向量化再比較前後差距，一步步用數據驗證，而不是宣稱有我還沒有的經驗。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-29.html"><span class="dir">上一課</span>← 決策樹到隨機森林：為什麼「一堆爛模型」投票會變準</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

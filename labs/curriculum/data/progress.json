@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-29",
+  "updated": "2026-08-30",
   "lessons": [
     {
       "id": 1,
@@ -326,10 +326,10 @@
       "category": "python",
       "topic": "Python 進階套件",
       "title": "pandas的資料處理心法：一行程式碼背後的向量化思維",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-30",
+      "url": "posts/daily/2026-08-30.html",
+      "slides": 1
     },
     {
       "id": 31,
