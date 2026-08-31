@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>合法爬蟲的邊界：robots.txt、頻率限制與資料使用的紅線｜技能實驗室・每日課程</title>
+<meta name="description" content="會寫爬蟲跟能合法用爬蟲，是兩件事。這一課用白話拆清楚合法爬蟲的三道技術邊界（robots.txt、頻率限制、User-Agent 與服務條款）以及最容易被忽略、卻真正會出事的一層：抓得到不等於用得了——個資、著作權、商業使用授權才是紅線。搭配國泰/玉山/91APP 蒐集外部資料的場景，說明實務怎麼守邊界、面試被問到時怎麼講清楚，並拆解「robots.txt 擋不住我就代表可以爬」「公開資料就沒有法律問題」兩個常見誤區。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-08-31</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・Python與爬蟲</div>
+  <h1>合法爬蟲的邊界：robots.txt、頻率限制與資料使用的紅線</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-08-31</span>
+    <span>約 8 分鐘</span>
+    <span>對應真專案主題：網路爬蟲與實作應用</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p><b>會寫爬蟲，跟能合法用爬蟲，是兩件完全不同的事。</b>技術上，Python 幾行就能把整個網站抓下來；但「抓得到」不等於「有權利抓」，更不等於「有權利用」。<b>合法爬蟲有兩層邊界：一層是你自己該守的技術禮貌——先讀對方的 robots.txt（網站主人公告哪些路徑歡迎、哪些請別爬的規則檔）、控制抓取頻率別打垮人家伺服器、帶清楚的身分並遵守服務條款；另一層更關鍵，是抓下來的資料能不能用——個資、著作權、商業使用授權，這三關才是真正會讓公司吃官司的紅線。</b>一句話：爬蟲的邊界不在你抓不抓得到，而在你有沒有權利抓、有沒有權利用。搞懂這條線，你才不會在面試裡把「我會爬蟲」講成一個法遵地雷。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-31-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260831" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260831" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260831)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260831)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M8 · Python與爬蟲  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="34" font-weight="900" fill="#F5F8FF">抓得到，<tspan fill="#4D9FFF">不等於用得了</tspan></text>
+
+      <!-- ===== 左：能不能抓（技術禮貌） ===== -->
+      <rect x="64" y="132" width="556" height="392" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="1.8"/>
+      <rect x="64" y="132" width="556" height="5" rx="2.5" fill="#4D9FFF"/>
+      <text x="88" y="172" font-size="20" font-weight="900" fill="#4D9FFF">第一層：能不能抓（技術禮貌）</text>
+      <text x="88" y="200" font-size="15" fill="#8FA1C0">這一層是你自己該守的規矩，守了不代表沒事</text>
+
+      <rect x="88" y="220" width="508" height="88" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="108" y="248" font-size="17" font-weight="800" fill="#F5F8FF">① robots.txt</text>
+      <text x="108" y="274" font-size="15" fill="#C7D2E4">網站主人公告：哪些路徑歡迎、哪些請別爬。</text>
+      <text x="108" y="296" font-size="15" fill="#8FA1C0">先讀它，是最基本的尊重（技術上並非強制）。</text>
+
+      <rect x="88" y="320" width="508" height="88" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="108" y="348" font-size="17" font-weight="800" fill="#F5F8FF">② 頻率限制</text>
+      <text x="108" y="374" font-size="15" fill="#C7D2E4">每次請求間停一下、限制併發數。</text>
+      <text x="108" y="396" font-size="15" fill="#8FA1C0">別把對方伺服器當免費壓力測試。</text>
+
+      <rect x="88" y="420" width="508" height="88" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="108" y="448" font-size="17" font-weight="800" fill="#F5F8FF">③ 身分與條款</text>
+      <text x="108" y="474" font-size="15" fill="#C7D2E4">帶清楚的 User-Agent、遵守服務條款。</text>
+      <text x="108" y="496" font-size="15" fill="#8FA1C0">別偽裝、別繞過登入或付費牆。</text>
+
+      <!-- ===== 右：能不能用（法律紅線） ===== -->
+      <rect x="660" y="132" width="556" height="392" rx="14" fill="#131D2E" stroke="#FF6B6B" stroke-width="1.8"/>
+      <rect x="660" y="132" width="556" height="5" rx="2.5" fill="#FF6B6B"/>
+      <text x="684" y="172" font-size="20" font-weight="900" fill="#FF6B6B">第二層：能不能用（法律紅線）</text>
+      <text x="684" y="200" font-size="15" fill="#8FA1C0">工程師最常忽略，卻是真正會出事的一層</text>
+
+      <rect x="684" y="220" width="508" height="88" rx="10" fill="rgba(255,107,107,.08)" stroke="#FF6B6B" stroke-width="1.2"/>
+      <text x="704" y="248" font-size="17" font-weight="800" fill="#FF6B6B">① 個人資料</text>
+      <text x="704" y="274" font-size="15" fill="#C7D2E4">姓名、電話、Email 等，受個資法規範。</text>
+      <text x="704" y="296" font-size="15" fill="#8FA1C0">公開可見 ≠ 可任意蒐集、儲存、再利用。</text>
+
+      <rect x="684" y="320" width="508" height="88" rx="10" fill="rgba(255,107,107,.08)" stroke="#FF6B6B" stroke-width="1.2"/>
+      <text x="704" y="348" font-size="17" font-weight="800" fill="#FF6B6B">② 著作權</text>
+      <text x="704" y="374" font-size="15" fill="#C7D2E4">文章、圖片、評論多半是他人著作。</text>
+      <text x="704" y="396" font-size="15" fill="#8FA1C0">整批複製、重製散布，可能侵權。</text>
+
+      <rect x="684" y="420" width="508" height="88" rx="10" fill="rgba(255,107,107,.08)" stroke="#FF6B6B" stroke-width="1.2"/>
+      <text x="704" y="448" font-size="17" font-weight="800" fill="#FF6B6B">③ 商業使用授權</text>
+      <text x="704" y="474" font-size="15" fill="#C7D2E4">拿去做產品、賣錢，門檻比自用高得多。</text>
+      <text x="704" y="496" font-size="15" fill="#8FA1C0">許多網站服務條款明文禁止商業性抓取。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：爬蟲的紅線不在你抓不抓得到，而在你有沒有權利抓、有沒有權利用。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">「能不能抓」是技術禮貌，「能不能用」是法律責任——這是兩個獨立的問題，要分開判斷。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-31-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-08-31-1.mp3"></audio>
+    <p>這張圖在講的是，合法爬蟲的邊界該畫在哪裡。左邊是三道你自己要守的技術紅線：第一，先讀對方網站的 robots.txt，這是網站主人公告哪些路徑歡迎、哪些請別爬的規則；第二，控制抓取頻率，每次請求之間停一下、限制併發，別把對方伺服器當免費壓力測試；第三，帶上清楚的 User-Agent、遵守對方的服務條款。右邊是更關鍵、但工程師常忽略的一層：就算技術上抓得到，資料能不能用又是另一回事。個資、著作權、商業使用授權，這三關過不了，抓到手也是燙手山芋。中間的核心觀念是，能不能抓，跟能不能用，是兩個獨立的問題。面試講法就一句話：爬蟲的紅線不在你抓不抓得到，而在你有沒有權利抓、有沒有權利用。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>先講結論：<b>合法爬蟲的邊界，是「一組你在自動抓取別人網站前該先確認的規矩」，它分成兩層——一層是技術禮貌，一層是法律責任。</b>爬蟲（crawler，自動連上網站、把網頁內容抓回來的程式）本身是中性工具，Google 靠它建索引，比價網站靠它蒐集價格，這些都是正當用途。問題出在：同一支程式，抓對的東西是做產品，抓錯的東西是惹官司，中間那條線就是「邊界」。</p>
+  <p>第一層邊界是技術上的禮貌，核心是三件事。第一是 <code>robots.txt</code>：這是放在網站根目錄的一個純文字檔（例如 <code>example.com/robots.txt</code>），網站主人在裡面公告「哪些路徑歡迎爬、哪些請別爬」。它是一種約定俗成的君子協定，技術上不會強制擋你，但先讀它、照它做，是最基本的尊重。第二是頻率限制：每次請求之間停個一小段時間、限制同時發出的連線數，別在幾秒內灌爆對方伺服器。第三是身分與條款：帶上清楚的 <code>User-Agent</code>（標明你是誰的一段自我介紹字串），並遵守網站的服務條款，不要偽裝成一般瀏覽器去繞過人家的規則。</p>
+  <p>第二層邊界，才是工程師最常忽略、但真正會出事的地方：<b>抓得到，不等於用得了。</b>就算你技術上守足了禮貌、順利把資料抓下來，這批資料能不能存、能不能加工、能不能拿去做產品賺錢，是完全獨立的另一個問題。這一層卡的是個人資料、著作權、以及商業使用授權。這兩層要分開想——很多人以為「robots.txt 沒擋我就代表可以」，那只回答了第一層，第二層根本還沒開始判斷。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎，是因為爬蟲踩線的代價不是技術債，而是法律風險與商譽風險，而且往往是公司層級在扛。一支寫得再漂亮的爬蟲，只要抓了不該抓的個資、或整批複製了有著作權的內容拿去商用，出事的不是那幾行程式碼，是公司。對企業來說，一個「只會把資料抓下來、不會判斷能不能用」的工程師，是把風險引進門的人；反過來，一個抓之前會先問「這批資料的來源合不合法、能不能這樣用」的人，才是能被放心交付資料任務的人。</p>
+  <p>這正好呼應「打通完整應用情境」而不是「零散學單一技能」的差別。<b>104 人力銀行《AI 人才趨勢報告》強調企業要的是能把技術接進真實流程的人，而不是只會操作單一工具的人。</b>爬蟲尤其如此：真實流程裡，抓資料只是第一步，後面接的是清洗、儲存、拿去訓練模型或做分析、最後變成產品功能。如果第一步的資料來源本身站不住腳，後面整條管線都建在流沙上——模型訓練用了侵權資料、產品用了未授權內容，這種問題爆出來時，越後面才發現越貴。所以「合法性」不是爬蟲的附加題，而是這個完整情境能不能成立的地基。會問這個問題的人，展現的正是那種「懂整條流程、不是只懂一個技術點」的成熟度。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到國泰、玉山這類金融科技，或 91APP 這種電商，需要對外抓資料的場景其實很多，但每一個都得先過邊界這一關。舉一個貼近我背景的例子：假設我在一家公司負責<b>蒐集外部公開資訊來輔助決策</b>——可能是抓公開的商家評價來做市場分析，或抓公開揭露的資訊來做風險參考。我實際會怎麼做？<b>抓之前先分兩步確認：第一步問「能不能抓」，第二步問「能不能用」。</b>第一步我會去讀那個網站的 <code>robots.txt</code> 跟服務條款，看它有沒有禁止自動抓取；設好請求間隔跟併發上限，帶正確的 <code>User-Agent</code>，確保我的程式不會造成對方伺服器負擔。這一步守的是禮貌與技術規範。</p>
+  <p>第二步才是關鍵，也是我法律金融跨域背景真正能加分的地方：<b>我會逐一檢查抓回來的欄位裡有沒有個資、有沒有他人著作、我這個用途是不是商業使用。</b>如果評價裡帶了留言者的姓名或帳號，那就是個資，不能隨便存整包、更不能拿去做別的用途；如果內容是他人撰寫的文章圖片，整批複製再散布就可能侵權，我頂多做統計分析、不會原樣重製。這裡有個好懂的類比：讀公開資料很像去圖書館看書——你可以進去自由閱讀（公開可見），但把整櫃書影印帶回家、甚至拿去賣（大量重製、商用），就完全是另一回事了。這個類比幫助理解「可讀」跟「可用」的落差，但真正的界線還是要回到個資法與著作權法的具體規定，不能只靠直覺。面試時我會這樣講：我不只會寫爬蟲，我會在抓之前先幫公司把法遵風險擋在門外。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最常見、乍看懂了其實會答錯的誤區，是<b>以為「robots.txt 沒有擋我，就代表我可以爬、可以用」</b>。這句話有兩個錯。第一，<code>robots.txt</code> 本來就不是技術上的鎖，它是君子協定——它「擋不住」你不代表它「允許」你，就像店門沒上鎖不代表可以隨便搬東西。第二、也是更嚴重的，<code>robots.txt</code> 只是第一層的「能不能抓」，它完全沒有回答第二層的「能不能用」。一個網站的 <code>robots.txt</code> 可能沒禁止你爬某個頁面，但那頁面上全是有著作權的文章、或帶了使用者個資，你照樣不能整批拿去商用。<b>把「robots.txt 放行」當成「法律放行」，是把兩層邊界混成一層，這是會被追問就露餡的地方。</b></p>
+  <p>另一個容易被追問到卡住的點是：<b>「公開的資料是不是就沒有法律問題？反正大家都看得到。」</b>——這題想聽的是你知不知道「公開可見」跟「可自由使用」是兩件事。要能講清楚：資料放在網路上公開，只代表任何人都「看得到」，不代表任何人都能「任意蒐集、大量儲存、再加工利用」。公開的個資仍然受個資法保護，蒐集與利用要有正當目的與合理範圍；公開的文章圖片仍然有著作權，大量重製散布仍可能侵權。我要誠實說：這些邊界背後的原理、robots.txt 與服務條款怎麼讀、哪些欄位是個資，這些我能清楚判斷跟講明白；但真正遇到灰色地帶——例如某個特定用途到底算不算合理使用、某批資料能不能商用——這種需要精確法律判斷的情況，我的做法是先把風險點標出來、暫停，去請教法務或查具體法規，而不是自己拍板。我把這當成優點誠實講：知道什麼時候該停下來問，比假裝什麼都能自己判斷更專業。</p>
+
+  <p>爬蟲這門技術教我一件事：真正的門檻從來不是「抓不抓得到」，而是「有沒有權利抓、有沒有權利用」——記住一句話，能不能抓是技術禮貌，能不能用是法律責任，這兩條線要分開看。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「你寫爬蟲的時候，怎麼確認自己是合法的？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有一套判斷邊界的流程，還是抓了再說。</span>
+        <span class="a">她可以怎麼答：我會分兩層來確認。第一層是能不能抓，我會先讀對方網站的 robots.txt 跟服務條款，看它有沒有禁止自動抓取，然後設好請求間隔跟併發上限、帶清楚的 User-Agent，確保不會造成對方伺服器負擔。第二層、也是更關鍵的，是能不能用，我會檢查抓回來的資料裡有沒有個資、有沒有他人著作、我的用途是不是商業使用。因為抓得到不等於用得了，這兩層是獨立的問題，我會分開判斷，不會用第一層的結果去回答第二層。</span>
+      </li>
+      <li>
+        <span class="q">「robots.txt 是什麼？它有強制力嗎？」</span>
+        <span class="hint">👉 這題其實在問：你知不知道它是君子協定，不是技術上的鎖。</span>
+        <span class="a">她可以怎麼答：robots.txt 是放在網站根目錄的一個純文字檔，網站主人在裡面公告哪些路徑歡迎爬、哪些請別爬。它是一種約定俗成的君子協定，技術上不會強制擋你，遵不遵守靠爬蟲自律。所以它擋不住你，不代表它允許你。而且更重要的是，robots.txt 只回答了能不能抓，完全沒回答抓下來能不能用。就算它沒禁止某個頁面，那頁面上如果全是有著作權的內容或個資，我照樣不能整批拿去商用。</span>
+      </li>
+      <li>
+        <span class="q">「資料都公開在網路上了，抓來用應該沒問題吧？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得清公開可見跟可自由使用是兩回事。</span>
+        <span class="a">她可以怎麼答：公開可見跟可自由使用是兩件事。資料放在網路上公開，只代表任何人都看得到，不代表任何人都能任意蒐集、大量儲存、再加工利用。公開的個資仍然受個資法保護，蒐集利用要有正當目的跟合理範圍；公開的文章圖片仍然有著作權，整批重製散布仍可能侵權。我會用圖書館來理解這件事：你可以自由進去看書，但把整櫃書影印帶走甚至拿去賣，就完全是另一回事了。</span>
+      </li>
+      <li>
+        <span class="q">「怎麼避免你的爬蟲對目標網站造成負擔？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂頻率控制這種基本的工程禮貌。</span>
+        <span class="a">她可以怎麼答：核心是控制抓取的節奏。我會在每次請求之間加上間隔、限制同時發出的連線數，不要在短時間內灌爆對方伺服器；抓過的頁面做快取，避免重複請求；盡量在對方離峰的時段跑。這些做法一方面是技術禮貌，一方面也是保護自己，因為請求太密集很容易被對方判定成攻擊而封 IP。原則就是，把對方的伺服器當成別人家的資源來尊重，而不是免費的壓力測試對象。</span>
+      </li>
+      <li>
+        <span class="q">「如果遇到不確定能不能爬、能不能用的灰色地帶，你會怎麼做？」</span>
+        <span class="hint">👉 這題其實在問：你的誠實度，以及知不知道什麼時候該停下來問人。</span>
+        <span class="a">她可以怎麼答：我要誠實說，邊界背後的原理、robots.txt 跟服務條款怎麼讀、哪些欄位算個資，這些我能清楚判斷；但真正的灰色地帶，例如某個特定用途算不算合理使用、某批資料能不能商用，這種需要精確法律判斷的情況，我不會自己拍板。我的做法是先把風險點明確標出來、先暫停，去請教法務或查具體的個資法跟著作權法規定，確認清楚再繼續。我覺得知道什麼時候該停下來問，比假裝什麼都能自己判斷更專業，尤其在金融這種高度受監管的產業。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-30.html"><span class="dir">上一課</span>← pandas 的資料處理心法：一行程式碼背後的向量化思維</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

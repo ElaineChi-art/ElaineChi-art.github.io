@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-30",
+  "updated": "2026-08-31",
   "lessons": [
     {
       "id": 1,
@@ -337,10 +337,10 @@
       "category": "python",
       "topic": "網路爬蟲與實作應用",
       "title": "合法爬蟲的邊界：robots.txt、頻率限制與資料使用的紅線",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-08-31",
+      "url": "posts/daily/2026-08-31.html",
+      "slides": 1
     },
     {
       "id": 32,
