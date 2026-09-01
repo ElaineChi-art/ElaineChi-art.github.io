@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNN/RNN/Transformer選型指南：資料型態決定架構｜技能實驗室・每日課程</title>
+<meta name="description" content="面試被問「這題你會用哪種神經網路」，答案不在你背了多少模型，而在你會不會先看資料長什麼樣。這一課用白話拆清楚三大深度學習架構的選型直覺：CNN 吃網格狀資料（影像）、RNN 吃有先後順序的序列（文字、時間序列）、Transformer 靠注意力機制一次看全局、特別擅長長序列與語言。搭配國泰/玉山/91APP 的真實場景，說明資料型態怎麼決定架構，以及「Transformer 一定比較強」「RNN 已經沒人用」兩個會被追問就露餡的誤區。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-09-01</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・深度學習模型延伸</div>
+  <h1>CNN/RNN/Transformer選型指南：資料型態決定架構</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-09-01</span>
+    <span>約 8 分鐘</span>
+    <span>對應真專案主題：深度學習方法介紹</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p><b>要選哪種神經網路，不是看哪個名字比較潮，而是看你的資料長什麼樣。</b>資料像一張圖、像棋盤那樣有上下左右的空間結構，就用 CNN（卷積神經網路，擅長抓局部圖樣）；資料是一串有先後順序的東西，像一句話、一段股價走勢，就用 RNN（循環神經網路，會把前面看過的記在心裡）；如果序列很長、而且哪個字跟哪個字有關係比順序更重要，就用 Transformer（用「注意力機制」讓每個位置一次看到全部位置的架構，是現在大型語言模型的底座）。<b>一句話：先看資料的型態——空間、序列、還是需要全局關聯——再回頭決定架構，不是先愛上某個模型再硬套。</b>面試會這樣考你，就是想確認你有沒有這個「從資料出發」的判斷力。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-32-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260901" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260901" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260901)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260901)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M9 · 深度學習模型延伸  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="34" font-weight="900" fill="#F5F8FF">先看資料長什麼樣，<tspan fill="#4D9FFF">再決定用哪種網路</tspan></text>
+
+      <!-- ===== 左：CNN ===== -->
+      <rect x="64" y="132" width="368" height="392" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="1.8"/>
+      <rect x="64" y="132" width="368" height="5" rx="2.5" fill="#4D9FFF"/>
+      <text x="88" y="172" font-size="20" font-weight="900" fill="#4D9FFF">CNN 卷積神經網路</text>
+      <text x="88" y="200" font-size="16" font-weight="800" fill="#F5F8FF">資料型態：網格 / 空間</text>
+
+      <rect x="88" y="216" width="320" height="70" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="108" y="244" font-size="16" font-weight="800" fill="#F5F8FF">適合什麼</text>
+      <text x="108" y="270" font-size="15" fill="#C7D2E4">影像、掃描件、任何有上下左右</text>
+
+      <rect x="88" y="298" width="320" height="70" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="108" y="326" font-size="16" font-weight="800" fill="#F5F8FF">核心直覺</text>
+      <text x="108" y="352" font-size="15" fill="#C7D2E4">用小視窗滑過去抓局部圖樣</text>
+
+      <rect x="88" y="380" width="320" height="70" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="108" y="408" font-size="16" font-weight="800" fill="#F5F8FF">實務例子</text>
+      <text x="108" y="434" font-size="15" fill="#C7D2E4">辨識身分證、支票、商品照</text>
+
+      <text x="88" y="490" font-size="15" fill="#8FA1C0">問自己：這筆資料有「空間位置」</text>
+      <text x="88" y="512" font-size="15" fill="#8FA1C0">的意義嗎？有 → 往 CNN 想。</text>
+
+      <!-- ===== 中：RNN ===== -->
+      <rect x="456" y="132" width="368" height="392" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="1.8"/>
+      <rect x="456" y="132" width="368" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="480" y="172" font-size="20" font-weight="900" fill="#35C08E">RNN 循環神經網路</text>
+      <text x="480" y="200" font-size="16" font-weight="800" fill="#F5F8FF">資料型態：有順序的序列</text>
+
+      <rect x="480" y="216" width="320" height="70" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="500" y="244" font-size="16" font-weight="800" fill="#F5F8FF">適合什麼</text>
+      <text x="500" y="270" font-size="15" fill="#C7D2E4">時間序列、逐字的文字、感測訊號</text>
+
+      <rect x="480" y="298" width="320" height="70" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="500" y="326" font-size="16" font-weight="800" fill="#F5F8FF">核心直覺</text>
+      <text x="500" y="352" font-size="15" fill="#C7D2E4">一個接一個讀，把前面記在心裡</text>
+
+      <rect x="480" y="380" width="320" height="70" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="500" y="408" font-size="16" font-weight="800" fill="#F5F8FF">實務例子</text>
+      <text x="500" y="434" font-size="15" fill="#C7D2E4">預測明日股價、逐筆交易偵測</text>
+
+      <text x="480" y="490" font-size="15" fill="#8FA1C0">問自己：把順序打亂意思就變了嗎？</text>
+      <text x="480" y="512" font-size="15" fill="#8FA1C0">會 → 往 RNN 這類序列模型想。</text>
+
+      <!-- ===== 右：Transformer ===== -->
+      <rect x="848" y="132" width="368" height="392" rx="14" fill="#131D2E" stroke="#F2A33C" stroke-width="1.8"/>
+      <rect x="848" y="132" width="368" height="5" rx="2.5" fill="#F2A33C"/>
+      <text x="872" y="172" font-size="20" font-weight="900" fill="#F2A33C">Transformer</text>
+      <text x="872" y="200" font-size="16" font-weight="800" fill="#F5F8FF">資料型態：長序列・重全局關聯</text>
+
+      <rect x="872" y="216" width="320" height="70" rx="10" fill="rgba(242,163,60,.08)" stroke="#6B5836" stroke-width="1.2"/>
+      <text x="892" y="244" font-size="16" font-weight="800" fill="#F5F8FF">適合什麼</text>
+      <text x="892" y="270" font-size="15" fill="#C7D2E4">語言、長文本、跨位置關聯強的資料</text>
+
+      <rect x="872" y="298" width="320" height="70" rx="10" fill="rgba(242,163,60,.08)" stroke="#6B5836" stroke-width="1.2"/>
+      <text x="892" y="326" font-size="16" font-weight="800" fill="#F5F8FF">核心直覺</text>
+      <text x="892" y="352" font-size="15" fill="#C7D2E4">注意力：每個字一次看到全部字</text>
+
+      <rect x="872" y="380" width="320" height="70" rx="10" fill="rgba(242,163,60,.08)" stroke="#6B5836" stroke-width="1.2"/>
+      <text x="892" y="408" font-size="16" font-weight="800" fill="#F5F8FF">實務例子</text>
+      <text x="892" y="434" font-size="15" fill="#C7D2E4">客服語意理解、文件摘要、LLM 底座</text>
+
+      <text x="872" y="490" font-size="15" fill="#8FA1C0">問自己：遠處的字彼此有關、順序又長？</text>
+      <text x="872" y="512" font-size="15" fill="#8FA1C0">是 → 往 Transformer 想。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：架構不是用背的，是用資料型態推出來的。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">先問這筆資料是空間、序列、還是需要全局關聯，選型的答案自然就浮出來——不是先愛上模型再硬套。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-32-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-09-01-1.mp3"></audio>
+    <p>這張圖在講的是，怎麼決定一個問題該用哪一種神經網路。答案不是看哪個名字比較潮，而是先看資料長什麼樣。左邊是 CNN，適合有空間結構的網格資料，最典型就是影像，它用一個小視窗滑過去抓局部圖樣，像辨識身分證、支票、商品照。中間是 RNN，適合有先後順序的序列，像時間序列或逐字的文字，它一個接一個讀、把前面記在心裡，像預測股價或逐筆交易偵測。右邊是 Transformer，適合長序列、而且哪個字跟哪個字有關係比順序更重要的資料，它用注意力機制讓每個位置一次看到全部位置，是現在大型語言模型的底座。判斷方法就是問自己三個問題：這筆資料有沒有空間位置的意義、把順序打亂意思會不會變、遠處的元素之間是不是有強關聯又很長。面試講法一句話：架構不是用背的，是用資料型態推出來的。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>先講結論：<b>CNN、RNN、Transformer 是深度學習裡三種主流的網路架構，差別不在誰比較高級，而在它們各自「假設你的資料長什麼樣」。</b>選型的第一步，永遠是先認出手上的資料是哪一類，而不是先挑一個聽起來厲害的模型。這三個架構就像三種不同形狀的容器，你得先看你要裝的東西是什麼形狀。</p>
+  <p>CNN（卷積神經網路）假設資料有「空間結構」，也就是上下左右的位置有意義。最典型的就是影像：一張照片是一格一格像素排成的網格，某個像素跟它旁邊的像素關係很緊密。CNN 的做法是拿一個小視窗（叫做卷積核）在圖上滑過去，一塊一塊地抓局部特徵——先抓邊緣、再組合成形狀、再組合成物件。它的核心直覺是「重要的圖樣是局部的、而且在哪出現都算數」，所以特別適合影像這種網格狀資料。</p>
+  <p>RNN（循環神經網路）假設資料是「有先後順序的序列」，順序本身帶著意義。一句話裡字的先後不能亂、一段股價的時間先後不能亂，這就是序列。RNN 的做法是一個接一個地讀進來，每讀一個就更新一次自己的「記憶」，把前面看過的濃縮起來帶到下一步。它的核心直覺是「現在這一步的意思，取決於前面發生過什麼」。而 Transformer 也是處理序列，但它換了個更聰明的做法：不再一個一個慢慢讀、慢慢記，而是用「注意力機制」（attention，讓模型自己算出序列裡每個位置該關注其他哪些位置的機制）讓每個位置一次就看到序列裡所有位置。這讓它特別擅長長序列、以及那種「距離很遠的兩個字其實關係很緊」的情況，也就是為什麼今天的大型語言模型幾乎都以它為底座。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎選型能力，是因為選錯架構的代價不是「準確率差一點」，而是「整條路走偏、白燒一堆時間與運算成本」。深度學習訓練很貴——資料標註貴、GPU 運算貴、調參試錯的時間更貴。如果一開始就把序列資料硬塞給只懂空間的模型，或把單純的表格資料套上大砲級的 Transformer，往往是事倍功半：要嘛效果上不去，要嘛用了不必要的複雜度、拖慢速度又難維護。所以真正值錢的，不是你會不會刻某個模型，而是你能不能在動手前就看出「這題該用哪一類」。</p>
+  <p>這正好呼應「打通完整應用情境」而不是「零散學單一技能」的差別。<b>104 人力銀行《AI 人才趨勢報告》強調企業要的是能把技術接進真實流程的人，而不是只會操作單一工具的人。</b>選型就是完整情境裡最前面、也最關鍵的一個判斷：真實專案裡，你拿到的是一個模糊的商業問題和一批資料，得先把它翻譯成「這是什麼型態的資料、對應哪一類模型」，後面的資料前處理、訓練、評估、上線才有方向。一個只會把資料丟進某個固定模型的人，跟一個會先問「這筆資料的結構是什麼、所以該用哪種架構」的人，差距就在這裡。前者是會操作工具，後者是懂得解決問題——企業要的是後者。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到國泰、玉山這類金融科技，或 91APP 這種電商，這三種架構其實對應到三類很具體的任務。舉幾個貼近我背景的例子：如果要做<b>身分驗證或單據辨識</b>——把使用者上傳的身分證、存摺、簽名影像自動讀出來，這是典型的影像問題、資料是網格狀的，我會往 CNN 這一類想。如果要做<b>時間序列的預測或偵測</b>——像是根據一段時間的交易紀錄去預測趨勢、或抓出異常的刷卡行為，資料是有時間先後的序列，我會往 RNN 這類序列模型想。如果要做<b>語意理解</b>——像是把客服對話、理賠申請的文字看懂、分類、摘要，這是語言問題、需要理解遠處字詞之間的關聯，我會往 Transformer 想。</p>
+  <p>關鍵是我怎麼「推」出這個答案，而不是背出來的。<b>我會先問自己三個問題：這筆資料有空間位置的意義嗎？把順序打亂意思會不會變？距離很遠的元素之間是不是有強關聯、序列又很長？</b>三個問題像一棵決策樹，答完大致就知道往哪一類架構走。這裡有個好懂的類比：這三種網路很像三種不同的「閱讀方式」——CNN 像看一張圖，眼睛在畫面上到處掃、抓局部重點；RNN 像一個字一個字順著讀一本書，讀後面要記得前面；Transformer 則像你把整頁攤開，一眼掃過去、同時看到哪些字互相呼應。這個類比幫助建立直覺，但真正落地時，還是要回到資料的實際結構跟任務目標去驗證，不能只靠比喻拍板。面試時我會這樣講：我選模型的第一步不是挑模型，是先把資料的型態講清楚，架構的答案是從那裡推出來的。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最常見、乍看懂了其實會答錯的誤區，是<b>以為「Transformer 最新最強，所以什麼都用它就對了」</b>。這句話有兩個問題。第一，強不強要看任務：Transformer 在語言和長序列上確實很出色，但如果你的任務是單純的影像辨識，CNN 往往又快又準、資源需求也低得多，硬換 Transformer 不見得划算。第二、也是更實際的，Transformer 的注意力機制要「每個位置看所有位置」，計算量會隨序列長度快速膨脹，對資料量、運算資源、部署成本都是負擔。<b>把「最新的架構」當成「所有情況的最佳解」，是忽略了工程上永遠要權衡效果、成本與維護難度——這是被追問就會露餡的地方。</b>成熟的答法是：先看資料與任務，再在夠用的前提下選最合適、而不是最花俏的架構。</p>
+  <p>另一個容易被追問到卡住的點是：<b>「RNN 是不是已經被 Transformer 取代、沒人用了？」</b>——這題想聽的是你分不分得清「主流趨勢」跟「一刀切」。要能講清楚：在語言這類任務上，Transformer 確實大幅取代了傳統 RNN，這是事實；但這不代表 RNN 這類序列模型就完全出局。在資料量不大、序列不長、運算資源有限、或需要輕量即時處理的場景，結構更簡單的序列模型仍然有它的位置。我要誠實說：這三種架構的<b>選型直覺跟背後假設，我能清楚判斷跟講明白</b>；但每一種的內部細節——像是 CNN 的卷積核怎麼設計、Transformer 注意力的數學怎麼推——以及大規模訓練調校的實戰經驗，我還在補。我的做法是先用選型直覺把方向定對，再針對選定的架構往下深挖跟動手驗證。我把這當成優點誠實講：先確定方向對、再深入細節，比一開始就鑽進某個模型的公式卻選錯類別要務實得多。</p>
+
+  <p>深度學習選型教我一件事：真正的門檻從來不是「你會不會某個模型」，而是「你看不看得懂手上的資料是什麼型態」——記住一句話，架構不是用背的，是用資料型態推出來的。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「給你一個新問題，你怎麼決定要用 CNN、RNN 還是 Transformer？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有一套從資料出發的選型流程，還是只會背模型名字。</span>
+        <span class="a">她可以怎麼答：我不會先挑模型，我會先看資料的型態。我通常問自己三個問題：第一，這筆資料有沒有空間位置的意義，像影像那樣有上下左右？有的話往 CNN 想。第二，它是不是一串有先後順序的序列，把順序打亂意思就變了？像文字或時間序列，那往 RNN 這類序列模型想。第三，這個序列很長、而且距離很遠的元素之間關係很強嗎？像語言那樣，那往 Transformer 想，因為它的注意力機制能讓每個位置一次看到全部位置。所以架構的答案是從資料型態推出來的，不是背出來的。</span>
+      </li>
+      <li>
+        <span class="q">「Transformer 的注意力機制，用白話講是在做什麼？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂它跟 RNN 逐步讀取的根本差別。</span>
+        <span class="a">她可以怎麼答：注意力機制的白話版是，讓序列裡的每個位置一次就看到其他所有位置，並自己算出「我該多關注誰」。這跟 RNN 很不一樣，RNN 是一個一個字順著讀、把前面的濃縮成記憶帶到後面，讀太長容易把前面的忘掉；Transformer 則像把整頁攤開一眼掃過去，遠處的兩個字只要有關聯，就能直接連上。這也是為什麼它特別擅長長序列跟語言，代價是計算量會隨序列變長而快速增加。內部的數學細節我還在補，但這個核心差別我能講清楚。</span>
+      </li>
+      <li>
+        <span class="q">「既然 Transformer 這麼強，為什麼不全部都用它就好？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂工程上要權衡成本，而不是無腦追新。</span>
+        <span class="a">她可以怎麼答：因為強不強要看任務，而且要算成本。如果是單純的影像辨識，CNN 往往又快又準、資源需求也低，硬換 Transformer 不一定划算。而且 Transformer 的注意力要每個位置看所有位置，計算量會隨序列長度快速膨脹，對資料量、運算資源跟部署成本都是負擔。所以我的原則是，先看資料跟任務，在效果夠用的前提下選最合適的架構，而不是選最新最花俏的。這是效果、成本跟維護難度之間的權衡。</span>
+      </li>
+      <li>
+        <span class="q">「RNN 是不是已經沒人用了？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得清主流趨勢跟一刀切。</span>
+        <span class="a">她可以怎麼答：在語言這類任務上，Transformer 確實大幅取代了傳統 RNN，這是事實。但這不代表 RNN 這類序列模型就完全出局。在資料量不大、序列不長、運算資源有限、或需要輕量即時處理的場景，結構更簡單的序列模型還是有它的位置。我會避免講得太絕對，因為選型本來就是看情境，很少有一個模型在所有情況都最好。</span>
+      </li>
+      <li>
+        <span class="q">「拿信用卡的逐筆交易紀錄做詐欺偵測，你會用哪種架構？為什麼？」</span>
+        <span class="hint">👉 這題其實在問：你能不能把選型直覺套到一個具體的金融場景。</span>
+        <span class="a">她可以怎麼答：逐筆交易是有時間先後的序列，順序帶著意義，所以我會先往序列模型的方向想，像 RNN 這類、或適合序列的 Transformer，讓模型從一段交易的前後脈絡去判斷這一筆是不是異常。我會先確認資料的型態確實是序列、以及序列有多長，再決定用結構簡單的序列模型就夠、還是需要注意力機制去抓跨較長時間的關聯。我要誠實說，我目前是用選型直覺把方向定對，實際的建模跟調校我還沒有實戰經驗，會先把方向確定後再動手驗證。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-08-31.html"><span class="dir">上一課</span>← 合法爬蟲的邊界：robots.txt、頻率限制與資料使用的紅線</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

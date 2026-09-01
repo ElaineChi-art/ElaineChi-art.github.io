@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-31",
+  "updated": "2026-09-01",
   "lessons": [
     {
       "id": 1,
@@ -348,10 +348,10 @@
       "category": "dl-apps",
       "topic": "深度學習方法介紹",
       "title": "CNN/RNN/Transformer選型指南：資料型態決定架構",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-09-01",
+      "url": "posts/daily/2026-09-01.html",
+      "slides": 1
     },
     {
       "id": 33,
