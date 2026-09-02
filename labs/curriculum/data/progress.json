@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-01",
+  "updated": "2026-09-02",
   "lessons": [
     {
       "id": 1,
@@ -359,10 +359,10 @@
       "category": "ai",
       "topic": "GAN生成對抗網路",
       "title": "生成對抗網路的博弈邏輯：兩個網路互相打假球互相變強",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-09-02",
+      "url": "posts/daily/2026-09-02.html",
+      "slides": 1
     },
     {
       "id": 34,
