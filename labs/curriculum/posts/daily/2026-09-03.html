@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工程師該懂的數據分析：把GoatCounter數字變成產品決策｜技能實驗室・每日課程</title>
+<meta name="description" content="數據分析的本事不在會看報表，而在把一個數字翻譯成一個可以執行的產品決定。這一課用 GoatCounter 這種輕量網站分析工具當例子，拆清楚工程師拿到瀏覽數、來源、裝置這些原始數字後，該追問哪三個問題、怎麼避免被虛榮指標騙、以及在國泰/玉山/91APP 這類團隊裡『看數字做決策』實際長什麼樣子。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-09-03</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・行銷與商業</div>
+  <h1>工程師該懂的數據分析：把GoatCounter數字變成產品決策</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-09-03</span>
+    <span>約 8 分鐘</span>
+    <span>對應真專案主題：網站數據分析基礎</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p><b>工程師該懂的數據分析，重點不是會不會看報表，而是能不能把一個數字翻譯成一個可以執行的產品決定。</b>GoatCounter（一款輕量、重隱私的網站流量分析工具）會告訴你每一頁被看幾次、訪客從哪裡來、用什麼裝置。這些數字本身沒有意義，會分析的人會對每個數字追問三件事：這正不正常、它在回答哪個產品問題、如果它變差我下一步改什麼。<b>最容易踩的坑是被「虛榮指標」騙——總瀏覽數漲了很爽，但如果沒人往下點、沒人回訪，那個漲其實不代表產品變好。</b>一句話：數據分析是拿數字回答你本來就想問的問題，不是被漂亮的數字牽著走。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-34-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260903" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260903" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBga" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+        <marker id="arrGga" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#35C08E"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260903)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260903)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M10 · 行銷與商業  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="34" font-weight="900" fill="#F5F8FF">數字不會自己說話，<tspan fill="#4D9FFF">你要把它翻譯成決定</tspan></text>
+
+      <!-- ===== 左：原始數字 ===== -->
+      <rect x="64" y="150" width="320" height="386" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <rect x="64" y="150" width="320" height="5" rx="2.5" fill="url(#topbarD20260903)"/>
+      <text x="88" y="192" font-size="20" font-weight="900" fill="#F5F8FF">① 工具給你的原始數字</text>
+      <text x="88" y="222" font-size="15" fill="#8FA1C0">GoatCounter 這類工具直接吐出的</text>
+      <text x="88" y="258" font-size="17" fill="#C7D2E4">• 每一頁被看幾次（瀏覽數）</text>
+      <text x="88" y="292" font-size="17" fill="#C7D2E4">• 訪客從哪裡連過來（來源）</text>
+      <text x="88" y="326" font-size="17" fill="#C7D2E4">• 用手機還是電腦（裝置）</text>
+      <text x="88" y="360" font-size="17" fill="#C7D2E4">• 哪幾頁最多人看（熱門路徑）</text>
+      <rect x="88" y="392" width="272" height="120" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="108" y="424" font-size="15.5" font-weight="800" fill="#F2A33C">⚠ 這些數字本身沒有意義</text>
+      <text x="108" y="452" font-size="15" fill="#C7D2E4">「昨天 300 次瀏覽」是好是壞？</text>
+      <text x="108" y="476" font-size="15" fill="#C7D2E4">沒有比較、沒有問題，</text>
+      <text x="108" y="500" font-size="15" fill="#C7D2E4">它就只是一個孤零零的數。</text>
+
+      <line x1="384" y1="343" x2="452" y2="343" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBga)"/>
+
+      <!-- ===== 中：三個追問 ===== -->
+      <rect x="460" y="150" width="360" height="386" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="1.8"/>
+      <rect x="460" y="150" width="360" height="5" rx="2.5" fill="#4D9FFF"/>
+      <text x="484" y="192" font-size="20" font-weight="900" fill="#4D9FFF">② 工程師該追問的三件事</text>
+
+      <rect x="484" y="216" width="312" height="90" rx="10" fill="#0F1826" stroke="#263B5C" stroke-width="1.2"/>
+      <text x="504" y="246" font-size="16.5" font-weight="800" fill="#F5F8FF">Q1　這正不正常？</text>
+      <text x="504" y="272" font-size="15" fill="#8FA1C0">跟昨天、上週、發文前後比，</text>
+      <text x="504" y="294" font-size="15" fill="#8FA1C0">有沒有跳動？孤立數字要有基準。</text>
+
+      <rect x="484" y="316" width="312" height="90" rx="10" fill="#0F1826" stroke="#263B5C" stroke-width="1.2"/>
+      <text x="504" y="346" font-size="16.5" font-weight="800" fill="#F5F8FF">Q2　它在回答哪個問題？</text>
+      <text x="504" y="372" font-size="15" fill="#8FA1C0">是「有沒有人看到」，還是</text>
+      <text x="504" y="394" font-size="15" fill="#8FA1C0">「看到了想不想點」？別混為一談。</text>
+
+      <rect x="484" y="416" width="312" height="100" rx="10" fill="#0F1826" stroke="#263B5C" stroke-width="1.2"/>
+      <text x="504" y="446" font-size="16.5" font-weight="800" fill="#F5F8FF">Q3　變差我下一步改什麼？</text>
+      <text x="504" y="472" font-size="15" fill="#8FA1C0">答不出動作，這個數字對決策</text>
+      <text x="504" y="494" font-size="15" fill="#8FA1C0">就沒用——它只是好看而已。</text>
+
+      <line x1="820" y1="343" x2="888" y2="343" stroke="#35C08E" stroke-width="2.5" marker-end="url(#arrGga)"/>
+
+      <!-- ===== 右：產品決策 ===== -->
+      <rect x="896" y="150" width="320" height="386" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="1.8"/>
+      <rect x="896" y="150" width="320" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="920" y="192" font-size="20" font-weight="900" fill="#35C08E">③ 變成一個決定</text>
+      <text x="920" y="224" font-size="15" fill="#8FA1C0">同一個「沒人點」的數字，</text>
+      <text x="920" y="246" font-size="15" fill="#8FA1C0">兩種解讀導向完全不同動作：</text>
+
+      <rect x="920" y="266" width="272" height="112" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="940" y="296" font-size="15.5" font-weight="800" fill="#4D9FFF">若＝沒人「看到」</text>
+      <text x="940" y="322" font-size="15" fill="#C7D2E4">曝光不夠 → 改分享管道、</text>
+      <text x="940" y="344" font-size="15" fill="#C7D2E4">內部連結、標題出現的位置。</text>
+      <text x="940" y="368" font-size="14.5" fill="#7E8CA8">（動的是「怎麼被看到」）</text>
+
+      <rect x="920" y="390" width="272" height="122" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="940" y="420" font-size="15.5" font-weight="800" fill="#F2A33C">若＝看到卻「不想點」</text>
+      <text x="940" y="446" font-size="15" fill="#C7D2E4">曝光夠但沒吸引力 → 改標題、</text>
+      <text x="940" y="468" font-size="15" fill="#C7D2E4">摘要、封面，讓人願意點進去。</text>
+      <text x="940" y="492" font-size="14.5" fill="#7E8CA8">（動的是「內容本身」）</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：我不是被數字牽著走，是拿數字回答我本來就想問的產品問題。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">數據分析的價值不在報表多漂亮，而在每個數字後面都接著一個「所以我要改什麼」的動作。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-34-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-09-03-1.mp3"></audio>
+    <p>這張圖在講的是，工程師拿到 GoatCounter 這種網站分析工具的數字之後，該怎麼把它變成產品決策。左邊是工具直接給你的原始數字：每一頁被看幾次、訪客從哪裡來、用什麼裝置、哪幾頁最多人看。這些數字本身沒有意義，重點在中間這一步。你要對每個數字追問三件事：這個數字正不正常？它在回答哪個產品問題？如果它變差，我下一步會改什麼？舉個我自己的例子，我的作品集網站如果發現某一篇每日課程幾乎沒人點，我要先分清楚是沒人看到、還是看到了標題不想點，這兩個結論會導向完全不同的動作。右邊就是結論：數據分析不是看報表，是把一個數字翻譯成一個可以執行的決定。面試講法一句話：我不是被數字牽著走，是拿數字回答我本來就想問的產品問題。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>先講結論：<b>「工程師該懂的數據分析」不是要你變成資料科學家，而是要你能看著網站的數字，判斷出「所以我下一步該改什麼」。</b>這裡的數據分析是最基礎的那種——看網站流量分析工具給的數字，理解使用者在你做的東西上發生了什麼。它跟前面幾課學的機器學習不一樣，這裡不需要建模型，需要的是一種思考習慣。</p>
+  <p>GoatCounter 是一個很輕量、標榜重視隱私的網站流量分析工具（open source，不像 Google Analytics 那樣塞一堆追蹤碼、也不預設收集個資），我自己的技能實驗室網站就是用它。它會給你幾種很基本的數字：每一頁被看了幾次（瀏覽量）、訪客是從哪個網站或搜尋連過來的（來源／referrer）、用手機還是電腦（裝置）、哪幾頁最多人看（熱門路徑）。工具能給的大概就這些原始數字。</p>
+  <p>關鍵在於，這些數字本身是沒有意義的。「昨天有 300 次瀏覽」——這是好還是壞？沒有比較對象、沒有你想回答的問題，它就只是一個孤零零的數，看了等於沒看。數據分析真正在做的事，是把這種原始數字，經過「追問」變成一個你能執行的決定。這一步——從數字到決定——才是工程師該練的功，也是這一課的全部重點。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎，是因為「會寫功能」跟「知道該寫哪個功能」是兩件事，而後者要靠看數字。一個只會照規格把功能刻出來的工程師，跟一個能說「我看了數據，發現使用者卡在這一步，所以我建議先改這裡」的工程師，價值差很多。第二種人不需要別人餵需求，他自己能從數字裡看出產品哪裡有問題——這在任何團隊都是稀缺的。</p>
+  <p>這正好呼應「打通完整應用情境」而不是「零散學單一技能」的差別。<b>104 人力銀行《AI 人才趨勢報告》強調企業要的是能把技術接進真實業務、產生決策的人，而不是只會操作單一工具的人。</b>會不會用 GoatCounter 或 Google Analytics 這種工具，本身是個很小的技能，一小時就學得會；真正值錢的是你能不能把「看到的數字」接到「產品要不要改、怎麼改」這條完整的線上。舉個最常被業界拿來當反例的東西：<b>虛榮指標（vanity metric，指看起來很漂亮、但跟真實成效沒什麼關係的數字）。</b>總瀏覽數是最典型的虛榮指標——它幾乎只會往上、看了讓人心情好，但如果沒人往下點、沒人回訪、沒人完成你要他做的動作，那個「漲」根本不代表產品變好。懂得分辨虛榮指標跟真正該看的指標，是這件事有沒有做對的分水嶺。這也是為什麼業界在乎：他們要的是不會被漂亮數字騙、能指向真問題的人。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到國泰、玉山這類金融科技，或 91APP 這種電商，「看數字做決策」是每天在發生的事，規模比我的作品集網站大很多，但心法一模一樣。我先用我自己最熟的例子講，再對應到大公司。<b>在我的技能實驗室網站上，假設我發現某一篇每日課程的瀏覽數幾乎是零，我不會急著下結論，我會先追問：這是「沒人看到」還是「看到了不想點」？</b>這兩個結論會導向完全相反的動作。如果是沒人看到（曝光不夠），我該去改的是分享的管道、首頁有沒有連到它、標題出現的位置；如果是很多人看到列表卻沒人點進去（曝光夠但沒吸引力），那問題就在標題或摘要不夠勾人，我該改的是內容本身。同一個「沒人點」的數字，判斷錯方向，力氣就白花了。</p>
+  <p>用我熟悉的法律金融跨域角度看，這件事跟我以前做的事其實很像：法遵在做的，本來就是「看一堆數字跟紀錄，判斷哪裡不對勁、下一步該採什麼行動」，只是換成了產品數據。在國泰、91APP 這種規模，同樣的追問會變成：某個開戶流程的頁面，很多人進來卻在填到一半跳走（高跳出率），這是表單太長、還是某個欄位讓人卡住、還是根本載入太慢？分清楚原因，才知道是砍欄位、改文案、還是優化效能。這裡我要誠實說：<b>大公司實際用的是更完整的分析工具、還會搭配 A/B 測試（同時上線兩個版本比較哪個好）跟轉換漏斗，這些我還沒有實戰操作過。</b>但「數字先追問再決策、別被虛榮指標騙」這個核心思考方式是共通的，我能講清楚也能上手，工具只是規模差別。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最常見、乍看懂了其實會答錯的誤區，是<b>把「相關」當成「因果」</b>。舉個具體的：我看到某天發了一篇文、當天瀏覽數就大漲，很容易脫口而出「這篇文帶來了流量」。但這可能只是那天剛好有別的來源、或被某個地方轉貼，跟這篇文根本沒關係——兩件事同時發生（相關），不代表一個造成另一個（因果）。<b>要驗證因果，得看更細的證據：漲的流量是不是真的落在這篇文的頁面上、來源是哪裡，或乾脆做個對照。把「同時發生」直接講成「所以是它造成的」，是被追問就會露餡的地方。</b>成熟的答法是：我會先把它當成一個假設，再去找能支持或推翻的證據，而不是看到兩條線一起動就下結論。</p>
+  <p>另一個容易被追問到卡住的點是：<b>「你怎麼決定要看哪個指標？」</b>——很多人會想把所有數字都盯著看，結果什麼都看等於什麼都沒看。正確的順序是反過來的：先問「我這次想達成什麼目標、想回答什麼問題」，再挑出能回答那個問題的少數幾個指標，其他一律先忽略。比如我的目標如果是「讓更多人真的讀完每日課程」，那我該盯的是點進去的比例跟停留時間，而不是總瀏覽數。我也要誠實說：這種<b>從目標反推指標、分辨相關與因果的判斷，我能清楚講明白</b>；但實際跑 A/B 測試、算統計顯著性這些更嚴謹的驗證，我還沒有動手做過，還在補。我的做法是先在自己的網站上，拿真實但低風險的數字，把「追問—假設—找證據」這條路練熟，再往更嚴謹的方法走。</p>
+
+  <p>數據分析教我一件事：數字不會自己說話，會分析的人也不是記性好，而是每看到一個數字，腦子裡都接著一句「所以我要改什麼」——記住這句話，我不是被數字牽著走，是拿數字回答我本來就想問的產品問題。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「你會看網站數據嗎？平常都看什麼？」</span>
+        <span class="hint">👉 這題其實在問：你是把數字當報表看爽的，還是真的拿來做決定。</span>
+        <span class="a">她可以怎麼答：會，我自己的作品集網站是用 GoatCounter 這種輕量、重隱私的工具在看。但我不會只盯總瀏覽數，因為那是典型的虛榮指標，幾乎只會往上、看了心情好但不代表產品變好。我的習慣是對每個數字追問三件事：這正不正常、它在回答哪個產品問題、如果變差我下一步改什麼。答不出動作的數字，我就當它沒用。舉例來說，我比較在乎的是有多少人真的點進去、讀多久，而不是有多少人路過。</span>
+      </li>
+      <li>
+        <span class="q">「假設某個頁面瀏覽數很低，你會怎麼查？」</span>
+        <span class="hint">👉 這題其實在問：你能不能把一個模糊的數字拆成可行動的假設。</span>
+        <span class="a">她可以怎麼答：我會先分清楚是「沒人看到」還是「看到了不想點」，這兩個方向的動作完全不同。如果是曝光不夠沒被看到，我會去改分享管道、首頁有沒有連到它、標題出現的位置；如果是很多人看到列表卻沒人點進去，那問題在標題或摘要不夠吸引人，我會改內容本身。我會用來源跟熱門路徑這些數字去判斷是哪一種，而不是憑感覺就下手改一通。</span>
+      </li>
+      <li>
+        <span class="q">「什麼是虛榮指標？可以舉個例子嗎？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得出漂亮數字跟有用數字。</span>
+        <span class="a">她可以怎麼答：虛榮指標是看起來很漂亮、但跟真實成效關係不大的數字，最典型的就是總瀏覽數。它幾乎只會往上、讓人心情好，可是如果沒人往下點、沒人回訪、沒人完成你要他做的動作，那個漲根本不代表產品變好。相對的，比較誠實的指標是點進去的比例、回訪率、有沒有完成關鍵動作這種。我看數字會刻意提醒自己別被虛榮指標帶著走，先問這個數字有沒有連到真的成效。</span>
+      </li>
+      <li>
+        <span class="q">「你看到發文當天流量大漲，會怎麼解讀？」</span>
+        <span class="hint">👉 這題其實在問：你會不會把相關當成因果。</span>
+        <span class="a">她可以怎麼答：我不會馬上說「這篇文帶來流量」，因為兩件事同時發生不代表一個造成另一個，這是相關不是因果。當天大漲也可能是別的來源、或被某個地方轉貼。我會先把「這篇文帶來流量」當成一個假設，再去找證據：漲的流量是不是真的落在這篇文的頁面、來源是哪裡。找到支持的證據我才會下結論，否則就是我自己腦補。</span>
+      </li>
+      <li>
+        <span class="q">「大公司的數據分析你有實際做過嗎？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有誠實區分你會的跟你還沒做過的。</span>
+        <span class="a">她可以怎麼答：誠實說，大公司用的是更完整的分析工具，還會搭配 A/B 測試跟轉換漏斗，這些嚴謹的驗證我還沒有實戰操作過。我目前是在自己的網站上，用真實但低風險的數字，把「追問—提假設—找證據—決定改什麼」這條思考路練熟。我認為這個核心心法跟大公司是共通的，工具只是規模差別。我的計畫是先把這套判斷練扎實，再往 A/B 測試、算統計顯著性這種更嚴謹的方法補上去，我不會假裝我已經做過。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-09-02.html"><span class="dir">上一課</span>← 生成對抗網路的博弈邏輯：兩個網路互相打假球互相變強</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>

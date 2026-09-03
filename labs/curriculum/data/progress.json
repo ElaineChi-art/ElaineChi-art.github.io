@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-02",
+  "updated": "2026-09-03",
   "lessons": [
     {
       "id": 1,
@@ -370,10 +370,10 @@
       "category": "marketing",
       "topic": "網站數據分析基礎",
       "title": "工程師該懂的數據分析：把GoatCounter數字變成產品決策",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-09-03",
+      "url": "posts/daily/2026-09-03.html",
+      "slides": 1
     },
     {
       "id": 35,
