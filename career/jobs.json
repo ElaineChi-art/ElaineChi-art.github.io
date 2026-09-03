@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-02 05:30 UTC",
+ "updated": "2026-09-03 05:31 UTC",
  "count": 5,
  "jobs": [
   {
@@ -12,6 +12,19 @@
     "intern",
     "web3",
     "developer"
+   ]
+  },
+  {
+   "title": "Investment Research Intern 投資研究實習生",
+   "company": "SuDo Research Labs（蘇度科技有限公司）",
+   "salary": "NT$ 300 - 700 (時薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/sudoresearch/jobs/26012",
+   "tags": [
+    "區塊鏈",
+    "blockchain",
+    "crypto",
+    "DeFi"
    ]
   },
   {
@@ -40,29 +53,16 @@
    ]
   },
   {
-   "title": "Investment Research Intern 投資研究實習生",
+   "title": "Quantitative Research Intern 量化研究實習生 ",
    "company": "SuDo Research Labs（蘇度科技有限公司）",
    "salary": "NT$ 300 - 700 (時薪)",
    "location": "臺北市",
-   "url": "https://www.yourator.co/companies/sudoresearch/jobs/26012",
+   "url": "https://www.yourator.co/companies/sudoresearch/jobs/46536",
    "tags": [
-    "區塊鏈",
     "blockchain",
     "crypto",
+    "web3",
     "DeFi"
-   ]
-  },
-  {
-   "title": "[擴編] 醫療品牌行銷 (在學實習)",
-   "company": "AlleyPin 翔評互動",
-   "salary": "NT$ 196 -  (時薪)",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/AlleyPin/jobs/8737",
-   "tags": [
-    "數位行銷",
-    "軟體開發",
-    "網路新創",
-    "商業應用"
    ]
   }
  ]
