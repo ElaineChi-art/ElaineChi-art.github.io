@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-03",
+  "updated": "2026-09-04",
   "lessons": [
     {
       "id": 1,
@@ -381,10 +381,10 @@
       "category": "business",
       "topic": "產品需求探索與定位",
       "title": "寫程式之前先想清楚：一個功能該不該做的判斷框架",
-      "status": "todo",
-      "date": null,
-      "url": null,
-      "slides": 0
+      "status": "done",
+      "date": "2026-09-04",
+      "url": "posts/daily/2026-09-04.html",
+      "slides": 1
     }
   ]
 }

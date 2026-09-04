@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>寫程式之前先想清楚：一個功能該不該做的判斷框架｜技能實驗室・每日課程</title>
+<meta name="description" content="會寫功能只是基本功，知道『這個功能到底該不該做』才是資深工程師跟工程師的分水嶺。這一課用一個很白話的三問框架——問題是真的嗎、這功能真能解決嗎、值不值得現在做——拆清楚在動手寫程式之前該怎麼判斷一個需求，並對應到國泰/玉山/91APP 這類團隊實際會怎麼問，以及最容易踩的『使用者說要就做』陷阱。">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand"><a href="latest.html">📚 技能實驗室・每日課程</a></div>
+    <div class="tagline">
+      <a href="../../index.html">🧪 技能實驗室</a> ·
+      <a href="../../progress.html">📊 進度面板</a> ·
+      <a href="https://elainechi-art.github.io/">🏠 學習中心</a>
+    </div>
+  </div>
+</header>
+
+<div class="crumbs">
+  <button class="back" onclick="history.length>1?history.back():location.href='../../index.html'">← 上一頁</button>
+  <a href="../../index.html">技能實驗室</a> › <a href="latest.html">每日課程</a> › <span>2026-09-04</span>
+</div>
+
+<main>
+<article>
+
+  <div class="kicker">每日課程・行銷與商業</div>
+  <h1>寫程式之前先想清楚：一個功能該不該做的判斷框架</h1>
+  <div class="byline">
+    <span><b>技能實驗室・每日課程</b></span>
+    <span>2026-09-04</span>
+    <span>約 8 分鐘</span>
+    <span>對應真專案主題：產品需求探索與定位</span>
+  </div>
+
+  <div class="quick">
+    <div class="qa-label">⚡ 30秒白話版</div>
+    <p><b>會寫功能是基本功，知道「這個功能到底該不該做」才是差別所在。</b>拿到一個「加個功能」的要求時，資淺的人直接動手刻，資深的人會先停下來問三件事：這個問題是真的嗎（還是只是某個人的想像）、這個功能真的能解決它嗎、就算能解決，值不值得現在花力氣做。<b>最容易踩的坑是「使用者說要就做」——使用者說的往往是他想到的解法，不是他真正的問題。</b>把這三問答完，你得到的不只是「做或不做」，還有一個能講給主管、講給面試官聽的判斷理由。一句話：寫程式很花時間，花時間之前先確定這件事值得寫。</p>
+  </div>
+
+  <figure>
+    <button class="script-btn" onclick="this.classList.toggle('open');document.getElementById('sp-35-1').classList.toggle('open')" aria-label="這一頁的簡報講解">🎤</button>
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang TC','Noto Sans TC',system-ui,sans-serif">
+      <defs>
+        <linearGradient id="bgD20260904" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#111C2E"/>
+          <stop offset="1" stop-color="#0A101C"/>
+        </linearGradient>
+        <linearGradient id="topbarD20260904" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#2E6BFF"/>
+          <stop offset="1" stop-color="#6FBBFF"/>
+        </linearGradient>
+        <marker id="arrBd4" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4D9FFF"/></marker>
+        <marker id="arrGd4" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#35C08E"/></marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="url(#bgD20260904)"/>
+      <rect width="1280" height="6" fill="url(#topbarD20260904)"/>
+
+      <text x="66" y="44" font-size="16" letter-spacing="3" fill="#5F79A6">M10 · 行銷與商業  ›  SLIDE 1</text>
+      <rect x="64" y="60" width="8" height="50" rx="4" fill="#2E6BFF"/>
+      <text x="90" y="98" font-size="34" font-weight="900" fill="#F5F8FF">動手寫之前，<tspan fill="#4D9FFF">先確定這功能該不該做</tspan></text>
+
+      <!-- ===== 左：收到需求 ===== -->
+      <rect x="64" y="150" width="320" height="386" rx="14" fill="#131D2E" stroke="#263B5C" stroke-width="1.5"/>
+      <rect x="64" y="150" width="320" height="5" rx="2.5" fill="url(#topbarD20260904)"/>
+      <text x="88" y="192" font-size="20" font-weight="900" fill="#F5F8FF">① 收到一個「加功能」</text>
+      <text x="88" y="224" font-size="15" fill="#8FA1C0">需求可能來自任何人：</text>
+      <text x="88" y="258" font-size="17" fill="#C7D2E4">•「使用者說想要 A」</text>
+      <text x="88" y="292" font-size="17" fill="#C7D2E4">•「主管覺得該有 B」</text>
+      <text x="88" y="326" font-size="17" fill="#C7D2E4">•「競品有 C，我們也要」</text>
+      <rect x="88" y="356" width="272" height="156" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="108" y="388" font-size="15.5" font-weight="800" fill="#F2A33C">⚠ 直接開刻的代價</text>
+      <text x="108" y="416" font-size="15" fill="#C7D2E4">寫程式很花時間，一旦做了</text>
+      <text x="108" y="440" font-size="15" fill="#C7D2E4">還要一直維護。做錯方向，</text>
+      <text x="108" y="464" font-size="15" fill="#C7D2E4">花掉的不只是這次的工，</text>
+      <text x="108" y="488" font-size="15" fill="#C7D2E4">還有沒去做對的事的成本。</text>
+
+      <line x1="384" y1="343" x2="452" y2="343" stroke="#4D9FFF" stroke-width="2.5" marker-end="url(#arrBd4)"/>
+
+      <!-- ===== 中：三個追問 ===== -->
+      <rect x="460" y="150" width="360" height="386" rx="14" fill="#131D2E" stroke="#4D9FFF" stroke-width="1.8"/>
+      <rect x="460" y="150" width="360" height="5" rx="2.5" fill="#4D9FFF"/>
+      <text x="484" y="192" font-size="20" font-weight="900" fill="#4D9FFF">② 動手前先問三件事</text>
+
+      <rect x="484" y="216" width="312" height="92" rx="10" fill="#0F1826" stroke="#263B5C" stroke-width="1.2"/>
+      <text x="504" y="246" font-size="16.5" font-weight="800" fill="#F5F8FF">Q1　問題是真的嗎？</text>
+      <text x="504" y="272" font-size="15" fill="#8FA1C0">真的有人被卡住，還是</text>
+      <text x="504" y="294" font-size="15" fill="#8FA1C0">只是某個人腦中的想像？</text>
+
+      <rect x="484" y="318" width="312" height="92" rx="10" fill="#0F1826" stroke="#263B5C" stroke-width="1.2"/>
+      <text x="504" y="348" font-size="16.5" font-weight="800" fill="#F5F8FF">Q2　這功能真能解決？</text>
+      <text x="504" y="374" font-size="15" fill="#8FA1C0">使用者要的是解法，還是</text>
+      <text x="504" y="396" font-size="15" fill="#8FA1C0">背後那個真正的需求？</text>
+
+      <rect x="484" y="420" width="312" height="96" rx="10" fill="#0F1826" stroke="#263B5C" stroke-width="1.2"/>
+      <text x="504" y="450" font-size="16.5" font-weight="800" fill="#F5F8FF">Q3　值不值得現在做？</text>
+      <text x="504" y="476" font-size="15" fill="#8FA1C0">影響多少人 × 多痛，</text>
+      <text x="504" y="498" font-size="15" fill="#8FA1C0">對比要花的成本與時機。</text>
+
+      <line x1="820" y1="343" x2="888" y2="343" stroke="#35C08E" stroke-width="2.5" marker-end="url(#arrGd4)"/>
+
+      <!-- ===== 右：三種結論 ===== -->
+      <rect x="896" y="150" width="320" height="386" rx="14" fill="#131D2E" stroke="#35C08E" stroke-width="1.8"/>
+      <rect x="896" y="150" width="320" height="5" rx="2.5" fill="#35C08E"/>
+      <text x="920" y="192" font-size="20" font-weight="900" fill="#35C08E">③ 得到一個有理由的決定</text>
+
+      <rect x="920" y="214" width="272" height="90" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="940" y="244" font-size="15.5" font-weight="800" fill="#35C08E">✓ 做</text>
+      <text x="940" y="270" font-size="15" fill="#C7D2E4">三問都過關，痛點真、</text>
+      <text x="940" y="292" font-size="15" fill="#C7D2E4">解得掉、現在做划算。</text>
+
+      <rect x="920" y="312" width="272" height="90" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="940" y="342" font-size="15.5" font-weight="800" fill="#F2A33C">✕ 不做（或先不做）</text>
+      <text x="940" y="368" font-size="15" fill="#C7D2E4">問題不真、或現在做</text>
+      <text x="940" y="390" font-size="15" fill="#C7D2E4">不划算——先擱著也是決定。</text>
+
+      <rect x="920" y="410" width="272" height="106" rx="10" fill="#1A2740" stroke="#3A4E72" stroke-width="1.2"/>
+      <text x="940" y="440" font-size="15.5" font-weight="800" fill="#4D9FFF">≈ 先做小實驗驗證</text>
+      <text x="940" y="466" font-size="15" fill="#C7D2E4">不確定？別直接全做，</text>
+      <text x="940" y="488" font-size="15" fill="#C7D2E4">用最小成本先試，</text>
+      <text x="940" y="510" font-size="14.5" fill="#7E8CA8">拿真實反應再決定。</text>
+
+      <!-- 底部金句 -->
+      <rect x="64" y="584" width="1152" height="88" rx="14" fill="rgba(46,107,255,.10)" stroke="#2E6BFF" stroke-width="1.5"/>
+      <rect x="64" y="584" width="8" height="88" rx="4" fill="#2E6BFF"/>
+      <text x="96" y="622" font-size="21" font-weight="900" fill="#F5F8FF">面試講法：我不是拿到需求就開刻，我會先確認這個功能值不值得寫。</text>
+      <text x="96" y="654" font-size="16" fill="#8FA1C0">寫程式的成本很高，動手前多問三句話，省下的是整個團隊往錯方向衝的時間。</text>
+
+      <text x="1216" y="704" font-size="15" font-weight="800" letter-spacing="2" fill="#33415C" text-anchor="end">1</text>
+    </svg>
+  </figure>
+  <div class="script-panel" id="sp-35-1">
+    <div class="lbl">SLIDE 1 簡報講解</div>
+    <audio controls preload="none" src="../../assets/script-2026-09-04-1.mp3"></audio>
+    <p>這張圖在講的是，拿到一個「加功能」的要求時，動手寫程式之前該怎麼判斷。左邊是常見的起點，需求可能來自使用者、主管或競品，資淺的人容易看到就直接開刻，但寫程式很花時間、做完還要一直維護，做錯方向的代價很高。重點在中間這三個追問：這個問題是真的嗎，還是只是某個人的想像？這個功能真的能解決它嗎，因為使用者說的常常是解法不是問題？就算能解決，值不值得現在做？把三問答完，你會得到右邊三種有理由的結論：做、不做、或先用最小成本做個小實驗驗證。面試講法一句話：我不是拿到需求就開刻，我會先確認這個功能值不值得寫。</p>
+  </div>
+
+  <h2><span class="no">壹、</span>這是什麼</h2>
+  <p>先講結論：<b>「一個功能該不該做的判斷框架」是一套在你動手寫程式之前、用來過濾需求的思考流程，目的是別把力氣花在不值得做的事情上。</b>它不是什麼高深的方法論，就是幾個一定要先問清楚的問題。核心精神很簡單：寫程式很花時間，功能做出來之後還要一直維護，所以在按下鍵盤之前，先確定這件事值得寫。</p>
+  <p>這件事的正式名字叫「產品需求探索」（product discovery，指在真的動手做之前，先搞清楚該做什麼、為什麼做的過程）。聽起來像產品經理的工作，但工程師懂這套一樣重要——因為你才是最後真的要把它刻出來、也最清楚成本的人。我這一課要練的框架可以濃縮成三個問題：<b>第一，這個問題是真的嗎？第二，這個功能真的能解決它嗎？第三，就算能解決，值不值得現在做？</b>三題都過了才動手，任何一題掛了就該停下來重想。</p>
+  <p>關鍵在於，這套框架處理的不是「怎麼把功能做好」，而是「該不該做這個功能」——這是兩個層次。前者是實作，後者是判斷。很多工程師實作很強，但一輩子在等別人餵需求，因為他從沒練過判斷。這一課就是要把判斷這一層補起來：拿到一個要求時，你腦中要先跑完這三問，而不是直接開新分支開始寫。</p>
+
+  <h2><span class="no">貳、</span>為什麼業界在乎</h2>
+  <p>業界在乎，是因為「把功能做出來」跟「做對的功能」是兩件事，而做錯功能的代價比大家想的高很多。做一個沒人用的功能，浪費的不只是當下寫它的時間，還包括它以後每一次改版都要跟著測、跟著維護的成本，更包括你這段時間本來可以拿去做對的事——這叫機會成本。一個能在動手前先擋掉爛需求的工程師，等於幫團隊省下這一整串隱形花費，這種人到哪都稀缺。</p>
+  <p>這正好呼應「打通完整應用情境」而不是「零散學單一技能」的差別。<b>104 人力銀行《AI 人才趨勢報告》強調，企業要的是能把技術接進真實業務、產生決策的人，而不是只會照規格刻功能的人。</b>會不會寫某個功能，是實作技能；能不能判斷這個功能該不該存在，是把技術接到業務目標上的能力——後者才是報告講的「完整情境」。一個只會實作的工程師，價值卡在「你叫我做什麼我做什麼」；一個能說「我評估過，這個需求問題不真，建議先別做，我們把力氣放在那個真的有人卡住的地方」的工程師，才是能參與決策、被當成戰力而不是人力的人。這也是為什麼從新創到大公司，面試都愈來愈愛問「你怎麼判斷一個功能要不要做」——他們在找會判斷的人，不是只會打字的人。</p>
+
+  <h2><span class="no">參、</span>實務怎麼用</h2>
+  <p>放到國泰、玉山這類金融科技，或 91APP 這種電商，這套三問每天都在發生，而且因為牽涉錢跟法規，判斷錯的代價更大。我用一個貼近我背景的情境講：<b>假設在 91APP 這種電商後台，業務端提出「幫每個商品加一個 AI 自動產生行銷文案的按鈕」，資淺工程師可能覺得很潮就開始接 API，但套上三問會完全不一樣。</b>Q1 問題是真的嗎——真的有很多商家卡在寫不出文案，還是只是主管看到別人有？這要去看數據或直接問幾個商家，不能腦補。Q2 這功能真能解決嗎——商家真正的痛可能是「不知道怎麼下標才會賣」，那給他一段 AI 文案不見得有用，也許他要的是銷售數據建議。Q3 值不值得現在做——就算前兩題都對，也要衡量要花多少工、跟現在手上其他事比哪個更急。</p>
+  <p>用我熟悉的法律金融跨域角度看，這套判斷跟我以前做的事其實很像。<b>法遵在做的，本來就是「有人提出一個做法，我先評估這件事該不該做、風險與效益對不對得起來」，只是換成了產品功能。</b>在國泰這種銀行，一個「開戶流程多加一個驗證步驟」的需求，工程師不能照單全收，得先問：這個步驟是真的堵得住風險（問題真），還是只是讓合規報告好看？多這一步會不會把太多真客戶擋在門外（解法有沒有副作用）？現在加值不值得，還是有更該補的洞？這裡我要誠實說：<b>我還沒在真正的產品團隊裡跑過完整的需求評估流程，這些是我從框架跟過往跨域經驗推出來的判斷。</b>但這套三問的思考方式我能清楚講、也能在自己的專案上開始練，這是共通的心法。</p>
+
+  <h2><span class="no">肆、</span>常見誤區或追問延伸</h2>
+  <p>最常見、乍看懂了其實會答錯的誤區，是<b>「使用者說要就做」</b>。這句話聽起來很以客為尊，其實很危險。原因是：<b>使用者說出來的，往往是他自己想到的「解法」，不是他真正的「問題」。</b>有一句在產品圈流傳很廣、常被歸給亨利・福特的話（是否真出自他口有爭議）：「如果你問顧客要什麼，他們會說要一匹更快的馬。」重點不在馬，在於顧客真正要的是「更快到目的地」，而答案可能是汽車。同樣的，使用者跟你說「我要一個匯出 Excel 的按鈕」，他背後的問題可能是「我需要把資料給老闆看」，那也許一份自動寄出的報表更好。<b>被追問時會露餡的地方就在這裡：如果你只會照使用者的字面需求做，代表你沒有往下挖到真問題。</b>成熟的做法是多問一句「你拿到這個功能之後想做什麼」，先挖出背後的問題，再回頭判斷這個解法是不是最好的。</p>
+  <p>另一個容易被追問到卡住的點是：<b>「那你這樣一直質疑需求，不會變成什麼都不做、拖累進度嗎？」</b>——這是個好問題，也是這套框架的邊界。答案是：判斷框架不是拿來否決一切的擋箭牌，而是拿來分配力氣的。<b>對影響小、成本低、又容易反悔的功能，別過度分析，直接做、做錯再改反而快；框架的重心要放在成本高、難反悔的大功能上。</b>而且當三問答不出來、大家都在猜的時候，正確動作往往不是「做」也不是「不做」，而是「先用最小成本做個小實驗去驗證」——比如先做一個陽春版給少數人用，看真實反應再決定要不要全做。我要誠實說：這種「該花多少力氣判斷、什麼時候該直接試」的分寸，很吃實戰經驗，我目前是靠框架跟自己專案在練，還沒有在大團隊裡拿捏過。但我很清楚這個框架不是用來當「不做事的理由」，這一點我不會答錯。</p>
+
+  <p>需求探索教我一件事：最貴的程式碼不是寫錯的，是「根本不該寫卻寫了」的——所以動手之前先問清楚，是我對團隊時間最基本的尊重。</p>
+
+  <div class="oralq">
+    <b>🎤 面試官可能怎麼問</b>
+    <ol>
+      <li>
+        <span class="q">「如果有人叫你加一個功能，你會怎麼判斷要不要做？」</span>
+        <span class="hint">👉 這題其實在問：你是拿到需求就開刻，還是會先判斷。</span>
+        <span class="a">她可以怎麼答：我不會拿到就開始寫，我會先跑三個問題。第一，這個問題是真的嗎，是真的有人被卡住，還是只是某個人的想像，這我會去看數據或直接問使用者。第二，這個功能真的能解決那個問題嗎，因為使用者常常說的是解法不是問題。第三，就算能解決，值不值得現在做，我會用「影響多少人、有多痛」去對比要花的成本跟時機。三題都過我才動手，任何一題卡住我會停下來重想，甚至先做個小實驗驗證，而不是直接全做。</span>
+      </li>
+      <li>
+        <span class="q">「使用者明明說他要這個功能，你為什麼還要質疑？」</span>
+        <span class="hint">👉 這題其實在問：你分不分得出使用者的解法跟他真正的問題。</span>
+        <span class="a">她可以怎麼答：因為使用者說出來的通常是他自己想到的解法，不一定是他真正的問題。有個很有名的說法是，你問顧客要什麼，他會說要一匹更快的馬，但他真正要的是更快到達，答案可能是汽車。所以使用者跟我說要一個匯出 Excel 的按鈕，我會多問一句他拿到之後想做什麼，也許他真正的需求是把資料給老闆看，那自動寄一份報表更好。我不是不聽使用者，我是先挖出他背後的問題，再判斷這個解法是不是最好的。</span>
+      </li>
+      <li>
+        <span class="q">「你一直這樣挑需求，不會拖慢團隊嗎？」</span>
+        <span class="hint">👉 這題其實在問：你懂不懂這套判斷的邊界，會不會過度分析。</span>
+        <span class="a">她可以怎麼答：會，所以這個框架不是拿來否決一切的，是拿來分配力氣的。對那種影響小、成本低、又容易反悔的功能，我會直接做，做錯再改反而比分析半天快。我把判斷的重心放在成本高、難反悔的大功能上。而且如果三問答不出來、大家都在猜，我的動作不是硬做也不是不做，而是先用最小成本做個小實驗，拿真實反應再決定。所以它不會變成不做事的藉口，反而是讓團隊少走冤枉路。</span>
+      </li>
+      <li>
+        <span class="q">「做錯一個功能的成本，你覺得有多高？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有把維護成本跟機會成本算進去。</span>
+        <span class="a">她可以怎麼答：比表面上高很多。做一個沒人用的功能，浪費的不只是當下寫它的時間，還有它之後每次改版都要跟著測、跟著維護的成本，更有機會成本，就是這段時間我本來可以拿去做真正該做的事。所以我覺得最貴的程式碼不是寫錯的，是根本不該寫卻寫了的。這也是為什麼我認為動手前多問幾句、先確認值不值得寫，是對團隊時間最基本的尊重。</span>
+      </li>
+      <li>
+        <span class="q">「你自己實際跑過完整的需求評估嗎？」</span>
+        <span class="hint">👉 這題其實在問：你有沒有誠實區分你會的跟你還沒做過的。</span>
+        <span class="a">她可以怎麼答：誠實說，我還沒有在真正的產品團隊裡跑過一整套需求評估流程，這套三問是我從框架、加上我以前做法律法遵時評估「一件事該不該做、風險效益對不對得起來」的經驗推出來的判斷。這個心法是共通的，我在自己的專案上已經開始這樣練，動手前先過三問。我的計畫是先把這套判斷在小專案裡練扎實，等進到團隊再補上跟產品經理、使用者一起做需求驗證的實戰。我不會假裝我已經有大團隊的經驗。</span>
+      </li>
+    </ol>
+    <p class="note">本板塊為作者求職面試準備用之自問自答，非正式面試逐字稿。</p>
+  </div>
+
+  <nav class="postnav">
+    <a href="2026-09-03.html"><span class="dir">上一課</span>← 工程師該懂的數據分析：把GoatCounter數字變成產品決策</a>
+    <a href="../../progress.html" style="text-align:right"><span class="dir">課程總覽</span>📚 所有課程</a>
+  </nav>
+
+  <div class="disclaimer">本文為作者求職準備之自學筆記，由自動化流程產出初稿；技術內容如有疏漏歡迎之後修正。</div>
+
+</article>
+</main>
+
+</body>
+</html>
