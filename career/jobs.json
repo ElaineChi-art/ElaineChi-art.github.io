@@ -1,6 +1,6 @@
 {
- "updated": "2026-09-03 05:31 UTC",
- "count": 5,
+ "updated": "2026-09-04 05:36 UTC",
+ "count": 6,
  "jobs": [
   {
    "title": "Web3 Internship- Software Engineering Intern, OneSavieLab",
@@ -63,6 +63,18 @@
     "crypto",
     "web3",
     "DeFi"
+   ]
+  },
+  {
+   "title": "智慧樓宇AI應用實習生",
+   "company": "國泰金控 Cathay Financial Holdings",
+   "salary": "NT$ 200 - 210 (時薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/Cathay-Financial-Holding/jobs/38990",
+   "tags": [
+    "專案企劃",
+    "智慧樓宇",
+    "AI建築"
    ]
   }
  ]
