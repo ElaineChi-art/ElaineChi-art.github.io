@@ -116,6 +116,7 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .tew .en:hover{background:rgba(155,29,45,.06)}
 .tew .en .sp{flex:0 0 auto;font-size:11.5px;font-weight:700;color:#fff;background:var(--acc);border-radius:4px;padding:2px 7px;height:19px;line-height:15px;margin-top:3px;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
 .tew .en .et{flex:1;font-size:calc(15.2px * var(--sc,1));line-height:1.72;font-family:Georgia,"Times New Roman",serif}
+.tew .zhblk{margin-left:0;margin-top:8px}
 .tew .zx{margin:0 0 6px 62px;font-size:calc(13.6px * var(--sc,1));line-height:1.7;opacity:.88;border-left:2px solid var(--gold);padding-left:9px}
 .tew .voc{margin:8px 0 4px;background:rgba(127,140,141,.07);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
 .tew .voc .vt{font-size:12.5px;font-weight:700;color:var(--acc);margin-bottom:5px}
@@ -285,7 +286,8 @@ function teHTML(t,mode){
     else if(it.k==="h2"){if(op)h+='</div>';op=true;
       h+='<div class="seg"><div class="sh">'+esc(it.ic||"")+' <b>'+esc(it.t)+'</b>　'+esc(it.d||"")+'<span class="xc">＋解析</span></div>';}
     else if(it.k==="tip")h+='<div class="tip">本段考點　'+esc(it.t)+'</div>';
-    else if(it.k==="en")h+='<div class="en"><span class="sp">'+esc(it.sp)+'</span><span class="et">'+mk(it.t)+'</span></div><div class="zx">'+esc(it.zh)+'</div>';
+    else if(it.k==="en")h+='<div class="en"><span class="sp">'+esc(it.sp)+'</span><span class="et">'+mk(it.t)+'</span></div>'+(it.zh?'<div class="zx">'+esc(it.zh)+'</div>':'');
+    else if(it.k==="zhblk")h+='<div class="zx zhblk">📖 全文中譯　'+esc(it.t)+'</div>';
     else if(it.k==="voc"){h+='<div class="voc"><div class="vt">📝 核心字彙與考點解密</div>';
       (it.v||[]).forEach(v=>{h+='<div class="v"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+(v.zh?'<span>'+esc(v.zh)+'</span>':'')+'</div>'+
         (v.syn?'<div class="vs">同義代換　'+esc(v.syn)+'</div>':'')+
