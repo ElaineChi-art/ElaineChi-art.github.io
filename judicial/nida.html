@@ -228,22 +228,22 @@ body.nokk .hl{background:none;font-weight:inherit}
 <option value="r">💬 只念白話（右）</option><option value="l">⚖️ 只念學理（左）</option><option value="b">左右都念</option></select>
 <label class="mini"><input type="checkbox" id="contall" checked> 點一題從該題念到底</label>
 <label class="mini"><input type="checkbox" id="notip"> 不念考場提示</label>
-<span class="mini" id="nowt"></span><span class="mini" id="st"></span>
+<span class="mini" id="nowt"></span><span class="mini" id="st"></span><span class="mini" id="datever" title="資料版本，可用來確認是否已載入最新內容"></span>
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js"></script>
-<script src="sudu-data.js"></script>
-<script src="key-data.js"></script>
-<script src="nida-cmp-data.js"></script>
-<script src="nida-cmpkey-data.js"></script>
-<script src="minsu-data.js"></script>
-<script src="minsu-sudu-data.js"></script>
-<script src="minsu-key-data.js"></script>
-<script src="minsu-cmp-data.js"></script>
-<script src="minsu-cmpkey-data.js"></script>
-<script src="toeic-data.js"></script>
-<script src="toeic-sudu-data.js"></script>
+<script src="nida-data.js?v=202609092326"></script>
+<script src="sudu-data.js?v=202609092326"></script>
+<script src="key-data.js?v=202609092326"></script>
+<script src="nida-cmp-data.js?v=202609092326"></script>
+<script src="nida-cmpkey-data.js?v=202609092326"></script>
+<script src="minsu-data.js?v=202609092326"></script>
+<script src="minsu-sudu-data.js?v=202609092326"></script>
+<script src="minsu-key-data.js?v=202609092326"></script>
+<script src="minsu-cmp-data.js?v=202609092326"></script>
+<script src="minsu-cmpkey-data.js?v=202609092326"></script>
+<script src="toeic-data.js?v=202609092326"></script>
+<script src="toeic-sudu-data.js?v=202609092326"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -1023,6 +1023,7 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
+document.getElementById("datever").textContent="資料 20260909-2326";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
 </script>
 </body></html>
