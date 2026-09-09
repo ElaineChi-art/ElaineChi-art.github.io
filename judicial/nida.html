@@ -165,7 +165,7 @@ body.nokk .hl{background:none;font-weight:inherit}
 @media(max-width:860px){.crow{grid-template-columns:1fr;gap:8px}.crow.chd{display:none}}
 .vov{display:none;border:1px solid var(--line);border-radius:9px;margin:10px 0 2px;background:rgba(127,140,141,.05)}
 .vov.open{display:block}
-.vov .vhd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.6px;font-weight:700;color:var(--acc)}
+.vov .vhd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.6px;font-weight:700;color:var(--acc)}
 .vov .vbody{padding:6px 12px 11px;max-height:62vh;overflow-y:auto}
 .vov .vpt{font-size:11.8px;font-weight:700;color:var(--acc);opacity:.85;margin:10px 0 3px;border-bottom:1px dashed var(--line);padding-bottom:2px}
 .vov .vrow{margin:6px 0;padding-bottom:5px;border-bottom:1px dotted var(--line)}
@@ -176,6 +176,10 @@ body.nokk .hl{background:none;font-weight:inherit}
 .vov .vs,.vov .vtip,.vov .vr{font-size:calc(12.6px * var(--sc,1));margin-top:2px;line-height:1.62;padding-left:10px}
 .vov .vs{color:var(--acc)}.vov .vtip{opacity:.85}.vov .vr{color:#c0392b;font-weight:600}
 .vov.nozh .zh{display:none}
+.vov .vsb{font-size:11.3px;font-family:system-ui;font-weight:400;padding:3px 9px;border-radius:20px;border:1px solid var(--line);background:var(--bg);color:inherit;cursor:pointer;white-space:nowrap}
+.vov .vsb:hover{border-color:var(--red);color:var(--red)}
+.vov .vsb.on{background:var(--red);color:#fff;border-color:var(--red)}
+.vov .vrow.rd{background:rgba(155,29,45,.10);border-radius:5px;box-shadow:inset 3px 0 0 var(--red)}
 .vov.nozh .vrow{cursor:pointer;border-radius:5px}
 .vov.nozh .vrow:hover{background:rgba(155,29,45,.06)}
 .vov.nozh .vrow.on .zh{display:block}
@@ -316,7 +320,10 @@ function vocPanel(t){
   const nozh=localStorage.getItem("nida_te_nozh")==="1";
   let h='<div class="vov'+(open?" open":"")+(nozh?" nozh":"")+'" data-code="'+esc(t.code)+'">'+
     '<div class="vhd"><span>📝 核心字彙總覽　'+L.length+' 組</span>'+
-    '<span><button class="tg2 zhtg">'+(nozh?"👁 顯示中文":"🙈 隱藏中文")+'</button></span></div>'+
+    '<span class="btns">'+
+    '<button class="vsb" data-m="en">🔊 只念英文</button>'+
+    '<button class="vsb" data-m="both">🔊 英中都念</button>'+
+    '<button class="tg2 zhtg">'+(nozh?"👁 顯示中文":"🙈 隱藏中文")+'</button></span></div>'+
     '<div class="vbody">';
   let last=-1;
   L.forEach(v=>{
@@ -621,8 +628,9 @@ const isEN=()=>typeof sj!=="undefined"&&sj==="te";
 const JUNK=/Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Good News|Hysterical|Jester|Junior|Kathy|Organ|Superstar|Ralph|Trinoids|Whisper|Wobble|Zarvox|Fred|Grandma|Grandpa|Rocko|Princess|Bruce|Agnes|Victoria|Alice|Alva/i;
 const ACC={"en-US":"🇺🇸 美式","en-CA":"🇨🇦 加拿大","en-GB":"🇬🇧 英式","en-AU":"🇦🇺 澳洲"};
 const ORD=["en-US","en-CA","en-GB","en-AU"];          /* 多益只考這四種口音 */
-function vlist(){
-  if(!isEN())return voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
+function vlist(lg){
+  const wantEN = lg ? lg==="en" : isEN();
+  if(!wantEN)return voices.filter(v=>/^zh|^cmn|^yue/i.test(v.lang));
   const ok=voices.filter(v=>/^en/i.test(v.lang)&&!JUNK.test(v.name));
   let en=ok.filter(v=>ORD.indexOf(v.lang)>=0);
   if(!en.length)en=ok.length?ok:voices.filter(v=>/^en/i.test(v.lang));
@@ -641,8 +649,8 @@ function loadVoices(){try{voices=speechSynthesis.getVoices()||[]}catch(e){voices
   if(isEN()){const d=zh.find(v=>/Samantha/i.test(v.name))||zh.find(v=>v.lang==="en-US");
     if(!prefEN&&d)prefEN=d.name; if(prefEN)s.value=prefEN;}
   else{const mj=zh.find(v=>/Meijia|美佳/i.test(v.name));if(!pref&&mj)pref=mj.name;if(pref)s.value=pref;}}
-function best(){const zh=vlist();
-  if(isEN())return zh.find(v=>v.name===prefEN)||zh.find(v=>/Samantha|Alex|Karen|Daniel/i.test(v.name))||zh.find(v=>v.lang==="en-US")||zh[0]||null;
+function best(lg){const zh=vlist(lg); const wantEN = lg ? lg==="en" : isEN();
+  if(wantEN)return zh.find(v=>v.name===prefEN)||zh.find(v=>/Samantha|Alex|Karen|Daniel/i.test(v.name))||zh.find(v=>v.lang==="en-US")||zh[0]||null;
   return zh.find(v=>v.name===pref)||zh.find(v=>/Meijia|美佳/i.test(v.name))||zh.find(v=>v.lang==="zh-TW")||zh[0]||null;}
 function rateNow(){return parseFloat(document.getElementById("rate").value)||1.3;}
 const RK=()=>isEN()?"mb_rate_en":"mb_rate";
@@ -664,8 +672,12 @@ function speakNext(){
   const it=queue[qi];
   if(!it.silent)highlight(it);
   const u=new SpeechSynthesisUtterance(it.text);
-  u.lang=isEN()?"en-US":"zh-TW"; u.rate=it.silent?2:rateNow(); if(it.silent)u.volume=0;
-  const v=best(); if(v)u.voice=v;
+  const LG=it.lg||(isEN()?"en":"zh");
+  u.lang=LG==="en"?"en-US":"zh-TW";
+  u.rate=it.silent?2:(it.lg&&it.lg!==(isEN()?"en":"zh")
+        ?(parseFloat(localStorage.getItem(LG==="en"?"mb_rate_en":"mb_rate"))||(LG==="en"?1:1.3))
+        :rateNow()); if(it.silent)u.volume=0;
+  const v=best(it.lg); if(v)u.voice=v;
   utterRefs.push(u); if(utterRefs.length>40)utterRefs.shift();
   let done=false;
   const go=()=>{ if(done)return; done=true; clearTimeout(wd); clearInterval(poll);
@@ -711,12 +723,25 @@ function stopAll(){playing=false;clearInterval(keep);clearInterval(poll);clearTi
   const pp=document.getElementById("pp"); if(pp)pp.textContent=PLAYLABEL;
   const st=document.getElementById("st"); if(st)st.textContent="";
   document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
-  document.querySelectorAll(".pt.on").forEach(e=>e.classList.remove("on"));}
+  document.querySelectorAll(".pt.on").forEach(e=>e.classList.remove("on"));
+  document.querySelectorAll(".vov .vrow.rd").forEach(e=>e.classList.remove("rd"));
+  document.querySelectorAll(".vsb.on").forEach(e=>e.classList.remove("on"));}
 
 function partName(t,p){ let n=0,r="";
   (t.items||[]).forEach(i=>{ if(i.k==="h1"){n++; if(n===p)r=i.t;} }); return r; }
 function highlight(it){
   document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
+  document.querySelectorAll(".vov .vrow.rd").forEach(e=>e.classList.remove("rd"));
+  if(it.voc){
+    const t0=DATA()[it.i], pl=t0?document.querySelector('.vov[data-code="'+t0.code+'"]'):null;
+    const r=pl?pl.querySelectorAll(".vrow")[it.vi]:null;
+    if(r){r.classList.add("rd"); if(!window.__noscroll)r.scrollIntoView({block:"nearest"});}
+    const el0=document.getElementById("t"+it.i); if(el0)el0.classList.add("now");
+    const nw0=document.getElementById("nowt");
+    if(nw0&&t0)nw0.textContent="🔊 "+t0.code+"　核心字彙 "+(it.vi+1)+" / "+it.vn;
+    const st0=document.getElementById("st"); if(st0)st0.textContent=Math.max(1,qi)+" / "+(queue.length-1);
+    return;
+  }
   const el=document.getElementById("t"+it.i);
   if(el){el.classList.add("now");
     if(it.first&&!window.__noscroll){
@@ -806,8 +831,18 @@ function topicText(idx,pidx){
   }
   return s;
 }
+function vocQueue(i,md){
+  const t=DATA()[i], L=vocList(t), out=[];
+  L.forEach((v,k)=>{
+    const w=cleanEN(v.w||""); if(!w)return;
+    out.push({text:w,i:i,p:null,vi:k,vn:L.length,voc:md,lg:"en",first:k===0});
+    if(md==="both"&&v.zh)out.push({text:String(v.zh).replace(/\*\*/g,""),i:i,p:null,vi:k,vn:L.length,voc:md,lg:"zh"});
+  });
+  return out;
+}
 function buildQueue(list){
   list.forEach(x=>{
+    if(typeof x==="object"&&x.voc){ vocQueue(x.i,x.voc).forEach(q=>queue.push(q)); return; }
     const i=(typeof x==="object")?x.i:x, p=(typeof x==="object")?x.p:null;
     chunks(topicText(i,p),sj==="te").forEach((c,k)=>queue.push({text:c,i:i,p:p,first:k===0}));
   });
@@ -852,6 +887,9 @@ app.addEventListener("click",e=>{
     vb.classList.toggle("on",!on);
     if(!on&&pl)pl.scrollIntoView({block:"nearest",behavior:"smooth"});
     return; }
+  const vs=e.target.closest(".vsb");
+  if(vs){ const card=vs.closest(".tp"), i=+card.dataset.i, md=vs.dataset.m, was=vs.classList.contains("on");
+    stopAll(); if(!was){ vs.classList.add("on"); start([{i:i,voc:md}]); } return; }
   const zt=e.target.closest(".zhtg");
   if(zt){ const on=localStorage.getItem("nida_te_nozh")==="1";
     localStorage.setItem("nida_te_nozh",on?"0":"1");
