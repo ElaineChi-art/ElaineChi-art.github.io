@@ -238,18 +238,18 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202609100149"></script>
-<script src="sudu-data.js?v=202609100149"></script>
-<script src="key-data.js?v=202609100149"></script>
-<script src="nida-cmp-data.js?v=202609100149"></script>
-<script src="nida-cmpkey-data.js?v=202609100149"></script>
-<script src="minsu-data.js?v=202609100149"></script>
-<script src="minsu-sudu-data.js?v=202609100149"></script>
-<script src="minsu-key-data.js?v=202609100149"></script>
-<script src="minsu-cmp-data.js?v=202609100149"></script>
-<script src="minsu-cmpkey-data.js?v=202609100149"></script>
-<script src="toeic-data.js?v=202609100149"></script>
-<script src="toeic-sudu-data.js?v=202609100149"></script>
+<script src="nida-data.js?v=202609110225"></script>
+<script src="sudu-data.js?v=202609110225"></script>
+<script src="key-data.js?v=202609110225"></script>
+<script src="nida-cmp-data.js?v=202609110225"></script>
+<script src="nida-cmpkey-data.js?v=202609110225"></script>
+<script src="minsu-data.js?v=202609110225"></script>
+<script src="minsu-sudu-data.js?v=202609110225"></script>
+<script src="minsu-key-data.js?v=202609110225"></script>
+<script src="minsu-cmp-data.js?v=202609110225"></script>
+<script src="minsu-cmpkey-data.js?v=202609110225"></script>
+<script src="toeic-data.js?v=202609110225"></script>
+<script src="toeic-sudu-data.js?v=202609110225"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -275,8 +275,8 @@ function teHTML(t,mode){
       (q.o||[]).forEach(([a,b])=>{h+='<div class="qo">('+esc(a)+')　'+esc(b)+'</div>';});
       h+='<button class="qa">▾ 顯示答案與解析</button><div class="qx">'+
          '<div class="qans">✅ 正確答案　'+esc(q.a)+'</div>'+
-         (q.zh?'<div class="qzh">中譯　'+esc(q.zh)+'</div>':'')+
-         (q.e?'<div class="qe">防雷解析　'+esc(q.e)+'</div>':'')+'</div></div>';
+         (q.zh?'<div class="qzh">中譯　'+mk(q.zh)+'</div>':'')+
+         (q.e?'<div class="qe">防雷解析　'+mk(q.e)+'</div>':'')+'</div></div>';
     });
     return h+'</div>';
   }
@@ -291,14 +291,14 @@ function teHTML(t,mode){
     else if(it.k==="doc")h+='<div class="doc">'+(it.v||[]).map(x=>'<div class="'+(x.k==="t"?"dt":"dl")+'">'+esc(x.v)+'</div>').join("")+'</div>';
     else if(it.k==="h2"){if(op)h+='</div>';op=true;
       h+='<div class="seg"><div class="sh">'+esc(it.ic||"")+' <b>'+esc(it.t)+'</b>　'+esc(it.d||"")+'<span class="xc">＋解析</span></div>';}
-    else if(it.k==="tip")h+='<div class="tip">本段考點　'+esc(it.t)+'</div>';
-    else if(it.k==="en")h+='<div class="en"><span class="sp'+(it.cn?" ph":"")+'">'+esc(it.sp||"")+'</span><span class="et">'+mk(it.t)+'</span></div>'+(it.zh?'<div class="zx">'+esc(it.zh)+'</div>':'');
+    else if(it.k==="tip")h+='<div class="tip">本段考點　'+mk(it.t)+'</div>';
+    else if(it.k==="en")h+='<div class="en"><span class="sp'+(it.cn?" ph":"")+'">'+esc(it.sp||"")+'</span><span class="et">'+mk(it.t)+'</span></div>'+(it.zh?'<div class="zx">'+mk(it.zh)+'</div>':'');
     else if(it.k==="zhblk")h+='<div class="zx zhblk">📖 全文中譯　'+esc(it.t)+'</div>';
     else if(it.k==="voc"){h+='<div class="voc"><div class="vt">📝 核心字彙與考點解密</div>';
-      (it.v||[]).forEach(v=>{h+='<div class="v"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+(v.zh?'<span>'+esc(v.zh)+'</span>':'')+'</div>'+
-        (v.syn?'<div class="vs">同義代換　'+esc(v.syn)+'</div>':'')+
-        (v.tip?'<div class="vp">'+esc(v.tip)+'</div>':'')+
-        (v.trap?'<div class="vr">⚠ 防雷陷阱　'+esc(v.trap)+'</div>':'')+'</div>';});
+      (it.v||[]).forEach(v=>{h+='<div class="v"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+(v.zh?'<span>'+mk(v.zh)+'</span>':'')+'</div>'+
+        (v.syn?'<div class="vs">同義代換　'+mk(v.syn)+'</div>':'')+
+        (v.tip?'<div class="vp">'+mk(v.tip)+'</div>':'')+
+        (v.trap?'<div class="vr">⚠ 防雷陷阱　'+mk(v.trap)+'</div>':'')+'</div>';});
       h+='</div>';}
   });
   if(op)h+='</div>';
@@ -329,10 +329,10 @@ function vocPanel(t){
   L.forEach(v=>{
     if(v.p!==last){last=v.p;h+='<div class="vpt">'+esc(v.pn)+'</div>';}
     h+='<div class="vrow"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+
-       (v.zh?'<span class="zh">'+esc(v.zh)+'</span>':'')+'</div>'+
-       (v.syn?'<div class="vs">同義代換　'+esc(v.syn)+'</div>':'')+
-       (v.tip?'<div class="vtip zh">'+esc(v.tip)+'</div>':'')+
-       (v.trap?'<div class="vr zh">⚠ 防雷陷阱　'+esc(v.trap)+'</div>':'')+'</div>';
+       (v.zh?'<span class="zh">'+mk(v.zh)+'</span>':'')+'</div>'+
+       (v.syn?'<div class="vs">同義代換　'+mk(v.syn)+'</div>':'')+
+       (v.tip?'<div class="vtip zh">'+mk(v.tip)+'</div>':'')+
+       (v.trap?'<div class="vr zh">⚠ 防雷陷阱　'+mk(v.trap)+'</div>':'')+'</div>';
   });
   return h+'</div></div>';
 }
@@ -1063,7 +1063,7 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20260910-0149";
+document.getElementById("datever").textContent="資料 20260911-0225";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
 </script>
 </body></html>
