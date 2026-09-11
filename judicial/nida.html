@@ -153,6 +153,7 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .cp{font-size:calc(14.2px * var(--sc,1));line-height:1.8;margin:5px 0}
 .ci{font-size:calc(14.2px * var(--sc,1));line-height:1.8;margin:6px 0;padding-left:10px;border-left:2px solid var(--line)}
 .cc.r .ci{border-left-color:var(--gold)}
+.cmp .ci.now,.cmp .cp.now,.cmp .clab.now{background:rgba(155,29,45,.11);box-shadow:inset 3px 0 0 var(--red);border-radius:4px}
 .ch2{font-weight:700;font-size:calc(12.6px * var(--sc,1));color:var(--acc);opacity:.78;margin:9px 0 2px;letter-spacing:.02em}
 .cp.d1,.ci.d1{margin-left:12px}
 .cp.d2,.ci.d2{margin-left:24px;font-size:calc(13.6px * var(--sc,1))}
@@ -241,18 +242,18 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202609112318"></script>
-<script src="sudu-data.js?v=202609112318"></script>
-<script src="key-data.js?v=202609112318"></script>
-<script src="nida-cmp-data.js?v=202609112318"></script>
-<script src="nida-cmpkey-data.js?v=202609112318"></script>
-<script src="minsu-data.js?v=202609112318"></script>
-<script src="minsu-sudu-data.js?v=202609112318"></script>
-<script src="minsu-key-data.js?v=202609112318"></script>
-<script src="minsu-cmp-data.js?v=202609112318"></script>
-<script src="minsu-cmpkey-data.js?v=202609112318"></script>
-<script src="toeic-data.js?v=202609112318"></script>
-<script src="toeic-sudu-data.js?v=202609112318"></script>
+<script src="nida-data.js?v=202609120055"></script>
+<script src="sudu-data.js?v=202609120055"></script>
+<script src="key-data.js?v=202609120055"></script>
+<script src="nida-cmp-data.js?v=202609120055"></script>
+<script src="nida-cmpkey-data.js?v=202609120055"></script>
+<script src="minsu-data.js?v=202609120055"></script>
+<script src="minsu-sudu-data.js?v=202609120055"></script>
+<script src="minsu-key-data.js?v=202609120055"></script>
+<script src="minsu-cmp-data.js?v=202609120055"></script>
+<script src="minsu-cmpkey-data.js?v=202609120055"></script>
+<script src="toeic-data.js?v=202609120055"></script>
+<script src="toeic-sudu-data.js?v=202609120055"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -370,12 +371,12 @@ function mkHL(t,hl){
   flush(); return out;
 }
 const HLROW={"學說對決":1,"學說與實務對決":1,"兩邊在吵什麼":1,"本文見解（理由）":1,"考場挺哪說（理由）":1,"本文見解":1,"考場挺哪說":1};
-function cmpCell(items,hl){
-  return (items||[]).map(x=>{
+function cmpCell(items,hl,ri,side){
+  return (items||[]).map((x,k)=>{
     if(x.h)return '<div class="ch2">'+esc(x.h)+'</div>';
-    const d=" d"+(x.d||0);
-    return x.s ? '<div class="ci'+d+'"><b class="cs">'+esc(x.s)+'</b>'+mkHL(x.t,hl)+'</div>'
-               : '<div class="cp'+d+'">'+mkHL(x.t,hl)+'</div>';
+    const d=" d"+(x.d||0), ci=(ri!=null)?' data-ci="'+ri+'-'+side+'-'+k+'"':'';
+    return x.s ? '<div class="ci'+d+'"'+ci+'><b class="cs">'+esc(x.s)+'</b>'+mkHL(x.t,hl)+'</div>'
+               : '<div class="cp'+d+'"'+ci+'>'+mkHL(x.t,hl)+'</div>';
   }).join("");
 }
 function cmpHTML(t){
@@ -385,10 +386,10 @@ function cmpHTML(t){
   let h='<div class="cmp"><div class="cmpt">'+esc(d.t)+'</div>'+
         '<div class="crow chd"><div class="cc l"><span>⚖️ 學理原文・申論輸出</span></div>'+
         '<div class="cc r"><span>💬 白話速記・考場反射</span></div></div>';
-  (d.rows||[]).forEach(r=>{
+  (d.rows||[]).forEach((r,ri)=>{
     const hl=!!(HLROW[r.ll]||HLROW[r.rl]);
-    h+='<div class="crow'+(hl?" hlrow":"")+'"><div class="cc l"><div class="clab">'+esc(r.ll)+'</div>'+cmpCell(r.l,hl)+'</div>'+
-       '<div class="cc r"><div class="clab">'+esc(r.rl)+'</div>'+cmpCell(r.r,hl)+'</div></div>';
+    h+='<div class="crow'+(hl?" hlrow":"")+'"><div class="cc l"><div class="clab" data-ci="'+ri+'-l-lab">'+esc(r.ll)+'</div>'+cmpCell(r.l,hl,ri,"l")+'</div>'+
+       '<div class="cc r"><div class="clab" data-ci="'+ri+'-r-lab">'+esc(r.rl)+'</div>'+cmpCell(r.r,hl,ri,"r")+'</div></div>';
   });
   return h+'</div>';
 }
@@ -660,7 +661,7 @@ const RK=()=>isEN()?"mb_rate_en":"mb_rate";
 function initRate(){const r=document.getElementById("rate");if(!r)return;
   r.value=localStorage.getItem(RK())||(isEN()?"1":"1.3");
   const lab=document.getElementById("ratev"); const show=()=>{if(lab)lab.textContent=(+r.value).toFixed(2)+"×";};
-  show(); r.oninput=()=>{localStorage.setItem(RK(),r.value);show(); if(clipActive&&queue[qi]&&queue[qi].lg!=="zh")AUD.playbackRate=+r.value;};}
+  show(); r.oninput=()=>{localStorage.setItem(RK(),r.value);show(); if(clipActive&&queue[qi]&&!(sj==="te"&&queue[qi].lg==="zh"))AUD.playbackRate=+r.value;};}
 function chunks(t,en){const out=[];let s="";
   if(en){ String(t).replace(/\s+/g," ").trim().split(/(?<=[.!?])\s+/).forEach(p=>{
       if(s&&(s+" "+p).length>190){out.push(s);s=p}else s=s?s+" "+p:p});
@@ -671,12 +672,12 @@ function chunks(t,en){const out=[];let s="";
 /* ── 真人語音（edge-tts 預錄 mp3）── */
 const AUD=new Audio(); let clipActive=false;
 AUD.preload="auto";
-function clipURL(h){return "audio/te/"+h+".mp3";}   // 檔名即內容雜湊，可長期快取
+function clipURL(h){return sj==="te"?"audio/te/"+h+".mp3":"audio/ms/"+h+".m4a";}   // 檔名即內容雜湊，可長期快取
 function playClip(it,go){
   clipActive=true;
   AUD.onended=null;AUD.onerror=null;
   AUD.src=clipURL(it.clip);
-  AUD.playbackRate=it.lg==="zh"?1:rateNow();          // 中文真人音檔固定原速，英文跟語速滑桿
+  AUD.playbackRate=(sj==="te"&&it.lg==="zh")?1:rateNow();   // 多益字彙中文固定原速；其餘跟語速滑桿
   AUD.onended=()=>{clipActive=false;go();};
   AUD.onerror=()=>{clipActive=false;it.clipFailed=true;setTimeout(speakNext,20);};   // 音檔失敗 → 退回合成語音
   const pr=AUD.play(); if(pr&&pr.catch)pr.catch(()=>{clipActive=false;it.clipFailed=true;setTimeout(speakNext,20);});
@@ -755,6 +756,9 @@ function partName(t,p){ let n=0,r="";
   (t.items||[]).forEach(i=>{ if(i.k==="h1"){n++; if(n===p)r=i.t;} }); return r; }
 function highlight(it){
   document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
+  if(it.ci){ const card=document.getElementById("t"+it.i);
+    const cell=card&&card.querySelector('[data-ci="'+it.ci+'"]');
+    if(cell){ cell.classList.add("now"); if(!window.__noscroll)cell.scrollIntoView({block:"center",behavior:"smooth"}); } }
   if(it.si!=null){ const card=document.getElementById("t"+it.i);
     const row=card&&card.querySelector('.en[data-si="'+it.si+'"]');
     if(row){ row.classList.add("now"); if(!it.first&&!window.__noscroll)row.scrollIntoView({block:"center",behavior:"smooth"}); } }
@@ -877,10 +881,26 @@ function teQueue(i,p,si1){
     else if(it.k==="en"){ if((p==null||pi===p)&&(si1==null||si===si1))out.push({text:cleanEN(it.t),i:i,p:p,si:si,first:out.length===0,clip:it.a||null}); si++; } });
   return out;
 }
+function cmpQueue(i){
+  const t=DATA()[i]; if(modeOf(t.code)!=="cmp")return null;
+  const d=CMPD()[t.code]; if(!d||!d.ta)return null;                    // 尚無音檔 → 走文字合成
+  if(localStorage.getItem("nida_"+t.code+"_cmp"))return null;          // 使用者改過 → 走文字合成
+  const sd=cmpSide(), M=(CMPD()._m||{}), out=[], z=lg=>({lg:"zh"});
+  out.push({text:CUR().label+t.code+"。"+d.t+"。",i:i,first:true,clip:d.ta,lg:"zh"});
+  if(M[sd])out.push({text:"",i:i,clip:M[sd],lg:"zh"});
+  const say=(list,ri,side)=>(list||[]).forEach((x,k)=>{ if(x.h)return;
+    out.push({text:(x.s?x.s+"。":"")+String(x.t||"").replace(/\*\*/g,""),i:i,clip:x.a||null,ci:ri+"-"+side+"-"+k,lg:"zh"}); });
+  (d.rows||[]).forEach((r,ri)=>{
+    if(sd==="l"||sd==="b"){ out.push({text:(r.ll||"")+"。",i:i,clip:r.lla||null,ci:ri+"-l-lab",lg:"zh"}); say(r.l,ri,"l"); }
+    if(sd==="r"||sd==="b"){ out.push({text:(r.rl||"")+"。",i:i,clip:r.rla||null,ci:ri+"-r-lab",lg:"zh"}); say(r.r,ri,"r"); }
+  });
+  return out.filter(o=>o.clip||o.text);
+}
 function buildQueue(list){
   list.forEach(x=>{
     if(typeof x==="object"&&x.voc){ vocQueue(x.i,x.voc).forEach(q=>queue.push(q)); return; }
     const i=(typeof x==="object")?x.i:x, p=(typeof x==="object")?x.p:null;
+    if(sj!=="te"&&typeof x!=="object"){ const q=cmpQueue(i); if(q){q.forEach(o=>queue.push(o));return;} }
     if(sj==="te"){ const q=teQueue(i,p,(typeof x==="object")?x.si:null); if(q){q.forEach(o=>queue.push(o));return;} }
     chunks(topicText(i,p),sj==="te").forEach((c,k)=>queue.push({text:c,i:i,p:p,first:k===0}));
   });
@@ -1108,7 +1128,7 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20260911-2318";
+document.getElementById("datever").textContent="資料 20260912-0055";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
 </script>
 </body></html>
