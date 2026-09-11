@@ -115,6 +115,9 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .tew .en{display:flex;gap:8px;margin:7px 0 2px;cursor:pointer;border-radius:6px;padding:3px 5px}
 .tew .en:hover{background:rgba(155,29,45,.06)}
 .tew .en .sp{flex:0 0 auto;font-size:11.5px;font-weight:700;color:#fff;background:var(--acc);border-radius:4px;padding:2px 7px;height:19px;line-height:15px;margin-top:3px;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.tew .en.now{background:rgba(155,29,45,.11);box-shadow:inset 3px 0 0 var(--red)}
+.tew .en .s1{flex:0 0 auto;margin-left:auto;font-size:12px;opacity:.45;padding:0 4px;cursor:pointer;line-height:19px}
+.tew .en .s1:hover{opacity:1}
 .tew .en .sp.ph{visibility:hidden}
 .tew .en .sp:empty{display:none}
 .tew .en .et{flex:1;font-size:calc(15.2px * var(--sc,1));line-height:1.72;font-family:Georgia,"Times New Roman",serif}
@@ -238,18 +241,18 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202609112015"></script>
-<script src="sudu-data.js?v=202609112015"></script>
-<script src="key-data.js?v=202609112015"></script>
-<script src="nida-cmp-data.js?v=202609112015"></script>
-<script src="nida-cmpkey-data.js?v=202609112015"></script>
-<script src="minsu-data.js?v=202609112015"></script>
-<script src="minsu-sudu-data.js?v=202609112015"></script>
-<script src="minsu-key-data.js?v=202609112015"></script>
-<script src="minsu-cmp-data.js?v=202609112015"></script>
-<script src="minsu-cmpkey-data.js?v=202609112015"></script>
-<script src="toeic-data.js?v=202609112015"></script>
-<script src="toeic-sudu-data.js?v=202609112015"></script>
+<script src="nida-data.js?v=202609112318"></script>
+<script src="sudu-data.js?v=202609112318"></script>
+<script src="key-data.js?v=202609112318"></script>
+<script src="nida-cmp-data.js?v=202609112318"></script>
+<script src="nida-cmpkey-data.js?v=202609112318"></script>
+<script src="minsu-data.js?v=202609112318"></script>
+<script src="minsu-sudu-data.js?v=202609112318"></script>
+<script src="minsu-key-data.js?v=202609112318"></script>
+<script src="minsu-cmp-data.js?v=202609112318"></script>
+<script src="minsu-cmpkey-data.js?v=202609112318"></script>
+<script src="toeic-data.js?v=202609112318"></script>
+<script src="toeic-sudu-data.js?v=202609112318"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -281,7 +284,7 @@ function teHTML(t,mode){
     return h+'</div>';
   }
   const xp=localStorage.getItem("nidax_"+t.code)==="1";
-  let h='<div class="tew'+(xp?" xall":"")+'">',op=false,pi=0;
+  let h='<div class="tew'+(xp?" xall":"")+'">',op=false,pi=0,si=0;
   t.items.forEach(it=>{
     if(it.k==="lead")h+='<div class="lead">'+esc(it.t)+'</div>';
     else if(it.k==="h1"){if(op){h+='</div>';op=false;}pi++;
@@ -292,7 +295,7 @@ function teHTML(t,mode){
     else if(it.k==="h2"){if(op)h+='</div>';op=true;
       h+='<div class="seg"><div class="sh">'+esc(it.ic||"")+' <b>'+esc(it.t)+'</b>　'+esc(it.d||"")+'<span class="xc">＋解析</span></div>';}
     else if(it.k==="tip")h+='<div class="tip">本段考點　'+mk(it.t)+'</div>';
-    else if(it.k==="en")h+='<div class="en"><span class="sp'+(it.cn?" ph":"")+'">'+esc(it.sp||"")+'</span><span class="et">'+mk(it.t)+'</span></div>'+(it.zh?'<div class="zx">'+mk(it.zh)+'</div>':'');
+    else if(it.k==="en"){h+='<div class="en" data-si="'+(si++)+'"><span class="sp'+(it.cn?" ph":"")+'">'+esc(it.sp||"")+'</span><span class="et">'+mk(it.t)+'</span>'+(it.a?'<span class="s1" title="念這一句">🔊</span>':'')+'</div>'+(it.zh?'<div class="zx">'+mk(it.zh)+'</div>':'');}
     else if(it.k==="zhblk")h+='<div class="zx zhblk">📖 全文中譯　'+esc(it.t)+'</div>';
     else if(it.k==="voc"){h+='<div class="voc"><div class="vt">📝 核心字彙與考點解密</div>';
       (it.v||[]).forEach(v=>{h+='<div class="v"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+(v.zh?'<span>'+mk(v.zh)+'</span>':'')+'</div>'+
@@ -657,7 +660,7 @@ const RK=()=>isEN()?"mb_rate_en":"mb_rate";
 function initRate(){const r=document.getElementById("rate");if(!r)return;
   r.value=localStorage.getItem(RK())||(isEN()?"1":"1.3");
   const lab=document.getElementById("ratev"); const show=()=>{if(lab)lab.textContent=(+r.value).toFixed(2)+"×";};
-  show(); r.oninput=()=>{localStorage.setItem(RK(),r.value);show();};}
+  show(); r.oninput=()=>{localStorage.setItem(RK(),r.value);show(); if(clipActive&&queue[qi]&&queue[qi].lg!=="zh")AUD.playbackRate=+r.value;};}
 function chunks(t,en){const out=[];let s="";
   if(en){ String(t).replace(/\s+/g," ").trim().split(/(?<=[.!?])\s+/).forEach(p=>{
       if(s&&(s+" "+p).length>190){out.push(s);s=p}else s=s?s+" "+p:p});
@@ -665,12 +668,32 @@ function chunks(t,en){const out=[];let s="";
   String(t).replace(/\s+/g," ").split(/(?<=[。！？；：，])/).forEach(p=>{
     if((s+p).length>90){if(s)out.push(s);s=p}else s+=p});
   if(s.trim())out.push(s);return out.filter(x=>x.trim());}
+/* ── 真人語音（edge-tts 預錄 mp3）── */
+const AUD=new Audio(); let clipActive=false;
+AUD.preload="auto";
+function clipURL(h){return "audio/te/"+h+".mp3";}   // 檔名即內容雜湊，可長期快取
+function playClip(it,go){
+  clipActive=true;
+  AUD.onended=null;AUD.onerror=null;
+  AUD.src=clipURL(it.clip);
+  AUD.playbackRate=it.lg==="zh"?1:rateNow();          // 中文真人音檔固定原速，英文跟語速滑桿
+  AUD.onended=()=>{clipActive=false;go();};
+  AUD.onerror=()=>{clipActive=false;it.clipFailed=true;setTimeout(speakNext,20);};   // 音檔失敗 → 退回合成語音
+  const pr=AUD.play(); if(pr&&pr.catch)pr.catch(()=>{clipActive=false;it.clipFailed=true;setTimeout(speakNext,20);});
+  wd=setTimeout(()=>{ if(playing&&clipActive){clipActive=false;go();} },90000);
+}
 function speakNext(){
   clearTimeout(wd); clearInterval(poll);
   if(!playing){return;}
   if(qi>=queue.length){stopAll();return;}
   const it=queue[qi];
   if(!it.silent)highlight(it);
+  if(it.clip&&!it.clipFailed){
+    let done=false;
+    const go=()=>{ if(done)return; done=true; clearTimeout(wd); qi++; setTimeout(speakNext,60); };
+    const st=document.getElementById("st"); if(st)st.textContent=Math.max(1,qi)+" / "+(queue.length-1);
+    playClip(it,go); return;
+  }
   const u=new SpeechSynthesisUtterance(it.text);
   const LG=it.lg||(isEN()?"en":"zh");
   u.lang=LG==="en"?"en-US":"zh-TW";
@@ -720,6 +743,7 @@ function start(list){
 }
 function stopAll(){playing=false;clearInterval(keep);clearInterval(poll);clearTimeout(wd);
   try{speechSynthesis.cancel()}catch(e){}
+  try{AUD.pause();AUD.currentTime=0;}catch(e){} clipActive=false;
   const pp=document.getElementById("pp"); if(pp)pp.textContent=PLAYLABEL;
   const st=document.getElementById("st"); if(st)st.textContent="";
   document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
@@ -731,6 +755,9 @@ function partName(t,p){ let n=0,r="";
   (t.items||[]).forEach(i=>{ if(i.k==="h1"){n++; if(n===p)r=i.t;} }); return r; }
 function highlight(it){
   document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
+  if(it.si!=null){ const card=document.getElementById("t"+it.i);
+    const row=card&&card.querySelector('.en[data-si="'+it.si+'"]');
+    if(row){ row.classList.add("now"); if(!it.first&&!window.__noscroll)row.scrollIntoView({block:"center",behavior:"smooth"}); } }
   document.querySelectorAll(".vov .vrow.rd").forEach(e=>e.classList.remove("rd"));
   if(it.voc){
     const t0=DATA()[it.i], pl=t0?document.querySelector('.vov[data-code="'+t0.code+'"]'):null;
@@ -835,15 +862,26 @@ function vocQueue(i,md){
   const t=DATA()[i], L=vocList(t), out=[];
   L.forEach((v,k)=>{
     const w=cleanEN(v.w||""); if(!w)return;
-    out.push({text:w,i:i,p:null,vi:k,vn:L.length,voc:md,lg:"en",first:k===0});
-    if(md==="both"&&v.zh)out.push({text:String(v.zh).replace(/\*\*/g,""),i:i,p:null,vi:k,vn:L.length,voc:md,lg:"zh"});
+    out.push({text:w,i:i,p:null,vi:k,vn:L.length,voc:md,lg:"en",first:k===0,clip:v.a||null});
+    if(md==="both"&&v.zh)out.push({text:String(v.zh).replace(/\*\*/g,""),i:i,p:null,vi:k,vn:L.length,voc:md,lg:"zh",clip:v.az||null});
   });
+  return out;
+}
+function teQueue(i,p,si1){
+  const t=DATA()[i], m=modeOf(t.code), out=[];
+  if(m==="sd"){ const d=SUDUD()[t.code]||{};
+    (d.say||[]).forEach((s,k)=>out.push({text:cleanEN(s),i:i,p:null,first:k===0,clip:(d.saya||[])[k]||null})); return out; }
+  if(localStorage.getItem(K(t.code,m)))return null;            // 使用者改過內容 → 走原本文字合成
+  let pi=0,si=0;
+  t.items.forEach(it=>{ if(it.k==="h1")pi++;
+    else if(it.k==="en"){ if((p==null||pi===p)&&(si1==null||si===si1))out.push({text:cleanEN(it.t),i:i,p:p,si:si,first:out.length===0,clip:it.a||null}); si++; } });
   return out;
 }
 function buildQueue(list){
   list.forEach(x=>{
     if(typeof x==="object"&&x.voc){ vocQueue(x.i,x.voc).forEach(q=>queue.push(q)); return; }
     const i=(typeof x==="object")?x.i:x, p=(typeof x==="object")?x.p:null;
+    if(sj==="te"){ const q=teQueue(i,p,(typeof x==="object")?x.si:null); if(q){q.forEach(o=>queue.push(o));return;} }
     chunks(topicText(i,p),sj==="te").forEach((c,k)=>queue.push({text:c,i:i,p:p,first:k===0}));
   });
 }
@@ -916,6 +954,10 @@ app.addEventListener("click",e=>{
     qa.textContent=z.classList.contains("op")?"▴ 收合解析":"▾ 顯示答案與解析";return;}
   const sh=e.target.closest(".tew .sh");
   if(sh){sh.closest(".seg").classList.toggle("op");return;}
+  const s1=e.target.closest(".tew .en .s1");
+  if(s1){ const row=s1.closest(".en"), i=+row.closest(".tp").dataset.i, si=+row.dataset.si;
+    const on=playing&&queue[qi]&&queue[qi].i===i&&queue[qi].si===si&&queue.length<=2;
+    stopAll(); if(!on){window.__noscroll=true;start([{i:i,si:si}]);setTimeout(()=>{window.__noscroll=false;},300);} return; }
   const en=e.target.closest(".tew .en");
   if(en){en.classList.toggle("op");return;}
   const b=e.target.closest(".play");if(!b)return;
@@ -1023,7 +1065,10 @@ function toggleEdit(card){
   };
 }
 document.getElementById("pp").onclick=()=>{
-  if(playing){if(speechSynthesis.paused){speechSynthesis.resume();document.getElementById("pp").textContent="⏸ 暫停";}
+  if(playing){
+    if(clipActive){ if(AUD.paused){AUD.play();document.getElementById("pp").textContent="⏸ 暫停";}
+                    else{AUD.pause();document.getElementById("pp").textContent="▶ 繼續";} return; }
+    if(speechSynthesis.paused){speechSynthesis.resume();document.getElementById("pp").textContent="⏸ 暫停";}
     else{speechSynthesis.pause();document.getElementById("pp").textContent="▶ 繼續";}return;}
   start(visibleIdx());};
 document.getElementById("stop").onclick=stopAll;
@@ -1063,7 +1108,7 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20260911-2015";
+document.getElementById("datever").textContent="資料 20260911-2318";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
 </script>
 </body></html>
