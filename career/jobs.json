@@ -1,6 +1,6 @@
 {
- "updated": "2026-09-13 05:43 UTC",
- "count": 10,
+ "updated": "2026-09-14 05:54 UTC",
+ "count": 7,
  "jobs": [
   {
    "title": "CRM 技術顧問實習生(應屆畢業）",
@@ -22,42 +22,6 @@
    "location": "臺北市",
    "url": "https://www.yourator.co/companies/8d8a33fc/jobs/47374",
    "tags": []
-  },
-  {
-   "title": "Web3 Internship- Software Engineering Intern, OneSavieLab",
-   "company": "AIFT",
-   "salary": "NT$ 200 - 200 (時薪)",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/aift/jobs/32816",
-   "tags": [
-    "intern",
-    "web3",
-    "developer"
-   ]
-  },
-  {
-   "title": "[CNS] 雲端平台JAVA後端工程師",
-   "company": "動力安全資訊股份有限公司 Dynasafe",
-   "salary": "面議（經常性薪資達4萬元）",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/dynasafe/jobs/24462",
-   "tags": [
-    "軟體設計工程師",
-    "Internet程式設計師",
-    "系統維護／操作人員"
-   ]
-  },
-  {
-   "title": "[CNS] 雲原生容器平台DevOps/SRE工程師 ",
-   "company": "動力安全資訊股份有限公司 Dynasafe",
-   "salary": "NT$ 30,000 -  (月薪)",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/dynasafe/jobs/24463",
-   "tags": [
-    "軟體設計工程師",
-    "Internet程式設計師",
-    "系統維護／操作人員"
-   ]
   },
   {
    "title": "Investment Research Intern 投資研究實習生",
@@ -98,30 +62,24 @@
    ]
   },
   {
-   "title": "Quantitative Research Intern 量化研究實習生 ",
-   "company": "SuDo Research Labs（蘇度科技有限公司）",
-   "salary": "NT$ 300 - 700 (時薪)",
+   "title": "Web3 Internship- Software Engineering Intern, OneSavieLab",
+   "company": "AIFT",
+   "salary": "NT$ 200 - 200 (時薪)",
    "location": "臺北市",
-   "url": "https://www.yourator.co/companies/sudoresearch/jobs/46536",
+   "url": "https://www.yourator.co/companies/aift/jobs/32816",
    "tags": [
-    "blockchain",
-    "crypto",
+    "intern",
     "web3",
-    "DeFi"
+    "developer"
    ]
   },
   {
-   "title": "Salesforce AI Agentforce 實習顧問",
-   "company": "伊原力科技",
-   "salary": "NT$ 230 -  (時薪)",
+   "title": "2026【仁寶暑期實習】5G模組軟體專案管理實習生 (SPM Intern)",
+   "company": "仁寶電腦工業股份有限公司",
+   "salary": "NT$ 35,000 - 40,000 (月薪)",
    "location": "臺北市",
-   "url": "https://www.yourator.co/companies/may4s/jobs/38139",
-   "tags": [
-    "AI",
-    "BigData",
-    "CRM",
-    "Salesforce"
-   ]
+   "url": "https://www.yourator.co/companies/compal/jobs/47149",
+   "tags": []
   }
  ]
 }
