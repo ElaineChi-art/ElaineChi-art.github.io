@@ -86,6 +86,12 @@ overflow:hidden;transition:max-height .18s;outline:none}
 object-fit:contain;border-radius:7px;margin:6px 6px 6px 0;display:inline-block;vertical-align:top;
 cursor:zoom-in;border:1px solid var(--line)}
 .note.clip .nb{max-height:120px;overflow:auto}
+.npics{margin:4px 0 8px}
+.npics .nph{font-size:12px;color:var(--sub);margin:2px 0 6px}
+.npics .ng{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.npics figure{margin:0}
+.npics img{width:100%;height:auto;border-radius:8px;border:1px solid var(--line);cursor:zoom-in;display:block}
+.npics figcaption{font-size:12px;color:var(--sub);margin-top:4px}
 #lbx{position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
 #lbx img{max-width:96vw;max-height:92vh;border-radius:8px}
 .note.clip:after{content:"";position:absolute;left:1px;right:1px;bottom:4px;height:34px;pointer-events:none;
@@ -242,18 +248,18 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202609172316"></script>
-<script src="sudu-data.js?v=202609172316"></script>
-<script src="key-data.js?v=202609172316"></script>
-<script src="nida-cmp-data.js?v=202609172316"></script>
-<script src="nida-cmpkey-data.js?v=202609172316"></script>
-<script src="minsu-data.js?v=202609172316"></script>
-<script src="minsu-sudu-data.js?v=202609172316"></script>
-<script src="minsu-key-data.js?v=202609172316"></script>
-<script src="minsu-cmp-data.js?v=202609172316"></script>
-<script src="minsu-cmpkey-data.js?v=202609172316"></script>
-<script src="toeic-data.js?v=202609172316"></script>
-<script src="toeic-sudu-data.js?v=202609172316"></script>
+<script src="nida-data.js?v=202609210404"></script>
+<script src="sudu-data.js?v=202609210404"></script>
+<script src="key-data.js?v=202609210404"></script>
+<script src="nida-cmp-data.js?v=202609210404"></script>
+<script src="nida-cmpkey-data.js?v=202609210404"></script>
+<script src="minsu-data.js?v=202609210404"></script>
+<script src="minsu-sudu-data.js?v=202609210404"></script>
+<script src="minsu-key-data.js?v=202609210404"></script>
+<script src="minsu-cmp-data.js?v=202609210404"></script>
+<script src="minsu-cmpkey-data.js?v=202609210404"></script>
+<script src="toeic-data.js?v=202609210404"></script>
+<script src="toeic-sudu-data.js?v=202609210404"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -538,6 +544,7 @@ function render(){
       '<div class="hd"><span data-lb="📝 我的筆記（自動儲存）">📝 我的筆記（自動儲存）'+(note?'　<span style="opacity:.7">'+note.length+' 字</span>':'')+'</span>'+
       '<span><button class="tg2" data-code="'+esc(t.code)+'">'+(localStorage.getItem("nidaopen_"+px()+t.code)==="1"?"▴ 收合":"▾ 展開全部")+'</button> '+
       '<button class="tg2 pic" data-code="'+esc(t.code)+'">📷 插入照片</button></span></div>'+
+      picsHTML(t)+
       '<div class="nb" contenteditable="true" data-code="'+esc(t.code)+'" data-ph="貼上文字或照片（⌘V）、也可把圖片拖進來…"></div></div>'+
       '</div>';
   });
@@ -545,6 +552,11 @@ function render(){
   app.innerHTML=html||'<div class="empty">找不到符合的題型</div>';
   document.getElementById("cnt").textContent="顯示 "+n+" 題";
   setTimeout(()=>{loadNotes();},0);
+}
+function picsHTML(t){
+  const P=t.pics||[]; if(!P.length)return "";
+  return '<div class="npics"><div class="nph">🖼 字彙情境圖　'+P.length+' 張（點圖放大；英文＋中文標在物件上，看圖記字）</div><div class="ng">'+
+    P.map(p=>'<figure><img src="'+esc(p.src)+'" alt="'+esc(p.cap||"")+'" loading="lazy">'+(p.cap?'<figcaption>'+esc(p.cap)+'</figcaption>':'')+'</figure>').join("")+'</div></div>';
 }
 function buildTOC(){
   let h="",lc="",ls="";
@@ -1033,7 +1045,7 @@ app.addEventListener("focusin",e=>{const nb=e.target.closest(".nb");
     localStorage.setItem("nidaopen_"+px()+nb.dataset.code,"1");
     const btn=b.querySelector(".tg2"); if(btn)btn.textContent="▴ 收合"; fit(nb);}});
 app.addEventListener("click",e=>{
-  const im=e.target.closest(".nb img");
+  const im=e.target.closest(".nb img, .npics img");
   if(im){ const lb=document.getElementById("lbx"); if(lb){lb.querySelector("img").src=im.src; lb.style.display="flex";} return; }
   const pic=e.target.closest(".tg2.pic");
   if(pic){ const box=pic.closest(".note"); const inp=document.getElementById("pick"); if(!inp)return;
@@ -1128,7 +1140,7 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20260917-2316";
+document.getElementById("datever").textContent="資料 20260921-0404";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
 </script>
 </body></html>
