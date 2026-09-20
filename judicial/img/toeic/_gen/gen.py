@@ -16,7 +16,7 @@ def label(x,y,en,zh,anchor="c",size=30,line=None):
         lx,ly=line; s+=f'<line x1="{x0+w/2:.0f}" y1="{y0+h:.0f}" x2="{lx}" y2="{ly}" stroke="#111" stroke-width="3"/><circle cx="{lx}" cy="{ly}" r="6" fill="#111" stroke="#fff" stroke-width="2"/>'
     s+=f'<rect x="{x0:.0f}" y="{y0:.0f}" width="{w:.0f}" height="{h:.0f}" rx="8" fill="#111" opacity=".92"/>'
     s+=f'<text x="{x0+w/2:.0f}" y="{y0+es+6:.0f}" font-family="{EN}" font-weight="700" font-size="{es}" fill="#fff" text-anchor="middle">{esc(en)}</text>'
-    s+=f'<text x="{x0+w/2:.0f}" y="{y0+es+zs+16:.0f}" font-family="{ZH}" font-weight="700" font-size="{zs:.0f}" fill="#fff" text-anchor="middle">{zh}</text>'
+    s+=f'<text x="{x0+w/2:.0f}" y="{y0+es+zs+16:.0f}" font-family="{ZH}" font-weight="700" font-size="{zs:.0f}" fill="#fff" text-anchor="middle">{esc(zh)}</text>'
     return s
 def esc(t): return t.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
 def T(x,y,t,size=20,fill="#222",w="700",anchor="middle",fam=None):

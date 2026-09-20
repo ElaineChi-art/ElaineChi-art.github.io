@@ -75,7 +75,7 @@ def textblock(x,y,lines_,size=16,gap=38,color="#111",marks=None,lx=150,rx=1450,l
             if m[0]!=i: continue
             li,ph,en,zh,side=m[:5]; n+=1
             k=ln.find(ph)
-            if k<0: k=0
+            if k<0: print('!! phrase not found:',ph,'| line:',ln); k=0
             px=x+tw_(ln[:k],size); pw=tw_(ph,size)
             s+=R(px-3,yy-size+2,pw+6,size+8,"#fef08a",rx=4,op=.9)
             s+=f'<circle cx="{px+pw+4:.0f}" cy="{yy-size-4:.0f}" r="{size*0.55:.0f}" fill="#dc2626" stroke="#fff" stroke-width="2"/>'+T(px+pw+4,yy-size-4+size*0.3,str(n),int(size*0.68),"#fff")
