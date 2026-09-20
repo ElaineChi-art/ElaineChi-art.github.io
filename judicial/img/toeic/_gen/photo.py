@@ -79,6 +79,8 @@ def find(queries,name,per=6):
                     if c["url"] in seen: continue
                     seen.add(c["url"]); cc.append(c)
             except Exception as e: print("err",q,e)
-    cc=cc[:16]; sheet(cc,name+".jpg"); json.dump(cc,open(name+".json","w"))
+    cc=cc[:16]
+    if not cc: print("NO RESULTS",name); return []
+    sheet(cc,name+".jpg"); json.dump(cc,open(name+".json","w"))
     for i,c in enumerate(cc): print(i,c["lic"],c["creator"][:20],"|",c["title"][:50])
     return cc
