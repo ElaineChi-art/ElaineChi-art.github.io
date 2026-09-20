@@ -2,17 +2,19 @@
 """quick document scenes with numbered glossary"""
 from props import *
 def glossary(b,labs,start_y=None,cols=5,size=18):
-    n=len(labs); rows=(n+cols-1)//cols
-    gap=90 if rows<=3 else 78
+    n=len(labs)
+    if n>30: cols=6; size=15
+    rows=(n+cols-1)//cols
+    gap=90 if rows<=3 else (78 if rows<=5 else 64)
     y0=start_y if start_y else (1000-rows*gap+10)
     xs=[160+i*(1280//(cols-1)) for i in range(cols)]
     for i,(side,yy,num,en,zh) in enumerate(labs):
-        r,ci=divmod(i,cols); b+=label(xs[ci],y0+r*gap,f"{num}  {en}",zh,size=size if len(en)<22 else (size-3 if len(en)<30 else size-6))
+        r,ci=divmod(i,cols); b+=label(xs[ci],y0+r*gap,f"{num}  {en}",zh,size=size if len(en)<22 else (size-3 if len(en)<30 else max(10,size-6)))
     return b
 def make_doc(name,kind,title,lines_,marks,subtitle="",size=None,gap=None,extra=""):
     if size is None: size=22 if len(lines_)<=7 else (20 if len(lines_)<=9 else 18)
     if gap is None: gap=int(size*2.85)
-    n=len(marks); rows=(n+4)//5; gl_h=(90 if rows<=3 else 78)*rows+20
+    n=len(marks); cols=6 if n>30 else 5; rows=(n+cols-1)//cols; gl_h=(90 if rows<=3 else (78 if rows<=5 else 64))*rows+20
     top=1000-gl_h  # desk/glossary starts here
     b=desk(top-10)
     if kind=="email":
