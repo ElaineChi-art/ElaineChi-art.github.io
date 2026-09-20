@@ -1,0 +1,78 @@
+# -*- coding: utf-8 -*-
+from docs import *
+from photo import scene,fetch
+import json
+M=lambda i,ph,en,zh:(i,ph,en,zh,"l")
+P=lambda k:fetch(json.load(open(f'p{k}A.json'))["url"])
+scene("toeic-9-1-a",P("91"),[(800,70,"News broadcast","新聞廣播／新聞報導",None,28),(800,930,"Reporter","記者",(800,700),26),(160,150,"Rent camera equipment","租借攝影器材",(160,450),20),
+ (480,140,"Cover the story","報導此新聞",(480,400),22),(1300,900,"Exclusive interview","獨家採訪",(1200,540),22),(1300,150,"Streaming platform","串流平台",(1200,300),22)],
+ "Photo: Soxman07, Wikimedia Commons (CC BY-SA 4.0)")
+scene("toeic-9-2-a",P("92"),[(800,70,"Museum tours","博物館導覽",None,28),(320,130,"Exhibit still available","展覽仍在展出中",(320,270),20),(1100,120,"On display through the end of the month","展出至月底",(1100,270),18),
+ (680,930,"Docent-led museum tours","導覽員帶領的博物館導覽",(680,700),20),(1350,700,"Check availability","確認是否有票",(1380,300),20),(250,900,"Visit box office","前往售票處",None,22)],
+ "Photo: Guangywatchwii, Wikimedia Commons (CC BY-SA 4.0)")
+scene("toeic-9-3-a",P("93"),[(800,110,"Full rehearsal at 11:00 AM Saturday","週六上午 11 點完整排練",None,22),(250,900,"Cast measurements for costumes","演員服裝量身",(300,720),18),(1350,900,"Crew coordination meeting","劇組協調會議",(1300,720),18),
+ (800,930,"Theater operations","劇院營運",(800,850),22),(1350,300,"Stage setup delays","舞台搭建延遲",(1300,400),22),(250,300,"Audio equipment ready","音響設備就緒",(120,460),20)],
+ "Photo: Harrison Keely, Wikimedia Commons (CC BY 4.0)")
+scene("toeic-9-4-a",P("94"),[(800,70,"Ribbon-cutting ceremony at 10 AM tomorrow","明天上午 10 點剪綵儀式",None,22),(250,300,"Grand opening event","盛大開幕活動",(300,450),22),(1300,300,"Celebrity appearance & meet-and-greet","名人出席與見面會",(1250,450),18),
+ (900,930,"Prestigious occasion","高規格的盛會",(900,700),22),(1350,930,"Join the tour","參加導覽",(1400,700),22),(250,930,"Memorable occasion","難忘的盛會",None,22)],
+ "Photo: Kenneth C. Zirkel, Wikimedia Commons (CC BY-SA 4.0)")
+make_doc("toeic-9-1-b","email","Mail — Documentary production: schedule",
+["Our documentary about local authors: production starts next week.",
+"Please rent camera equipment and get a photography permit; the film crew will",
+"conduct interviews — the exclusive interview tomorrow is with the reporter from Griffin City News.",
+"Return camera equipment afterward (returned to the storage room).",
+"Schedule interview slots for the feature story; we will cover the story on the news broadcast.",
+"Publication approved: the manuscript is ready — submit manuscript by next Friday",
+"(manuscript ready by next Friday) and upload online content for digital platform distribution."],
+[M(0,"documentary about local authors","Documentary about local authors","關於本地作者的紀錄片"),M(0,"production starts next week","Production starts next week","製作下週開始"),
+M(1,"rent camera equipment","Rent camera equipment","租借攝影器材"),M(1,"photography permit","Photography permit","攝影許可證"),
+M(2,"conduct interviews","Conduct interview","進行採訪"),M(2,"exclusive interview tomorrow","Interview tomorrow","明天的採訪"),M(2,"Griffin City News","Griffin City News","格里芬市新聞"),
+M(3,"Return camera equipment","Return camera equipment","歸還攝影器材"),M(3,"returned to the storage room","Returned to the storage room","歸還至儲藏室"),
+M(4,"Schedule interview","Schedule interview","安排採訪"),M(4,"feature story","Feature story","專題報導"),M(4,"cover the story","Cover the story","報導此新聞"),
+M(5,"Publication approved","Publication approved","出版獲批准"),M(5,"manuscript is ready","Manuscript is ready","手稿已準備就緒"),M(5,"submit manuscript","Submit manuscript","提交手稿"),
+M(6,"manuscript ready by next Friday","Manuscript ready by next Friday","下週五前準備好手稿"),M(6,"upload online content","Upload online content","上傳線上內容"),M(6,"digital platform distribution","Digital platform distribution","數位平台發布"),M(0,"documentary","Documentary production","紀錄片製作")],
+subtitle="From: producer@studio.com")
+make_doc("toeic-9-2-b","paper","CITY ARTS GUIDE — This month",
+["Annual Art Walk festival next weekend: a street fair with food vendors, craft booths and a jazz festival.",
+"\"Our Galaxy\" exhibit through end of month; guided museum tours with admission (docent-led museum tours).",
+"Theater: \"I'd like to purchase theater tickets\" — starts at 8 PM at the opera house;",
+"ticket price range $45-$85; buy online or visit the box office; group discounts available.",
+"Workshops: registration is now open; register for workshop online — registration cutoff 48 hours before;",
+"workshop registration closes Friday. Tickets confirmed by email."],
+[M(0,"Annual Art Walk festival next weekend","Annual Art Walk festival next weekend","年度藝術節於下週末"),M(0,"street fair","Street fair","街頭市集"),M(0,"food vendors","Food vendors","美食攤販"),M(0,"craft booths","Craft booths","手工藝攤位"),M(0,"jazz festival","Jazz festival","爵士音樂節"),
+M(1,"\"Our Galaxy\" exhibit through end of month","\"Our Galaxy\" exhibit through end of month","銀河展展至月底"),M(1,"guided museum tours with admission","Guided museum tours with admission","購票即含導覽"),
+M(2,"I'd like to purchase theater tickets","I'd like to purchase theater tickets","我想購買劇院門票"),M(2,"starts at 8 PM at the opera house","Starts at 8 PM at the opera house","晚上 8 點於歌劇院開演"),
+M(3,"ticket price range $45-$85","Ticket price range $45-$85","票價 45-85 美元"),M(3,"buy online","Buy online","線上購買"),M(3,"box office","Box office","售票處"),M(3,"group discounts","Group discounts","團體折扣"),
+M(4,"registration is now open","Registration is now open","現已開放報名"),M(4,"register for workshop","Register for workshop","報名工作坊"),M(4,"registration cutoff 48 hours before","Registration cutoff 48 hours before","報名 48 小時前截止"),
+M(5,"workshop registration closes","Workshop registration closes","工作坊報名截止"),M(5,"Tickets confirmed","Tickets confirmed","門票已確認"),M(0,"Annual","Annual festival","年度節慶")],
+subtitle="Purchase theater tickets · museum tours · annual festival")
+make_doc("toeic-9-3-b","paper","PRODUCTION SCHEDULE — Crew coordination meeting notes",
+["Film crew arrival 7 AM; technical preparations and equipment test at 2 PM; sound check & audio test at 2:00 PM.",
+"Audio equipment is ready. Stage setup issues / needs another hour — the technical staff needs another hour,",
+"so we are cutting it close; rehearsal at 4 PM is moved: rehearsal scheduled for 11 AM tomorrow.",
+"Take measurements for cast costumes (cast measurements) and rewrite parts of the script —",
+"script rewriting backstage; ask someone backstage to help and document process for the blog.",
+"Contact department heads: official production begins at 7:00 PM Sunday. Production is on schedule."],
+[M(0,"Film crew arrival 7 AM","Film crew arrival 7 AM","劇組上午 7 點到達"),M(0,"technical preparations","Technical preparations","技術準備工作"),M(0,"equipment test at 2 PM","Equipment test at 2 PM","下午 2 點設備測試"),M(0,"sound check & audio test at 2:00 PM","Sound check & audio test at 2:00 PM","下午 2 點音響檢查"),
+M(1,"Audio equipment is ready","Audio equipment is ready","音響設備已準備就緒"),M(1,"Stage setup issues / needs another hour","Stage setup issues / needs another hour","舞台搭建延遲一小時"),M(1,"technical staff needs another hour","Technical staff needs another hour","技術人員還需要一小時"),
+M(2,"cutting it close","Cutting it close","時間非常緊迫"),M(2,"rehearsal at 4 PM","Rehearsal at 4 PM","下午 4 點排練"),M(2,"rehearsal scheduled for 11 AM","Rehearsal scheduled for 11 AM","排練排定於 11 點"),
+M(3,"Take measurements for cast costumes","Take measurements for cast costumes","為演員服裝量身"),M(3,"cast measurements","Cast measurements","演員量身"),M(3,"rewrite parts of the script","Rewrite parts of the script","改寫部分劇本"),
+M(4,"script rewriting backstage","Script rewriting backstage","後台進行劇本改寫"),M(4,"ask someone backstage to help","Ask someone backstage to help","請後台的人幫忙"),M(4,"document process","Document process","記錄過程"),
+M(5,"Contact department heads","Contact department heads","聯繫部門主管"),M(5,"official production begins at 7:00 PM Sunday","Official production begins at 7:00 PM Sunday","週日晚上 7 點正式開演"),M(5,"Production is on schedule","Production is on schedule","製作進度正常")],
+subtitle="Crew coordination meeting · Saturday")
+make_doc("toeic-9-4-b","paper","INVITATION — Grand opening & award ceremony tonight",
+["You are invited to the award ceremony tonight and the unveiling of three new sculptures.",
+"Docent-led VIP Guided Tour at 07:00 PM: a guided tour of the new wing with exclusive access to restricted areas",
+"and behind-the-scenes spaces — exclusive access granted to VIP guests only (docent available / starts in 10 minutes).",
+"Meet-and-greet with nominees follows; recognition presented at 9 PM. Check itinerary at the desk and get tickets there.",
+"Flash photography strictly prohibited during the ceremony; photography is permitted in the lobby.",
+"RSVP required by July 15 (RSVP Deadline July 15). \"I'm here for the guided tour\" — say this to join.",
+"Participate in unveiling and meet nominees at this prestigious occasion."],
+[M(0,"award ceremony tonight","Award ceremony tonight","今晚的頒獎典禮"),M(0,"unveiling of three new sculptures","Unveiling of three new sculptures","三座新雕塑揭幕"),
+M(1,"Docent-led VIP Guided Tour at 07:00 PM","Docent-led VIP Guided Tour at 07:00 PM","晚上 7 點 VIP 導覽"),M(1,"guided tour of the new wing","Guided tour of the new wing","新翼大樓導覽"),M(1,"exclusive access to restricted areas","Exclusive access to restricted areas","未開放區域的獨家通道"),
+M(2,"behind-the-scenes","Behind-the-scenes","幕後區域"),M(2,"exclusive access granted","Exclusive access granted","授予獨家參觀通道"),M(2,"docent available / starts in 10 minutes","Docent available / starts in 10 minutes","導覽員 10 分鐘後帶領"),
+M(3,"Meet-and-greet with nominees","Meet-and-greet with nominees","與被提名者的見面會"),M(3,"recognition presented","Recognition presented","頒發表彰"),M(3,"Check itinerary","Check itinerary","核對行程表"),M(3,"get tickets","Get tickets","取得門票"),
+M(4,"Flash photography strictly prohibited","Flash photography strictly prohibited","嚴禁使用閃光燈"),M(4,"photography is permitted","Photography is permitted","允許拍照"),
+M(5,"RSVP required by July 15","RSVP required by July 15","需在 7 月 15 日前回覆"),M(5,"RSVP Deadline July 15","RSVP Deadline July 15","RSVP 截止日 7 月 15 日"),M(5,"I'm here for the guided tour","I'm here for the guided tour","我來參加導覽"),
+M(6,"Participate in unveiling","Participate in unveiling","參與揭幕儀式"),M(6,"meet nominees","Meet nominees","會見被提名者"),M(2,"exclusive access","Exclusive access","獨家通道／VIP 特權")],
+subtitle="Grand opening event · Metropolitan Museum")
