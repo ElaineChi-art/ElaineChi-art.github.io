@@ -59,3 +59,26 @@ def scene(name,fn,labels,credit,focus=(0.5,0.5),zoom=1.0,size=26):
     subprocess.run(["qlmanage","-t","-s","1600","-o",".",name+".svg"],capture_output=True)
     out=Image.open(name+".svg.png").convert("RGB").crop((0,0,1600,1000)); out.save(name+".jpg","JPEG",quality=86,optimize=True)
     os.remove(name+".svg.png"); os.remove(name+".svg"); print(name+".jpg")
+def cm(q,n=10):
+    u="https://commons.wikimedia.org/w/api.php?"+urllib.parse.urlencode({"action":"query","generator":"search","gsrsearch":q,"gsrnamespace":6,"gsrlimit":n,"prop":"imageinfo","iiprop":"url|size|mime|extmetadata","iiurlwidth":1600,"format":"json"})
+    d=json.load(urllib.request.urlopen(urllib.request.Request(u,headers=H),timeout=40))
+    out=[]
+    for p in d.get("query",{}).get("pages",{}).values():
+        ii=p["imageinfo"][0]
+        if not ii.get("mime","").startswith("image/jpeg") or (ii.get("width") or 0)<1000: continue
+        m=ii.get("extmetadata",{})
+        out.append({"id":str(p["pageid"]),"url":ii.get("thumburl") or ii["url"],"title":p["title"][5:],"creator":re.sub(r'<[^>]+>','',m.get("Artist",{}).get("value","")).strip()[:40],"source":"wikimedia","lic":m.get("LicenseShortName",{}).get("value",""),"w":ii.get("width"),"h":ii.get("height")})
+    return out
+import re
+def find(queries,name,per=6):
+    seen=set();cc=[]
+    for q in queries:
+        for fn_ in (cm,ov):
+            try:
+                for c in fn_(q,per):
+                    if c["url"] in seen: continue
+                    seen.add(c["url"]); cc.append(c)
+            except Exception as e: print("err",q,e)
+    cc=cc[:16]; sheet(cc,name+".jpg"); json.dump(cc,open(name+".json","w"))
+    for i,c in enumerate(cc): print(i,c["lic"],c["creator"][:20],"|",c["title"][:50])
+    return cc

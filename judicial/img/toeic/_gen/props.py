@@ -55,3 +55,41 @@ def render(name,body,out="jpg"):
     if out=="jpg": im.save(name+".jpg","JPEG",quality=86,optimize=True)
     else: im.save(name+".png",optimize=True)
     os.remove(name+".svg.png"); print(name+"."+out)
+
+from PIL import ImageFont
+_FC={}
+def tw_(s,size):
+    try:
+        f=_FC.get(size)
+        if not f:
+            f=ImageFont.truetype("/System/Library/Fonts/HelveticaNeue.ttc",size); _FC[size]=f
+        return f.getlength(s)
+    except Exception:
+        return sum((size*1.0 if ord(c)>0x2e7f else size*0.52) for c in s)
+def textblock(x,y,lines_,size=16,gap=38,color="#111",marks=None,lx=150,rx=1450,lsize=18,place="side",by=760,cols=5,n0=0,nolabel=False):
+    """lines_: list of str. marks: [(line_idx,phrase,en,zh,side)] side='l'|'r'. numbered badges, no leader lines"""
+    s=""; labs=[]; n=n0
+    for i,ln in enumerate(lines_):
+        yy=y+i*gap
+        for m in (marks or []):
+            if m[0]!=i: continue
+            li,ph,en,zh,side=m[:5]; n+=1
+            k=ln.find(ph)
+            if k<0: k=0
+            px=x+tw_(ln[:k],size); pw=tw_(ph,size)
+            s+=R(px-3,yy-size+2,pw+6,size+8,"#fef08a",rx=4,op=.9)
+            s+=f'<circle cx="{px+pw+4:.0f}" cy="{yy-size-4:.0f}" r="{size*0.55:.0f}" fill="#dc2626" stroke="#fff" stroke-width="2"/>'+T(px+pw+4,yy-size-4+size*0.3,str(n),int(size*0.68),"#fff")
+            labs.append((side,yy,n,en,zh))
+        s+=T(x,yy,ln,size,color,w="400",anchor="start")
+    out=""; lastL=-999; lastR=-999
+    if nolabel: return s,labs
+    if place=="bottom":
+        xs=[160+i*(1280//(cols-1)) for i in range(cols)] if cols>1 else [800]
+        for i,(side,yy,n,en,zh) in enumerate(labs):
+            r,ci=divmod(i,cols); out+=label(xs[ci],by+r*90,f"{n}  {en}",zh,size=lsize)
+        return s+out
+    for side,yy,n,en,zh in labs:
+        if side=="l": ly=max(yy,lastL+64); lastL=ly; X=lx
+        else: ly=max(yy,lastR+64); lastR=ly; X=rx
+        out+=label(X,ly,f"{n}  {en}",zh,size=lsize)
+    return s+out
