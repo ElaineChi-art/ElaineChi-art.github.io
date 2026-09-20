@@ -48,6 +48,49 @@ def make_doc(name,kind,title,lines_,marks,subtitle="",size=None,gap=None,extra="
     avail=bottom-ty
     if len(lines_)*gap>avail:
         gap=int(avail/len(lines_)); size=min(size,int(gap/2.6))
+    maxw=(sx+sw-40-tx) if kind=="email" else (1440-tx)
+    from props import tw_
+    # wrap long lines without splitting marked phrases; remap marks
+    def wrap(line,phs,size):
+        spans=[]
+        for ph in phs:
+            k=line.find(ph)
+            if k>=0: spans.append((k,k+len(ph)))
+        toks=[]; i=0; n=len(line)
+        while i<n:
+            j=line.find(" ",i); j=n if j<0 else j
+            # extend token if inside a span
+            end=j
+            for a,b in spans:
+                if a<=i<b: end=max(end,b)
+            while end<n and line[end]!=" ": end+=1
+            toks.append(line[i:end]); i=end+1
+        out=[]; cur=""
+        for t in toks:
+            cand=(cur+" "+t) if cur else t
+            if cur and tw_(cand,size)>maxw: out.append(cur); cur=t
+            else: cur=cand
+        if cur: out.append(cur)
+        return out
+    avail=bottom-ty
+    def dowrap(size):
+        newlines=[]; newmarks=[]
+        for li,ln in enumerate(lines_):
+            phs=[m[1] for m in (marks or []) if m[0]==li]
+            parts=wrap(ln,phs,size) if tw_(ln,size)>maxw else [ln]
+            base=len(newlines); newlines+=parts
+            for m in (marks or []):
+                if m[0]!=li: continue
+                idx=next((k for k,p in enumerate(parts) if m[1] in p),0)
+                newmarks.append((base+idx,)+tuple(m[1:]))
+        return newlines,newmarks
+    best=None
+    for sz in range(22,11,-1):
+        nl,nm=dowrap(sz); g=int(sz*2.7)
+        if len(nl)*g<=avail and max(tw_(l,sz) for l in nl)<=maxw: best=(sz,g,nl,nm); break
+    if best is None:
+        sz=12; nl,nm=dowrap(sz); g=max(int(sz*2.2),int(avail/max(1,len(nl)))); best=(sz,g,nl,nm)
+    size,gap,lines_,marks=best
     t,labs=textblock(tx,ty,lines_,size=size,gap=gap,color=color,marks=marks,nolabel=True); b+=t
     b+=extra
     if kind not in ("email","slide"): b+=end()
