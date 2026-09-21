@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGS · 創新治理管理系統</title>
+<meta name="description" content="把智財管理提升到創新治理、再接到公司治理：以 ISO 協調架構（TIPS／ISO 56001／27001／42001）為骨架的可操作管理系統，含風險評鑑、智財權利流程、董事會報告與 ESG S-10 對接。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <aside>
+    <div class="brand"><div class="en">Innovation Governance System</div><h1>🏛 創新治理管理系統</h1><div class="org" id="orgName"></div></div>
+    <div id="side"></div>
+    <div class="foot">骨架＝ISO 協調架構 4–10 章＝TIPS＝PDCA<br>資料存於本機瀏覽器<br><a href="../index.html">← 學習中心</a></div>
+  </aside>
+  <main id="main"></main>
+</div>
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><h3 id="mTitle"></h3><div id="mBody"></div><div class="acts"><button class="btn" onclick="closeModal()">取消</button><button class="btn p" onclick="saveForm()">儲存（⌘↵）</button></div></div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="demo.js"></script>
+<script src="app.js"></script>
+<script data-goatcounter="https://elainechi.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
