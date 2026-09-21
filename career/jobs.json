@@ -1,18 +1,29 @@
 {
- "updated": "2026-09-20 05:49 UTC",
- "count": 5,
+ "updated": "2026-09-21 05:58 UTC",
+ "count": 6,
  "jobs": [
   {
-   "title": "CRM 技術顧問實習生(應屆畢業）",
-   "company": "伊原力科技",
+   "title": "[CNS] 雲端平台JAVA後端工程師",
+   "company": "動力安全資訊股份有限公司 Dynasafe",
    "salary": "面議（經常性薪資達4萬元）",
    "location": "臺北市",
-   "url": "https://www.yourator.co/companies/may4s/jobs/32773",
+   "url": "https://www.yourator.co/companies/dynasafe/jobs/24462",
    "tags": [
-    "實習",
-    "全端工程師",
-    "CRM",
-    "Salesforce"
+    "軟體設計工程師",
+    "Internet程式設計師",
+    "系統維護／操作人員"
+   ]
+  },
+  {
+   "title": "[CNS] 雲原生容器平台DevOps/SRE工程師 ",
+   "company": "動力安全資訊股份有限公司 Dynasafe",
+   "salary": "NT$ 30,000 -  (月薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/dynasafe/jobs/24463",
+   "tags": [
+    "軟體設計工程師",
+    "Internet程式設計師",
+    "系統維護／操作人員"
    ]
   },
   {
