@@ -1,7 +1,44 @@
 {
- "updated": "2026-09-21 05:58 UTC",
+ "updated": "2026-09-22 05:55 UTC",
  "count": 6,
  "jobs": [
+  {
+   "title": "Web3 Internship- Software Engineering Intern, OneSavieLab",
+   "company": "AIFT",
+   "salary": "NT$ 200 - 200 (時薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/aift/jobs/32816",
+   "tags": [
+    "intern",
+    "web3",
+    "developer"
+   ]
+  },
+  {
+   "title": "Web3 Product Management Intern, OneSavie Lab",
+   "company": "AIFT",
+   "salary": "NT$ 200 - 200 (時薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/aift/jobs/32817",
+   "tags": [
+    "Internship",
+    "web3",
+    "Business"
+   ]
+  },
+  {
+   "title": "Web3 Security Consultant Intern, OneInfinity",
+   "company": "AIFT",
+   "salary": "NT$ 200 - 200 (時薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/aift/jobs/47488",
+   "tags": [
+    "實習",
+    "intern",
+    "實習生",
+    "實習生／工讀生"
+   ]
+  },
   {
    "title": "[CNS] 雲端平台JAVA後端工程師",
    "company": "動力安全資訊股份有限公司 Dynasafe",
@@ -37,43 +74,6 @@
     "blockchain",
     "crypto",
     "DeFi"
-   ]
-  },
-  {
-   "title": "Web3 Security Consultant Intern, OneInfinity",
-   "company": "AIFT",
-   "salary": "NT$ 200 - 200 (時薪)",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/aift/jobs/47488",
-   "tags": [
-    "實習",
-    "intern",
-    "實習生",
-    "實習生／工讀生"
-   ]
-  },
-  {
-   "title": "Web3 Product Management Intern, OneSavie Lab",
-   "company": "AIFT",
-   "salary": "NT$ 200 - 200 (時薪)",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/aift/jobs/32817",
-   "tags": [
-    "Internship",
-    "web3",
-    "Business"
-   ]
-  },
-  {
-   "title": "Web3 Internship- Software Engineering Intern, OneSavieLab",
-   "company": "AIFT",
-   "salary": "NT$ 200 - 200 (時薪)",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/aift/jobs/32816",
-   "tags": [
-    "intern",
-    "web3",
-    "developer"
    ]
   }
  ]
