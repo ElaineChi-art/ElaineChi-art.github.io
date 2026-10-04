@@ -235,6 +235,7 @@ body.nokk .hl{background:none;font-weight:inherit}
 <button id="pp" class="p2">▶ 朗讀全部</button>
 <button id="stop">■ 停</button>
 <b>語速</b><span class="mini" id="ratev" style="min-width:38px;display:inline-block"></span><input id="rate" type="range" min="0.8" max="2" step="0.05" value="1.3" style="width:88px">
+<b>句距</b><select id="flow" style="padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)" title="連讀＝自動剪掉每句前後的空白，一句接一句不停頓"><option value="flow">連讀不停頓</option><option value="pause">逐句停頓（原本）</option></select>
 <b>聲音</b><select id="voice" style="max-width:148px;padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"></select>
 <b>圖片</b><select id="imgsz" style="padding:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg)"><option value="200">小</option><option value="320">中</option><option value="480">大</option><option value="9999">原寬</option></select>
 <b>字級</b><button id="fsm" style="padding:4px 9px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer">A－</button><span class="mini" id="fsv" style="min-width:42px;display:inline-block;text-align:center"></span><button id="fsp" style="padding:4px 9px;border-radius:6px;border:1px solid var(--line);background:transparent;cursor:pointer">A＋</button>
@@ -248,18 +249,18 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202609210534"></script>
-<script src="sudu-data.js?v=202609210534"></script>
-<script src="key-data.js?v=202609210534"></script>
-<script src="nida-cmp-data.js?v=202609210534"></script>
-<script src="nida-cmpkey-data.js?v=202609210534"></script>
-<script src="minsu-data.js?v=202609210534"></script>
-<script src="minsu-sudu-data.js?v=202609210534"></script>
-<script src="minsu-key-data.js?v=202609210534"></script>
-<script src="minsu-cmp-data.js?v=202609210534"></script>
-<script src="minsu-cmpkey-data.js?v=202609210534"></script>
-<script src="toeic-data.js?v=202609210534"></script>
-<script src="toeic-sudu-data.js?v=202609210534"></script>
+<script src="nida-data.js?v=202610041537"></script>
+<script src="sudu-data.js?v=202610041537"></script>
+<script src="key-data.js?v=202610041537"></script>
+<script src="nida-cmp-data.js?v=202610041537"></script>
+<script src="nida-cmpkey-data.js?v=202610041537"></script>
+<script src="minsu-data.js?v=202610041537"></script>
+<script src="minsu-sudu-data.js?v=202610041537"></script>
+<script src="minsu-key-data.js?v=202610041537"></script>
+<script src="minsu-cmp-data.js?v=202610041537"></script>
+<script src="minsu-cmpkey-data.js?v=202610041537"></script>
+<script src="toeic-data.js?v=202610041537"></script>
+<script src="toeic-sudu-data.js?v=202610041537"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -682,17 +683,41 @@ function chunks(t,en){const out=[];let s="";
     if((s+p).length>90){if(s)out.push(s);s=p}else s+=p});
   if(s.trim())out.push(s);return out.filter(x=>x.trim());}
 /* ── 真人語音（edge-tts 預錄 mp3）── */
-const AUD=new Audio(); let clipActive=false;
-AUD.preload="auto";
+let AUD=new Audio(), AUDB=new Audio(); let clipActive=false;
+AUD.preload="auto"; AUDB.preload="auto";
+/* ── 句距：連讀模式會剪掉每段音檔前後的靜音（錄製時每段頭約 0.2 秒、尾約 0.95 秒）── */
+const HEADTRIM=0.17, TAILTRIM=0.80;
+function flowOn(){ return (localStorage.getItem("mb_flow")||"flow")==="flow"; }
+function preloadNext(){
+  if(!flowOn())return;
+  const nx=queue[qi+1];
+  if(nx&&nx.clip&&!nx.clipFailed){ const u=clipURL(nx.clip);
+    if(!AUDB.src||AUDB.src.indexOf(u)<0){ try{AUDB.pause()}catch(e){} AUDB.onended=null;AUDB.onerror=null;AUDB.ontimeupdate=null;AUDB.onloadedmetadata=null;
+      AUDB.src=u; try{AUDB.load()}catch(e){} } }
+}
 function clipURL(h){return sj==="te"?"audio/te/"+h+".mp3":"audio/ms/"+h+".m4a";}   // 檔名即內容雜湊，可長期快取
 function playClip(it,go){
   clipActive=true;
-  AUD.onended=null;AUD.onerror=null;
-  AUD.src=clipURL(it.clip);
+  const url=clipURL(it.clip), trim=flowOn();
+  if(trim&&AUDB.src&&AUDB.src.indexOf(url)>=0){            // 已預載 → 直接換手，省掉載入空檔
+    try{AUD.pause()}catch(e){} AUD.onended=null;AUD.onerror=null;AUD.ontimeupdate=null;AUD.onloadedmetadata=null;
+    const sw=AUD; AUD=AUDB; AUDB=sw;
+  }else if(!AUD.src||AUD.src.indexOf(url)<0){ AUD.src=url; }
+  AUD.onended=null;AUD.onerror=null;AUD.ontimeupdate=null;AUD.onloadedmetadata=null;
+  try{ if(AUD.currentTime>0.01)AUD.currentTime=0; }catch(e){}
   AUD.playbackRate=(sj==="te"&&it.lg==="zh")?1:rateNow();   // 多益字彙中文固定原速；其餘跟語速滑桿
+  if(trim){
+    const cutHead=()=>{ const d=AUD.duration;
+      if(d&&d>HEADTRIM+TAILTRIM+0.35){ try{ if(AUD.currentTime<HEADTRIM)AUD.currentTime=HEADTRIM; }catch(e){} } };
+    if(AUD.readyState>=1)cutHead(); else AUD.onloadedmetadata=cutHead;
+    AUD.ontimeupdate=()=>{ const d=AUD.duration;                      // 尾巴靜音提早切，接下一句
+      if(d&&d>HEADTRIM+TAILTRIM+0.35&&d-AUD.currentTime<=TAILTRIM){
+        AUD.ontimeupdate=null; clipActive=false; try{AUD.pause()}catch(e){} go(); } };
+  }
   AUD.onended=()=>{clipActive=false;go();};
   AUD.onerror=()=>{clipActive=false;it.clipFailed=true;setTimeout(speakNext,20);};   // 音檔失敗 → 退回合成語音
   const pr=AUD.play(); if(pr&&pr.catch)pr.catch(()=>{clipActive=false;it.clipFailed=true;setTimeout(speakNext,20);});
+  preloadNext();
   wd=setTimeout(()=>{ if(playing&&clipActive){clipActive=false;go();} },90000);
 }
 function speakNext(){
@@ -703,7 +728,7 @@ function speakNext(){
   if(!it.silent)highlight(it);
   if(it.clip&&!it.clipFailed){
     let done=false;
-    const go=()=>{ if(done)return; done=true; clearTimeout(wd); qi++; setTimeout(speakNext,60); };
+    const go=()=>{ if(done)return; done=true; clearTimeout(wd); qi++; setTimeout(speakNext,flowOn()?0:60); };
     const st=document.getElementById("st"); if(st)st.textContent=Math.max(1,qi)+" / "+(queue.length-1);
     playClip(it,go); return;
   }
@@ -756,7 +781,8 @@ function start(list){
 }
 function stopAll(){playing=false;clearInterval(keep);clearInterval(poll);clearTimeout(wd);
   try{speechSynthesis.cancel()}catch(e){}
-  try{AUD.pause();AUD.currentTime=0;}catch(e){} clipActive=false;
+  try{AUD.pause();AUD.currentTime=0;}catch(e){} AUD.ontimeupdate=null;
+  try{AUDB.pause()}catch(e){} clipActive=false;
   const pp=document.getElementById("pp"); if(pp)pp.textContent=PLAYLABEL;
   const st=document.getElementById("st"); if(st)st.textContent="";
   document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
@@ -1128,6 +1154,9 @@ document.getElementById("voice").onchange=e=>{if(isEN()){prefEN=e.target.value;l
 ["contall","notip"].forEach(id=>{const el=document.getElementById(id);if(!el)return;
   const sv=localStorage.getItem("mb_"+id); if(sv!==null)el.checked=sv==="1";
   el.addEventListener("change",()=>localStorage.setItem("mb_"+id,el.checked?"1":"0"));});
+const fl=document.getElementById("flow"); if(fl){ fl.value=localStorage.getItem("mb_flow")||"flow";
+  fl.onchange=e=>{ localStorage.setItem("mb_flow",e.target.value);
+    if(playing&&clipActive){ try{AUDB.pause()}catch(e2){} try{AUDB.removeAttribute("src")}catch(e2){} } }; }
 const cs=document.getElementById("cmpside"); cs.value=cmpSide();
 cs.onchange=e=>{localStorage.setItem("nida_cmpside",e.target.value);
   if(playing){const from=queue[qi]?queue[qi].i:null, vis=visibleIdx(), pos=vis.indexOf(from);
@@ -1140,7 +1169,7 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20260921-0534";
+document.getElementById("datever").textContent="資料 20261004-1537";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
 </script>
 </body></html>
