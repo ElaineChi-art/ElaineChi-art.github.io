@@ -46,6 +46,16 @@ for m in MODS:
     mod=importlib.import_module(m)
     u=json.loads(json.dumps(mod.U))          # deep copy
     bold(u)
+    # 哪些 Part（h1 區段）完全沒有英文句 → 那一段的中文講解要有語音，按🔊才念得出來
+    pi=0; has={}
+    for it in u["items"]:
+        if it["k"]=="h1": pi+=1
+        elif it["k"]=="en" and pi: has[pi]=True
+    pi=0
+    for it in u["items"]:
+        if it["k"]=="h1": pi+=1
+        elif it["k"] in ("p","tip") and pi and not has.get(pi):
+            it["a"]=job(VZH,it["t"])
     for it in u["items"]:
         if it["k"]=="en":
             it["a"]=job(VEN,it["t"])

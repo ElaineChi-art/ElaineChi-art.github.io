@@ -123,6 +123,8 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .tew .en .sp{flex:0 0 auto;font-size:11.5px;font-weight:700;color:#fff;background:var(--acc);border-radius:4px;padding:2px 7px;height:19px;line-height:15px;margin-top:3px;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
 .tew .en.now{background:rgba(155,29,45,.11);box-shadow:inset 3px 0 0 var(--red)}
 .tew .en .s1{flex:0 0 auto;margin-left:auto;font-size:12px;opacity:.45;padding:0 4px;cursor:pointer;line-height:19px}
+.vw .w1{font-size:12px!important;opacity:.4;padding:0 5px;cursor:pointer;user-select:none}
+.vw .w1:hover{opacity:1}
 .tew .en .s1:hover{opacity:1}
 .tew .en .sp.ph{visibility:hidden}
 .tew .en .sp:empty{display:none}
@@ -249,20 +251,20 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202610060034"></script>
-<script src="sudu-data.js?v=202610060034"></script>
-<script src="key-data.js?v=202610060034"></script>
-<script src="nida-cmp-data.js?v=202610060034"></script>
-<script src="nida-cmpkey-data.js?v=202610060034"></script>
-<script src="minsu-data.js?v=202610060034"></script>
-<script src="minsu-sudu-data.js?v=202610060034"></script>
-<script src="minsu-key-data.js?v=202610060034"></script>
-<script src="minsu-cmp-data.js?v=202610060034"></script>
-<script src="minsu-cmpkey-data.js?v=202610060034"></script>
-<script src="toeic-data.js?v=202610060034"></script>
-<script src="toeic-sudu-data.js?v=202610060034"></script>
-<script src="contract-data.js?v=202610060034"></script>
-<script src="contract-sudu-data.js?v=202610060034"></script>
+<script src="nida-data.js?v=202610060106"></script>
+<script src="sudu-data.js?v=202610060106"></script>
+<script src="key-data.js?v=202610060106"></script>
+<script src="nida-cmp-data.js?v=202610060106"></script>
+<script src="nida-cmpkey-data.js?v=202610060106"></script>
+<script src="minsu-data.js?v=202610060106"></script>
+<script src="minsu-sudu-data.js?v=202610060106"></script>
+<script src="minsu-key-data.js?v=202610060106"></script>
+<script src="minsu-cmp-data.js?v=202610060106"></script>
+<script src="minsu-cmpkey-data.js?v=202610060106"></script>
+<script src="toeic-data.js?v=202610060106"></script>
+<script src="toeic-sudu-data.js?v=202610060106"></script>
+<script src="contract-data.js?v=202610060106"></script>
+<script src="contract-sudu-data.js?v=202610060106"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -308,7 +310,7 @@ function teHTML(t,mode){
     else if(it.k==="en"){h+='<div class="en" data-si="'+(si++)+'"><span class="sp'+(it.cn?" ph":"")+'">'+esc(it.sp||"")+'</span><span class="et">'+mk(it.t)+'</span>'+(it.a?'<span class="s1" title="念這一句">🔊</span>':'')+'</div>'+(it.zh?'<div class="zx">'+mk(it.zh)+'</div>':'');}
     else if(it.k==="zhblk")h+='<div class="zx zhblk">📖 全文中譯　'+esc(it.t)+'</div>';
     else if(it.k==="voc"){h+='<div class="voc"><div class="vt">📝 核心字彙與考點解密</div>';
-      (it.v||[]).forEach(v=>{h+='<div class="v"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+(v.zh?'<span>'+mk(v.zh)+'</span>':'')+'</div>'+
+      (it.v||[]).forEach(v=>{h+='<div class="v"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+(v.zh?'<span>'+mk(v.zh)+'</span>':'')+'<span class="w1" data-w="'+esc(v.w)+'" title="念這個字（英文＋中文）">🔊</span></div>'+
         (v.syn?'<div class="vs">同義代換　'+mk(v.syn)+'</div>':'')+
         (v.tip?'<div class="vp">'+mk(v.tip)+'</div>':'')+
         (v.trap?'<div class="vr">⚠ 防雷陷阱　'+mk(v.trap)+'</div>':'')+'</div>';});
@@ -342,7 +344,7 @@ function vocPanel(t){
   L.forEach(v=>{
     if(v.p!==last){last=v.p;h+='<div class="vpt">'+esc(v.pn)+'</div>';}
     h+='<div class="vrow"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+
-       (v.zh?'<span class="zh">'+mk(v.zh)+'</span>':'')+'</div>'+
+       (v.zh?'<span class="zh">'+mk(v.zh)+'</span>':'')+'<span class="w1" data-w="'+esc(v.w)+'" title="念這個字（英文＋中文）">🔊</span></div>'+
        (v.syn?'<div class="vs">同義代換　'+mk(v.syn)+'</div>':'')+
        (v.tip?'<div class="vtip zh">'+mk(v.tip)+'</div>':'')+
        (v.trap?'<div class="vr zh">⚠ 防雷陷阱　'+mk(v.trap)+'</div>':'')+'</div>';
@@ -678,7 +680,7 @@ const RK=()=>isEN()?"mb_rate_en":"mb_rate";
 function initRate(){const r=document.getElementById("rate");if(!r)return;
   r.value=localStorage.getItem(RK())||(isEN()?"1":"1.3");
   const lab=document.getElementById("ratev"); const show=()=>{if(lab)lab.textContent=(+r.value).toFixed(2)+"×";};
-  show(); r.oninput=()=>{localStorage.setItem(RK(),r.value);show(); if(clipActive&&queue[qi]&&!(ENS()&&queue[qi].lg==="zh"))AUD.playbackRate=+r.value;};}
+  show(); r.oninput=()=>{localStorage.setItem(RK(),r.value);show(); if(clipActive&&queue[qi]&&!(ENS()&&queue[qi].lg==="zh"&&queue[qi].voc))AUD.playbackRate=+r.value;};}
 function chunks(t,en){const out=[];let s="";
   if(en){ String(t).replace(/\s+/g," ").trim().split(/(?<=[.!?])\s+/).forEach(p=>{
       if(s&&(s+" "+p).length>190){out.push(s);s=p}else s=s?s+" "+p:p});
@@ -709,7 +711,7 @@ function playClip(it,go){
   }else if(!AUD.src||AUD.src.indexOf(url)<0){ AUD.src=url; }
   AUD.onended=null;AUD.onerror=null;AUD.ontimeupdate=null;AUD.onloadedmetadata=null;
   try{ if(AUD.currentTime>0.01)AUD.currentTime=0; }catch(e){}
-  AUD.playbackRate=(ENS()&&it.lg==="zh")?1:rateNow();   // 多益字彙中文固定原速；其餘跟語速滑桿
+  AUD.playbackRate=(ENS()&&it.lg==="zh"&&it.voc)?1:rateNow();   // 字彙中文固定原速；其餘（含中文講解）跟語速滑桿
   if(trim){
     const cutHead=()=>{ const d=AUD.duration;
       if(d&&d>HEADTRIM+TAILTRIM+0.35){ try{ if(AUD.currentTime<HEADTRIM)AUD.currentTime=HEADTRIM; }catch(e){} } };
@@ -919,9 +921,23 @@ function teQueue(i,p,si1){
   if(m==="sd"){ const d=SUDUD()[t.code]||{};
     (d.say||[]).forEach((s,k)=>out.push({text:cleanEN(s),i:i,p:null,first:k===0,clip:(d.saya||[])[k]||null})); return out; }
   if(localStorage.getItem(K(t.code,m)))return null;            // 使用者改過內容 → 走原本文字合成
-  let pi=0,si=0;
-  t.items.forEach(it=>{ if(it.k==="h1")pi++;
-    else if(it.k==="en"){ if((p==null||pi===p)&&(si1==null||si===si1))out.push({text:cleanEN(it.t),i:i,p:p,si:si,first:out.length===0,clip:it.a||null}); si++; } });
+  const hasEN={}; let pi=0;                                    // 先看每個段落有沒有英文句
+  t.items.forEach(it=>{ if(it.k==="h1")pi++; else if(it.k==="en"&&pi)hasEN[pi]=true; });
+  pi=0; let si=0;
+  t.items.forEach(it=>{
+    if(it.k==="h1"){pi++;return;}
+    if(it.k==="en"){ if((p==null||pi===p)&&(si1==null||si===si1))out.push({text:cleanEN(it.t),i:i,p:p,si:si,first:out.length===0,clip:it.a||null}); si++; return; }
+    if(si1!=null)return;                                       // 單句朗讀不夾中文
+    if((it.k==="p"||it.k==="tip")&&pi&&!hasEN[pi]&&(p==null||pi===p))   // 整段都是中文講解 → 念中文
+      out.push({text:String(it.t).replace(/\*\*/g,""),i:i,p:p,lg:"zh",first:out.length===0,clip:it.a||null});
+  });
+  return out;
+}
+function wordQueue(i,w){                                       // 單字小喇叭：念英文再念中文
+  const t=DATA()[i], L=vocList(t), k=L.findIndex(o=>(o.w||"")===w);
+  if(k<0)return [];
+  const v=L[k], out=[{text:cleanEN(v.w),i:i,p:null,voc:"one",vw:w,vi:k,vn:L.length,lg:"en",first:true,clip:v.a||null}];
+  if(v.zh)out.push({text:String(v.zh).replace(/\*\*/g,""),i:i,p:null,voc:"one",vw:w,vi:k,vn:L.length,lg:"zh",clip:v.az||null});
   return out;
 }
 function cmpQueue(i){
@@ -941,6 +957,7 @@ function cmpQueue(i){
 }
 function buildQueue(list){
   list.forEach(x=>{
+    if(typeof x==="object"&&x.word){ wordQueue(x.i,x.word).forEach(q=>queue.push(q)); return; }
     if(typeof x==="object"&&x.voc){ vocQueue(x.i,x.voc).forEach(q=>queue.push(q)); return; }
     const i=(typeof x==="object")?x.i:x, p=(typeof x==="object")?x.p:null;
     if(sj!=="te"&&typeof x!=="object"){ const q=cmpQueue(i); if(q){q.forEach(o=>queue.push(o));return;} }
@@ -988,6 +1005,10 @@ app.addEventListener("click",e=>{
     vb.classList.toggle("on",!on);
     if(!on&&pl)pl.scrollIntoView({block:"nearest",behavior:"smooth"});
     return; }
+  const w1=e.target.closest(".w1");
+  if(w1){ const card=w1.closest(".tp"), i=+card.dataset.i, w=w1.dataset.w;
+    const on=playing&&queue[qi]&&queue[qi].i===i&&queue[qi].vw===w;
+    stopAll(); if(!on){window.__noscroll=true;start([{i:i,word:w}]);setTimeout(()=>{window.__noscroll=false;},300);} return; }
   const vs=e.target.closest(".vsb");
   if(vs){ const card=vs.closest(".tp"), i=+card.dataset.i, md=vs.dataset.m, was=vs.classList.contains("on");
     stopAll(); if(!was){ vs.classList.add("on"); start([{i:i,voc:md}]); } return; }
@@ -1174,7 +1195,7 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20261006-0034";
+document.getElementById("datever").textContent="資料 20261006-0106";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
 </script>
 </body></html>
