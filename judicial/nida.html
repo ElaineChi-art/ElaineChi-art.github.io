@@ -123,6 +123,10 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .tew .en .sp{flex:0 0 auto;font-size:11.5px;font-weight:700;color:#fff;background:var(--acc);border-radius:4px;padding:2px 7px;height:19px;line-height:15px;margin-top:3px;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
 .tew .en.now{background:rgba(155,29,45,.11);box-shadow:inset 3px 0 0 var(--red)}
 .tew .en .s1{flex:0 0 auto;margin-left:auto;font-size:12px;opacity:.45;padding:0 4px;cursor:pointer;line-height:19px}
+.vw .wst{font-size:12.5px!important;opacity:.4;padding:0 5px 0 0;cursor:pointer;user-select:none;color:inherit}
+.vw .wst:hover{opacity:1}
+.vw .wst.on{opacity:1;color:#e67e22}
+.vov .vsb.st b,.tew .voc .vsb.st b{font-weight:600;margin-left:4px;opacity:.8}
 .vw .w1{font-size:12px!important;opacity:.4;padding:0 5px;cursor:pointer;user-select:none}
 .vw .w1:hover{opacity:1}
 .tew .en .s1:hover{opacity:1}
@@ -253,23 +257,24 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202610060113"></script>
-<script src="sudu-data.js?v=202610060113"></script>
-<script src="key-data.js?v=202610060113"></script>
-<script src="nida-cmp-data.js?v=202610060113"></script>
-<script src="nida-cmpkey-data.js?v=202610060113"></script>
-<script src="minsu-data.js?v=202610060113"></script>
-<script src="minsu-sudu-data.js?v=202610060113"></script>
-<script src="minsu-key-data.js?v=202610060113"></script>
-<script src="minsu-cmp-data.js?v=202610060113"></script>
-<script src="minsu-cmpkey-data.js?v=202610060113"></script>
-<script src="toeic-data.js?v=202610060113"></script>
-<script src="toeic-sudu-data.js?v=202610060113"></script>
-<script src="contract-data.js?v=202610060113"></script>
-<script src="contract-sudu-data.js?v=202610060113"></script>
+<script src="nida-data.js?v=202610060120"></script>
+<script src="sudu-data.js?v=202610060120"></script>
+<script src="key-data.js?v=202610060120"></script>
+<script src="nida-cmp-data.js?v=202610060120"></script>
+<script src="nida-cmpkey-data.js?v=202610060120"></script>
+<script src="minsu-data.js?v=202610060120"></script>
+<script src="minsu-sudu-data.js?v=202610060120"></script>
+<script src="minsu-key-data.js?v=202610060120"></script>
+<script src="minsu-cmp-data.js?v=202610060120"></script>
+<script src="minsu-cmpkey-data.js?v=202610060120"></script>
+<script src="toeic-data.js?v=202610060120"></script>
+<script src="toeic-sudu-data.js?v=202610060120"></script>
+<script src="contract-data.js?v=202610060120"></script>
+<script src="contract-sudu-data.js?v=202610060120"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+const esca=s=>esc(s).replace(/"/g,'&quot;');   /* 放進屬性值用 */
 const reEsc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
 let KEYRE=null;
 function setKeys(code){
@@ -312,8 +317,9 @@ function teHTML(t,mode){
     else if(it.k==="en"){h+='<div class="en" data-si="'+(si++)+'"><span class="sp'+(it.cn?" ph":"")+'">'+esc(it.sp||"")+'</span><span class="et">'+mk(it.t)+'</span>'+(it.a?'<span class="s1" title="念這一句">🔊</span>':'')+'</div>'+(it.zh?'<div class="zx">'+mk(it.zh)+'</div>':'');}
     else if(it.k==="zhblk")h+='<div class="zx zhblk">📖 全文中譯　'+esc(it.t)+'</div>';
     else if(it.k==="voc"){h+='<div class="voc"><div class="vt"><span>📝 核心字彙與考點解密　'+((it.v||[]).length)+' 組</span>'+
-      '<span class="btns"><button class="vsb" data-m="en" data-vb="'+vb+'">🔊 只念英文</button><button class="vsb" data-m="both" data-vb="'+(vb++)+'">🔊 英中都念</button></span></div>';
-      (it.v||[]).forEach(v=>{h+='<div class="v"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+(v.zh?'<span>'+mk(v.zh)+'</span>':'')+'<span class="w1" data-w="'+esc(v.w)+'" title="念這個字（英文＋中文）">🔊</span></div>'+
+      '<span class="btns"><button class="vsb" data-m="en" data-vb="'+vb+'">🔊 只念英文</button><button class="vsb" data-m="both" data-vb="'+vb+'">🔊 英中都念</button>'+
+      '<button class="vsb st" data-m="star" data-vb="'+(vb++)+'">⭐ 只念星號<b class="vwn" data-code="'+esc(t.code)+'">'+vwCount(t.code)+'</b></button></span></div>';
+      (it.v||[]).forEach(v=>{h+='<div class="v"><div class="vw">'+wstHTML(t.code,v.w)+'<b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+(v.zh?'<span>'+mk(v.zh)+'</span>':'')+'<span class="w1" data-w="'+esca(v.w)+'" title="念這個字（英文＋中文）">🔊</span></div>'+
         (v.syn?'<div class="vs">同義代換　'+mk(v.syn)+'</div>':'')+
         (v.tip?'<div class="vp">'+mk(v.tip)+'</div>':'')+
         (v.trap?'<div class="vr">⚠ 防雷陷阱　'+mk(v.trap)+'</div>':'')+'</div>';});
@@ -322,6 +328,15 @@ function teHTML(t,mode){
   if(op)h+='</div>';
   return h+'</div>';
 }
+/* ── 單字星號（依科目＋單元分開記，localStorage nidavw_{科目前綴}{code}）── */
+const VWK=code=>"nidavw_"+px()+code;
+function vwSet(code){ try{return new Set(JSON.parse(localStorage.getItem(VWK(code))||"[]"));}catch(e){return new Set();} }
+function vwOn(code,w){ return vwSet(code).has(w); }
+function vwToggle(code,w){ const st=vwSet(code); if(st.has(w))st.delete(w); else st.add(w);
+  localStorage.setItem(VWK(code),JSON.stringify([...st])); return st.has(w); }
+function vwCount(code){ const L=vocList(DATA().find(x=>x.code===code)||{items:[]}), st=vwSet(code);
+  return L.filter(v=>st.has(v.w)).length; }
+function wstHTML(code,w){ return '<span class="wst'+(vwOn(code,w)?" on":"")+'" data-w="'+esca(w)+'" title="標記這個單字">'+(vwOn(code,w)?"★":"☆")+'</span>'; }
 function vocList(t){
   const out=[],seen={}; let pi=0,pn="";
   (t.items||[]).forEach(it=>{
@@ -341,13 +356,14 @@ function vocPanel(t){
     '<span class="btns">'+
     '<button class="vsb" data-m="en">🔊 只念英文</button>'+
     '<button class="vsb" data-m="both">🔊 英中都念</button>'+
+    '<button class="vsb st" data-m="star">⭐ 只念星號<b class="vwn" data-code="'+esc(t.code)+'">'+vwCount(t.code)+'</b></button>'+
     '<button class="tg2 zhtg">'+(nozh?"👁 顯示中文":"🙈 隱藏中文")+'</button></span></div>'+
     '<div class="vbody">';
   let last=-1;
   L.forEach(v=>{
     if(v.p!==last){last=v.p;h+='<div class="vpt">'+esc(v.pn)+'</div>';}
-    h+='<div class="vrow"><div class="vw"><b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+
-       (v.zh?'<span class="zh">'+mk(v.zh)+'</span>':'')+'<span class="w1" data-w="'+esc(v.w)+'" title="念這個字（英文＋中文）">🔊</span></div>'+
+    h+='<div class="vrow"><div class="vw">'+wstHTML(t.code,v.w)+'<b>'+esc(v.w)+'</b>'+(v.pos?'<i>'+esc(v.pos)+'</i>':'')+
+       (v.zh?'<span class="zh">'+mk(v.zh)+'</span>':'')+'<span class="w1" data-w="'+esca(v.w)+'" title="念這個字（英文＋中文）">🔊</span></div>'+
        (v.syn?'<div class="vs">同義代換　'+mk(v.syn)+'</div>':'')+
        (v.tip?'<div class="vtip zh">'+mk(v.tip)+'</div>':'')+
        (v.trap?'<div class="vr zh">⚠ 防雷陷阱　'+mk(v.trap)+'</div>':'')+'</div>';
@@ -919,13 +935,15 @@ function topicText(idx,pidx){
 function vocQueue(i,md,vb){
   const t=DATA()[i], L=vocList(t), out=[];
   let sel=null;
+  const star=md==="star"?vwSet(t.code):null;              // ⭐ 只念標了星號的字
   if(vb!=null&&vb!==""){ let n=0;                         // 只念解析內的某一個字彙區
     (t.items||[]).forEach(it=>{ if(it.k==="voc"){ if(n===+vb)sel=new Set((it.v||[]).map(v=>(v.w||"").toLowerCase().trim())); n++; } }); }
   L.forEach((v,k)=>{
     const w=cleanEN(v.w||""); if(!w)return;
     if(sel&&!sel.has((v.w||"").toLowerCase().trim()))return;
+    if(star&&!star.has(v.w))return;
     out.push({text:w,i:i,p:null,vi:k,vn:L.length,vw:v.w,voc:md,lg:"en",first:out.length===0,clip:v.a||null});
-    if(md==="both"&&v.zh)out.push({text:String(v.zh).replace(/\*\*/g,""),i:i,p:null,vi:k,vn:L.length,vw:v.w,voc:md,lg:"zh",clip:v.az||null});
+    if(md!=="en"&&v.zh)out.push({text:String(v.zh).replace(/\*\*/g,""),i:i,p:null,vi:k,vn:L.length,vw:v.w,voc:md,lg:"zh",clip:v.az||null});
   });
   return out;
 }
@@ -1018,6 +1036,12 @@ app.addEventListener("click",e=>{
     vb.classList.toggle("on",!on);
     if(!on&&pl)pl.scrollIntoView({block:"nearest",behavior:"smooth"});
     return; }
+  const wst=e.target.closest(".wst");
+  if(wst){ const card=wst.closest(".tp"), code=card.dataset.code, w=wst.dataset.w, on=vwToggle(code,w);
+    card.querySelectorAll('.wst[data-w="'+w.replace(/"/g,'\\"')+'"]').forEach(x=>{x.classList.toggle("on",on);x.textContent=on?"★":"☆";});
+    const n=vwCount(code);
+    document.querySelectorAll('.vwn[data-code="'+code+'"]').forEach(x=>x.textContent=n);
+    return; }
   const w1=e.target.closest(".w1");
   if(w1){ const card=w1.closest(".tp"), i=+card.dataset.i, w=w1.dataset.w;
     const on=playing&&queue[qi]&&queue[qi].i===i&&queue[qi].vw===w;
@@ -1025,7 +1049,10 @@ app.addEventListener("click",e=>{
   const vs=e.target.closest(".vsb");
   if(vs){ const card=vs.closest(".tp"), i=+card.dataset.i, md=vs.dataset.m, vb=vs.dataset.vb, was=vs.classList.contains("on");
     stopAll();
-    if(!was){ vs.classList.add("on"); start([{i:i,voc:md,vb:vb}]); } return; }
+    if(!was){
+      if(md==="star"&&!vwCount(card.dataset.code)){ const t0=vs.innerHTML;
+        vs.innerHTML="⭐ 還沒標星號"; setTimeout(()=>{vs.innerHTML=t0;},1600); return; }
+      vs.classList.add("on"); start([{i:i,voc:md,vb:vb}]); } return; }
   const zt=e.target.closest(".zhtg");
   if(zt){ const on=localStorage.getItem("nida_te_nozh")==="1";
     localStorage.setItem("nida_te_nozh",on?"0":"1");
@@ -1209,7 +1236,7 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20261006-0113";
+document.getElementById("datever").textContent="資料 20261006-0120";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
 </script>
 </body></html>
