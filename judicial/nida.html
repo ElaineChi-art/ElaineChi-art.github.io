@@ -218,7 +218,7 @@ body.nokk .hl{background:none;font-weight:inherit}
 <header>
 <h1>✍️ <span id="subjname">行政法</span><span id="subjmode">擬答</span><small id="subjsub">上榜答題體例　按…次按…查本案中…綜上所述　共 <span id="tot">—</span> 題</small></h1>
 <div class="row" style="margin-bottom:6px">
-<button class="sbj on" data-s="xz">行政法</button><button class="sbj" data-s="ms">民事訴訟法</button><button class="sbj" data-s="te">多益 TOEIC</button>
+<button class="sbj on" data-s="xz">行政法</button><button class="sbj" data-s="ms">民事訴訟法</button><button class="sbj" data-s="te">多益 TOEIC</button><button class="sbj" data-s="ct">英文商務合約</button>
 </div>
 <div class="row">
 <button id="tocbtn">☰ 目錄</button>
@@ -249,18 +249,20 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202610041537"></script>
-<script src="sudu-data.js?v=202610041537"></script>
-<script src="key-data.js?v=202610041537"></script>
-<script src="nida-cmp-data.js?v=202610041537"></script>
-<script src="nida-cmpkey-data.js?v=202610041537"></script>
-<script src="minsu-data.js?v=202610041537"></script>
-<script src="minsu-sudu-data.js?v=202610041537"></script>
-<script src="minsu-key-data.js?v=202610041537"></script>
-<script src="minsu-cmp-data.js?v=202610041537"></script>
-<script src="minsu-cmpkey-data.js?v=202610041537"></script>
-<script src="toeic-data.js?v=202610041537"></script>
-<script src="toeic-sudu-data.js?v=202610041537"></script>
+<script src="nida-data.js?v=202610060034"></script>
+<script src="sudu-data.js?v=202610060034"></script>
+<script src="key-data.js?v=202610060034"></script>
+<script src="nida-cmp-data.js?v=202610060034"></script>
+<script src="nida-cmpkey-data.js?v=202610060034"></script>
+<script src="minsu-data.js?v=202610060034"></script>
+<script src="minsu-sudu-data.js?v=202610060034"></script>
+<script src="minsu-key-data.js?v=202610060034"></script>
+<script src="minsu-cmp-data.js?v=202610060034"></script>
+<script src="minsu-cmpkey-data.js?v=202610060034"></script>
+<script src="toeic-data.js?v=202610060034"></script>
+<script src="toeic-sudu-data.js?v=202610060034"></script>
+<script src="contract-data.js?v=202610060034"></script>
+<script src="contract-sudu-data.js?v=202610060034"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -400,8 +402,9 @@ function cmpHTML(t){
   });
   return h+'</div>';
 }
+const ENS=()=>typeof sj!=="undefined"&&(sj==="te"||sj==="ct");   /* 英文逐句模式：多益＋英文商務合約 */
 function bodyHTML(t,mode){
-  if(sj==="te")return teHTML(t,mode);
+  if(ENS())return teHTML(t,mode);
   if(mode==="cmp")return cmpHTML(t);
   setKeys(t.code);
   let h="",a=0,b=0;
@@ -534,13 +537,13 @@ function render(){
       (saved?'<span class="edited">已編輯</span>':'')+'</span><span class="btns">'+
       (CMPD()[t.code]?'<button class="tb cmb'+(mode==="cmp"?" on":"")+'" data-i="'+idx+'" title="左右對照（學理／白話）">⚖ 對照</button>':'')+
       '<button class="tb star'+(SR(t.code)?" on":"")+'" data-i="'+idx+'" title="標為重要">'+(SR(t.code)?"★":"☆")+'</button>'+
-      (sj==="te"?'<button class="tb vbb'+(localStorage.getItem("nidavoc_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'" title="核心字彙總覽">📝 字彙</button>':'')+
-      (sj==="te"?'<button class="tb xpb'+(localStorage.getItem("nidax_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'">🔍 全面解析</button>':'')+
-      '<button class="tb sw'+(mode==="sd"?" on":"")+'" data-i="'+idx+'">'+(mode==="sd"?(sj==="te"?"📄 原文":"📄 擬答"):(sj==="te"?"🌲 速讀":"⚡ 速讀"))+'</button>'+
+      (ENS()?'<button class="tb vbb'+(localStorage.getItem("nidavoc_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'" title="核心字彙總覽">📝 字彙</button>':'')+
+      (ENS()?'<button class="tb xpb'+(localStorage.getItem("nidax_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'">🔍 全面解析</button>':'')+
+      '<button class="tb sw'+(mode==="sd"?" on":"")+'" data-i="'+idx+'">'+(mode==="sd"?(ENS()?"📄 原文":"📄 擬答"):(ENS()?"🌲 速讀":"⚡ 速讀"))+'</button>'+
       '<button class="tb ed" data-i="'+idx+'">✏️</button>'+
       '<button class="tb play" data-i="'+idx+'">🔊</button></span></div>'+
       '<div class="body">'+(saved||bodyHTML(t,mode))+'</div>'+
-      (sj==="te"?vocPanel(t):"")+
+      (ENS()?vocPanel(t):"")+
       '<div class="note'+(note.length>120&&localStorage.getItem("nidaopen_"+px()+t.code)!=="1"?" clip":"")+'" data-code="'+esc(t.code)+'">'+
       '<div class="hd"><span data-lb="📝 我的筆記（自動儲存）">📝 我的筆記（自動儲存）'+(note?'　<span style="opacity:.7">'+note.length+' 字</span>':'')+'</span>'+
       '<span><button class="tg2" data-code="'+esc(t.code)+'">'+(localStorage.getItem("nidaopen_"+px()+t.code)==="1"?"▴ 收合":"▾ 展開全部")+'</button> '+
@@ -630,8 +633,9 @@ document.getElementById("allsd").onclick=()=>{
   }else reapplyNow();};
 function setHd(){
   const m=document.getElementById("subjmode"), sb=document.getElementById("subjsub");
-  if(m)m.textContent=sj==="te"?"原文全解":"擬答";
-  if(sb)sb.innerHTML=(sj==="te"?"Part 3／4／7 全文＋STAR 四段拆解　點句子看解析　朗讀只念英文原句　共 ":"上榜答題體例　按…次按…查本案中…綜上所述　共 ")+'<span id="tot">'+DATA().length+"</span> "+(sj==="te"?"個情境":"題");
+  if(m)m.textContent=ENS()?"原文全解":"擬答";
+  const SUB={te:"Part 3／4／7 全文＋STAR 四段拆解　點句子看解析　朗讀只念英文原句　共 ",ct:"合約原文逐句英中對照　點句子看解析　朗讀只念英文條文　共 "};
+  if(sb)sb.innerHTML=(SUB[sj]||"上榜答題體例　按…次按…查本案中…綜上所述　共 ")+'<span id="tot">'+DATA().length+"</span> "+(ENS()?("個"+CUR().label):"題");
 }
 function starBtn(){const b=document.getElementById("onlystar"); if(!b)return;
   const on=starOnly(); b.classList.toggle("on",on);
@@ -641,7 +645,7 @@ const PLAYLABEL="▶ 朗讀全部";
 /* ── 朗讀引擎（防 GC／防 15 秒斷線／watchdog 續播） ── */
 let voices=[],pref=localStorage.getItem("mb_voice")||"",prefEN=localStorage.getItem("mb_voice_en")||"",queue=[],qi=0,playing=false,keep=null,wd=null,poll=null;
 let utterRefs=[];               // 保留參考，避免被 GC 掉導致 onend 不觸發
-const isEN=()=>typeof sj!=="undefined"&&sj==="te";
+const isEN=()=>typeof sj!=="undefined"&&ENS();
 const JUNK=/Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Good News|Hysterical|Jester|Junior|Kathy|Organ|Superstar|Ralph|Trinoids|Whisper|Wobble|Zarvox|Fred|Grandma|Grandpa|Rocko|Princess|Bruce|Agnes|Victoria|Alice|Alva/i;
 const ACC={"en-US":"🇺🇸 美式","en-CA":"🇨🇦 加拿大","en-GB":"🇬🇧 英式","en-AU":"🇦🇺 澳洲"};
 const ORD=["en-US","en-CA","en-GB","en-AU"];          /* 多益只考這四種口音 */
@@ -674,7 +678,7 @@ const RK=()=>isEN()?"mb_rate_en":"mb_rate";
 function initRate(){const r=document.getElementById("rate");if(!r)return;
   r.value=localStorage.getItem(RK())||(isEN()?"1":"1.3");
   const lab=document.getElementById("ratev"); const show=()=>{if(lab)lab.textContent=(+r.value).toFixed(2)+"×";};
-  show(); r.oninput=()=>{localStorage.setItem(RK(),r.value);show(); if(clipActive&&queue[qi]&&!(sj==="te"&&queue[qi].lg==="zh"))AUD.playbackRate=+r.value;};}
+  show(); r.oninput=()=>{localStorage.setItem(RK(),r.value);show(); if(clipActive&&queue[qi]&&!(ENS()&&queue[qi].lg==="zh"))AUD.playbackRate=+r.value;};}
 function chunks(t,en){const out=[];let s="";
   if(en){ String(t).replace(/\s+/g," ").trim().split(/(?<=[.!?])\s+/).forEach(p=>{
       if(s&&(s+" "+p).length>190){out.push(s);s=p}else s=s?s+" "+p:p});
@@ -695,7 +699,7 @@ function preloadNext(){
     if(!AUDB.src||AUDB.src.indexOf(u)<0){ try{AUDB.pause()}catch(e){} AUDB.onended=null;AUDB.onerror=null;AUDB.ontimeupdate=null;AUDB.onloadedmetadata=null;
       AUDB.src=u; try{AUDB.load()}catch(e){} } }
 }
-function clipURL(h){return sj==="te"?"audio/te/"+h+".mp3":"audio/ms/"+h+".m4a";}   // 檔名即內容雜湊，可長期快取
+function clipURL(h){return ENS()?"audio/"+sj+"/"+h+".mp3":"audio/ms/"+h+".m4a";}   // 檔名即內容雜湊，可長期快取
 function playClip(it,go){
   clipActive=true;
   const url=clipURL(it.clip), trim=flowOn();
@@ -705,7 +709,7 @@ function playClip(it,go){
   }else if(!AUD.src||AUD.src.indexOf(url)<0){ AUD.src=url; }
   AUD.onended=null;AUD.onerror=null;AUD.ontimeupdate=null;AUD.onloadedmetadata=null;
   try{ if(AUD.currentTime>0.01)AUD.currentTime=0; }catch(e){}
-  AUD.playbackRate=(sj==="te"&&it.lg==="zh")?1:rateNow();   // 多益字彙中文固定原速；其餘跟語速滑桿
+  AUD.playbackRate=(ENS()&&it.lg==="zh")?1:rateNow();   // 多益字彙中文固定原速；其餘跟語速滑桿
   if(trim){
     const cutHead=()=>{ const d=AUD.duration;
       if(d&&d>HEADTRIM+TAILTRIM+0.35){ try{ if(AUD.currentTime<HEADTRIM)AUD.currentTime=HEADTRIM; }catch(e){} } };
@@ -824,13 +828,14 @@ function highlight(it){
     const CS={r:"對照白話",l:"對照學理",b:"對照左右"};
     const MN={sd:"速讀",cmp:CS[cmpSide()]||"對照",full:"擬答"};
     nw.textContent="🔊 "+t.code+(it.p!=null?"　"+partName(t,it.p).replace(/\s*\(.*\)/,""):"　"+(MN[modeOf(t.code)]||"擬答"))+
-      "　"+(sj==="te"?"情境":"題")+" "+(ids.indexOf(it.i)+1)+"/"+ids.length; }
+      "　"+(ENS()?CUR().label:"題")+" "+(ids.indexOf(it.i)+1)+"/"+ids.length; }
 }
 function reapplyNow(){ if(playing&&queue[qi]){window.__noscroll=true;highlight(queue[qi]);window.__noscroll=false;} }
 const SUBJ={
   xz:{name:"行政法",label:"題型",D:()=>window.NIDA||[],S:()=>window.SUDU||{},K:()=>window.KEYS||{},C:()=>window.NIDA_CMP||{},CK:()=>window.NIDA_CMPKEY||{}},
   ms:{name:"民事訴訟法",label:"爭點",D:()=>window.MINSU||[],S:()=>window.MINSU_SUDU||{},K:()=>window.MINSU_KEYS||{},C:()=>window.MINSU_CMP||{},CK:()=>window.MINSU_CMPKEY||{}},
-  te:{name:"多益 TOEIC",label:"情境",D:()=>window.TOEIC||[],S:()=>window.TOEIC_SUDU||{},K:()=>({})}
+  te:{name:"多益 TOEIC",label:"情境",D:()=>window.TOEIC||[],S:()=>window.TOEIC_SUDU||{},K:()=>({})},
+  ct:{name:"英文商務合約",label:"條款",D:()=>window.CONTRACT||[],S:()=>window.CONTRACT_SUDU||{},K:()=>({})}
 };
 let sj=localStorage.getItem("nida_subj")||"xz";
 if(!SUBJ[sj])sj="xz";
@@ -858,7 +863,7 @@ const cleanEN=s=>String(s).replace(/\*\*/g,"").replace(/—\[\d+\]—/g,"").repl
 function topicText(idx,pidx){
   const t=DATA()[idx], no=document.getElementById("notip").checked;
   const m=modeOf(t.code);
-  if(sj==="te"){
+  if(ENS()){
     if(m==="sd"){const d=SUDUD()[t.code]||{};return (d.say||[]).map(cleanEN).join(" ");}
     const sv=localStorage.getItem(K(t.code,m));
     if(sv){const dv=document.createElement("div");dv.innerHTML=sv;
@@ -939,8 +944,8 @@ function buildQueue(list){
     if(typeof x==="object"&&x.voc){ vocQueue(x.i,x.voc).forEach(q=>queue.push(q)); return; }
     const i=(typeof x==="object")?x.i:x, p=(typeof x==="object")?x.p:null;
     if(sj!=="te"&&typeof x!=="object"){ const q=cmpQueue(i); if(q){q.forEach(o=>queue.push(o));return;} }
-    if(sj==="te"){ const q=teQueue(i,p,(typeof x==="object")?x.si:null); if(q){q.forEach(o=>queue.push(o));return;} }
-    chunks(topicText(i,p),sj==="te").forEach((c,k)=>queue.push({text:c,i:i,p:p,first:k===0}));
+    if(ENS()){ const q=teQueue(i,p,(typeof x==="object")?x.si:null); if(q){q.forEach(o=>queue.push(o));return;} }
+    chunks(topicText(i,p),ENS()).forEach((c,k)=>queue.push({text:c,i:i,p:p,first:k===0}));
   });
 }
 function visibleIdx(){return [...document.querySelectorAll(".tp")].map(e=>+e.dataset.i);}
@@ -1169,7 +1174,7 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20261004-1537";
+document.getElementById("datever").textContent="資料 20261006-0034";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
 </script>
 </body></html>
