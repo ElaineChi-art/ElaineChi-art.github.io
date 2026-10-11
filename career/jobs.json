@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-10 06:45 UTC",
+ "updated": "2026-10-11 06:53 UTC",
  "count": 12,
  "jobs": [
   {
@@ -46,6 +46,19 @@
    "location": "臺北市",
    "url": "https://www.yourator.co/companies/8d8a33fc/jobs/47374",
    "tags": []
+  },
+  {
+   "title": "【Taiwan Mobile 科技大神培育實習計劃】IT實習生",
+   "company": "台灣大哥大",
+   "salary": "NT$ 200 - 300 (時薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/taiwanmobile/jobs/26757",
+   "tags": [
+    "Python",
+    "AI",
+    "Java",
+    "docker"
+   ]
   },
   {
    "title": "【實習】 iOS 軟體工程師",
@@ -109,19 +122,6 @@
     "軟體設計工程師",
     "Internet程式設計師",
     "系統維護／操作人員"
-   ]
-  },
-  {
-   "title": "【Taiwan Mobile 科技大神培育實習計劃】IT實習生",
-   "company": "台灣大哥大",
-   "salary": "NT$ 200 - 300 (時薪)",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/taiwanmobile/jobs/26757",
-   "tags": [
-    "Python",
-    "AI",
-    "Java",
-    "docker"
    ]
   },
   {
