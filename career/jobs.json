@@ -1,6 +1,6 @@
 {
- "updated": "2026-10-11 06:53 UTC",
- "count": 12,
+ "updated": "2026-10-12 07:02 UTC",
+ "count": 11,
  "jobs": [
   {
    "title": "Web3 Internship- Software Engineering Intern, OneSavieLab",
@@ -113,30 +113,6 @@
    ]
   },
   {
-   "title": "[CNS] 雲端平台JAVA後端工程師",
-   "company": "動力安全資訊股份有限公司 Dynasafe",
-   "salary": "面議（經常性薪資達4萬元）",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/dynasafe/jobs/24462",
-   "tags": [
-    "軟體設計工程師",
-    "Internet程式設計師",
-    "系統維護／操作人員"
-   ]
-  },
-  {
-   "title": "[CNS] 雲原生容器平台DevOps/SRE工程師 ",
-   "company": "動力安全資訊股份有限公司 Dynasafe",
-   "salary": "NT$ 30,000 -  (月薪)",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/dynasafe/jobs/24463",
-   "tags": [
-    "軟體設計工程師",
-    "Internet程式設計師",
-    "系統維護／操作人員"
-   ]
-  },
-  {
    "title": "Salesforce AI Agentforce 實習顧問",
    "company": "伊原力科技",
    "salary": "NT$ 230 -  (時薪)",
@@ -148,6 +124,14 @@
     "CRM",
     "Salesforce"
    ]
+  },
+  {
+   "title": "(Intern) นักศึกษาฝึกงานฝ่ายบริหารธุรกิจ (เน้น AI & Business Development)",
+   "company": "GliaCloud",
+   "salary": "NT$ 200 - 200 (時薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/GliaCloud/jobs/47285",
+   "tags": []
   }
  ]
 }
