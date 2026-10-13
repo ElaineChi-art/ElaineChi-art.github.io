@@ -4,7 +4,7 @@ import json,hashlib,importlib,os,sys,re
 D=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+"/"
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 
-MODS=["ct_u1","ct_u2","ct_u3"]
+MODS=["ct_u%d"%i for i in range(1,16)]   # 一單元一檔，加新單元只要再寫 ct_uN.py
 VEN="en-US-JennyNeural"      # 英文條款朗讀（與多益同一組真人語音）
 VZH="zh-TW-HsiaoChenNeural"  # 中文
 VSAY="zh-TW-HsiaoChenNeural" # 速讀念給你聽（中英夾雜，用中文聲線）
@@ -45,6 +45,8 @@ def job(v,t):
 for m in MODS:
     mod=importlib.import_module(m)
     u=json.loads(json.dumps(mod.U))          # deep copy
+    for it in u["items"]:                    # lead／p 是純文字渲染，粗體標記會原樣印出 → 先清掉
+        if it["k"] in ("lead","p") and "t" in it: it["t"]=it["t"].replace("**","")
     bold(u)
     # 哪些 Part（h1 區段）完全沒有英文句 → 那一段的中文講解要有語音，按🔊才念得出來
     pi=0; has={}
@@ -62,7 +64,8 @@ for m in MODS:
         elif it["k"]=="voc":
             for w in it["v"]:
                 w.setdefault("syn","");w.setdefault("trap","");w.setdefault("tip","")
-                w["a"]=job(VEN,w["w"]); w["az"]=job(VZH,w["zh"])
+                vw = VZH if re.search(r"[\u4e00-\u9fff]", w["w"]) else VEN   # 中文詞條用中文聲線
+                w["a"]=job(vw,w["w"]); w["az"]=job(VZH,w["zh"])
     DATA.append(u)
     s=json.loads(json.dumps(mod.SUDU))
     s["saya"]=[job(VSAY,x) for x in s.get("say",[])]
