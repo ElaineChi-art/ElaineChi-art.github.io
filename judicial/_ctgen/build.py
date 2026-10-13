@@ -4,7 +4,7 @@ import json,hashlib,importlib,os,sys,re
 D=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+"/"
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 
-MODS=["ct_u%d"%i for i in range(1,16)]   # 一單元一檔，加新單元只要再寫 ct_uN.py
+MODS=["ct_u%d"%i for i in range(1,18)]   # 一單元一檔，加新單元只要再寫 ct_uN.py
 VEN="en-US-JennyNeural"      # 英文條款朗讀（與多益同一組真人語音）
 VZH="zh-TW-HsiaoChenNeural"  # 中文
 VSAY="zh-TW-HsiaoChenNeural" # 速讀念給你聽（中英夾雜，用中文聲線）

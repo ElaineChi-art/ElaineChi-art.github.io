@@ -12,8 +12,11 @@ bad=[]
 for n,(k,v,t) in enumerate(todo,1):
     p=OUT+"/"+k+".mp3"
     for attempt in range(3):
-        r=subprocess.run([EDGE,"--voice",v,"--text",t,"--write-media",p],capture_output=True)
-        if r.returncode==0 and os.path.getsize(p)>800: break
+        try:
+            r=subprocess.run([EDGE,"--voice",v,"--text",t,"--write-media",p],capture_output=True,timeout=90)
+            if r.returncode==0 and os.path.exists(p) and os.path.getsize(p)>800: break
+        except subprocess.TimeoutExpired:
+            pass
         if os.path.exists(p): os.remove(p)
     else:
         bad.append((k,v,t[:40])); print("FAIL",k,t[:50],flush=True); continue
