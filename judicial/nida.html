@@ -290,20 +290,20 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202610141927"></script>
-<script src="sudu-data.js?v=202610141927"></script>
-<script src="key-data.js?v=202610141927"></script>
-<script src="nida-cmp-data.js?v=202610141927"></script>
-<script src="nida-cmpkey-data.js?v=202610141927"></script>
-<script src="minsu-data.js?v=202610141927"></script>
-<script src="minsu-sudu-data.js?v=202610141927"></script>
-<script src="minsu-key-data.js?v=202610141927"></script>
-<script src="minsu-cmp-data.js?v=202610141927"></script>
-<script src="minsu-cmpkey-data.js?v=202610141927"></script>
-<script src="toeic-data.js?v=202610141927"></script>
-<script src="toeic-sudu-data.js?v=202610141927"></script>
-<script src="contract-data.js?v=202610141927"></script>
-<script src="contract-sudu-data.js?v=202610141927"></script>
+<script src="nida-data.js?v=202610141936"></script>
+<script src="sudu-data.js?v=202610141936"></script>
+<script src="key-data.js?v=202610141936"></script>
+<script src="nida-cmp-data.js?v=202610141936"></script>
+<script src="nida-cmpkey-data.js?v=202610141936"></script>
+<script src="minsu-data.js?v=202610141936"></script>
+<script src="minsu-sudu-data.js?v=202610141936"></script>
+<script src="minsu-key-data.js?v=202610141936"></script>
+<script src="minsu-cmp-data.js?v=202610141936"></script>
+<script src="minsu-cmpkey-data.js?v=202610141936"></script>
+<script src="toeic-data.js?v=202610141936"></script>
+<script src="toeic-sudu-data.js?v=202610141936"></script>
+<script src="contract-data.js?v=202610141936"></script>
+<script src="contract-sudu-data.js?v=202610141936"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -1324,8 +1324,8 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20261014-1927";
+document.getElementById("datever").textContent="資料 20261014-1936";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
-needData(sj,applySubject);
+if(LAZY[sj])needData(sj,applySubject);   /* 只有延遲載入的科目才需要重跑；避免開頁就呼叫 speechSynthesis.cancel() 害 Safari 之後不發聲 */
 </script>
 </body></html>
