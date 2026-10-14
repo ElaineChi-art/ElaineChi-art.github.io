@@ -123,6 +123,8 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .tew .en .sp{flex:0 0 auto;font-size:11.5px;font-weight:700;color:#fff;background:var(--acc);border-radius:4px;padding:2px 7px;height:19px;line-height:15px;margin-top:3px;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
 .tew .en.now{background:rgba(155,29,45,.11);box-shadow:inset 3px 0 0 var(--red)}
 .tew .en .s1{flex:0 0 auto;margin-left:auto;font-size:12px;opacity:.45;padding:0 4px;cursor:pointer;line-height:19px}
+.tew .srcl a{color:var(--acc);text-decoration:none;border-bottom:1px dotted var(--acc)}
+.tew .srcl a:hover{color:var(--red);border-color:var(--red)}
 .vw .wst{font-size:12.5px!important;opacity:.4;padding:0 5px 0 0;cursor:pointer;user-select:none;color:inherit}
 .vw .wst:hover{opacity:1}
 .vw .wst.on{opacity:1;color:#e67e22}
@@ -226,7 +228,7 @@ body.nokk .hl{background:none;font-weight:inherit}
 <header>
 <h1>✍️ <span id="subjname">行政法</span><span id="subjmode">擬答</span><small id="subjsub">上榜答題體例　按…次按…查本案中…綜上所述　共 <span id="tot">—</span> 題</small></h1>
 <div class="row" style="margin-bottom:6px">
-<button class="sbj on" data-s="xz">行政法</button><button class="sbj" data-s="ms">民事訴訟法</button><button class="sbj" data-s="te">多益 TOEIC</button><button class="sbj" data-s="ct">英文商務合約</button>
+<button class="sbj on" data-s="xz">行政法</button><button class="sbj" data-s="ms">民事訴訟法</button><button class="sbj" data-s="te">多益 TOEIC</button><button class="sbj" data-s="ct">英文商務合約</button><button class="sbj" data-s="npr">NPR 新聞英語</button>
 </div>
 <div class="row">
 <button id="tocbtn">☰ 目錄</button>
@@ -257,20 +259,20 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202610140252"></script>
-<script src="sudu-data.js?v=202610140252"></script>
-<script src="key-data.js?v=202610140252"></script>
-<script src="nida-cmp-data.js?v=202610140252"></script>
-<script src="nida-cmpkey-data.js?v=202610140252"></script>
-<script src="minsu-data.js?v=202610140252"></script>
-<script src="minsu-sudu-data.js?v=202610140252"></script>
-<script src="minsu-key-data.js?v=202610140252"></script>
-<script src="minsu-cmp-data.js?v=202610140252"></script>
-<script src="minsu-cmpkey-data.js?v=202610140252"></script>
-<script src="toeic-data.js?v=202610140252"></script>
-<script src="toeic-sudu-data.js?v=202610140252"></script>
-<script src="contract-data.js?v=202610140252"></script>
-<script src="contract-sudu-data.js?v=202610140252"></script>
+<script src="nida-data.js?v=202610141841"></script>
+<script src="sudu-data.js?v=202610141841"></script>
+<script src="key-data.js?v=202610141841"></script>
+<script src="nida-cmp-data.js?v=202610141841"></script>
+<script src="nida-cmpkey-data.js?v=202610141841"></script>
+<script src="minsu-data.js?v=202610141841"></script>
+<script src="minsu-sudu-data.js?v=202610141841"></script>
+<script src="minsu-key-data.js?v=202610141841"></script>
+<script src="minsu-cmp-data.js?v=202610141841"></script>
+<script src="minsu-cmpkey-data.js?v=202610141841"></script>
+<script src="toeic-data.js?v=202610141841"></script>
+<script src="toeic-sudu-data.js?v=202610141841"></script>
+<script src="contract-data.js?v=202610141841"></script>
+<script src="contract-sudu-data.js?v=202610141841"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -310,6 +312,7 @@ function teHTML(t,mode){
       h+='<div class="pt" id="pt-'+esc(t.code)+'-'+pi+'"><span>'+esc(it.ic||"")+' '+esc(it.t)+'</span>'+
          '<button class="pb" data-code="'+esc(t.code)+'" data-p="'+pi+'">🔊 念這個 Part</button></div>';}
     else if(it.k==="p")h+='<div class="pin">'+esc(it.t)+'</div>';
+    else if(it.k==="src")h+='<div class="pin srcl"><a href="'+esca(it.u||"#")+'" target="_blank" rel="noopener">'+esc(it.t)+'</a></div>';
     else if(it.k==="doc")h+='<div class="doc">'+(it.v||[]).map(x=>'<div class="'+(x.k==="t"?"dt":"dl")+'">'+esc(x.v)+'</div>').join("")+'</div>';
     else if(it.k==="h2"){if(op)h+='</div>';op=true;
       h+='<div class="seg"><div class="sh">'+esc(it.ic||"")+' <b>'+esc(it.t)+'</b>　'+esc(it.d||"")+'<span class="xc">＋解析</span></div>';}
@@ -423,7 +426,7 @@ function cmpHTML(t){
   });
   return h+'</div>';
 }
-const ENS=()=>typeof sj!=="undefined"&&(sj==="te"||sj==="ct");   /* 英文逐句模式：多益＋英文商務合約 */
+const ENS=()=>typeof sj!=="undefined"&&(sj==="te"||sj==="ct"||sj==="npr");   /* 英文逐句模式：多益／英文商務合約／NPR */
 function bodyHTML(t,mode){
   if(ENS())return teHTML(t,mode);
   if(mode==="cmp")return cmpHTML(t);
@@ -623,14 +626,32 @@ function allMode(){const v=DATA().length>0&&DATA().every(t=>(localStorage.getIte
   b.onclick=()=>{const n=!document.body.classList.contains("nokk");
     document.body.classList.toggle("nokk",n);
     localStorage.setItem("nida_nokk",n?"1":"0"); b.classList.toggle("on",!n);};})();
+const LAZY={npr:["npr-data.js","npr-sudu-data.js"]};   /* 每日增長的科目，切過去才載 */
+let lazyDone={};
+function needData(code,cb){
+  const fs=LAZY[code]; if(!fs||lazyDone[code]){cb();return;}
+  const t0=document.querySelector('script[src*="toeic-data.js"]');
+  const ver=(t0?t0.src.split("?v=")[1]:"")||String(Date.now());
+  let i=0;
+  (function next(){
+    if(i>=fs.length){lazyDone[code]=1;cb();return;}
+    const sc=document.createElement("script");
+    sc.src=fs[i++]+"?v="+ver; sc.onload=next;
+    sc.onerror=()=>{lazyDone[code]=1;cb();};
+    document.head.appendChild(sc);
+  })();
+}
+function applySubject(){
+  document.getElementById("subjname").textContent=CUR().name;
+  setHd();
+  document.getElementById("tot").textContent=DATA().length;
+  stopAll(); initRate(); loadVoices(); starBtn(); buildTOC(); render(); allMode(); allCmp(); syncTOC();
+}
 document.querySelectorAll(".sbj").forEach(b=>b.onclick=()=>{
   if(b.dataset.s===sj)return;
   document.querySelectorAll(".sbj").forEach(x=>x.classList.remove("on"));
   b.classList.add("on"); sj=b.dataset.s; localStorage.setItem("nida_subj",sj);
-  document.getElementById("subjname").textContent=CUR().name;
-  setHd();
-  document.getElementById("tot").textContent=DATA().length;
-  stopAll(); initRate(); loadVoices(); starBtn(); buildTOC(); render(); allMode(); allCmp(); syncTOC(); scrollTo(0,0);});
+  needData(sj,()=>{applySubject();scrollTo(0,0);});});
 document.getElementById("onlystar").onclick=()=>{
   const on=starOnly();
   if(!on&&nStar()===0){alert("目前這一科還沒有標星號的區塊。\n先按各區塊右上角的 ☆ 標記重要的，再回來篩選。");return;}
@@ -655,7 +676,7 @@ document.getElementById("allsd").onclick=()=>{
 function setHd(){
   const m=document.getElementById("subjmode"), sb=document.getElementById("subjsub");
   if(m)m.textContent=ENS()?"原文全解":"擬答";
-  const SUB={te:"Part 3／4／7 全文＋STAR 四段拆解　點句子看解析　朗讀只念英文原句　共 ",ct:"合約原文逐句英中對照　點句子看解析　朗讀只念英文條文　共 "};
+  const SUB={te:"Part 3／4／7 全文＋STAR 四段拆解　點句子看解析　朗讀只念英文原句　共 ",ct:"合約原文逐句英中對照　點句子看解析　朗讀只念英文條文　共 ",npr:"每日 NPR 新聞逐句英中對照　點句子看中譯　🌲 速讀有結構圖與單字克漏字　共 "};
   if(sb)sb.innerHTML=(SUB[sj]||"上榜答題體例　按…次按…查本案中…綜上所述　共 ")+'<span id="tot">'+DATA().length+"</span> "+(ENS()?("個"+CUR().label):"題");
 }
 function starBtn(){const b=document.getElementById("onlystar"); if(!b)return;
@@ -862,7 +883,8 @@ const SUBJ={
   xz:{name:"行政法",label:"題型",D:()=>window.NIDA||[],S:()=>window.SUDU||{},K:()=>window.KEYS||{},C:()=>window.NIDA_CMP||{},CK:()=>window.NIDA_CMPKEY||{}},
   ms:{name:"民事訴訟法",label:"爭點",D:()=>window.MINSU||[],S:()=>window.MINSU_SUDU||{},K:()=>window.MINSU_KEYS||{},C:()=>window.MINSU_CMP||{},CK:()=>window.MINSU_CMPKEY||{}},
   te:{name:"多益 TOEIC",label:"情境",D:()=>window.TOEIC||[],S:()=>window.TOEIC_SUDU||{},K:()=>({})},
-  ct:{name:"英文商務合約",label:"條款",D:()=>window.CONTRACT||[],S:()=>window.CONTRACT_SUDU||{},K:()=>({})}
+  ct:{name:"英文商務合約",label:"條款",D:()=>window.CONTRACT||[],S:()=>window.CONTRACT_SUDU||{},K:()=>({})},
+  npr:{name:"NPR 新聞英語",label:"文章",D:()=>window.NPR||[],S:()=>window.NPR_SUDU||{},K:()=>({})}
 };
 let sj=localStorage.getItem("nida_subj")||"xz";
 if(!SUBJ[sj])sj="xz";
@@ -1236,7 +1258,8 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20261014-0252";
+document.getElementById("datever").textContent="資料 20261014-1841";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
+needData(sj,applySubject);
 </script>
 </body></html>
