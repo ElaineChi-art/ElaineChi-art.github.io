@@ -122,6 +122,37 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .tew .en:hover{background:rgba(155,29,45,.06)}
 .tew .en .sp{flex:0 0 auto;font-size:11.5px;font-weight:700;color:#fff;background:var(--acc);border-radius:4px;padding:2px 7px;height:19px;line-height:15px;margin-top:3px;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
 .tew .en.now{background:rgba(155,29,45,.11);box-shadow:inset 3px 0 0 var(--red)}
+/* ── 句構標記（主詞／動詞／副詞／子句）── */
+.glegend{margin:6px 0 10px;padding:8px 11px;border:1px dashed var(--line);border-radius:7px;font-size:12.3px;line-height:2.1}
+.glegend .gstep{margin-top:5px;font-size:11.8px;color:var(--mut,#7f8c8d);line-height:1.6}
+.gbox{display:none;margin:4px 0 10px 62px;padding:9px 12px;border-left:3px solid var(--acc);
+      background:rgba(93,173,226,.07);border-radius:0 7px 7px 0}
+.tew.gall .gbox,.tew .en.op + .zx + .gbox,.tew .en.op + .gbox{display:block}
+.gmk{font-family:Georgia,serif;font-size:calc(14px * var(--sc,1));line-height:2.05;margin-bottom:7px}
+.gx{padding:0 1px;border-radius:3px}
+.gS{border-bottom:2px solid #2471a3}
+.gV{border-bottom:4px double #c0392b;font-weight:700;color:#c0392b}
+.gO{border-bottom:2px dotted #1e8449}
+.gC{border-bottom:2px dashed #7d3c98}
+.gA{color:#8a8f94}
+.gN{background:rgba(241,196,15,.22);border-radius:4px}
+.gJ{background:rgba(26,188,156,.18);border-radius:4px;font-style:italic}
+.gK{display:inline-block;border:1.5px solid #c0392b;border-radius:11px;padding:0 6px;
+    font-size:.86em;font-weight:700;color:#c0392b;line-height:1.5}
+.gcore{font-size:calc(13.2px * var(--sc,1));padding:5px 9px;margin-bottom:6px;
+       background:rgba(192,57,43,.08);border-radius:5px}
+.gcore b{color:var(--red)}
+.grows{display:grid;gap:3px}
+.grow{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:baseline;
+      font-size:calc(12.4px * var(--sc,1));line-height:1.6}
+.gtag{text-align:center;font-weight:700;font-size:11.5px;border-radius:4px;padding:1px 0}
+.grow .gtag.gA{color:#8a8f94;border-bottom:0}
+.grow .gtag.gN,.grow .gtag.gJ{border-radius:4px}
+.grow .gtag.gV{border-bottom:0}
+.grow .gt{font-family:Georgia,serif}
+.grow .gn{color:var(--mut,#7f8c8d);white-space:nowrap;font-size:11.5px}
+@media(max-width:620px){.gbox{margin-left:0}.grow{grid-template-columns:22px 1fr}.grow .gn{grid-column:2;white-space:normal}}
+@media(prefers-color-scheme:dark){.gV,.gcore b,.gK{color:#ec7063}.gK{border-color:#ec7063}}
 .tew .en .s1{flex:0 0 auto;margin-left:auto;font-size:12px;opacity:.45;padding:0 4px;cursor:pointer;line-height:19px}
 .tew .srcl a{color:var(--acc);text-decoration:none;border-bottom:1px dotted var(--acc)}
 .tew .srcl a:hover{color:var(--red);border-color:var(--red)}
@@ -259,20 +290,20 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202610141906"></script>
-<script src="sudu-data.js?v=202610141906"></script>
-<script src="key-data.js?v=202610141906"></script>
-<script src="nida-cmp-data.js?v=202610141906"></script>
-<script src="nida-cmpkey-data.js?v=202610141906"></script>
-<script src="minsu-data.js?v=202610141906"></script>
-<script src="minsu-sudu-data.js?v=202610141906"></script>
-<script src="minsu-key-data.js?v=202610141906"></script>
-<script src="minsu-cmp-data.js?v=202610141906"></script>
-<script src="minsu-cmpkey-data.js?v=202610141906"></script>
-<script src="toeic-data.js?v=202610141906"></script>
-<script src="toeic-sudu-data.js?v=202610141906"></script>
-<script src="contract-data.js?v=202610141906"></script>
-<script src="contract-sudu-data.js?v=202610141906"></script>
+<script src="nida-data.js?v=202610141927"></script>
+<script src="sudu-data.js?v=202610141927"></script>
+<script src="key-data.js?v=202610141927"></script>
+<script src="nida-cmp-data.js?v=202610141927"></script>
+<script src="nida-cmpkey-data.js?v=202610141927"></script>
+<script src="minsu-data.js?v=202610141927"></script>
+<script src="minsu-sudu-data.js?v=202610141927"></script>
+<script src="minsu-key-data.js?v=202610141927"></script>
+<script src="minsu-cmp-data.js?v=202610141927"></script>
+<script src="minsu-cmpkey-data.js?v=202610141927"></script>
+<script src="toeic-data.js?v=202610141927"></script>
+<script src="toeic-sudu-data.js?v=202610141927"></script>
+<script src="contract-data.js?v=202610141927"></script>
+<script src="contract-sudu-data.js?v=202610141927"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -288,6 +319,26 @@ function rich(s){ const h=esc(s); return KEYRE? h.replace(KEYRE,'<b class="kk">$
 function plain(s){ return esc(s); }
 let kw="";
 const mk=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b class="kk">$1</b>');
+const GROLE={S:["主詞","gS"],V:["動詞","gV"],O:["受詞","gO"],C:["補語","gC"],
+             A:["副詞·可遮","gA"],N:["名詞子句","gN"],J:["形容詞子句","gJ"],K:["連接詞","gK"]};
+const GWRAP={A:["＜","＞"],N:["〔","〕"],J:["（","）"]};
+function gramHTML(g){
+  if(!g||!g.t)return "";
+  let m="";
+  (g.t||[]).forEach(([txt,r])=>{
+    const lead=(txt.match(/^\s*/)||[""])[0], body=txt.slice(lead.length);
+    if(!body){m+=esc(txt);return;}
+    if(!r){m+=esc(lead)+esc(body);return;}
+    const w=GWRAP[r]||["",""];
+    m+=esc(lead)+'<span class="gx '+GROLE[r][1]+'" title="'+GROLE[r][0]+'">'+esc(w[0]+body+w[1])+'</span>';
+  });
+  let rows=(g.r||[]).map(([r,txt,note])=>
+    '<div class="grow"><span class="gtag '+(GROLE[r]?GROLE[r][1]:"")+'">'+esc(r)+'</span>'+
+    '<span class="gt">'+esc(txt)+'</span><span class="gn">'+esc(note)+'</span></div>').join("");
+  return '<div class="gbox"><div class="gmk">'+m+'</div>'+
+         (g.c?'<div class="gcore"><b>主幹</b>　'+esc(g.c)+'</div>':'')+
+         (rows?'<div class="grows">'+rows+'</div>':'')+'</div>';
+}
 function teHTML(t,mode){
   if(mode==="sd"){
     const d=SUDUD()[t.code];
@@ -305,7 +356,14 @@ function teHTML(t,mode){
     return h+'</div>';
   }
   const xp=localStorage.getItem("nidax_"+t.code)==="1";
-  let h='<div class="tew'+(xp?" xall":"")+'">',op=false,pi=0,si=0,vb=0;
+  const gon=localStorage.getItem("nidagram_"+t.code)==="1";
+  let h='<div class="tew'+(xp?" xall":"")+(gon?" gall":"")+'">',op=false,pi=0,si=0,vb=0;
+  if(gon)h+='<div class="glegend">🧩 句構記號　'+
+    '<span class="gx gS">主詞</span>　<span class="gx gV">動詞</span>　'+
+    '<span class="gx gO">受詞</span>　<span class="gx gC">補語</span>　'+
+    '<span class="gx gA">＜副詞·先遮掉＞</span>　<span class="gx gN">〔名詞子句〕</span>　'+
+    '<span class="gx gJ">（形容詞子句）</span>　<span class="gx gK">連接詞</span>'+
+    '<div class="gstep">讀法：① 圈連接詞 → ② 找動詞再找主詞 → ③ 把＜副詞＞遮掉 → ④ 讀「主幹」那一行</div></div>';
   t.items.forEach(it=>{
     if(it.k==="lead")h+='<div class="lead">'+esc(it.t)+'</div>';
     else if(it.k==="h1"){if(op){h+='</div>';op=false;}pi++;
@@ -317,7 +375,7 @@ function teHTML(t,mode){
     else if(it.k==="h2"){if(op)h+='</div>';op=true;
       h+='<div class="seg"><div class="sh">'+esc(it.ic||"")+' <b>'+esc(it.t)+'</b>　'+esc(it.d||"")+'<span class="xc">＋解析</span></div>';}
     else if(it.k==="tip")h+='<div class="tip">本段考點　'+mk(it.t)+'</div>';
-    else if(it.k==="en"){h+='<div class="en" data-si="'+(si++)+'"><span class="sp'+(it.cn?" ph":"")+'">'+esc(it.sp||"")+'</span><span class="et">'+mk(it.t)+'</span>'+(it.a?'<span class="s1" title="念這一句">🔊</span>':'')+'</div>'+(it.zh?'<div class="zx">'+mk(it.zh)+'</div>':'');}
+    else if(it.k==="en"){h+='<div class="en" data-si="'+(si++)+'"><span class="sp'+(it.cn?" ph":"")+'">'+esc(it.sp||"")+'</span><span class="et">'+mk(it.t)+'</span>'+(it.a?'<span class="s1" title="念這一句">🔊</span>':'')+'</div>'+(it.zh?'<div class="zx">'+mk(it.zh)+'</div>':'')+(it.g?gramHTML(it.g):'');}
     else if(it.k==="zhblk")h+='<div class="zx zhblk">📖 全文中譯　'+esc(it.t)+'</div>';
     else if(it.k==="voc"){h+='<div class="voc"><div class="vt"><span>📝 核心字彙與考點解密　'+((it.v||[]).length)+' 組</span>'+
       '<span class="btns"><button class="vsb" data-m="en" data-vb="'+vb+'">🔊 只念英文</button><button class="vsb" data-m="both" data-vb="'+vb+'">🔊 英中都念</button>'+
@@ -562,6 +620,7 @@ function render(){
       (CMPD()[t.code]?'<button class="tb cmb'+(mode==="cmp"?" on":"")+'" data-i="'+idx+'" title="左右對照（學理／白話）">⚖ 對照</button>':'')+
       '<button class="tb star'+(SR(t.code)?" on":"")+'" data-i="'+idx+'" title="標為重要">'+(SR(t.code)?"★":"☆")+'</button>'+
       (ENS()?'<button class="tb vbb'+(localStorage.getItem("nidavoc_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'" title="核心字彙總覽">📝 字彙</button>':'')+
+      (ENS()&&(t.items||[]).some(x=>x.g)?'<button class="tb gmb'+(localStorage.getItem("nidagram_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'" title="主詞／動詞／副詞／子句的句構標記">🧩 句構</button>':'')+
       (ENS()?'<button class="tb xpb'+(localStorage.getItem("nidax_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'">🔍 全面解析</button>':'')+
       '<button class="tb sw'+(mode==="sd"?" on":"")+'" data-i="'+idx+'">'+(mode==="sd"?(ENS()?"📄 原文":"📄 擬答"):(ENS()?"🌲 速讀":"⚡ 速讀"))+'</button>'+
       '<button class="tb ed" data-i="'+idx+'">✏️</button>'+
@@ -1084,6 +1143,13 @@ app.addEventListener("click",e=>{
     return; }
   const vr=e.target.closest(".vov.nozh .vrow");
   if(vr){ vr.classList.toggle("on"); return; }
+  const gb=e.target.closest(".gmb");
+  if(gb){const card=gb.closest(".tp"),c=card.dataset.code;
+    const on=localStorage.getItem("nidagram_"+c)==="1";
+    localStorage.setItem("nidagram_"+c,on?"0":"1");
+    const w=card.querySelector(".tew"); if(w)w.classList.toggle("gall",!on);
+    gb.classList.toggle("on",!on);
+    return;}
   const xb=e.target.closest(".xpb");
   if(xb){const card=xb.closest(".tp"),c=card.dataset.code;
     const on=localStorage.getItem("nidax_"+c)==="1";
@@ -1258,7 +1324,7 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20261014-1906";
+document.getElementById("datever").textContent="資料 20261014-1927";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
 needData(sj,applySubject);
 </script>
