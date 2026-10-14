@@ -290,20 +290,20 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202610141936"></script>
-<script src="sudu-data.js?v=202610141936"></script>
-<script src="key-data.js?v=202610141936"></script>
-<script src="nida-cmp-data.js?v=202610141936"></script>
-<script src="nida-cmpkey-data.js?v=202610141936"></script>
-<script src="minsu-data.js?v=202610141936"></script>
-<script src="minsu-sudu-data.js?v=202610141936"></script>
-<script src="minsu-key-data.js?v=202610141936"></script>
-<script src="minsu-cmp-data.js?v=202610141936"></script>
-<script src="minsu-cmpkey-data.js?v=202610141936"></script>
-<script src="toeic-data.js?v=202610141936"></script>
-<script src="toeic-sudu-data.js?v=202610141936"></script>
-<script src="contract-data.js?v=202610141936"></script>
-<script src="contract-sudu-data.js?v=202610141936"></script>
+<script src="nida-data.js?v=202610141945"></script>
+<script src="sudu-data.js?v=202610141945"></script>
+<script src="key-data.js?v=202610141945"></script>
+<script src="nida-cmp-data.js?v=202610141945"></script>
+<script src="nida-cmpkey-data.js?v=202610141945"></script>
+<script src="minsu-data.js?v=202610141945"></script>
+<script src="minsu-sudu-data.js?v=202610141945"></script>
+<script src="minsu-key-data.js?v=202610141945"></script>
+<script src="minsu-cmp-data.js?v=202610141945"></script>
+<script src="minsu-cmpkey-data.js?v=202610141945"></script>
+<script src="toeic-data.js?v=202610141945"></script>
+<script src="toeic-sudu-data.js?v=202610141945"></script>
+<script src="contract-data.js?v=202610141945"></script>
+<script src="contract-sudu-data.js?v=202610141945"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -322,19 +322,21 @@ const mk=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b class="kk">$1</b>');
 const GROLE={S:["主詞","gS"],V:["動詞","gV"],O:["受詞","gO"],C:["補語","gC"],
              A:["副詞·可遮","gA"],N:["名詞子句","gN"],J:["形容詞子句","gJ"],K:["連接詞","gK"]};
 const GWRAP={A:["＜","＞"],N:["〔","〕"],J:["（","）"]};
-function gramHTML(g){
-  if(!g||!g.t)return "";
-  let m="";
-  (g.t||[]).forEach(([txt,r])=>{
+function gramHTML(g,raw){
+  if(!g||!g.t||!raw)return "";
+  let i=0,m="";
+  (g.t||[]).forEach(([len,r])=>{
+    const txt=raw.slice(i,i+len); i+=len;
     const lead=(txt.match(/^\s*/)||[""])[0], body=txt.slice(lead.length);
     if(!body){m+=esc(txt);return;}
-    if(!r){m+=esc(lead)+esc(body);return;}
+    if(!r||!GROLE[r]){m+=esc(txt);return;}
     const w=GWRAP[r]||["",""];
     m+=esc(lead)+'<span class="gx '+GROLE[r][1]+'" title="'+GROLE[r][0]+'">'+esc(w[0]+body+w[1])+'</span>';
   });
-  let rows=(g.r||[]).map(([r,txt,note])=>
+  if(i<raw.length)m+=esc(raw.slice(i));
+  const rows=(g.r||[]).map(([r,st,ln,note])=>
     '<div class="grow"><span class="gtag '+(GROLE[r]?GROLE[r][1]:"")+'">'+esc(r)+'</span>'+
-    '<span class="gt">'+esc(txt)+'</span><span class="gn">'+esc(note)+'</span></div>').join("");
+    '<span class="gt">'+esc(raw.substr(st,ln))+'</span><span class="gn">'+esc(note)+'</span></div>').join("");
   return '<div class="gbox"><div class="gmk">'+m+'</div>'+
          (g.c?'<div class="gcore"><b>主幹</b>　'+esc(g.c)+'</div>':'')+
          (rows?'<div class="grows">'+rows+'</div>':'')+'</div>';
@@ -375,7 +377,8 @@ function teHTML(t,mode){
     else if(it.k==="h2"){if(op)h+='</div>';op=true;
       h+='<div class="seg"><div class="sh">'+esc(it.ic||"")+' <b>'+esc(it.t)+'</b>　'+esc(it.d||"")+'<span class="xc">＋解析</span></div>';}
     else if(it.k==="tip")h+='<div class="tip">本段考點　'+mk(it.t)+'</div>';
-    else if(it.k==="en"){h+='<div class="en" data-si="'+(si++)+'"><span class="sp'+(it.cn?" ph":"")+'">'+esc(it.sp||"")+'</span><span class="et">'+mk(it.t)+'</span>'+(it.a?'<span class="s1" title="念這一句">🔊</span>':'')+'</div>'+(it.zh?'<div class="zx">'+mk(it.zh)+'</div>':'')+(it.g?gramHTML(it.g):'');}
+    else if(it.k==="en"){const gi=si++; const gg=(GRAMD()[t.code]||{})[gi];
+      h+='<div class="en" data-si="'+gi+'"><span class="sp'+(it.cn?" ph":"")+'">'+esc(it.sp||"")+'</span><span class="et">'+mk(it.t)+'</span>'+(it.a?'<span class="s1" title="念這一句">🔊</span>':'')+'</div>'+(it.zh?'<div class="zx">'+mk(it.zh)+'</div>':'')+(gg?gramHTML(gg,cleanEN(it.t)):'');}
     else if(it.k==="zhblk")h+='<div class="zx zhblk">📖 全文中譯　'+esc(it.t)+'</div>';
     else if(it.k==="voc"){h+='<div class="voc"><div class="vt"><span>📝 核心字彙與考點解密　'+((it.v||[]).length)+' 組</span>'+
       '<span class="btns"><button class="vsb" data-m="en" data-vb="'+vb+'">🔊 只念英文</button><button class="vsb" data-m="both" data-vb="'+vb+'">🔊 英中都念</button>'+
@@ -620,7 +623,7 @@ function render(){
       (CMPD()[t.code]?'<button class="tb cmb'+(mode==="cmp"?" on":"")+'" data-i="'+idx+'" title="左右對照（學理／白話）">⚖ 對照</button>':'')+
       '<button class="tb star'+(SR(t.code)?" on":"")+'" data-i="'+idx+'" title="標為重要">'+(SR(t.code)?"★":"☆")+'</button>'+
       (ENS()?'<button class="tb vbb'+(localStorage.getItem("nidavoc_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'" title="核心字彙總覽">📝 字彙</button>':'')+
-      (ENS()&&(t.items||[]).some(x=>x.g)?'<button class="tb gmb'+(localStorage.getItem("nidagram_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'" title="主詞／動詞／副詞／子句的句構標記">🧩 句構</button>':'')+
+      (ENS()&&CUR().G?'<button class="tb gmb'+(localStorage.getItem("nidagram_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'" title="主詞／動詞／副詞／子句的句構標記">🧩 句構</button>':'')+
       (ENS()?'<button class="tb xpb'+(localStorage.getItem("nidax_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'">🔍 全面解析</button>':'')+
       '<button class="tb sw'+(mode==="sd"?" on":"")+'" data-i="'+idx+'">'+(mode==="sd"?(ENS()?"📄 原文":"📄 擬答"):(ENS()?"🌲 速讀":"⚡ 速讀"))+'</button>'+
       '<button class="tb ed" data-i="'+idx+'">✏️</button>'+
@@ -686,6 +689,16 @@ function allMode(){const v=DATA().length>0&&DATA().every(t=>(localStorage.getIte
     document.body.classList.toggle("nokk",n);
     localStorage.setItem("nida_nokk",n?"1":"0"); b.classList.toggle("on",!n);};})();
 const LAZY={npr:["npr-data.js","npr-sudu-data.js"]};   /* 每日增長的科目，切過去才載 */
+const GRAMFILE={te:"toeic-gram.js",ct:"contract-gram.js",npr:"npr-gram.js"};   /* 句構檔：按下 🧩 才載 */
+let gramDone={};
+function needGram(cb){
+  const f=GRAMFILE[sj]; if(!f||gramDone[sj]){cb();return;}
+  const t0=document.querySelector('script[src*="toeic-data.js"]');
+  const ver=(t0?t0.src.split("?v=")[1]:"")||String(Date.now());
+  const sc=document.createElement("script"); sc.src=f+"?v="+ver;
+  sc.onload=()=>{gramDone[sj]=1;cb();}; sc.onerror=()=>{gramDone[sj]=1;cb();};
+  document.head.appendChild(sc);
+}
 let lazyDone={};
 function needData(code,cb){
   const fs=LAZY[code]; if(!fs||lazyDone[code]){cb();return;}
@@ -941,15 +954,16 @@ function reapplyNow(){ if(playing&&queue[qi]){window.__noscroll=true;highlight(q
 const SUBJ={
   xz:{name:"行政法",label:"題型",D:()=>window.NIDA||[],S:()=>window.SUDU||{},K:()=>window.KEYS||{},C:()=>window.NIDA_CMP||{},CK:()=>window.NIDA_CMPKEY||{}},
   ms:{name:"民事訴訟法",label:"爭點",D:()=>window.MINSU||[],S:()=>window.MINSU_SUDU||{},K:()=>window.MINSU_KEYS||{},C:()=>window.MINSU_CMP||{},CK:()=>window.MINSU_CMPKEY||{}},
-  te:{name:"多益 TOEIC",label:"情境",D:()=>window.TOEIC||[],S:()=>window.TOEIC_SUDU||{},K:()=>({})},
-  ct:{name:"英文商務合約",label:"條款",D:()=>window.CONTRACT||[],S:()=>window.CONTRACT_SUDU||{},K:()=>({})},
-  npr:{name:"NPR 新聞英語",label:"文章",D:()=>window.NPR||[],S:()=>window.NPR_SUDU||{},K:()=>({})}
+  te:{name:"多益 TOEIC",label:"情境",D:()=>window.TOEIC||[],S:()=>window.TOEIC_SUDU||{},K:()=>({}),G:()=>window.TOEIC_GRAM||{}},
+  ct:{name:"英文商務合約",label:"條款",D:()=>window.CONTRACT||[],S:()=>window.CONTRACT_SUDU||{},K:()=>({}),G:()=>window.CONTRACT_GRAM||{}},
+  npr:{name:"NPR 新聞英語",label:"文章",D:()=>window.NPR||[],S:()=>window.NPR_SUDU||{},K:()=>({}),G:()=>window.NPR_GRAM||{}}
 };
 let sj=localStorage.getItem("nida_subj")||"xz";
 if(!SUBJ[sj])sj="xz";
 const CUR=()=>SUBJ[sj];
 const DATA=()=>CUR().D(), SUDUD=()=>CUR().S(), KEYD=()=>CUR().K();
 const CMPD=()=>(CUR().C?CUR().C():{});
+const GRAMD=()=>(CUR().G?CUR().G():{});
 const px=()=>(sj==="xz"?"":sj+"_");
 const LBN={"爭":"爭點","據":"依據","實":"實務見解","說":"學說","採":"本文見解","攝":"涵攝","結":"結論","訣":"口訣"};
 function readMode(){return localStorage.getItem("nida_readmode")||"screen";}
@@ -1144,11 +1158,12 @@ app.addEventListener("click",e=>{
   const vr=e.target.closest(".vov.nozh .vrow");
   if(vr){ vr.classList.toggle("on"); return; }
   const gb=e.target.closest(".gmb");
-  if(gb){const card=gb.closest(".tp"),c=card.dataset.code;
+  if(gb){const card=gb.closest(".tp"),c=card.dataset.code,i=+card.dataset.i;
     const on=localStorage.getItem("nidagram_"+c)==="1";
     localStorage.setItem("nidagram_"+c,on?"0":"1");
-    const w=card.querySelector(".tew"); if(w)w.classList.toggle("gall",!on);
     gb.classList.toggle("on",!on);
+    needGram(()=>{ render(); syncTOC();
+      const el=document.getElementById("t"+i); if(el&&!on)el.scrollIntoView({block:"start",behavior:"smooth"}); });
     return;}
   const xb=e.target.closest(".xpb");
   if(xb){const card=xb.closest(".tp"),c=card.dataset.code;
@@ -1324,7 +1339,7 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20261014-1936";
+document.getElementById("datever").textContent="資料 20261014-1945";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
 if(LAZY[sj])needData(sj,applySubject);   /* 只有延遲載入的科目才需要重跑；避免開頁就呼叫 speechSynthesis.cancel() 害 Safari 之後不發聲 */
 </script>

@@ -22,13 +22,17 @@ jobs:
         with:
           python-version: "3.11"
       - name: 安裝相依套件
-        run: pip install --quiet wordfreq
+        run: |
+          pip install --quiet wordfreq spacy
+          python -m spacy download en_core_web_sm
       - name: 抓取 NPR 文章並產生教材
         run: python judicial/_nprgen/npr_build.py ${{ github.event.inputs.count || '3' }}
+      - name: 產生句構標記
+        run: python judicial/_gramgen/gram.py npr
       - name: 提交更新
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add judicial/npr-data.js judicial/npr-sudu-data.js judicial/nida.html
+          git add judicial/npr-data.js judicial/npr-sudu-data.js judicial/npr-gram.js judicial/nida.html
           git diff --staged --quiet || git commit -m "NPR 新聞英語每日更新"
           git push

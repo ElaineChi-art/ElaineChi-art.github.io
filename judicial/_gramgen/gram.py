@@ -10,7 +10,8 @@ import spacy
 NLP = spacy.load("en_core_web_sm")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-CLEAN = lambda s: re.sub(r"\s+", " ", str(s).replace("**", "").replace("—[", "").replace("]—", "")).strip()
+# 必須與 nida.html 的 cleanEN 完全一致，否則前端用字元位置切不準
+CLEAN = lambda s: re.sub(r"\s+", " ", re.sub(r"—\[\d+\]—", "", str(s).replace("**", ""))).strip()
 
 # 角色：S 主詞 V 動詞 O 受詞 C 補語 A 副詞 N 名詞子句 J 形容詞子句 K 連接詞/關係詞
 SUBJ = {"nsubj", "nsubjpass", "expl"}
@@ -101,28 +102,43 @@ def analyse(sent_text):
         chunks.append([pre + txt[a_:b_], role[i], b_])
         i = j + 1
     if chunks and chunks[-1][2] < len(txt): chunks[-1][0] += txt[chunks[-1][2]:]
-    out = [[c[0], c[1]] for c in chunks]
+    out = [[len(c[0]), c[1]] for c in chunks]        # 只存長度與角色，文字由前端用原句切
 
     # ── 條列說明：只列主句層級＋全句的形容詞子句 ──
     rows = []
     vids = vmap.get(root.i, [root.i])
-    tense = "過去式" if root.tag_ in ("VBD", "VBN") else ("現在式" if root.tag_ in ("VBZ", "VBP") else "")
-    rows.append(["V", " ".join(doc[i].text for i in vids),
+    auxs = [doc[i] for i in vids if doc[i].i != root.i]
+    low = [a.lemma_.lower() for a in auxs] + [a.text.lower() for a in auxs]
+    passive = any(c.dep_ == "auxpass" for c in root.children)
+    if "will" in low or "shall" in low or "'ll" in low:        tense = "未來式"
+    elif "would" in low or "could" in low or "should" in low or "might" in low: tense = "假設／語氣"
+    elif any(a.tag_ in ("VBD",) for a in auxs):                 tense = "過去式"
+    elif any(a.tag_ in ("VBZ", "VBP") for a in auxs):           tense = "現在式"
+    elif root.tag_ == "VBD":                                    tense = "過去式"
+    elif root.tag_ in ("VBZ", "VBP"):                           tense = "現在式"
+    else:                                                        tense = ""
+    if "have" in low or "has" in low or "had" in low:
+        tense = (tense + "完成式").replace("式完成式", "完成式")
+    if any(a.lemma_.lower() == "be" for a in auxs) and root.tag_ == "VBG":
+        tense = (tense + "進行式").replace("式進行式", "進行式")
+    rows.append(["V", doc[vids[0]].idx, doc[vids[-1]].idx + len(doc[vids[-1]].text) - doc[vids[0]].idx,
                  "主要動詞" + ("（%s）" % tense if tense else "")
-                 + ("　被動語態" if any(c.dep_ == "auxpass" for c in root.children) else "")])
+                 + ("　被動語態" if passive else "")])
+    def pos(a_, b_):
+        st = doc[a_].idx; return st, doc[b_].idx + len(doc[b_].text) - st
     for ch in root.children:
-        a_, b_ = span_of(ch); seg = doc[a_:b_+1].text
-        if ch.dep_ in SUBJ:      rows.append(["S", seg, "主詞"])
-        elif ch.dep_ in OBJ:     rows.append(["O", seg, "受詞"])
-        elif ch.dep_ in COMP:    rows.append(["C", seg, "補語"])
-        elif ch.dep_ in NCL:     rows.append(["N", seg, "名詞子句 ＝ " + ("主詞" if ch.dep_.startswith("csubj") else "受詞")])
+        a_, b_ = span_of(ch); st, ln = pos(a_, b_)
+        if ch.dep_ in SUBJ:      rows.append(["S", st, ln, "主詞"])
+        elif ch.dep_ in OBJ:     rows.append(["O", st, ln, "受詞"])
+        elif ch.dep_ in COMP:    rows.append(["C", st, ln, "補語"])
+        elif ch.dep_ in NCL:     rows.append(["N", st, ln, "名詞子句 ＝ " + ("主詞" if ch.dep_.startswith("csubj") else "受詞")])
         elif ch.dep_ in ADV and ch.dep_ != "prt":
-            rows.append(["A", seg, label_adv(list(doc[a_:b_+1]))])
+            rows.append(["A", st, ln, label_adv(list(doc[a_:b_+1]))])
     for t in doc:
         for ch in t.children:
             if ch.dep_ in ("relcl", "acl"):
-                a_, b_ = span_of(ch)
-                rows.append(["J", doc[a_:b_+1].text, "形容詞子句 → 修飾「%s」" % t.text])
+                a_, b_ = span_of(ch); st, ln = pos(a_, b_)
+                rows.append(["J", st, ln, "形容詞子句 → 修飾「%s」" % t.text])
 
     # ── 主幹：拿掉主句層級的副詞；名詞子句縮成〔…〕 ──
     drop = set()
@@ -154,27 +170,41 @@ def analyse(sent_text):
 
     seen, rows2 = set(), []
     for r in rows:
-        k = (r[0], r[1])
+        k = (r[0], r[1], r[2])
         if k in seen: continue
         seen.add(k); rows2.append(r)
     return {"t": out, "c": core, "r": rows2}
 
-def run(fn, var, codes_prefix):
+def run(fn, var, out_fn, out_var, codes_prefix=""):
     p = os.path.join(ROOT, fn)
     s = open(p, encoding="utf-8").read()
     D = json.loads(re.search(r"window\." + var + r"=(.*);$", s, re.S).group(1))
-    done = 0
+    op = os.path.join(ROOT, out_fn)
+    G = {}
+    if os.path.exists(op):
+        m = re.search(r"window\." + out_var + r"=(.*);$", open(op, encoding="utf-8").read(), re.S)
+        if m: G = json.loads(m.group(1))
+    done = skip = dirty = 0
     for t in D:
         if codes_prefix and not t["code"].startswith(codes_prefix): continue
+        cur, si = {}, 0
         for it in t["items"]:
+            if it.pop("g", None) is not None: dirty += 1      # 清掉舊版內嵌的句構
             if it["k"] != "en": continue
             g = analyse(it["t"])
-            if g: it["g"] = g; done += 1
-    open(p, "w", encoding="utf-8").write("window." + var + "=" + json.dumps(D, ensure_ascii=False) + ";")
-    print("%s：標了 %d 句" % (fn, done))
+            if g: cur[str(si)] = g; done += 1
+            else: skip += 1
+            si += 1
+        if cur: G[t["code"]] = cur
+    open(op, "w", encoding="utf-8").write("window." + out_var + "=" + json.dumps(G, ensure_ascii=False, separators=(",", ":")) + ";")
+    if dirty:
+        open(p, "w", encoding="utf-8").write("window." + var + "=" + json.dumps(D, ensure_ascii=False) + ";")
+    print("%s → %s：標了 %d 句（略過 %d），清掉內嵌 %d" % (fn, out_fn, done, skip, dirty))
 
 if __name__ == "__main__":
-    fn  = sys.argv[1] if len(sys.argv) > 1 else "toeic-data.js"
-    var = sys.argv[2] if len(sys.argv) > 2 else "TOEIC"
-    pre = sys.argv[3] if len(sys.argv) > 3 else "16-"
-    run(fn, var, pre)
+    JOBS = {"toeic": ("toeic-data.js", "TOEIC", "toeic-gram.js", "TOEIC_GRAM"),
+            "npr":   ("npr-data.js", "NPR", "npr-gram.js", "NPR_GRAM"),
+            "ct":    ("contract-data.js", "CONTRACT", "contract-gram.js", "CONTRACT_GRAM")}
+    which = sys.argv[1] if len(sys.argv) > 1 else "toeic"
+    pre = sys.argv[2] if len(sys.argv) > 2 else ""
+    run(*JOBS[which], codes_prefix=pre)
