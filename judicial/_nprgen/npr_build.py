@@ -271,6 +271,43 @@ def build_voc(pairs, paras):
                     "syn": syn, "tip": "　|　".join(tip), "trap": ""})
     return voc
 
+def bold_items(items, voc):
+    """把本篇核心字彙在英文原句與中譯裡加上 **紅字** 標記（每句最多 3 處），
+       與多益／英文商務合約的版型一致，受頁面上的「🔴 重點紅字」開關控制。"""
+    pats = []
+    for v in voc:
+        w = v["w"]
+        stem = w[:max(5, len(w) - 2)]
+        try:
+            pats.append(re.compile(r"\b(%s[A-Za-z]{0,4})\b" % re.escape(stem), re.I))
+        except re.error:
+            pass
+    zhs = sorted({v["zh"] for v in voc if 2 <= len(v["zh"]) <= 8}, key=len, reverse=True)
+
+    def wrap(text, finder, limit=3):
+        used, n = [], 0
+        for a, b in finder(text):
+            if n >= limit: break
+            if any(a < y and x < b for x, y in used): continue
+            used.append((a, b)); n += 1
+        for a, b in sorted(used, reverse=True):
+            text = text[:a] + "**" + text[a:b] + "**" + text[b:]
+        return text
+
+    for it in items:
+        if it["k"] != "en": continue
+        if "**" not in it["t"]:
+            it["t"] = wrap(it["t"], lambda t: [m.span(1) for rx in pats for m in [rx.search(t)] if m])
+        z = it.get("zh") or ""
+        if z and "**" not in z:
+            def fz(t):
+                out = []
+                for term in zhs:
+                    i = t.find(term)
+                    if i >= 0: out.append((i, i + len(term)))
+                return out
+            it["zh"] = wrap(z, fz)
+
 # ── 組裝一篇文章 ────────────────────────────────────────────────────────
 def make_topic(code, day_ch, meta, art, idx):
     paras, title, link = art["paras"], meta["title"], meta["link"]
@@ -317,6 +354,7 @@ def make_topic(code, day_ch, meta, art, idx):
     pairs = pick_words(paras)
     tr_many([w for w, _ in pairs])
     voc = build_voc(pairs, paras)
+    bold_items(items, voc)                                   # 核心字彙在原句標紅字
     if voc:
         items.append({"k": "h1", "t": "📝 本篇核心字彙", "ic": "📝"})
         items.append({"k": "tip", "t": "依 wordfreq 詞頻自動挑出本篇最值得學的生字（越罕用越前面）。"
@@ -333,7 +371,7 @@ def make_sudu(topic, voc, paras):
         tree.append(("├ ¶%d　" % pi) + ((z[:40] + "…") if len(z) > 40 else (z or p[:60])))
     if len(tree) > 1: tree[-1] = "└" + tree[-1][1:]
     tree.append("")
-    tree.append("【本篇關鍵字】" + "、".join("%s（%s）" % (v["w"], v["zh"]) for v in voc[:10]))
+    tree.append("【本篇關鍵字】" + "、".join("**%s**（%s）" % (v["w"], v["zh"]) for v in voc[:10]))
 
     # 單字克漏字測驗
     quiz, pool = [], [v.get("sf") or v["w"] for v in voc]
