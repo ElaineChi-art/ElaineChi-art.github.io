@@ -306,6 +306,14 @@ def make_topic(code, day_ch, meta, art, idx):
         items.append({"k": "h1", "t": "📖 全文中譯", "ic": "📖"})
         items.append({"k": "zhblk", "t": "　".join(x for x in all_zh if x)})
 
+    miss = [it for it in items if it["k"] == "en" and not it.get("zh")]   # 補翻漏掉的句子
+    for rnd in range(2):
+        if not miss: break
+        for it in miss: _TRCACHE.pop(it["t"], None)
+        tr_many([it["t"] for it in miss])
+        for it in miss: it["zh"] = translate(it["t"])
+        miss = [it for it in miss if not it.get("zh")]
+
     pairs = pick_words(paras)
     tr_many([w for w, _ in pairs])
     voc = build_voc(pairs, paras)
