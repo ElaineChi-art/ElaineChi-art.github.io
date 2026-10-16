@@ -107,6 +107,9 @@ cursor:pointer;font-size:12px;color:var(--sub);white-space:nowrap}
 .tew .pt{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .tew .pt .pb{flex:0 0 auto;font-size:11.5px;font-family:system-ui;font-weight:400;padding:3px 10px;border-radius:20px;border:1px solid var(--line);background:var(--bg);color:inherit;cursor:pointer;white-space:nowrap}
 .tew .pt .pb:hover{border-color:var(--red);color:var(--red)}
+.tew .pt .rpb{flex:0 0 auto;margin-left:6px;font-size:11.5px;font-family:system-ui;font-weight:400;padding:3px 10px;border-radius:20px;border:1px solid var(--line);background:var(--bg);color:inherit;cursor:pointer;white-space:nowrap}
+.tew .pt .rpb:hover{border-color:var(--red);color:var(--red)}
+.tew .pt .rpb.on{background:var(--red);color:#fff;border-color:var(--red)}
 .tew .pt.on{box-shadow:inset 0 0 0 1px var(--red)}
 .tew .pt.on .pb{background:var(--red);color:#fff;border-color:var(--red)}
 .tew .doc{border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:0 8px 8px 0;padding:9px 13px;margin:8px 0 4px;background:rgba(127,140,141,.06);font-family:Georgia,serif}
@@ -290,20 +293,20 @@ body.nokk .hl{background:none;font-weight:inherit}
 </div>
 <div id="lbx"><img alt=""></div>
 <input type="file" id="pick" accept="image/*" multiple style="display:none">
-<script src="nida-data.js?v=202610160750"></script>
-<script src="sudu-data.js?v=202610160750"></script>
-<script src="key-data.js?v=202610160750"></script>
-<script src="nida-cmp-data.js?v=202610160750"></script>
-<script src="nida-cmpkey-data.js?v=202610160750"></script>
-<script src="minsu-data.js?v=202610160750"></script>
-<script src="minsu-sudu-data.js?v=202610160750"></script>
-<script src="minsu-key-data.js?v=202610160750"></script>
-<script src="minsu-cmp-data.js?v=202610160750"></script>
-<script src="minsu-cmpkey-data.js?v=202610160750"></script>
-<script src="toeic-data.js?v=202610160750"></script>
-<script src="toeic-sudu-data.js?v=202610160750"></script>
-<script src="contract-data.js?v=202610160750"></script>
-<script src="contract-sudu-data.js?v=202610160750"></script>
+<script src="nida-data.js?v=202610161455"></script>
+<script src="sudu-data.js?v=202610161455"></script>
+<script src="key-data.js?v=202610161455"></script>
+<script src="nida-cmp-data.js?v=202610161455"></script>
+<script src="nida-cmpkey-data.js?v=202610161455"></script>
+<script src="minsu-data.js?v=202610161455"></script>
+<script src="minsu-sudu-data.js?v=202610161455"></script>
+<script src="minsu-key-data.js?v=202610161455"></script>
+<script src="minsu-cmp-data.js?v=202610161455"></script>
+<script src="minsu-cmpkey-data.js?v=202610161455"></script>
+<script src="toeic-data.js?v=202610161455"></script>
+<script src="toeic-sudu-data.js?v=202610161455"></script>
+<script src="contract-data.js?v=202610161455"></script>
+<script src="contract-sudu-data.js?v=202610161455"></script>
 <script>
 const CN="一二三四五六七八九十";
 const esc=s=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
@@ -357,8 +360,8 @@ function teHTML(t,mode){
     });
     return h+'</div>';
   }
-  const xp=localStorage.getItem("nidax_"+t.code)==="1";
-  const gon=localStorage.getItem("nidagram_"+t.code)==="1";
+  const xp=localStorage.getItem("nidax_"+t.code)!=="0";        /* 預設開 */
+  const gon=localStorage.getItem("nidagram_"+t.code)!=="0";    /* 預設開 */
   let h='<div class="tew'+(xp?" xall":"")+(gon?" gall":"")+'">',op=false,pi=0,si=0,vb=0;
   if(gon)h+='<div class="glegend">🧩 句構記號　'+
     '<span class="gx gS">主詞</span>　<span class="gx gV">動詞</span>　'+
@@ -370,7 +373,8 @@ function teHTML(t,mode){
     if(it.k==="lead")h+='<div class="lead">'+esc(it.t)+'</div>';
     else if(it.k==="h1"){if(op){h+='</div>';op=false;}pi++;
       h+='<div class="pt" id="pt-'+esc(t.code)+'-'+pi+'"><span>'+esc(it.ic||"")+' '+esc(it.t)+'</span>'+
-         '<button class="pb" data-code="'+esc(t.code)+'" data-p="'+pi+'">🔊 念這個 Part</button></div>';}
+         '<button class="pb" data-code="'+esc(t.code)+'" data-p="'+pi+'">🔊 念這個 Part</button>'+
+         '<button class="rpb" data-p="'+pi+'" title="重複播放這一段，直到再按一次">🔁 重複</button></div>';}
     else if(it.k==="p")h+='<div class="pin">'+esc(it.t)+'</div>';
     else if(it.k==="src")h+='<div class="pin srcl"><a href="'+esca(it.u||"#")+'" target="_blank" rel="noopener">'+esc(it.t)+'</a></div>';
     else if(it.k==="doc")h+='<div class="doc">'+(it.v||[]).map(x=>'<div class="'+(x.k==="t"?"dt":"dl")+'">'+esc(x.v)+'</div>').join("")+'</div>';
@@ -623,8 +627,8 @@ function render(){
       (CMPD()[t.code]?'<button class="tb cmb'+(mode==="cmp"?" on":"")+'" data-i="'+idx+'" title="左右對照（學理／白話）">⚖ 對照</button>':'')+
       '<button class="tb star'+(SR(t.code)?" on":"")+'" data-i="'+idx+'" title="標為重要">'+(SR(t.code)?"★":"☆")+'</button>'+
       (ENS()?'<button class="tb vbb'+(localStorage.getItem("nidavoc_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'" title="核心字彙總覽">📝 字彙</button>':'')+
-      (ENS()&&CUR().G?'<button class="tb gmb'+(localStorage.getItem("nidagram_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'" title="主詞／動詞／副詞／子句的句構標記">🧩 句構</button>':'')+
-      (ENS()?'<button class="tb xpb'+(localStorage.getItem("nidax_"+t.code)==="1"?" on":"")+'" data-i="'+idx+'">🔍 全面解析</button>':'')+
+      (ENS()&&CUR().G?'<button class="tb gmb'+(localStorage.getItem("nidagram_"+t.code)!=="0"?" on":"")+'" data-i="'+idx+'" title="主詞／動詞／副詞／子句的句構標記">🧩 句構</button>':'')+
+      (ENS()?'<button class="tb xpb'+(localStorage.getItem("nidax_"+t.code)!=="0"?" on":"")+'" data-i="'+idx+'">🔍 全面解析</button>':'')+
       '<button class="tb sw'+(mode==="sd"?" on":"")+'" data-i="'+idx+'">'+(mode==="sd"?(ENS()?"📄 原文":"📄 擬答"):(ENS()?"🌲 速讀":"⚡ 速讀"))+'</button>'+
       '<button class="tb ed" data-i="'+idx+'">✏️</button>'+
       '<button class="tb play" data-i="'+idx+'">🔊</button></span></div>'+
@@ -718,6 +722,11 @@ function applySubject(){
   setHd();
   document.getElementById("tot").textContent=DATA().length;
   stopAll(); initRate(); loadVoices(); starBtn(); buildTOC(); render(); allMode(); allCmp(); syncTOC();
+  autoGram();
+}
+function autoGram(){                       /* 句構預設開啟 → 進英文科目時自動把句構檔抓回來 */
+  if(!GRAMFILE[sj]||gramDone[sj])return;
+  needGram(()=>{render();syncTOC();});
 }
 document.querySelectorAll(".sbj").forEach(b=>b.onclick=()=>{
   if(b.dataset.s===sj)return;
@@ -757,6 +766,7 @@ function starBtn(){const b=document.getElementById("onlystar"); if(!b)return;
 const PLAYLABEL="▶ 朗讀全部";
 
 /* ── 朗讀引擎（防 GC／防 15 秒斷線／watchdog 續播） ── */
+let loopSpec=null;          /* 🔁 重複播放中的段落 {i,p} */
 let voices=[],pref=localStorage.getItem("mb_voice")||"",prefEN=localStorage.getItem("mb_voice_en")||"",queue=[],qi=0,playing=false,keep=null,wd=null,poll=null;
 let utterRefs=[];               // 保留參考，避免被 GC 掉導致 onend 不觸發
 const isEN=()=>typeof sj!=="undefined"&&ENS();
@@ -841,7 +851,10 @@ function playClip(it,go){
 function speakNext(){
   clearTimeout(wd); clearInterval(poll);
   if(!playing){return;}
-  if(qi>=queue.length){stopAll();return;}
+  if(qi>=queue.length){
+    if(loopSpec){ const sp=loopSpec;                       /* 🔁 整段重播 */
+      setTimeout(()=>{ if(loopSpec&&playing)start([sp]); },600); return; }
+    stopAll();return;}
   const it=queue[qi];
   if(!it.silent)highlight(it);
   if(it.clip&&!it.clipFailed){
@@ -897,7 +910,7 @@ function start(list){
   },9000); }
   whenIdle(()=>setTimeout(speakNext,120));
 }
-function stopAll(){playing=false;clearInterval(keep);clearInterval(poll);clearTimeout(wd);
+function stopAll(){playing=false;loopSpec=null;clearInterval(keep);clearInterval(poll);clearTimeout(wd);
   try{speechSynthesis.cancel()}catch(e){}
   try{AUD.pause();AUD.currentTime=0;}catch(e){} AUD.ontimeupdate=null;
   try{AUDB.pause()}catch(e){} clipActive=false;
@@ -906,7 +919,8 @@ function stopAll(){playing=false;clearInterval(keep);clearInterval(poll);clearTi
   document.querySelectorAll(".now").forEach(e=>e.classList.remove("now"));
   document.querySelectorAll(".pt.on").forEach(e=>e.classList.remove("on"));
   document.querySelectorAll(".vov .vrow.rd").forEach(e=>e.classList.remove("rd"));
-  document.querySelectorAll(".vsb.on").forEach(e=>e.classList.remove("on"));}
+  document.querySelectorAll(".vsb.on").forEach(e=>e.classList.remove("on"));
+  document.querySelectorAll(".rpb.on").forEach(e=>e.classList.remove("on"));}
 
 function partName(t,p){ let n=0,r="";
   (t.items||[]).forEach(i=>{ if(i.k==="h1"){n++; if(n===p)r=i.t;} }); return r; }
@@ -1159,7 +1173,7 @@ app.addEventListener("click",e=>{
   if(vr){ vr.classList.toggle("on"); return; }
   const gb=e.target.closest(".gmb");
   if(gb){const card=gb.closest(".tp"),c=card.dataset.code,i=+card.dataset.i;
-    const on=localStorage.getItem("nidagram_"+c)==="1";
+    const on=localStorage.getItem("nidagram_"+c)!=="0";
     localStorage.setItem("nidagram_"+c,on?"0":"1");
     gb.classList.toggle("on",!on);
     needGram(()=>{ render(); syncTOC();
@@ -1167,12 +1181,18 @@ app.addEventListener("click",e=>{
     return;}
   const xb=e.target.closest(".xpb");
   if(xb){const card=xb.closest(".tp"),c=card.dataset.code;
-    const on=localStorage.getItem("nidax_"+c)==="1";
+    const on=localStorage.getItem("nidax_"+c)!=="0";
     localStorage.setItem("nidax_"+c,on?"0":"1");
     const w=card.querySelector(".tew"); if(w)w.classList.toggle("xall",!on);
     xb.classList.toggle("on",!on);
     if(!on)card.querySelectorAll(".seg,.en").forEach(x=>x.classList.remove("op"));
     return;}
+  const rb=e.target.closest(".rpb");
+  if(rb){ const card=rb.closest(".tp"), i=+card.dataset.i, p=+rb.dataset.p;
+    const on=rb.classList.contains("on");
+    stopAll();
+    if(!on){ loopSpec={i:i,p:p}; rb.classList.add("on"); start([{i:i,p:p}]); }
+    return; }
   const pb=e.target.closest(".pb");
   if(pb){ const i=+pb.closest(".tp").dataset.i, p=+pb.dataset.p;
     const on=playing&&queue[qi]&&queue[qi].i===i&&queue[qi].p===p;
@@ -1339,8 +1359,8 @@ initRate();loadVoices();if(speechSynthesis.onvoiceschanged!==undefined)speechSyn
 document.getElementById("tot").textContent=DATA().length;
 document.querySelectorAll(".sbj").forEach(x=>x.classList.toggle("on",x.dataset.s===sj));
 document.getElementById("subjname").textContent=CUR().name;
-document.getElementById("datever").textContent="資料 20261016-0750";
+document.getElementById("datever").textContent="資料 20261016-1455";
 setHd();starBtn();buildTOC();render();allMode();allCmp();syncTOC();
-if(LAZY[sj])needData(sj,applySubject);   /* 只有延遲載入的科目才需要重跑；避免開頁就呼叫 speechSynthesis.cancel() 害 Safari 之後不發聲 */
+if(LAZY[sj])needData(sj,applySubject); else autoGram();   /* 只有延遲載入的科目才需要重跑；避免開頁就呼叫 speechSynthesis.cancel() 害 Safari 之後不發聲 */
 </script>
 </body></html>
