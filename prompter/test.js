@@ -67,6 +67,11 @@ ok(C.parseAnswer('<think>想一下</think>【一句話】好').one === '好', '�
 const multi = C.chunkDoc({ id: 'm', name: 'm.md', pages: [{ page: null, text: 'Q：你的論文核心結論是什麼？\nQ：一句話講你的結論\nQ：所以你到底主張什麼\nA：智慧合約是執行工具，不是權利本身。\n\nQ：研究限制？\nA：法域與時效。' }] });
 ok(multi.length === 4 && multi.filter(c => c.text.startsWith('智慧合約')).length === 3, '三種問法共用同一個擬答');
 
+// 語音辨識校正與追問
+ok(C.normalizeASR('用豪威測試判斷，米卡怎麼規定？v a s p 要不要登記，e r c 2981') === '用Howey測試判斷，MiCA怎麼規定？VASP 要不要登記，ERC-2981', '語音聽錯的術語自動校正');
+ok(C.normalizeASR('智能合約跟pool payment') === '智慧合約跟pull payment', '智能合約→智慧合約、pool payment→pull payment');
+ok(C.isFollowUp('那如果是收藏型呢？') && C.isFollowUp('為什麼？') && !C.isFollowUp('收益型音樂NFT在台灣到底是不是證券？'), '追問判斷');
+
 // 事實查核
 const vc = C.verifyClaims('最高法院113年度台上字第4521號判決認為…依著作權法第37條，執行率68%，2023年', ['著作權法第37條規定…執行率為68%，2023年Impact Theory案'], '113年度台上字第4521號判決結論');
 ok(vc.find(x => /4521/.test(x.text)).found === false, '捏造的判決字號被抓出來');

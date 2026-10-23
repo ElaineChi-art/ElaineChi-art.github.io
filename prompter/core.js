@@ -332,6 +332,34 @@
     return out;
   }
 
+  /* ---------- 語音辨識校正：把常見聽錯的專有名詞改回來（比對前使用） ---------- */
+  const ASR_FIX = [
+    [/(?:\b[nｎ]\s*[fｆ]\s*[tｔ]\b|恩欸夫踢|恩愛夫踢)/gi, 'NFT'],
+    [/\be\s*r\s*c\s*-?\s*(\d{3,4})/gi, 'ERC-$1'], [/\b(?:erc|ERC)\s*(\d{3,4})/g, 'ERC-$1'],
+    [/\bv\s*a\s*s\s*p\b/gi, 'VASP'], [/\bi\s*p\s*f\s*s\b/gi, 'IPFS'], [/\bs\s*t\s*o\b/gi, 'STO'],
+    [/\bd\s*a\s*o\b/gi, 'DAO'], [/\bk\s*y\s*c\b/gi, 'KYC'], [/\ba\s*m\s*l\b/gi, 'AML'],
+    [/(?:豪威|好威|浩威|侯威|豪伊|Howie|howie)(?:測試)?/g, 'Howey測試'],
+    [/(?:米卡|咪卡|密卡|mica|Mica)(?![\u4e00-\u9fff]{0,0}[a-z])/g, 'MiCA'],
+    [/(?:pool|poor|普爾)\s*(?:payment|佩門特)/gi, 'pull payment'],
+    [/(?:歐瑞口|歐瑞克|奧瑞克|oracle)/gi, 'oracle'],
+    [/another\s*block/gi, 'anotherblock'], [/music\s*cow|音樂牛/gi, 'Musicow'], [/open\s*sea/gi, 'OpenSea'],
+    [/智能合約/g, '智慧合約'], [/虛擬資產服務提供(?:商|者)/g, 'VASP'],
+    [/(?:旅行規則|travel\s*rule)/gi, 'Travel Rule'], [/(?:給媽|格瑪|GEMA|gema)/g, 'GEMA'],
+    [/(?:龍捲風現金|tornado\s*cash)/gi, 'Tornado Cash'], [/(?:重入攻擊|重新進入攻擊|reentrancy)/gi, '重入攻擊'],
+    [/(?:元數據|metadata|meta\s*data)/gi, 'metadata'], [/(?:昆丁|昆汀|塔倫提諾)/g, 'Tarantino'],
+    [/區塊練|區塊連/g, '區塊鏈'], [/鏈上鏈下|練上練下/g, '鏈上鏈下'], [/著作全/g, '著作權'], [/版權稅/g, '版稅']
+  ];
+  function normalizeASR(text) {
+    let t = String(text || '');
+    for (const [re, to] of ASR_FIX) t = t.replace(re, to);
+    return t;
+  }
+  // 追問：很短、或以「那／所以／剛剛／這個」開頭，要接上上一題一起理解
+  function isFollowUp(text) {
+    const t = String(text || '').trim();
+    return t.length > 0 && (t.length <= 14 || /^(?:那(?:如果|麼|這|你)?|所以|剛剛|你剛剛|這個|這樣|延續|接著|再追問|那假設)/.test(t));
+  }
+
   /* ---------- 抓出真正的問句：去掉「不好意思我想問一下」這類開場，取整句、最後的問句與最後兩個子句 ---------- */
   const PREAMBLE = /^(?:不好意思|抱歉|老師好|委員好|謝謝|你好|您好|我想(?:請)?問(?:一下)?|請問(?:一下)?|我(?:比較)?好奇(?:的是)?|我想確認(?:一下)?|我聽完(?:覺得)?|我覺得|我做[^，,]{0,10}很多年了|我不是學[^，,]{0,6}的|聽起來|那個|嗯+|呃+)[，,、\s]*/;
   function questionSegments(text) {
@@ -419,7 +447,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, makeSSEParser, makeNDJSONParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, isFollowUp, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

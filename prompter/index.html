@@ -647,6 +647,7 @@ function newQuestion() {
 
 // 收到語音或打字
 function onSpeech(fin, interim) {
+  fin = C.normalizeASR(fin || ''); interim = C.normalizeASR(interim || ''); // 聽錯的專有名詞先校正
   if (!Q || (Q.status === 'confirmed' && S.after === 'auto')) newQuestion();
   if (Q.status === 'confirmed') { // 鎖定中：只顯示，不當新問題
     if (fin) Q.tail = (Q.tail + fin).slice(-160);
@@ -669,7 +670,7 @@ function onSpeech(fin, interim) {
 }
 
 // 題庫命中分級：≥0.86 視為同題；0.80–0.86 為「相近題目」須由使用者確認；以下只列候選、由 AI 依資料作答
-const BANK_SAME = 0.86, BANK_NEAR = 0.80;
+const BANK_SAME = 0.86, BANK_NEAR = 0.80, BANK_MAIN = 0.75; // 主答案門檻依盲測選定
 function strongBank(q) { return q.bank && q.bank.sim >= (q.bank.sem ? BANK_SAME : 0.6); }
 function nearBank(q) { return q.bank && q.bank.sem && !strongBank(q) && q.bank.sim >= BANK_NEAR; }
 // 擷取真正的問句（去掉開場白），多個片段一起比對，回傳前 3 個「不同擬答」
@@ -718,13 +719,18 @@ async function liveMatch() {
   if (!Q || !INDEX) return;
   if (liveBusy) { scheduleLive(); return; }
   const q = Q, t = qText(q);
-  if (t.length < 6) return;
+  if (t.length < 4) return;
   liveBusy = true;
+  // 追問（「那如果…呢」）接上上一題一起理解
+  const prev = HISTORY.length ? HISTORY[HISTORY.length - 1].q : '';
+  const mt = C.isFollowUp(t) && prev ? prev + '；追問：' + t : t;
+  q.followUp = mt !== t;
   try {
-    const [b, h] = await Promise.all([semanticBank(t).catch(() => null), retrieve(t, 5).catch(() => C.search(INDEX, t, 5))]);
+    const [b, h] = await Promise.all([semanticBank(mt).catch(() => null), retrieve(mt, 5).catch(() => C.search(INDEX, mt, 5))]);
     if (Q === q) {
       if (b) q.bank = b;
-      q.hits = h; q.ext = C.extractAnswer(t, h, 3); q.liveText = t;
+      q.hits = h; q.ext = C.extractAnswer(mt, h, 3); q.liveText = t;
+      if (!q.firstShownMs && (b || (q.ext && q.ext.length))) q.firstShownMs = Math.round(performance.now() - q.t0);
       if (!q.raw && q.phase !== 'bank') q.phase = q.status === 'confirmed' ? 'answer' : 'live';
       render();
     }
@@ -746,7 +752,7 @@ async function confirmQuestion() {
   const q = Q;
   if (liveMode()) { // 本機：用最後完整的問題再配對一次，直接定案，不跑慢又會捏造的小模型
     await liveMatch();
-    if (Q === q && !q.raw) { q.phase = strongBank(q) ? 'bank' : 'answer'; render(); }
+    if (Q === q && !q.raw) { q.phase = strongBank(q) ? 'bank' : 'answer'; q.finalMs = Math.round(performance.now() - q.t0); render(); }
     return;
   }
   refreshRetrieval();
@@ -802,10 +808,13 @@ async function runLLM(phase) {
 
 function archive(q) {
   const a = C.parseAnswer(q.raw || '');
-  const bank = strongBank(q) && !q.raw;
-  HISTORY.push({ q: qText(q), one: bank ? q.bank.chunk.text.split('\n')[0] : (a.one || ''), raw: q.raw, bank: bank ? q.bank.chunk.text : '',
+  const bank = !q.raw && q.bank && (strongBank(q) || q.bank.sim >= BANK_MAIN); // 畫面顯示什麼就匯出什麼
+  const extText = !q.raw && !bank && q.ext && q.ext.length ? q.ext.map(x => '• ' + x.s).join('\n') : '';
+  HISTORY.push({ q: qText(q), one: bank ? q.bank.chunk.text.split('\n')[0] : (a.one || ''), raw: q.raw, bank: bank ? q.bank.chunk.text : extText,
     time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
-    srcs: (q.usedHits || q.hits || []).map(h => h.chunk.docName + (h.chunk.page ? ' p.' + h.chunk.page : '')) });
+    srcs: (q.usedHits || q.hits || []).map(h => h.chunk.docName + (h.chunk.page ? ' p.' + h.chunk.page : '')),
+    tier: q.raw ? 'AI' : strongBank(q) ? '同題' : q.bank && q.bank.sim >= BANK_NEAR ? '相近' : q.bank && q.bank.sim >= BANK_MAIN ? '最接近' : '原文要點',
+    sim: q.bank ? Math.round(q.bank.sim * 100) : 0, matched: q.bank ? q.bank.chunk.q : '', firstMs: q.firstShownMs || 0, followUp: !!q.followUp });
   renderHistory();
 }
 
@@ -836,8 +845,8 @@ function render() {
   if (q.error) badge = '<span class="badge err">AI 失敗</span>';
   else if (q.phase === 'bank' || (strongBank(q) && !q.raw)) badge = '<span class="badge bank">📚 題庫答案（同題）</span>';
   else if (q.phase === 'near' && !q.raw) badge = '<span class="badge prov">📚 相近題目・請確認是不是同一題</span>';
-  else if (q.phase === 'live' && !q.raw) badge = '<span class="badge prov">🎙 對方還在說・即時配對中</span>';
-  else if (q.phase === 'answer' && !q.raw) badge = q.bank && q.bank.sim >= BANK_NEAR ? '<span class="badge prov">📚 相近題目・請確認</span>' : q.bank && q.bank.sim >= 0.70 ? '<span class="badge prov">📚 最接近的擬答＋原文要點</span>' : '<span class="badge ok">📖 論文原文要點</span>';
+  else if (q.phase === 'live' && !q.raw) badge = '<span class="badge prov">🎙 對方還在說・即時配對中' + (q.followUp ? '（追問，已接上一題）' : '') + '</span>';
+  else if (q.phase === 'answer' && !q.raw) badge = q.bank && q.bank.sim >= BANK_NEAR ? '<span class="badge prov">📚 相近題目・請確認</span>' : q.bank && q.bank.sim >= BANK_MAIN ? '<span class="badge prov">📚 最接近的擬答＋原文要點</span>' : '<span class="badge ok">📖 論文原文要點</span>';
   else if (q.phase === 'nokey') badge = '<span class="badge">🔎 僅資料（未設 AI 金鑰）</span>';
   else if (q.phase === 'provisional') badge = '<span class="badge prov">暫定・對方還在說</span>';
   else if (q.phase === 'final' && q.ctrl) badge = '<span class="badge prov">整理中…</span>';
@@ -850,7 +859,7 @@ function render() {
 
   const n = (q.usedHits || q.hits || []).length;
   let core = '', one = '', points = [], script = '', follow = [], caution = '';
-  const useBankMain = q.bank && !q.raw && (q.phase === 'bank' || q.phase === 'near' || strongBank(q) || ((q.phase === 'live' || q.phase === 'answer') && q.bank.sim >= 0.70));
+  const useBankMain = q.bank && !q.raw && (q.phase === 'bank' || q.phase === 'near' || strongBank(q) || ((q.phase === 'live' || q.phase === 'answer') && q.bank.sim >= BANK_MAIN));
   if (!useBankMain && !q.raw && (q.phase === 'live' || q.phase === 'answer') && q.ext && q.ext.length) {
     core = '論文原文要點（題庫沒有同題，以下直接取自你的資料）';
     one = q.ext[0].s + ' [' + q.ext[0].ref + ']';
@@ -962,7 +971,7 @@ function exportHistory() {
   if (!list.length) { toast('還沒有紀錄'); return; }
   const md = '# AI 提詞機問答紀錄 ' + new Date().toLocaleString('zh-TW') + '\n\n' + list.map(h => {
     const a = C.parseAnswer(h.raw || '');
-    return '## ' + h.time + '　' + h.q + '\n\n' + (h.bank ? h.bank : ('**' + (a.one || '') + '**\n\n' + (a.points || '') + '\n\n' + (a.script || ''))) +
+    return '## ' + h.time + '　' + h.q + '\n\n' + (h.tier ? '> ' + h.tier + (h.sim ? '（相似度 ' + h.sim + '%）' : '') + (h.matched ? '｜對應題庫：' + h.matched : '') + (h.firstMs ? '｜開口後 ' + (h.firstMs / 1000).toFixed(1) + ' 秒出現答案' : '') + (h.followUp ? '｜追問' : '') + '\n\n' : '') + (h.bank ? h.bank : ('**' + (a.one || '') + '**\n\n' + (a.points || '') + '\n\n' + (a.script || ''))) +
       (h.srcs.length ? '\n\n來源：' + h.srcs.join('、') : '') + '\n';
   }).join('\n');
   const blob = new Blob([md], { type: 'text/markdown' });
@@ -1194,6 +1203,8 @@ function toggleFreeze() {
   setStatus();
   // 自我測試：?selftest=1（不打 AI，模擬整條流程）
   if (/selftest=1/.test(location.search)) selfTest();
+  // 本機版：每 30 秒送心跳，背景的題庫自動擴充看到就暫停，讓配對保持最快
+  if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { const hb = () => fetch('heartbeat.txt?' + Date.now(), { cache: 'no-store' }).catch(() => {}); hb(); setInterval(hb, 30000); }
 })();
 
 async function selfTest() {
