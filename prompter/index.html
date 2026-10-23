@@ -219,8 +219,9 @@ async function detectLocal() {
     const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 1500);
     const d = await (await fetch(OLLAMA + '/api/tags', { signal: ctrl.signal })).json();
     const names = (d.models || []).map(m => m.name);
-    const pref = ['qwen3:8b', 'qwen3:4b', 'qwen2.5:7b', 'gemma3:4b', 'qwen2.5:3b'];
-    LOCAL.model = pref.find(p => names.includes(p)) || names.find(n => !/embed/.test(n)) || '';
+    // 指令版優先：推理版（qwen3:4b）會先長篇思考，提詞來不及
+    const pref = ['qwen3:4b-instruct', 'qwen3:8b-instruct', 'qwen2.5:7b', 'gemma3:4b', 'qwen2.5:3b'];
+    LOCAL.model = pref.find(p => names.includes(p)) || names.find(n => !/embed|^qwen3:\d+b$/.test(n)) || '';
     LOCAL.ok = !!LOCAL.model;
   } catch (e) { LOCAL.ok = false; }
 }

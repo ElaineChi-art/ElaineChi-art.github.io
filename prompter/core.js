@@ -275,6 +275,18 @@
       out[sec[0]] = txt.slice(mk.end, j + 1 < marks.length ? marks[j + 1].start : txt.length)
         .replace(/\*\*/g, '').trim();
     });
+    // 小模型偶爾沒照格式：重點擠進【一句話】、追問擠進【口語稿】→ 拆回去
+    if (out.one && !out.points) {
+      const ls = out.one.split(/\n+/).map(s => s.trim()).filter(Boolean);
+      const items = ls.filter(l => /^\d+[.、)]/.test(l));
+      if (items.length >= 2) { out.one = ls.filter(l => !/^\d+[.、)]/.test(l)).join(' '); out.points = items.join('\n'); }
+    }
+    if (out.script && !out.follow) {
+      const ls = out.script.split(/\n+/);
+      const tail = [];
+      while (ls.length > 1 && /^\s*[-•]\s*\S/.test(ls[ls.length - 1])) tail.unshift(ls.pop().trim());
+      if (tail.length) { out.script = ls.join('\n').trim(); out.follow = tail.join('\n'); }
+    }
     return out;
   }
   function listItems(s) {

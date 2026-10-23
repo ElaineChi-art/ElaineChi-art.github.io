@@ -56,6 +56,13 @@ ok(JSON.stringify(C.citations(a.script, 2)) === '[1]', '超出範圍的引用 [9
 ok(C.parseAnswer('【核心問題】AI生成物\n【一句').core === 'AI生成物\n【一句' || C.parseAnswer('【核心問題】AI生成物\n【一句').core.startsWith('AI生成物'), '串流到一半不報錯');
 ok(C.parseAnswer('**【一句話】**好').one !== undefined, '模型多加粗體仍可解析');
 
+// 小模型格式跑掉時自動拆回
+const messy = C.parseAnswer('【一句話】我承認多數是收藏品 [4]\n1. 多數無收益承諾\n2. 有收益承諾可能是證券\n3. MiCA 區分\n【口語稿】我承認…\n- 收藏品定義是什麼？\n- 有哪些案例？\n【注意】');
+ok(messy.one === '我承認多數是收藏品 [4]', '重點擠進一句話 → 一句話只留第一句');
+ok(C.listItems(messy.points).length === 3, '重點拆回三點');
+ok(C.listItems(messy.follow).length === 2 && messy.script === '我承認…', '追問從口語稿拆出');
+ok(C.parseAnswer('<think>想一下</think>【一句話】好').one === '好', '思考過程不顯示');
+
 // 判斷問題是否變長
 ok(!C.grewEnough('社會住宅執行率為什麼這麼低', '社會住宅執行率為什麼這麼低呢'), '多一個字不重答');
 ok(C.grewEnough('社會住宅執行率', '社會住宅執行率為什麼這麼低，明年要怎麼改善'), '問題明顯變長要重答');
