@@ -72,6 +72,12 @@ ok(C.normalizeASR('用豪威測試判斷，米卡怎麼規定？v a s p 要不�
 ok(C.normalizeASR('智能合約跟pool payment') === '智慧合約跟pull payment', '智能合約→智慧合約、pool payment→pull payment');
 ok(C.isFollowUp('那如果是收藏型呢？') && C.isFollowUp('為什麼？') && !C.isFollowUp('收益型音樂NFT在台灣到底是不是證券？'), '追問判斷');
 
+// 問題類型感知的原文直出
+const ex = C.extractAnswer('凍結義務是哪一條法律規定的？', [{ chunk: { text: '凍結義務要求不遲延履行，否則會有問題。凍結義務依資恐防制法第七條，對制裁對象不得為匯款或轉帳。' } }]);
+ok(ex[0] && /第七條/.test(ex[0].s), '問「哪一條法律」優先給法條句');
+const ex2 = C.extractAnswer('優惠期從什麼時候開始算？', [{ chunk: { text: '優惠期制度的設計很重要。優惠期是公開之事實發生後十二個月內申請，可以補救。' } }]);
+ok(ex2[0] && /十二個月/.test(ex2[0].s), '問「什麼時候起算」優先給時間句');
+
 // 事實查核
 const vc = C.verifyClaims('最高法院113年度台上字第4521號判決認為…依著作權法第37條，執行率68%，2023年', ['著作權法第37條規定…執行率為68%，2023年Impact Theory案'], '113年度台上字第4521號判決結論');
 ok(vc.find(x => /4521/.test(x.text)).found === false, '捏造的判決字號被抓出來');

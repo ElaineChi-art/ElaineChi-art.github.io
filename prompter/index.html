@@ -723,10 +723,16 @@ async function liveMatch() {
   liveBusy = true;
   // 追問（「那如果…呢」）接上上一題一起理解
   const prev = HISTORY.length ? HISTORY[HISTORY.length - 1].q : '';
-  const mt = C.isFollowUp(t) && prev ? prev + '；追問：' + t : t;
-  q.followUp = mt !== t;
+  let mt = t;
   try {
-    const [b, h] = await Promise.all([semanticBank(mt).catch(() => null), retrieve(mt, 5).catch(() => C.search(INDEX, mt, 5))]);
+    // 可能是追問：「單獨理解」與「接上一題理解」都配一次，取分數高的（避免把獨立問題誤當追問）
+    let b = await semanticBank(t).catch(() => null);
+    if (C.isFollowUp(t) && prev) {
+      const ctx = prev + '；追問：' + t, b2 = await semanticBank(ctx).catch(() => null);
+      if (b2 && (!b || b2.sim > b.sim + 0.02)) { b = b2; mt = ctx; }
+    }
+    q.followUp = mt !== t;
+    const h = await retrieve(mt, 8).catch(() => C.search(INDEX, mt, 8)); // 多拿幾段，原文要點挑得更準
     if (Q === q) {
       if (b) q.bank = b;
       q.hits = h; q.ext = C.extractAnswer(mt, h, 3); q.liveText = t;

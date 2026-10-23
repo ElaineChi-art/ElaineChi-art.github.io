@@ -303,9 +303,19 @@
   }
 
   /* ---------- 原文直出：從檢索到的段落挑出最對題的句子（不經AI，不可能捏造） ---------- */
+  // 問題類型 → 優先挑哪種句子（問法條就給法條、問時間就給時間）
+  const QTYPES = [
+    [/哪(?:一)?條|什麼法|哪(?:一)?部法|哪個法|法律依據|依據(?:是)?什麼|規定在哪|法源/, /第\s*[\d一二三四五六七八九十]+\s*條|§\s*\d|[\u4e00-\u9fff]{2,8}法(?:第|規定|明定)/, 1.6],
+    [/什麼時候|何時|多久|起算|期間|幾年|幾個月|時程|期限/, /\d+\s*(?:年|個月|月|日|天)|[一二三四五六七八九十]+\s*(?:年|個月)|起算|之日|以內|內(?:提出|申請)/, 1.4],
+    [/多少|金額|比例|幾%|百分之|上限|門檻/, /\d[\d,.]*\s*(?:%|％|億|萬|元|美元|bps)|\d+\s*(?:%|％)/, 1.2],
+    [/哪(?:個|一)?(?:案|判決)|什麼案|案例|判決/, /案|判決|v\.|訴/, 1.0],
+    [/什麼是|是什麼|定義|意思/, /是指|係指|就是|指的是|即為|定義/, 0.8]
+  ];
   function extractAnswer(question, hits, n) {
     n = n || 3;
-    const qt = new Set(tokenize(question));
+    const boosts = QTYPES.filter(([q]) => q.test(question)).map(([, re, w]) => [re, w]);
+    const GENERIC = new Set(['法律', '律規', '規定', '時候', '開始', '哪一', '一條', '條法', '起算', '多少', '案例', '定義', '意思', '問題', '可以', '這條', '那條', '條規']);
+    const qt = new Set(tokenize(question).filter(t => !GENERIC.has(t)));
     if (!qt.size) return [];
     const cands = [];
     (hits || []).forEach((h, rank) => {
@@ -317,8 +327,9 @@
         const toks = new Set(tokenize(s));
         if (!toks.size) return;
         let hit = 0; for (const t of toks) if (qt.has(t)) hit++;
-        if (!hit) return;
-        cands.push({ s, ref: rank + 1, chunk: c, score: hit / Math.sqrt(toks.size) + 0.6 / (rank + 1) });
+        let bonus = 0; for (const [re, w] of boosts) if (re.test(s)) bonus += w;
+        if (!hit) return; // 必須跟問題共用有意義的詞，題型加分才算數
+        cands.push({ s, ref: rank + 1, chunk: c, score: hit / Math.sqrt(toks.size) + 0.6 / (rank + 1) + bonus * Math.min(1, hit / 2) });
       });
     });
     cands.sort((a, b) => b.score - a.score);
