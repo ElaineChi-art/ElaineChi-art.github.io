@@ -228,7 +228,7 @@
       const c = h.chunk;
       const where = c.docName + (c.page ? ' 第' + c.page + '頁' : '') + (c.heading ? '／' + c.heading : '');
       const body = c.type === 'qa' ? '題目：' + c.q + '\n參考答案：' + c.text : c.text;
-      return '[' + (i + 1) + '] 《' + where + '》\n' + body.slice(0, 900);
+      return '[' + (i + 1) + '] 《' + where + '》\n' + body.slice(0, o.srcChars || 900);
     }).join('\n\n');
     const hist = (o.history || []).slice(-2).map(h => '問：' + h.q + '\n答：' + (h.one || '')).join('\n');
     return [
@@ -264,6 +264,7 @@
   /* ---------- 答案解析（串流中可重複呼叫） ---------- */
   const SECTIONS = [['core', '核心問題'], ['one', '一句話'], ['points', '重點'], ['script', '口語稿'], ['follow', '追問'], ['caution', '注意']];
   function parseAnswer(txt) {
+    txt = String(txt || '').replace(/<think>[\s\S]*?(?:<\/think>|$)/g, ''); // 本機模型的思考過程不顯示
     const out = {};
     const re = /【([^】]{1,8})】/g, marks = [];
     let m;
@@ -306,7 +307,22 @@
       }
     };
   }
+  // Ollama 串流是一行一個 JSON（NDJSON），不是 SSE
+  function makeNDJSONParser(onData) {
+    let buf = '';
+    return function feed(chunk) {
+      buf += chunk;
+      let i;
+      while ((i = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, i).trim();
+        buf = buf.slice(i + 1);
+        if (!line) continue;
+        try { onData(JSON.parse(line)); } catch (e) { /* 略過 */ }
+      }
+    };
+  }
   function deltaText(provider, j) {
+    if (provider === 'ollama') return (j.message || {}).content || '';
     if (provider === 'gemini') return ((((j.candidates || [])[0] || {}).content || {}).parts || []).map(p => p.thought ? '' : (p.text || '')).join('');
     if (provider === 'openrouter') return (((j.choices || [])[0] || {}).delta || {}).content || '';
     if (provider === 'claude') return j.type === 'content_block_delta' && j.delta ? (j.delta.text || '') : '';
@@ -314,7 +330,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, makeSSEParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

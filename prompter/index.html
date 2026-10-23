@@ -141,7 +141,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <div class="label">本次問答紀錄 <span class="spacer"></span><button class="btn small" id="exportBtn" style="padding:1px 8px">匯出</button></div>
       <div id="history" class="small muted">還沒有紀錄</div>
     </div>
-    <p class="small muted" style="line-height:1.6">資料只存在這台電腦的瀏覽器裡。語音辨識由瀏覽器處理；問題和相關段落會送到你設定的 AI。請在允許使用輔助工具的場合使用（自己的會議、課堂、幕僚備詢、練習）；正式考試和口試請用來事前演練。</p>
+    <p class="small muted" style="line-height:1.6">🔒 本機 AI 模式：知識庫和 AI 都在這台電腦上，資料不會送出、不會被拿去訓練。語音辨識使用 Chrome 內建功能（只有對方提問的聲音會送 Google 轉成文字）；要完全離線就改用打字提問。請在允許使用輔助工具的場合使用（自己的會議、課堂、幕僚備詢、練習）；正式考試和口試請用來事前演練。</p>
   </aside>
 </main>
 
@@ -172,7 +172,10 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 
 <dialog id="setDlg">
   <h3>⚙ 設定</h3>
-  <label>AI 金鑰（免費：<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--accent)">Google AI Studio 取得 Gemini 金鑰</a>；和「英文閱讀神器」共用，存過就不用再填）</label>
+  <label>AI 來源</label>
+  <select id="sEngine"><option value="local">🔒 本機 AI：資料不離開電腦、免費、不會被拿去訓練（建議）</option><option value="cloud">☁️ 雲端 AI（Gemini 等）：較快較聰明，但問題與段落會送出</option></select>
+  <div id="localInfo" class="small muted" style="margin-top:4px"></div>
+  <label>雲端 AI 金鑰（免費：<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--accent)">Google AI Studio 取得 Gemini 金鑰</a>；和「英文閱讀神器」共用，存過就不用再填）</label>
   <input type="password" id="kGemini" placeholder="Gemini API key（AIza…）">
   <input type="password" id="kOR" placeholder="OpenRouter key（備援，可空白）" style="margin-top:6px">
   <input type="password" id="kClaude" placeholder="Claude key（付費，可空白）" style="margin-top:6px">
@@ -199,13 +202,28 @@ const $ = id => document.getElementById(id);
 const C = window.PCore;
 
 /* ================= 設定 ================= */
-const DEF = { mode: 'law', kb: '', lang: 'zh-TW', silence: 1700, after: 'lock', strict: false, theme: 'dark', fs: 1, scriptOpen: true };
+const DEF = { engine: 'local', mode: 'law', kb: '', lang: 'zh-TW', silence: 1700, after: 'lock', strict: false, theme: 'dark', fs: 1, scriptOpen: true };
 let S = Object.assign({}, DEF);
 try { Object.assign(S, JSON.parse(localStorage.getItem('prompterSettings') || '{}')); } catch (e) {}
 function saveS() { try { localStorage.setItem('prompterSettings', JSON.stringify(S)); } catch (e) {} }
 const KEYS = { gemini: 'readingGeminiKey', openrouter: 'readingOpenrouterKey', claude: 'readingApiKey' };
 function getKey(p) { try { return (localStorage.getItem(KEYS[p]) || '').trim(); } catch (e) { return ''; } }
-function hasAnyKey() { return !!(getKey('gemini') || getKey('openrouter') || getKey('claude')); }
+function hasAnyKey() { return useLocal() ? LOCAL.ok : !!(getKey('gemini') || getKey('openrouter') || getKey('claude')); }
+
+/* 本機 AI（Ollama）：資料不離開這台電腦 */
+const OLLAMA = 'http://127.0.0.1:11434';
+const LOCAL = { ok: false, model: '' };
+function useLocal() { return S.engine === 'local'; }
+async function detectLocal() {
+  try {
+    const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 1500);
+    const d = await (await fetch(OLLAMA + '/api/tags', { signal: ctrl.signal })).json();
+    const names = (d.models || []).map(m => m.name);
+    const pref = ['qwen3:8b', 'qwen3:4b', 'qwen2.5:7b', 'gemma3:4b', 'qwen2.5:3b'];
+    LOCAL.model = pref.find(p => names.includes(p)) || names.find(n => !/embed/.test(n)) || '';
+    LOCAL.ok = !!LOCAL.model;
+  } catch (e) { LOCAL.ok = false; }
+}
 
 function applyLook() {
   document.documentElement.dataset.theme = S.theme;
@@ -333,10 +351,26 @@ async function importPack(f) {
   let pack;
   try { pack = JSON.parse(await f.text()); } catch (e) { toast('「' + f.name + '」不是有效的知識包', 5000); return; }
   if (pack.format !== 'prompter-pack' || !Array.isArray(pack.docs)) { toast('「' + f.name + '」不是提詞機知識包', 5000); return; }
-  const name = pack.kbName || f.name.replace(/\.json$/i, '');
+  await importPackData(pack, f.name.replace(/\.json$/i, ''), false);
+}
+// 本機版：啟動時自動載入同資料夾的 kb-pack.json（有更新才重新匯入）
+async function autoPack() {
+  if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return;
+  let txt;
+  try { const r = await fetch('kb-pack.json', { cache: 'no-store' }); if (!r.ok) return; txt = await r.text(); } catch (e) { return; }
+  const pack = JSON.parse(txt);
+  const sig = (pack.built || '') + '|' + pack.docs.length + '|' + txt.length;
+  const kb = KBS.find(k => k.name === pack.kbName);
+  let old = ''; try { old = localStorage.getItem('prompterPackSig') || ''; } catch (e) {}
+  if (kb && old === sig) { if (!localStorage.getItem('prompterPackChosen')) { S.kb = kb.id; saveS(); } return; }
+  await importPackData(pack, 'kb-pack', true);
+  try { localStorage.setItem('prompterPackSig', sig); localStorage.setItem('prompterPackChosen', '1'); } catch (e) {}
+}
+async function importPackData(pack, fallbackName, silent) {
+  const name = pack.kbName || fallbackName;
   let kb = KBS.find(k => k.name === name);
   if (kb) {
-    if (!confirm('知識庫「' + name + '」已存在，要用新的知識包整個更新嗎？')) return;
+    if (!silent && !confirm('知識庫「' + name + '」已存在，要用新的知識包整個更新嗎？')) return;
     S.kb = kb.id; DOCS = await dbAll(kb.id);
     for (const d of DOCS) await dbDel(d.id);
   } else { kb = { id: uid(), name }; KBS.push(kb); saveKBs(); }
@@ -426,7 +460,7 @@ async function readSSE(url, init, provider, onText, signal, firstMs) {
     }
     const reader = r.body.getReader(), dec = new TextDecoder();
     let acc = '', apiErr = '';
-    const feed = C.makeSSEParser(j => {
+    const feed = (provider === 'ollama' ? C.makeNDJSONParser : C.makeSSEParser)(j => {
       if (j.error) apiErr = (j.error.message || JSON.stringify(j.error)).slice(0, 160);
       const t = C.deltaText(provider, j);
       if (t) { if (!acc) { clearTimeout(timer); timer = setTimeout(() => local.abort(), 60000); } acc += t; onText(acc); }
@@ -443,6 +477,15 @@ async function readSSE(url, init, provider, onText, signal, firstMs) {
 }
 
 async function callLLM(prompt, onText, signal) {
+  if (useLocal()) { // 本機模式：只用本機 AI，絕不改送雲端
+    if (!LOCAL.ok) await detectLocal();
+    if (!LOCAL.ok) throw new Error('本機 AI 沒有啟動，請用「🎙 AI提詞機」啟動檔開啟');
+    await readSSE(OLLAMA + '/api/chat', { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ model: LOCAL.model, stream: true, think: false, keep_alive: '60m',
+        messages: [{ role: 'user', content: prompt }], options: { temperature: 0.3, num_ctx: 6144, num_predict: 700 } }) },
+      'ollama', onText, signal, 60000);
+    return '🔒 本機 ' + LOCAL.model;
+  }
   const errs = [];
   const gk = getKey('gemini');
   if (gk) {
@@ -573,9 +616,9 @@ async function runLLM(phase) {
   q.ctrl = ctrl; q.phase = phase; q.error = ''; q.promote = false;
   const question = qText(q);
   if (phase === 'provisional') q.provText = question;
-  const hits = INDEX ? C.search(INDEX, question, 6).filter(h => h.coverage >= 0.15) : [];
+  const hits = INDEX ? C.search(INDEX, question, useLocal() ? 4 : 6).filter(h => h.coverage >= 0.15) : []; // 本機模型少給一點，回得比較快
   q.hits = hits; q.usedHits = hits;
-  const prompt = C.buildPrompt({ mode: S.mode, question, hits, strict: S.strict, provisional: phase === 'provisional',
+  const prompt = C.buildPrompt({ mode: S.mode, question, hits, strict: S.strict, provisional: phase === 'provisional', srcChars: useLocal() ? 550 : 900,
     history: HISTORY.slice(-2).map(h => ({ q: h.q, one: h.one })) });
   const t0 = performance.now();
   render();
@@ -662,7 +705,7 @@ function render() {
     if (!Object.keys(a).length) script = q.raw; // 模型沒照格式時至少把內容顯示出來
   } else if (q.phase === 'nokey' || (!hasAnyKey() && q.status === 'confirmed')) {
     const hs = q.hits || [];
-    core = hs.length ? '未設定 AI 金鑰：以下是知識庫最相關的內容（⚙ 設定可加免費 Gemini 金鑰）' : '';
+    core = hs.length ? (useLocal() ? '本機 AI 未啟動' : '未設定 AI 金鑰') + '：以下是知識庫最相關的內容' : '';
     one = hs.length ? firstSentence(hs[0].chunk) + ' [1]' : '知識庫裡沒有找到相關資料';
     points = hs.slice(1, 4).map((h, i) => firstSentence(h.chunk) + ' [' + (i + 2) + ']');
   }
@@ -752,7 +795,9 @@ function setStatus() {
   $('stText').textContent = listening ? (Q && Q.status === 'confirmed' && S.after === 'lock' ? '🔒 聆聽中（答案已鎖定，空白鍵＝下一題）' : '聆聽中') : '未聆聽';
   $('micBtn').textContent = listening ? '⏹ 停止聆聽' : '🎙 開始聆聽';
   $('micBtn').className = 'btn ' + (listening ? 'on' : 'primary');
-  $('aiText').textContent = hasAnyKey() ? '' : '｜未設定 AI 金鑰：只顯示資料（⚙ 可加免費 Gemini 金鑰）';
+  $('aiText').textContent = useLocal()
+    ? (LOCAL.ok ? '｜🔒 本機 AI（' + LOCAL.model + '）：資料不離開電腦' : '｜⚠️ 本機 AI 未啟動：請用「🎙 AI提詞機」啟動檔開啟（目前只顯示資料）')
+    : (hasAnyKey() ? '｜☁️ 雲端 AI：問題與相關段落會送出' : '｜未設定 AI 金鑰：只顯示資料');
 }
 
 /* ================= 語音辨識 ================= */
@@ -909,6 +954,8 @@ function bind() {
 
   // 設定視窗
   $('setBtn').onclick = () => {
+    $('sEngine').value = S.engine;
+    $('localInfo').textContent = LOCAL.ok ? '✅ 已偵測到本機 AI：' + LOCAL.model : '⚠️ 沒偵測到本機 AI（請用「🎙 AI提詞機」啟動檔開啟這個頁面）';
     $('kGemini').value = getKey('gemini'); $('kOR').value = getKey('openrouter'); $('kClaude').value = getKey('claude');
     $('sLang').value = S.lang; $('sSilence').value = String(S.silence); $('sAfter').value = S.after;
     $('sStrict').value = S.strict ? '1' : '0'; $('sTheme').value = S.theme; $('kTestOut').textContent = '';
@@ -925,7 +972,7 @@ function bind() {
     saveKeys();
     const wasLang = S.lang;
     S.lang = $('sLang').value; S.silence = +$('sSilence').value; S.after = $('sAfter').value;
-    S.strict = $('sStrict').value === '1'; S.theme = $('sTheme').value;
+    S.strict = $('sStrict').value === '1'; S.theme = $('sTheme').value; S.engine = $('sEngine').value;
     saveS(); applyLook(); setStatus(); $('setDlg').close();
     if (listening && wasLang !== S.lang) { stopListen(); setTimeout(startListen, 400); }
   };
@@ -948,6 +995,8 @@ function toggleFreeze() {
 (async function init() {
   applyLook(); bind();
   try { await ensureDefaultKB(); } catch (e) {}
+  await detectLocal();
+  try { await autoPack(); } catch (e) { showErr('知識包載入失敗：' + e.message); }
   await loadKB();
   setStatus();
   // 自我測試：?selftest=1（不打 AI，模擬整條流程）
@@ -959,6 +1008,7 @@ async function selfTest() {
   const okk = (c, n) => out.push((c ? 'PASS ' : 'FAIL ') + n);
   // 模擬 AI 串流
   window.__fakeLLM = true;
+  S.engine = 'cloud'; // 測試用模擬的雲端 AI
   const realCall = callLLM;
   callLLM = async (prompt, onText, signal) => {
     const txt = prompt.includes('尚未講完')
