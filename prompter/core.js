@@ -128,7 +128,7 @@
   function buildIndex(chunks) {
     const df = new Map();
     const docs = chunks.map(c => {
-      const toks = tokenize((c.heading || '') + ' ' + (c.q ? c.q + ' ' + c.q + ' ' : '') + c.text);
+      const toks = tokenize((c.docName || '').replace(/\.\w+$/, '') + ' ' + (c.heading || '') + ' ' + (c.q ? c.q + ' ' + c.q + ' ' : '') + c.text);
       const tf = new Map();
       toks.forEach(t => tf.set(t, (tf.get(t) || 0) + 1));
       for (const t of tf.keys()) df.set(t, (df.get(t) || 0) + 1);
@@ -180,9 +180,15 @@
   function bankMatch(idx, query) {
     if (!idx) return null;
     let best = null;
+    const A = bigrams(query);
+    if (!A.size) return null;
     for (const c of idx.chunks) {
       if (c.type !== 'qa') continue;
-      const s = qaSimilarity(query, c.q);
+      const B = c._bg || (c._bg = bigrams(c.q)); // 題庫大時快取，不每次重算
+      if (!B.size) continue;
+      let inter = 0;
+      for (const x of A) if (B.has(x)) inter++;
+      const s = 2 * inter / (A.size + B.size);
       if (!best || s > best.sim) best = { chunk: c, sim: s };
     }
     return best && best.sim >= 0.5 ? best : null;
@@ -197,6 +203,10 @@
     oral: {
       name: '🎓 口試報考', role: '口試應答教練',
       guide: '先直接回答教授的問題（一句結論），再說理由、研究方法或文獻依據，最後主動點出研究限制與未來方向。不可捏造自己沒做過的研究或經歷，只能用資料裡寫到的內容。語氣謙虛、具體。'
+    },
+    seminar: {
+      name: '🗣 專題討論', role: '專題討論報告人的回應助手',
+      guide: '報告人在回應老師或與談人的提問、評論。先用一句話感謝並精準重述對方的質疑，再直接回應（同意的部分、不同意的理由），引用自己論文或報告的具體章節、案例與數據支撐，最後誠實說明研究限制，以及會如何修正或補強。語氣學術、謙和但立場清楚，不卑不亢。不可捏造論文裡沒寫的內容。'
     },
     law: {
       name: '⚖️ 法律問答', role: '法律口試與實務答詢助手',

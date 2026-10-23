@@ -159,7 +159,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
     <button class="btn" id="kbRename">改名</button>
     <button class="btn" id="kbDel">刪除</button>
   </div>
-  <div class="drop" id="drop">把檔案拖進來，或 <button class="btn" id="pickFile">選擇檔案</button><br><span class="small">支援 PDF（有文字層）、Word .docx、.txt、.md；PPT 請先另存成 PDF</span><input type="file" id="fileIn" multiple accept=".pdf,.docx,.txt,.md,.markdown,.csv" hidden></div>
+  <div class="drop" id="drop">把檔案拖進來，或 <button class="btn" id="pickFile">選擇檔案</button><br><span class="small">支援 PDF（有文字層）、Word .docx、.txt、.md、知識包 .json；PPT 請先另存成 PDF</span><input type="file" id="fileIn" multiple accept=".pdf,.docx,.txt,.md,.markdown,.csv,.json" hidden></div>
   <details style="margin-top:10px"><summary>或直接貼上文字（筆記、擬答、題庫）</summary>
     <label>標題</label><input type="text" id="pasteTitle" placeholder="例如：面試題庫">
     <label>內容（題庫格式：「Q：題目」換行「A：答案」，會自動辨識成題庫，命中時直接秀你準備的答案）</label>
@@ -323,9 +323,36 @@ async function parseDOCX(buf) {
   const r = await mammoth.extractRawText({ arrayBuffer: buf });
   return [{ page: null, text: r.value }];
 }
+async function dbPutMany(docs) {
+  if (memStore) { for (const d of docs) await dbPut(d); return; }
+  const db = await idb();
+  return new Promise((res, rej) => { const tx = db.transaction('docs', 'readwrite'); const st = tx.objectStore('docs'); docs.forEach(d => st.put(d)); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+}
+// 知識包：本機產生器（build_pack.py）輸出的 JSON，一次建立整個知識庫
+async function importPack(f) {
+  let pack;
+  try { pack = JSON.parse(await f.text()); } catch (e) { toast('「' + f.name + '」不是有效的知識包', 5000); return; }
+  if (pack.format !== 'prompter-pack' || !Array.isArray(pack.docs)) { toast('「' + f.name + '」不是提詞機知識包', 5000); return; }
+  const name = pack.kbName || f.name.replace(/\.json$/i, '');
+  let kb = KBS.find(k => k.name === name);
+  if (kb) {
+    if (!confirm('知識庫「' + name + '」已存在，要用新的知識包整個更新嗎？')) return;
+    S.kb = kb.id; DOCS = await dbAll(kb.id);
+    for (const d of DOCS) await dbDel(d.id);
+  } else { kb = { id: uid(), name }; KBS.push(kb); saveKBs(); }
+  const now = Date.now();
+  await dbPutMany(pack.docs.map(d => ({ id: uid(), kb: kb.id, name: d.name, type: d.type || 'pack', added: now, pages: d.pages,
+    chars: d.pages.reduce((a, p) => a + String(p.text || '').replace(/\s/g, '').length, 0) })));
+  S.kb = kb.id; saveS();
+  toast('建立索引中…', 60000);
+  await loadKB();
+  toast('已匯入「' + name + '」：' + pack.docs.length + ' 份文件、' + INDEX.N.toLocaleString() + ' 個段落', 5000);
+}
+
 async function addFiles(files) {
   for (const f of files) {
     const ext = (f.name.split('.').pop() || '').toLowerCase();
+    if (ext === 'json') { await importPack(f); continue; }
     toast('讀取中：' + f.name, 60000);
     try {
       let pages;
