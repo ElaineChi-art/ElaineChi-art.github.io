@@ -732,10 +732,11 @@ async function liveMatch() {
       if (b2 && (!b || b2.sim > b.sim + 0.02)) { b = b2; mt = ctx; }
     }
     q.followUp = mt !== t;
-    const h = await retrieve(mt, 8).catch(() => C.search(INDEX, mt, 8)); // 多拿幾段，原文要點挑得更準
+    const rt = t.length <= 10 ? mt : t; // 原文搜尋：只有很短的追問才併入上一題，避免稀釋重點
+    const h = await retrieve(rt, 8).catch(() => C.search(INDEX, rt, 8)); // 多拿幾段，原文要點挑得更準
     if (Q === q) {
       if (b) q.bank = b;
-      q.hits = h; q.ext = C.extractAnswer(mt, h, 3); q.liveText = t;
+      q.hits = h; q.ext = C.extractAnswer(rt, h, 3); q.liveText = t;
       if (!q.firstShownMs && (b || (q.ext && q.ext.length))) q.firstShownMs = Math.round(performance.now() - q.t0);
       if (!q.raw && q.phase !== 'bank') q.phase = q.status === 'confirmed' ? 'answer' : 'live';
       render();
@@ -898,6 +899,14 @@ function render() {
     if (bad.length) caution = '🚫 資料中查無：' + bad.map(x => x.text).join('、') + '（可能是 AI 捏造，請勿照念）' + (caution ? '\n' + caution : '');
   }
   if (q.error) caution = '⚠️ AI 沒有回應：' + q.error + '。右側「資料依據」仍可參考。';
+  // 對方問具體數字／字號／日期，但畫面答案裡沒有 → 提醒不要硬答，給安全說法
+  if (q.status === 'confirmed' && !q.raw) {
+    const shown = [one, points.join('\n'), script, (q.ext || []).map(x => x.s).join('\n')].join('\n');
+    const gap = C.detailGap(qText(q), shown);
+    const rare = C.rareTermGap(qText(q), shown, INDEX);
+    if (rare.length) caution = '🛑 你的資料裡查無「' + rare.join('、') + '」相關內容 → 不要順著對方的前提回答。可以說：「這部分我沒有查證到可靠資料，可能是我沒有處理到的範圍，會後確認再回覆您。」' + (caution ? '\n' + caution : '');
+    if (gap.length) caution = '🛑 對方問的是具體的' + gap.join('、') + '，你的資料裡沒有 → 不要硬答。可以說：「這個具體' + gap[0].replace(/或.*/, '') + '我手上沒有查證過的資料，不想在這裡推測，會後補充給您。」' + (caution ? '\n' + caution : '');
+  }
   const nn = Math.max(n, (q.hits || []).length);
   $('one').className = 'one' + (one ? '' : ' empty');
   setHTML($('core'), core ? esc(core) : '');

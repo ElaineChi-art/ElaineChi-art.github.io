@@ -371,6 +371,44 @@
     return t.length > 0 && (t.length <= 14 || /^(?:那(?:如果|麼|這|你)?|所以|剛剛|你剛剛|這個|這樣|延續|接著|再追問|那假設)/.test(t));
   }
 
+  /* ---------- 查無警示：對方問具體細節（金額、時間、法條、案例），但答案裡沒有這類內容 → 提醒不要硬答 ---------- */
+  const DETAIL_ASK = [
+    ['金額或數字', /多少錢|多少(?:美元|億|萬)|賺了多少|價格|股價|市值|金額是|幾%|百分之幾|比例是多少/, /\d[\d,.]*\s*(?:%|％|億|萬|元|美元|bps)/],
+    ['判決字號或出處', /字號|案號|哪一(?:位|篇|本)|誰寫的|作者是|出處是|引用的那/, /字第\s*\d+\s*號|\d{2,3}\s*年度|《[^》]+》|[A-Z][a-z]+\s+v\.?\s/],
+    ['日期或時程', /哪一年|幾月幾|什麼時候(?:通過|施行|生效|判決|成立)|今天|現在的價/, /\d{4}\s*年|\d{2,3}\s*年\s*\d+\s*月|\d+\s*月\s*\d+\s*日/]
+  ];
+  // 問到「特定對象」（你引用的那個…／哪一間…），但那個名字在資料中罕見、答案也沒提到 → 視為查無
+  const REF_CUE = /引用的|提到的那|那個|那位|那篇|那間|哪一間|哪一家|哪家|案子|判決|發行案/;
+  function rareTermGap(question, answerText, idx) {
+    if (!idx || !idx.df) return [];
+    const q = norm(normalizeASR(question));
+    if (!REF_CUE.test(q)) return [];
+    const a = norm(answerText || ''), out = [];
+    for (const w of q.match(/[a-z][a-z0-9.\-]{2,}/g) || []) if ((idx.df.get(w) || 0) <= 2 && !a.includes(w)) out.push(w);
+    for (const run of q.match(/[\u3400-\u9fff]+/g) || []) {
+      let start = -1;
+      for (let i = 0; i <= run.length - 2; i++) {
+        const b = run.slice(i, i + 2), rare = (idx.df.get(b) || 0) <= 3 && !STOP.has(b) && !COMMON_UNK.has(b);
+        if (rare && start < 0) start = i;
+        const last = i === run.length - 2;
+        if (start >= 0 && (!rare || last)) {
+          const raw = run.slice(start, rare && last ? i + 2 : i + 1);
+          const term = raw.replace(/^[的了是在那這個位一後最才再又就也把被給跟和與及]+|[的了是在那這個位一後最才再又就也把被給跟和與及音]+$/g, '');
+          if (raw.length >= 3 && term.length >= 2 && !a.includes(term)) out.push(term);
+          start = -1;
+        }
+      }
+    }
+    return [...new Set(out)].slice(0, 2);
+  }
+  const COMMON_UNK = new Set(['請問', '一下', '老師', '委員', '同學', '大家', '剛剛', '覺得', '是不', '什麼', '怎麼', '為什', '麼樣', '有沒', '沒有', '到底', '好奇', '奇的', '多久', '久才', '後賺', '賺了']);
+
+  function detailGap(question, answerText) {
+    const q = normalizeASR(question), a = String(answerText || '');
+    const need = DETAIL_ASK.filter(([, ask]) => ask.test(q));
+    return need.filter(([, , has]) => !has.test(a)).map(([label]) => label);
+  }
+
   /* ---------- 抓出真正的問句：去掉「不好意思我想問一下」這類開場，取整句、最後的問句與最後兩個子句 ---------- */
   const PREAMBLE = /^(?:不好意思|抱歉|老師好|委員好|謝謝|你好|您好|我想(?:請)?問(?:一下)?|請問(?:一下)?|我(?:比較)?好奇(?:的是)?|我想確認(?:一下)?|我聽完(?:覺得)?|我覺得|我做[^，,]{0,10}很多年了|我不是學[^，,]{0,6}的|聽起來|那個|嗯+|呃+)[，,、\s]*/;
   function questionSegments(text) {
@@ -458,7 +496,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, isFollowUp, makeSSEParser, makeNDJSONParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, isFollowUp, detailGap, rareTermGap, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);
