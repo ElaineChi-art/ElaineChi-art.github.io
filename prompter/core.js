@@ -302,6 +302,36 @@
     return [...new Set((String(s || '').match(/\[(\d+)\]/g) || []).map(x => +x.slice(1, -1)))].filter(x => x >= 1 && x <= n);
   }
 
+  /* ---------- 原文直出：從檢索到的段落挑出最對題的句子（不經AI，不可能捏造） ---------- */
+  function extractAnswer(question, hits, n) {
+    n = n || 3;
+    const qt = new Set(tokenize(question));
+    if (!qt.size) return [];
+    const cands = [];
+    (hits || []).forEach((h, rank) => {
+      const c = h.chunk;
+      String(c.text || '').replace(/\n+/g, '。').split(/(?<=[。！？；])/).forEach(raw => {
+        const s = raw.replace(/^[。\s•·\-]+|^\d+[.、]\s*/g, '').replace(/[（(](?:依據|出處)[:：][^）)]*[）)]/g, '').trim();
+        if (s.length < 14 || s.length > 170 || /^(Q：|A：|追問)/.test(s)) return;
+        if (/"""|[{};=<>]|\b(function|import|return|def|contract|pragma|require)\b|\/\/|^#|\]\(|https?:/.test(s)) return; // 程式碼、連結不當答案
+        const toks = new Set(tokenize(s));
+        if (!toks.size) return;
+        let hit = 0; for (const t of toks) if (qt.has(t)) hit++;
+        if (!hit) return;
+        cands.push({ s, ref: rank + 1, chunk: c, score: hit / Math.sqrt(toks.size) + 0.6 / (rank + 1) });
+      });
+    });
+    cands.sort((a, b) => b.score - a.score);
+    const out = [];
+    for (const c of cands) {
+      const bg = bigrams(c.s);
+      if (out.some(o => { const ob = bigrams(o.s); let i = 0; for (const x of bg) if (ob.has(x)) i++; return i / Math.max(1, Math.min(bg.size, ob.size)) > 0.6; })) continue;
+      out.push(c);
+      if (out.length >= n) break;
+    }
+    return out;
+  }
+
   /* ---------- 抓出真正的問句：去掉「不好意思我想問一下」這類開場，取整句、最後的問句與最後兩個子句 ---------- */
   const PREAMBLE = /^(?:不好意思|抱歉|老師好|委員好|謝謝|你好|您好|我想(?:請)?問(?:一下)?|請問(?:一下)?|我(?:比較)?好奇(?:的是)?|我想確認(?:一下)?|我聽完(?:覺得)?|我覺得|我做[^，,]{0,10}很多年了|我不是學[^，,]{0,6}的|聽起來|那個|嗯+|呃+)[，,、\s]*/;
   function questionSegments(text) {
@@ -389,7 +419,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, makeSSEParser, makeNDJSONParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

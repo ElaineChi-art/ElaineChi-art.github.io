@@ -132,6 +132,10 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
         <ul class="follow" id="follow"></ul>
       </div>
       <div class="caution" id="caution" style="margin-top:8px"></div>
+      <div id="extWrap" style="margin-top:10px;display:none">
+        <div class="label">論文原文要點（直接取自你的資料）</div>
+        <ul class="follow" id="ext" style="color:var(--text)"></ul>
+      </div>
       <div id="altsWrap" style="margin-top:10px;display:none">
         <div class="label">候選擬答（點一下換成主答案）</div>
         <div id="alts"></div>
@@ -290,18 +294,19 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 /* 語意向量（本機 Ollama 產生，只在本機版載入）：和關鍵字搜尋用 RRF 合併 */
 let VEC = null;
 async function loadVectors() {
-  VEC = null;
-  if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname) || !INDEX || !INDEX.N) return;
+  let next = null;
+  if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname) || !INDEX || !INDEX.N) { VEC = next; return; }
   try {
     const meta = await (await fetch('kb-vectors.json', { cache: 'no-store' })).json();
     const check = INDEX.chunks.reduce((a, c) => a + c.text.length, 0);
-    if (meta.n !== INDEX.N || meta.check !== check) return; // 段落對不上 → 寧可不用，也不用錯位的向量
+    if (meta.n !== INDEX.N || meta.check !== check) { VEC = next; return; } // 段落對不上 → 寧可不用，也不用錯位的向量
     const buf = await (await fetch('kb-vectors.bin', { cache: 'no-store' })).arrayBuffer();
-    VEC = { meta, data: new Int8Array(buf), q: null, qaIdx: [] };
+    next = { meta, data: new Int8Array(buf), q: null, qaIdx: [] };
     if (meta.nq) { // 題庫「題目」向量：問題對問題比對
       const qa = INDEX.chunks.map((c, i) => c.type === 'qa' ? i : -1).filter(i => i >= 0);
-      if (qa.length === meta.nq) { VEC.q = new Int8Array(await (await fetch('kb-qvec.bin', { cache: 'no-store' })).arrayBuffer()); VEC.qaIdx = qa; }
+      if (qa.length === meta.nq) { next.q = new Int8Array(await (await fetch('kb-qvec.bin', { cache: 'no-store' })).arrayBuffer()); next.qaIdx = qa; }
     }
+    VEC = next; // 新向量完整載入後才替換，配對不中斷
   } catch (e) { VEC = null; }
 }
 async function embedQuery(q, raw) {
@@ -653,9 +658,12 @@ function onSpeech(fin, interim) {
   renderCaption();
   const t = qText();
   if (t.length < 4) return;
-  if (fin) refreshRetrieval();
-  else { clearTimeout(retrTimer); retrTimer = setTimeout(refreshRetrieval, 350); }
-  maybeProvisional();
+  if (liveMode()) scheduleLive();
+  else {
+    if (fin) refreshRetrieval();
+    else { clearTimeout(retrTimer); retrTimer = setTimeout(refreshRetrieval, 350); }
+    maybeProvisional();
+  }
   clearTimeout(silenceTimer);
   silenceTimer = setTimeout(confirmQuestion, S.silence);
 }
@@ -666,18 +674,20 @@ function strongBank(q) { return q.bank && q.bank.sim >= (q.bank.sem ? BANK_SAME 
 function nearBank(q) { return q.bank && q.bank.sem && !strongBank(q) && q.bank.sim >= BANK_NEAR; }
 // 擷取真正的問句（去掉開場白），多個片段一起比對，回傳前 3 個「不同擬答」
 async function semanticBank(t) {
-  if (!VEC || !VEC.q) return null;
+  const vec = VEC; // 記住當下這份，載入新版時不受影響
+  if (!vec || !vec.q) return null;
   const segs = C.questionSegments(t);
   const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 2500);
   const r = await fetch(OLLAMA + '/api/embed', { method: 'POST', signal: ctrl.signal,
-    body: JSON.stringify({ model: VEC.meta.model, input: segs, keep_alive: '60m', truncate: true }) });
-  const D = VEC.meta.dim;
+    body: JSON.stringify({ model: vec.meta.model, input: segs, keep_alive: '60m', truncate: true }) });
+  const D = vec.meta.dim;
   const vs = (await r.json()).embeddings.map(v => { v = v.slice(0, D); let n = 0; for (const x of v) n += x * x; n = Math.sqrt(n) || 1; return v.map(x => x / n); });
   const best = new Map();
-  for (const v of vs) for (let j = 0; j < VEC.qaIdx.length; j++) {
+  for (const v of vs) for (let j = 0; j < vec.qaIdx.length; j++) {
     let s = 0; const o = j * D;
-    for (let d = 0; d < D; d++) s += VEC.q[o + d] * v[d];
-    const c = INDEX.chunks[VEC.qaIdx[j]], cur = best.get(c.text);
+    for (let d = 0; d < D; d++) s += vec.q[o + d] * v[d];
+    const c = INDEX.chunks[vec.qaIdx[j]], cur = best.get(c.text);
+    if (/^自動擴充/.test(c.docName)) s -= 4; // 自動擴充（原文作答）略低於人工查核擬答
     if (!cur || cur.sim < s) best.set(c.text, { chunk: c, sim: s });
   }
   const top = [...best.values()].sort((a, b) => b.sim - a.sim).slice(0, 3).map(x => ({ chunk: x.chunk, sim: x.sim / 127, sem: true }));
@@ -697,6 +707,31 @@ function refreshRetrieval() {
   if (VEC && VEC.q) semanticBank(t).then(b => { if (b && Q === q && qText() === t) { q.bank = b; render(); } }).catch(() => {});
 }
 
+/* 邊聽邊配對：對方還在說就持續比對題庫與原文，講完時答案已在畫面上（全在本機，不經AI生成） */
+function liveMode() { return useLocal() || (S.engine === 'groq' && !getKey('groq')); }
+let liveTimer = null, liveBusy = false;
+function scheduleLive() {
+  if (liveTimer) return;
+  liveTimer = setTimeout(() => { liveTimer = null; liveMatch(); }, 600);
+}
+async function liveMatch() {
+  if (!Q || !INDEX) return;
+  if (liveBusy) { scheduleLive(); return; }
+  const q = Q, t = qText(q);
+  if (t.length < 6) return;
+  liveBusy = true;
+  try {
+    const [b, h] = await Promise.all([semanticBank(t).catch(() => null), retrieve(t, 5).catch(() => C.search(INDEX, t, 5))]);
+    if (Q === q) {
+      if (b) q.bank = b;
+      q.hits = h; q.ext = C.extractAnswer(t, h, 3); q.liveText = t;
+      if (!q.raw && q.phase !== 'bank') q.phase = q.status === 'confirmed' ? 'answer' : 'live';
+      render();
+    }
+  } finally { liveBusy = false; }
+  if (Q === q && qText(q) !== t) scheduleLive();
+}
+
 function maybeProvisional() {
   if (!Q || Q.provSent || Q.status !== 'listening') return;
   if (useLocal() || (S.engine === 'groq' && !getKey('groq'))) return; // 本機模型太慢，不做暫定答案，避免搶資源
@@ -709,6 +744,11 @@ async function confirmQuestion() {
   if (t.length < 4) return;
   Q.final = t; Q.interim = ''; Q.status = 'confirmed';
   const q = Q;
+  if (liveMode()) { // 本機：用最後完整的問題再配對一次，直接定案，不跑慢又會捏造的小模型
+    await liveMatch();
+    if (Q === q && !q.raw) { q.phase = strongBank(q) ? 'bank' : 'answer'; render(); }
+    return;
+  }
   refreshRetrieval();
   if (VEC && VEC.q) { try { const b = await semanticBank(t); if (b) q.bank = b; } catch (e) {} if (Q !== q) return; }
   if (strongBank(Q)) { if (Q.ctrl) Q.ctrl.abort(); Q.ctrl = null; Q.raw = ''; Q.phase = 'bank'; render(); return; }
@@ -796,6 +836,8 @@ function render() {
   if (q.error) badge = '<span class="badge err">AI 失敗</span>';
   else if (q.phase === 'bank' || (strongBank(q) && !q.raw)) badge = '<span class="badge bank">📚 題庫答案（同題）</span>';
   else if (q.phase === 'near' && !q.raw) badge = '<span class="badge prov">📚 相近題目・請確認是不是同一題</span>';
+  else if (q.phase === 'live' && !q.raw) badge = '<span class="badge prov">🎙 對方還在說・即時配對中</span>';
+  else if (q.phase === 'answer' && !q.raw) badge = q.bank && q.bank.sim >= BANK_NEAR ? '<span class="badge prov">📚 相近題目・請確認</span>' : q.bank && q.bank.sim >= 0.70 ? '<span class="badge prov">📚 最接近的擬答＋原文要點</span>' : '<span class="badge ok">📖 論文原文要點</span>';
   else if (q.phase === 'nokey') badge = '<span class="badge">🔎 僅資料（未設 AI 金鑰）</span>';
   else if (q.phase === 'provisional') badge = '<span class="badge prov">暫定・對方還在說</span>';
   else if (q.phase === 'final' && q.ctrl) badge = '<span class="badge prov">整理中…</span>';
@@ -808,9 +850,14 @@ function render() {
 
   const n = (q.usedHits || q.hits || []).length;
   let core = '', one = '', points = [], script = '', follow = [], caution = '';
-  if ((q.phase === 'bank' || q.phase === 'near' || strongBank(q)) && !q.raw && q.bank) {
+  const useBankMain = q.bank && !q.raw && (q.phase === 'bank' || q.phase === 'near' || strongBank(q) || ((q.phase === 'live' || q.phase === 'answer') && q.bank.sim >= 0.70));
+  if (!useBankMain && !q.raw && (q.phase === 'live' || q.phase === 'answer') && q.ext && q.ext.length) {
+    core = '論文原文要點（題庫沒有同題，以下直接取自你的資料）';
+    one = q.ext[0].s + ' [' + q.ext[0].ref + ']';
+    points = q.ext.slice(1).map(x => x.s + ' [' + x.ref + ']');
+  } else if (useBankMain) {
     const c = q.bank.chunk;
-    core = (q.phase === 'near' ? '相近題目：' : '題庫命中：') + c.q + '（相似度 ' + Math.round(q.bank.sim * 100) + '%）';
+    core = (strongBank(q) ? '題庫命中：' : '相近題目：') + c.q + '（相似度 ' + Math.round(q.bank.sim * 100) + '%）';
     const lines = c.text.split('\n').map(x => x.trim()).filter(Boolean);
     const basis = lines.filter(x => /^（(依據|出處)/.test(x) || /^（出處：/.test(x));
     const warn = lines.filter(x => /^⚠️/.test(x));
@@ -818,7 +865,7 @@ function render() {
     one = body[0] || '';
     points = body.slice(1).filter(x => /^[•·]\s*|^\d+[.、]\s*/.test(x)).map(x => x.replace(/^[•·]\s*|^\d+[.、]\s*/, ''));
     script = body.slice(1).filter(x => !/^[•·]\s*|^\d+[.、]\s*/.test(x)).join('\n');
-    caution = [...warn, (basis.join(' ') || '（' + c.docName + '）') + (q.phase === 'near' ? '　⚠️ 這是相近題目的擬答，請先確認對方問的是同一件事' : '')].join('\n');
+    caution = [...warn, (basis.join(' ') || '（' + c.docName + '）') + (!strongBank(q) ? '　⚠️ 相近題目的擬答，請先確認對方問的是同一件事' : '')].join('\n');
   } else if (q.raw) {
     const a = C.parseAnswer(q.raw);
     core = a.core || ''; one = a.one || ''; points = C.listItems(a.points); script = a.script || '';
@@ -839,21 +886,24 @@ function render() {
   const nn = Math.max(n, (q.hits || []).length);
   $('one').className = 'one' + (one ? '' : ' empty');
   setHTML($('core'), core ? esc(core) : '');
-  setHTML($('one'), one ? citeHTML(one, nn) : (q.ctrl ? '思考中…' : (qText() ? '聽到問題了，正在等對方說完…' : '答案會出現在這裡')));
+  setHTML($('one'), one ? citeHTML(one, nn) : (q.ctrl ? '思考中…' : (qText() ? '配對中…' : '答案會出現在這裡')));
   setHTML($('points'), points.slice(0, 3).map(p => '<li>' + citeHTML(p, nn) + '</li>').join(''));
   setHTML($('script'), script ? citeHTML(script, nn) : '');
   $('scriptWrap').style.display = script ? '' : 'none';
   setHTML($('follow'), follow.slice(0, 3).map(f => '<li>' + esc(f) + '</li>').join(''));
   $('followWrap').style.display = follow.length ? '' : 'none';
   setHTML($('caution'), esc(caution));
-  const bankShown = q.bank && q.bank.sem && !q.raw && (q.phase === 'bank' || q.phase === 'near' || strongBank(q));
+  const extList = useBankMain && q.ext && q.ext.length ? q.ext : [];
+  $('extWrap').style.display = extList.length ? '' : 'none';
+  setHTML($('ext'), extList.map(x => '<li>' + citeHTML(x.s + ' [' + x.ref + ']', nn) + '</li>').join(''));
+  const bankShown = useBankMain;
   // 主畫面是題庫擬答 → 列其餘 2 個；主畫面是 AI 生成 → 3 個候選全列，方便對照
   const alts = !q.bank || !q.bank.sem ? [] : bankShown ? (q.bank.alts || []) : [q.bank, ...(q.bank.alts || [])];
   $('altsWrap').style.display = alts.length ? '' : 'none';
   setHTML($('alts'), alts.map((a, i) => `<div class="alt" data-alt="${i}"><div class="aq">原題：${esc(a.chunk.q.slice(0, 60))}（${Math.round(a.sim * 100)}%）</div>${esc((a.chunk.text.split('\n').find(x => x.trim() && !/^（/.test(x)) || '').slice(0, 90))}</div>`).join(''));
   let act = '';
   if (q.error) act += '<button class="btn" data-act="retry">↻ 重試</button>';
-  if ((q.phase === 'bank' || q.phase === 'near' || strongBank(q)) && !q.raw && hasAnyKey()) act += '<button class="btn" data-act="ai">' + (q.phase === 'near' ? '🤖 不是同一題，請 AI 依資料作答' : '🤖 請 AI 重新整理') + '</button>';
+  if (!q.raw && !q.ctrl && q.status === 'confirmed' && hasAnyKey()) act += '<button class="btn" data-act="ai">🤖 請 AI 整理成口語稿' + (liveMode() ? '（本機，約30秒）' : '') + '</button>';
   if (q.raw && !q.ctrl && q.status === 'confirmed') act += '<button class="btn" data-act="redo">↻ 換個說法</button>';
   setHTML($('answerActions'), act);
 }
