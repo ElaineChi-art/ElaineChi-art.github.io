@@ -241,8 +241,10 @@
       o.strict
         ? '3. 嚴格模式：資料沒有寫到的事實一律不說，改寫「資料庫無此資訊」。'
         : '3. 資料不足時可用一般常識補充答題方向，但必須在該句前標「（一般知識）」，數字、法條、判決、人名、經歷不可用一般知識編造。',
-      '4. 全部使用繁體中文（台灣用語）。',
-      o.provisional ? '5. 對方還沒講完，以下是目前聽到的片段。請先根據最可能的問題方向作答，內容精簡。' : '',
+      '4. 問題裡提到的判決字號、條文、數字、人名，如果〈資料〉找不到，【一句話】必須直接說「資料庫查無這個○○，無法確認內容」，絕對不可以描述它的內容。',
+      '5. 判決字號、條號、金額、百分比、年份只能照抄〈資料〉裡出現過的，不可自行產生。',
+      '6. 全部使用繁體中文（台灣用語）。標籤後面直接寫內容，不要重複格式說明。',
+      o.provisional ? '7. 對方還沒講完，以下是目前聽到的片段。請先根據最可能的問題方向作答，內容精簡。' : '',
       '',
       '【輸出格式】嚴格依序輸出下列標籤，不要輸出其他內容、不要用 Markdown 粗體：',
       '【核心問題】對方真正在問什麼（20字內）',
@@ -296,6 +298,31 @@
     return [...new Set((String(s || '').match(/\[(\d+)\]/g) || []).map(x => +x.slice(1, -1)))].filter(x => x >= 1 && x <= n);
   }
 
+  /* ---------- 事實查核：答案裡的判決字號、條號、數字，必須在資料裡找得到 ---------- */
+  const CLAIM_RES = [
+    /\d{2,3}\s*年度?\s*[一-鿿]{1,6}字第\s*\d+\s*號/g,                  // 判決字號
+    /(?:第\s*\d+\s*條(?:\s*之\s*\d+)?(?:\s*第\s*\d+\s*項)?)|§\s*\d+(?:-\d+)?/g, // 條號
+    /\d[\d,.]*\s*(?:億|萬|千萬|百萬)?\s*(?:美元|元|台幣|新台幣|USD|%|％)/g,      // 金額、百分比
+    /\b(?:19|20)\d{2}\s*年/g                                                  // 年份
+  ];
+  const claimKey = s => norm(s).replace(/[\s,，]/g, '').replace(/^第/, '').replace(/^§/, '');
+  function verifyClaims(answer, sources, question) {
+    const src = claimKey((sources || []).join('\n'));
+    const q = claimKey(question || '');
+    const out = [], seen = new Set();
+    for (const re of CLAIM_RES) {
+      for (const m of String(answer || '').match(re) || []) {
+        const k = claimKey(m);
+        if (!k || seen.has(k)) continue;
+        seen.add(k);
+        let core = k.replace(/年度?/, '');
+        const found = src.includes(k) || src.includes(core) || (/條/.test(k) && src.includes(k.replace(/條.*/, '條')));
+        out.push({ text: m.trim(), found, inQuestion: q.includes(k) });
+      }
+    }
+    return out;
+  }
+
   // 對方講話的文字差多少（判斷要不要重答）
   function grewEnough(oldText, newText) {
     const a = norm(oldText).replace(/\s/g, ''), b = norm(newText).replace(/\s/g, '');
@@ -342,7 +369,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, makeSSEParser, makeNDJSONParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, verifyClaims, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

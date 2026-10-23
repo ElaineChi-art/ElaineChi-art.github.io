@@ -63,6 +63,14 @@ ok(C.listItems(messy.points).length === 3, '重點拆回三點');
 ok(C.listItems(messy.follow).length === 2 && messy.script === '我承認…', '追問從口語稿拆出');
 ok(C.parseAnswer('<think>想一下</think>【一句話】好').one === '好', '思考過程不顯示');
 
+// 事實查核
+const vc = C.verifyClaims('最高法院113年度台上字第4521號判決認為…依著作權法第37條，執行率68%，2023年', ['著作權法第37條規定…執行率為68%，2023年Impact Theory案'], '113年度台上字第4521號判決結論');
+ok(vc.find(x => /4521/.test(x.text)).found === false, '捏造的判決字號被抓出來');
+ok(vc.find(x => /4521/.test(x.text)).inQuestion === true, '知道字號來自提問');
+ok(vc.find(x => /37/.test(x.text)).found === true, '資料裡有的條號通過');
+ok(vc.find(x => /68/.test(x.text)).found === true, '資料裡有的百分比通過');
+ok(C.verifyClaims('依第99條', ['第37條'], '').every(x => !x.found), '資料沒有的條號被抓出來');
+
 // 判斷問題是否變長
 ok(!C.grewEnough('社會住宅執行率為什麼這麼低', '社會住宅執行率為什麼這麼低呢'), '多一個字不重答');
 ok(C.grewEnough('社會住宅執行率', '社會住宅執行率為什麼這麼低，明年要怎麼改善'), '問題明顯變長要重答');

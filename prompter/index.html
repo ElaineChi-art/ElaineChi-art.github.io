@@ -53,7 +53,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;padding:14p
 .points li{margin:4px 0}
 .script{font-size:calc(19px*var(--fs));line-height:1.85;white-space:pre-wrap;word-break:break-word}
 .follow{margin:0;padding-left:1.2em;font-size:calc(16px*var(--fs));color:var(--muted);line-height:1.6}
-.caution{font-size:calc(14px*var(--fs));color:var(--warn);white-space:pre-wrap}
+.caution{font-size:calc(15px*var(--fs));color:var(--warn);white-space:pre-wrap;font-weight:600}
 sup.cite{cursor:pointer;color:var(--accent);font-size:.62em;padding:0 2px;font-weight:700}
 .gk{color:var(--warn);font-size:.85em}
 .src{border-top:1px solid var(--line);padding:9px 0;font-size:14px;line-height:1.6;cursor:pointer}
@@ -173,8 +173,10 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
 <dialog id="setDlg">
   <h3>⚙ 設定</h3>
   <label>AI 來源</label>
-  <select id="sEngine"><option value="local">🔒 本機 AI：資料不離開電腦、免費、不會被拿去訓練（建議）</option><option value="cloud">☁️ 雲端 AI（Gemini 等）：較快較聰明，但問題與段落會送出</option></select>
+  <select id="sEngine"><option value="local">🔒 本機 AI：資料不離開電腦、免費、不會被拿去訓練（建議）</option><option value="groq">⚡ Groq 大模型：免費、合約保證不拿去訓練、可設零保留，最準最快（建議）</option><option value="cloud">☁️ 其他雲端 AI（Gemini 免費版會拿去訓練）</option></select>
   <div id="localInfo" class="small muted" style="margin-top:4px"></div>
+  <label>Groq 金鑰（免費：到 <a href="https://console.groq.com/keys" target="_blank" rel="noopener" style="color:var(--accent)">console.groq.com/keys</a> 登入後按 Create API Key；並在 Settings → Data Controls 打開 Zero Data Retention）</label>
+  <input type="password" id="kGroq" placeholder="Groq API key（gsk_…）">
   <label>雲端 AI 金鑰（免費：<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--accent)">Google AI Studio 取得 Gemini 金鑰</a>；和「英文閱讀神器」共用，存過就不用再填）</label>
   <input type="password" id="kGemini" placeholder="Gemini API key（AIza…）">
   <input type="password" id="kOR" placeholder="OpenRouter key（備援，可空白）" style="margin-top:6px">
@@ -206,9 +208,9 @@ const DEF = { engine: 'local', mode: 'law', kb: '', lang: 'zh-TW', silence: 1700
 let S = Object.assign({}, DEF);
 try { Object.assign(S, JSON.parse(localStorage.getItem('prompterSettings') || '{}')); } catch (e) {}
 function saveS() { try { localStorage.setItem('prompterSettings', JSON.stringify(S)); } catch (e) {} }
-const KEYS = { gemini: 'readingGeminiKey', openrouter: 'readingOpenrouterKey', claude: 'readingApiKey' };
+const KEYS = { groq: 'prompterGroqKey', gemini: 'readingGeminiKey', openrouter: 'readingOpenrouterKey', claude: 'readingApiKey' };
 function getKey(p) { try { return (localStorage.getItem(KEYS[p]) || '').trim(); } catch (e) { return ''; } }
-function hasAnyKey() { return useLocal() ? LOCAL.ok : !!(getKey('gemini') || getKey('openrouter') || getKey('claude')); }
+function hasAnyKey() { return useLocal() ? LOCAL.ok : S.engine === 'groq' ? !!(getKey('groq') || LOCAL.ok) : !!(getKey('gemini') || getKey('openrouter') || getKey('claude')); }
 
 /* 本機 AI（Ollama）：資料不離開這台電腦 */
 const OLLAMA = 'http://127.0.0.1:11434';
@@ -278,12 +280,56 @@ async function dbDel(id) {
 }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
+/* 語意向量（本機 Ollama 產生，只在本機版載入）：和關鍵字搜尋用 RRF 合併 */
+let VEC = null;
+async function loadVectors() {
+  VEC = null;
+  if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname) || !INDEX || !INDEX.N) return;
+  try {
+    const meta = await (await fetch('kb-vectors.json', { cache: 'no-store' })).json();
+    const check = INDEX.chunks.reduce((a, c) => a + c.text.length, 0);
+    if (meta.n !== INDEX.N || meta.check !== check) return; // 段落對不上 → 寧可不用，也不用錯位的向量
+    const buf = await (await fetch('kb-vectors.bin', { cache: 'no-store' })).arrayBuffer();
+    VEC = { meta, data: new Int8Array(buf) };
+  } catch (e) { VEC = null; }
+}
+async function embedQuery(q) {
+  const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 2500);
+  const r = await fetch(OLLAMA + '/api/embed', { method: 'POST', signal: ctrl.signal,
+    body: JSON.stringify({ model: VEC.meta.model, input: [VEC.meta.instruct + q], keep_alive: '60m', truncate: true }) });
+  const v = (await r.json()).embeddings[0].slice(0, VEC.meta.dim);
+  let n = 0; for (const x of v) n += x * x; n = Math.sqrt(n) || 1;
+  return v.map(x => x / n);
+}
+async function retrieve(q, k) {
+  const kw = C.search(INDEX, q, VEC ? 40 : k).filter(h => h.coverage >= 0.15);
+  if (!VEC) return kw.slice(0, k);
+  let qv;
+  try { qv = await embedQuery(q); } catch (e) { return kw.slice(0, k); } // 語意模型沒開 → 只用關鍵字
+  const D = VEC.meta.dim, data = VEC.data, sem = [];
+  for (let i = 0; i < VEC.meta.n; i++) {
+    let s = 0; const o = i * D;
+    for (let d = 0; d < D; d++) s += data[o + d] * qv[d];
+    sem.push([i, s]);
+  }
+  sem.sort((a, b) => b[1] - a[1]);
+  const score = new Map();
+  kw.forEach((h, r) => score.set(h.i, (score.get(h.i) || 0) + 1 / (60 + r)));
+  sem.slice(0, 40).forEach(([i], r) => score.set(i, (score.get(i) || 0) + 1 / (60 + r)));
+  const seen = new Set(); // 題庫的正式問法和白話問法指向同一段擬答 → 只留一次
+  return [...score.entries()].sort((a, b) => b[1] - a[1]).map(([i, s]) => ({ i, score: s, coverage: 1, chunk: INDEX.chunks[i] }))
+    .filter(h => !seen.has(h.chunk.text) && seen.add(h.chunk.text)).slice(0, k);
+}
+
 async function loadKB() {
   try { DOCS = await dbAll(S.kb); }
   catch (e) { memStore = memStore || []; DOCS = memStore.filter(d => d.kb === S.kb); showErr('瀏覽器不允許儲存資料（可能是無痕視窗），這次的資料關掉就會消失'); }
+  // 依匯入順序排好（知識包的語意向量是照這個順序算的）
+  DOCS.sort((a, b) => (a.order ?? 1e9) - (b.order ?? 1e9) || a.added - b.added);
   const chunks = [];
   for (const d of DOCS) chunks.push(...C.chunkDoc(d));
   INDEX = C.buildIndex(chunks);
+  await loadVectors();
   renderKBSelect();
   if (Q) { refreshRetrieval(); }
 }
@@ -360,7 +406,7 @@ async function autoPack() {
   let txt;
   try { const r = await fetch('kb-pack.json', { cache: 'no-store' }); if (!r.ok) return; txt = await r.text(); } catch (e) { return; }
   const pack = JSON.parse(txt);
-  const sig = (pack.built || '') + '|' + pack.docs.length + '|' + txt.length;
+  const sig = 'v2|' + (pack.built || '') + '|' + pack.docs.length + '|' + txt.length;
   const kb = KBS.find(k => k.name === pack.kbName);
   let old = ''; try { old = localStorage.getItem('prompterPackSig') || ''; } catch (e) {}
   if (kb && old === sig) { if (!localStorage.getItem('prompterPackChosen')) { S.kb = kb.id; saveS(); } return; }
@@ -376,7 +422,7 @@ async function importPackData(pack, fallbackName, silent) {
     for (const d of DOCS) await dbDel(d.id);
   } else { kb = { id: uid(), name }; KBS.push(kb); saveKBs(); }
   const now = Date.now();
-  await dbPutMany(pack.docs.map(d => ({ id: uid(), kb: kb.id, name: d.name, type: d.type || 'pack', added: now, pages: d.pages,
+  await dbPutMany(pack.docs.map((d, order) => ({ id: uid(), kb: kb.id, order, name: d.name, type: d.type || 'pack', added: now, pages: d.pages,
     chars: d.pages.reduce((a, p) => a + String(p.text || '').replace(/\s/g, '').length, 0) })));
   S.kb = kb.id; saveS();
   toast('建立索引中…', 60000);
@@ -478,7 +524,31 @@ async function readSSE(url, init, provider, onText, signal, firstMs) {
 }
 
 async function callLLM(prompt, onText, signal) {
-  if (useLocal()) { // 本機模式：只用本機 AI，絕不改送雲端
+  if (S.engine === 'groq' && getKey('groq')) {
+    const errs = [];
+    for (const model of ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b']) {
+      const extra = /qwen/.test(model) ? { reasoning_effort: 'none', reasoning_format: 'hidden' } : { reasoning_effort: 'low', include_reasoning: false };
+      for (const withExtra of [true, false]) {
+        try {
+          await readSSE('https://api.groq.com/openai/v1/chat/completions',
+            { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + getKey('groq') },
+              body: JSON.stringify(Object.assign({ model, stream: true, temperature: 0.2, max_tokens: 900, messages: [{ role: 'user', content: prompt }] }, withExtra ? extra : {})) },
+            'openrouter', onText, signal, 15000);
+          return '⚡ Groq ' + model.split('/')[1];
+        } catch (e) {
+          if (e.name === 'AbortError') throw e;
+          errs.push(model + '：' + e.message);
+          if (e.status === 400 && withExtra) continue; // 參數不支援 → 不帶參數再試一次
+          break;
+        }
+      }
+      if (/401|invalid_api_key/i.test(errs.join(''))) break;
+    }
+    if (!LOCAL.ok) await detectLocal();
+    if (!LOCAL.ok) throw new Error(/401|invalid_api_key/i.test(errs.join('')) ? 'Groq 金鑰無效，請到 ⚙ 設定重新貼上' : /429/.test(errs.join('')) ? 'Groq 免費額度暫時用完，且本機 AI 沒有啟動' : 'Groq 沒有回應：' + errs.slice(-1)[0]);
+    onText('');
+  }
+  if (useLocal() || S.engine === 'groq') { // 本機模式（或 Groq 失敗時的備援）：只用本機 AI，絕不改送其他雲端
     if (!LOCAL.ok) await detectLocal();
     if (!LOCAL.ok) throw new Error('本機 AI 沒有啟動，請用「🎙 AI提詞機」啟動檔開啟');
     await readSSE(OLLAMA + '/api/chat', { method: 'POST', headers: { 'content-type': 'application/json' },
@@ -583,11 +653,12 @@ function strongBank(q) { return q.bank && q.bank.sim >= 0.6; }
 
 function refreshRetrieval() {
   if (!Q || !INDEX) return;
-  const t = qText();
+  const q = Q, t = qText();
   if (!t) return;
-  Q.hits = C.search(INDEX, t, 6).filter(h => h.coverage >= 0.15);
-  Q.bank = C.bankMatch(INDEX, t);
+  q.hits = C.search(INDEX, t, 6).filter(h => h.coverage >= 0.15); // 先秀關鍵字結果（立即）
+  q.bank = C.bankMatch(INDEX, t);
   render();
+  if (VEC) retrieve(t, 6).then(h => { if (Q === q && qText() === t && !q.usedHits) { q.hits = h; render(); } });
 }
 
 function maybeProvisional() {
@@ -617,9 +688,11 @@ async function runLLM(phase) {
   q.ctrl = ctrl; q.phase = phase; q.error = ''; q.promote = false;
   const question = qText(q);
   if (phase === 'provisional') q.provText = question;
-  const hits = INDEX ? C.search(INDEX, question, useLocal() ? 4 : 6).filter(h => h.coverage >= 0.15) : []; // 本機模型少給一點，回得比較快
+  const smallModel = useLocal() || (S.engine === 'groq' && !getKey('groq'));
+  const hits = INDEX ? await retrieve(question, smallModel ? 4 : 5) : []; // 本機模型少給一點，回得比較快
+  if (ctrl.signal.aborted || q.ctrl !== ctrl) return;
   q.hits = hits; q.usedHits = hits;
-  const prompt = C.buildPrompt({ mode: S.mode, question, hits, strict: S.strict, provisional: phase === 'provisional', srcChars: useLocal() ? 550 : 900,
+  const prompt = C.buildPrompt({ mode: S.mode, question, hits, strict: S.strict, provisional: phase === 'provisional', srcChars: smallModel ? 550 : 700,
     history: HISTORY.slice(-2).map(h => ({ q: h.q, one: h.one })) });
   const t0 = performance.now();
   render();
@@ -710,6 +783,11 @@ function render() {
     one = hs.length ? firstSentence(hs[0].chunk) + ' [1]' : '知識庫裡沒有找到相關資料';
     points = hs.slice(1, 4).map((h, i) => firstSentence(h.chunk) + ' [' + (i + 2) + ']');
   }
+  if (q.raw && !q.ctrl) {
+    const srcTexts = (q.usedHits || q.hits || []).map(h => (h.chunk.q || '') + '\n' + h.chunk.text);
+    const bad = C.verifyClaims([one, points.join('\n'), script].join('\n'), srcTexts, '').filter(x => !x.found);
+    if (bad.length) caution = '🚫 資料中查無：' + bad.map(x => x.text).join('、') + '（可能是 AI 捏造，請勿照念）' + (caution ? '\n' + caution : '');
+  }
   if (q.error) caution = '⚠️ AI 沒有回應：' + q.error + '。右側「資料依據」仍可參考。';
   const nn = Math.max(n, (q.hits || []).length);
   $('one').className = 'one' + (one ? '' : ' empty');
@@ -796,7 +874,9 @@ function setStatus() {
   $('stText').textContent = listening ? (Q && Q.status === 'confirmed' && S.after === 'lock' ? '🔒 聆聽中（答案已鎖定，空白鍵＝下一題）' : '聆聽中') : '未聆聽';
   $('micBtn').textContent = listening ? '⏹ 停止聆聽' : '🎙 開始聆聽';
   $('micBtn').className = 'btn ' + (listening ? 'on' : 'primary');
-  $('aiText').textContent = useLocal()
+  $('aiText').textContent = S.engine === 'groq'
+    ? (getKey('groq') ? '｜⚡ Groq 大模型（不訓練、零保留）' + (VEC ? '＋本機語意搜尋' : '') : '｜⚠️ 尚未填 Groq 金鑰（⚙ 設定）' + (LOCAL.ok ? '，暫用本機 AI' : ''))
+    : useLocal()
     ? (LOCAL.ok ? '｜🔒 本機 AI（' + LOCAL.model + '）：資料不離開電腦' : '｜⚠️ 本機 AI 未啟動：請用「🎙 AI提詞機」啟動檔開啟（目前只顯示資料）')
     : (hasAnyKey() ? '｜☁️ 雲端 AI：問題與相關段落會送出' : '｜未設定 AI 金鑰：只顯示資料');
 }
@@ -957,13 +1037,13 @@ function bind() {
   $('setBtn').onclick = () => {
     $('sEngine').value = S.engine;
     $('localInfo').textContent = LOCAL.ok ? '✅ 已偵測到本機 AI：' + LOCAL.model : '⚠️ 沒偵測到本機 AI（請用「🎙 AI提詞機」啟動檔開啟這個頁面）';
-    $('kGemini').value = getKey('gemini'); $('kOR').value = getKey('openrouter'); $('kClaude').value = getKey('claude');
+    $('kGroq').value = getKey('groq'); $('kGemini').value = getKey('gemini'); $('kOR').value = getKey('openrouter'); $('kClaude').value = getKey('claude');
     $('sLang').value = S.lang; $('sSilence').value = String(S.silence); $('sAfter').value = S.after;
     $('sStrict').value = S.strict ? '1' : '0'; $('sTheme').value = S.theme; $('kTestOut').textContent = '';
     $('setDlg').showModal();
   };
   const saveKeys = () => {
-    for (const [p, el] of [['gemini', 'kGemini'], ['openrouter', 'kOR'], ['claude', 'kClaude']]) {
+    for (const [p, el] of [['groq', 'kGroq'], ['gemini', 'kGemini'], ['openrouter', 'kOR'], ['claude', 'kClaude']]) {
       const v = $(el).value.trim();
       try { if (v) localStorage.setItem(KEYS[p], v); else localStorage.removeItem(KEYS[p]); } catch (e) {}
     }
