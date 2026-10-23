@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 即時提詞機</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙</text></svg>">
+<meta name="description" content="邊聽邊想的 AI 提詞機：即時字幕、自己的知識庫、一句話答案＋三重點＋口語稿＋來源頁碼。">
+<style>
+:root{
+  --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a; --text:#e9ecf1; --muted:#9aa3b2; --faint:#6b7383;
+  --accent:#5eb1ff; --accent2:#ffcf5c; --ok:#4cd295; --warn:#ffb547; --bad:#ff6b6b; --mark:rgba(255,207,92,.28);
+  --fs:1;
+}
+:root[data-theme="light"]{
+  --bg:#f5f6f8; --panel:#ffffff; --panel2:#f0f2f5; --line:#dde1e7; --text:#151820; --muted:#596273; --faint:#8a92a1;
+  --accent:#0b6bcb; --accent2:#a86b00; --ok:#16955b; --warn:#b26a00; --bad:#c62828; --mark:rgba(255,196,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;-webkit-text-size-adjust:100%}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.top{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+.brand{font-weight:700;margin-right:6px;white-space:nowrap}
+.top select{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;max-width:180px}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 11px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.btn.on{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.frozen{background:#3d6bd6;border-color:#3d6bd6;color:#fff}
+.spacer{flex:1}
+.status{display:flex;gap:10px;align-items:center;padding:6px 16px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--faint);display:inline-block}
+.dot.live{background:var(--bad);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.err{color:var(--bad)}
+main{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;padding:14px 16px 90px;max-width:1500px;margin:0 auto}
+@media (max-width:900px){main{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;min-width:0}
+.label{font-size:12px;color:var(--faint);letter-spacing:.06em;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.caption{font-size:calc(18px*var(--fs));line-height:1.6;min-height:2.2em;max-height:9.6em;overflow:auto;word-break:break-word}
+.caption .interim{color:var(--faint)}
+.caption .tail{color:var(--faint);font-size:.85em;display:block;margin-top:4px}
+.badge{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.badge.prov{color:var(--warn);border-color:var(--warn)}
+.badge.ok{color:var(--ok);border-color:var(--ok)}
+.badge.bank{color:var(--accent2);border-color:var(--accent2)}
+.badge.err{color:var(--bad);border-color:var(--bad)}
+.core{font-size:calc(15px*var(--fs));color:var(--muted)}
+.one{font-size:calc(30px*var(--fs));line-height:1.45;font-weight:700;margin:6px 0 10px;word-break:break-word}
+.one.empty{color:var(--faint);font-weight:400;font-size:calc(18px*var(--fs))}
+.points{margin:0;padding-left:1.4em;font-size:calc(21px*var(--fs));line-height:1.6}
+.points li{margin:4px 0}
+.script{font-size:calc(19px*var(--fs));line-height:1.85;white-space:pre-wrap;word-break:break-word}
+.follow{margin:0;padding-left:1.2em;font-size:calc(16px*var(--fs));color:var(--muted);line-height:1.6}
+.caution{font-size:calc(14px*var(--fs));color:var(--warn);white-space:pre-wrap}
+sup.cite{cursor:pointer;color:var(--accent);font-size:.62em;padding:0 2px;font-weight:700}
+.gk{color:var(--warn);font-size:.85em}
+.src{border-top:1px solid var(--line);padding:9px 0;font-size:14px;line-height:1.6;cursor:pointer}
+.src:first-of-type{border-top:0}
+.src .n{display:inline-block;min-width:22px;color:var(--accent);font-weight:700}
+.src .where{color:var(--muted);font-size:12.5px}
+.src .snip{color:var(--text);margin-top:2px;word-break:break-word}
+.src.open .snip{white-space:pre-wrap}
+.src.flash{background:var(--mark);border-radius:6px}
+mark{background:var(--mark);color:inherit;border-radius:2px}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.ask{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;gap:8px;padding:10px 16px;background:var(--panel);border-top:1px solid var(--line)}
+.ask input{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:16px}
+.hist{font-size:14px;border-top:1px solid var(--line);padding:8px 0}
+.hist b{display:block}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(640px,calc(100vw - 32px));max-height:85vh}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+dialog h3{margin:0 0 12px}
+dialog label{display:block;margin:10px 0 4px;font-size:14px;color:var(--muted)}
+dialog input[type=text],dialog input[type=password],dialog textarea,dialog select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+dialog textarea{min-height:110px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.doc{display:flex;gap:8px;align-items:center;border-top:1px solid var(--line);padding:7px 0;font-size:14px}
+.doc span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--muted);margin-top:8px}
+.drop.over{border-color:var(--accent);color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);padding:9px 16px;border-radius:10px;z-index:20;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1}
+details summary{cursor:pointer;color:var(--muted);font-size:13px}
+.kbd{font-size:11.5px;color:var(--faint)}
+</style>
+</head>
+<body>
+<div class="top">
+  <span class="brand">🎙 AI 提詞機</span>
+  <select id="mode" title="情境"></select>
+  <select id="kb" title="知識庫"></select>
+  <button class="btn" id="kbBtn">📚 資料</button>
+  <span class="spacer"></span>
+  <button class="btn primary" id="micBtn">🎙 開始聆聽</button>
+  <button class="btn" id="nextBtn" title="空白鍵">⏭ 下一題</button>
+  <button class="btn" id="freezeBtn" title="F 鍵">❄ 凍結</button>
+  <button class="btn" id="fsDown" title="字縮小">A−</button>
+  <button class="btn" id="fsUp" title="字放大">A＋</button>
+  <button class="btn" id="setBtn">⚙</button>
+</div>
+<div class="status">
+  <span class="dot" id="dot"></span><span id="stText">未聆聽</span>
+  <span id="aiText" class="muted"></span>
+  <span id="errText" class="err"></span>
+  <span class="spacer"></span>
+  <span class="kbd">空白鍵＝下一題　F＝凍結　M＝麥克風</span>
+</div>
+
+<main>
+  <section>
+    <div class="card">
+      <div class="label">對方正在說<span id="qBadge"></span></div>
+      <div class="caption" id="caption"><span class="muted">按「🎙 開始聆聽」，或在下方打字提問。第一次用可以先按「▶ 示範」。</span></div>
+    </div>
+    <div class="card" id="answerCard">
+      <div class="label">回答<span id="aBadge"></span><span class="spacer"></span><span id="aMeta" class="small muted"></span></div>
+      <div class="core" id="core"></div>
+      <div class="one empty" id="one">答案會出現在這裡</div>
+      <ol class="points" id="points"></ol>
+      <div id="scriptWrap" style="margin-top:12px">
+        <div class="label">完整口語稿 <button class="btn small" id="scriptToggle" style="padding:1px 8px">收合</button></div>
+        <div class="script" id="script"></div>
+      </div>
+      <div id="followWrap" style="margin-top:10px">
+        <div class="label">可能追問</div>
+        <ul class="follow" id="follow"></ul>
+      </div>
+      <div class="caution" id="caution" style="margin-top:8px"></div>
+      <div class="row" id="answerActions"></div>
+    </div>
+  </section>
+  <aside>
+    <div class="card">
+      <div class="label">資料依據<span id="srcCount" class="muted"></span></div>
+      <div id="sources" class="small muted">提問後會即時列出知識庫裡最相關的段落與頁碼。</div>
+    </div>
+    <div class="card">
+      <div class="label">本次問答紀錄 <span class="spacer"></span><button class="btn small" id="exportBtn" style="padding:1px 8px">匯出</button></div>
+      <div id="history" class="small muted">還沒有紀錄</div>
+    </div>
+    <p class="small muted" style="line-height:1.6">資料只存在這台電腦的瀏覽器裡。語音辨識由瀏覽器處理；問題和相關段落會送到你設定的 AI。請在允許使用輔助工具的場合使用（自己的會議、課堂、幕僚備詢、練習）；正式考試和口試請用來事前演練。</p>
+  </aside>
+</main>
+
+<div class="ask">
+  <input id="askInput" placeholder="打字提問，按 Enter（也可以貼上對方的問題）" autocomplete="off">
+  <button class="btn" id="askBtn">送出</button>
+  <button class="btn" id="demoBtn">▶ 示範</button>
+</div>
+
+<dialog id="kbDlg">
+  <h3>📚 知識庫</h3>
+  <div class="row">
+    <select id="kbSel" style="flex:1"></select>
+    <button class="btn" id="kbNew">＋新建</button>
+    <button class="btn" id="kbRename">改名</button>
+    <button class="btn" id="kbDel">刪除</button>
+  </div>
+  <div class="drop" id="drop">把檔案拖進來，或 <button class="btn" id="pickFile">選擇檔案</button><br><span class="small">支援 PDF（有文字層）、Word .docx、.txt、.md；PPT 請先另存成 PDF</span><input type="file" id="fileIn" multiple accept=".pdf,.docx,.txt,.md,.markdown,.csv" hidden></div>
+  <details style="margin-top:10px"><summary>或直接貼上文字（筆記、擬答、題庫）</summary>
+    <label>標題</label><input type="text" id="pasteTitle" placeholder="例如：面試題庫">
+    <label>內容（題庫格式：「Q：題目」換行「A：答案」，會自動辨識成題庫，命中時直接秀你準備的答案）</label>
+    <textarea id="pasteBody"></textarea>
+    <div class="row"><button class="btn primary" id="pasteAdd">加入</button></div>
+  </details>
+  <div id="docList" style="margin-top:12px"></div>
+  <div class="row"><span class="spacer"></span><button class="btn" id="kbClose">完成</button></div>
+</dialog>
+
+<dialog id="setDlg">
+  <h3>⚙ 設定</h3>
+  <label>AI 金鑰（免費：<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--accent)">Google AI Studio 取得 Gemini 金鑰</a>；和「英文閱讀神器」共用，存過就不用再填）</label>
+  <input type="password" id="kGemini" placeholder="Gemini API key（AIza…）">
+  <input type="password" id="kOR" placeholder="OpenRouter key（備援，可空白）" style="margin-top:6px">
+  <input type="password" id="kClaude" placeholder="Claude key（付費，可空白）" style="margin-top:6px">
+  <div class="row"><button class="btn" id="kTest">測試金鑰</button><span id="kTestOut" class="small muted"></span></div>
+  <label>辨識語言</label>
+  <select id="sLang"><option value="zh-TW">中文（台灣）</option><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option><option value="ja-JP">日本語</option></select>
+  <label>對方停頓多久算「問完」</label>
+  <select id="sSilence"><option value="1200">1.2 秒（快）</option><option value="1700">1.7 秒（建議）</option><option value="2500">2.5 秒（對方講話常停頓）</option><option value="3500">3.5 秒</option></select>
+  <label>答案出來之後</label>
+  <select id="sAfter"><option value="lock">鎖定答案，按空白鍵才聽下一題（建議：避免把自己的回答當成新問題）</option><option value="auto">自動聽下一題（適合上課聽講）</option></select>
+  <label>回答依據</label>
+  <select id="sStrict"><option value="0">以知識庫為主，不足時用一般知識補充（會標示）</option><option value="1">嚴格：只用知識庫，沒有就說沒有</option></select>
+  <label>外觀</label>
+  <select id="sTheme"><option value="dark">深色（提詞機）</option><option value="light">淺色</option></select>
+  <div class="row"><span class="spacer"></span><button class="btn primary" id="setClose">完成</button></div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script src="core.js"></script>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const C = window.PCore;
+
+/* ================= 設定 ================= */
+const DEF = { mode: 'law', kb: '', lang: 'zh-TW', silence: 1700, after: 'lock', strict: false, theme: 'dark', fs: 1, scriptOpen: true };
+let S = Object.assign({}, DEF);
+try { Object.assign(S, JSON.parse(localStorage.getItem('prompterSettings') || '{}')); } catch (e) {}
+function saveS() { try { localStorage.setItem('prompterSettings', JSON.stringify(S)); } catch (e) {} }
+const KEYS = { gemini: 'readingGeminiKey', openrouter: 'readingOpenrouterKey', claude: 'readingApiKey' };
+function getKey(p) { try { return (localStorage.getItem(KEYS[p]) || '').trim(); } catch (e) { return ''; } }
+function hasAnyKey() { return !!(getKey('gemini') || getKey('openrouter') || getKey('claude')); }
+
+function applyLook() {
+  document.documentElement.dataset.theme = S.theme;
+  document.documentElement.style.setProperty('--fs', S.fs);
+  $('script').style.display = S.scriptOpen ? '' : 'none';
+  $('scriptToggle').textContent = S.scriptOpen ? '收合' : '展開';
+}
+
+function toast(msg, ms) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms || 2600);
+}
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function setHTML(el, html) { if (el._h !== html) { el.innerHTML = html; el._h = html; } }
+
+/* ================= 知識庫（IndexedDB） ================= */
+let KBS = [];
+try { KBS = JSON.parse(localStorage.getItem('prompterKBs') || '[]'); } catch (e) {}
+function saveKBs() { try { localStorage.setItem('prompterKBs', JSON.stringify(KBS)); } catch (e) {} }
+let DOCS = [];      // 目前知識庫的文件
+let INDEX = null;   // 目前知識庫的索引
+let memStore = null; // IndexedDB 不能用時的備援
+
+function idb() {
+  if (idb._p) return idb._p;
+  idb._p = new Promise((res, rej) => {
+    const r = indexedDB.open('prompterKB', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('docs', { keyPath: 'id' }).createIndex('kb', 'kb');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  return idb._p;
+}
+async function dbAll(kb) {
+  if (memStore) return memStore.filter(d => d.kb === kb);
+  const db = await idb();
+  return new Promise((res, rej) => {
+    const q = db.transaction('docs').objectStore('docs').index('kb').getAll(kb);
+    q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error);
+  });
+}
+async function dbPut(doc) {
+  if (memStore) { memStore = memStore.filter(d => d.id !== doc.id); memStore.push(doc); return; }
+  const db = await idb();
+  return new Promise((res, rej) => { const tx = db.transaction('docs', 'readwrite'); tx.objectStore('docs').put(doc); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+}
+async function dbDel(id) {
+  if (memStore) { memStore = memStore.filter(d => d.id !== id); return; }
+  const db = await idb();
+  return new Promise((res, rej) => { const tx = db.transaction('docs', 'readwrite'); tx.objectStore('docs').delete(id); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+}
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+async function loadKB() {
+  try { DOCS = await dbAll(S.kb); }
+  catch (e) { memStore = memStore || []; DOCS = memStore.filter(d => d.kb === S.kb); showErr('瀏覽器不允許儲存資料（可能是無痕視窗），這次的資料關掉就會消失'); }
+  const chunks = [];
+  for (const d of DOCS) chunks.push(...C.chunkDoc(d));
+  INDEX = C.buildIndex(chunks);
+  renderKBSelect();
+  if (Q) { refreshRetrieval(); }
+}
+
+const SAMPLE = [
+  { name: '示範｜著作權筆記', pages: [
+    { page: 1, text: '思想表達二分原則\n著作權法第10條之1規定：依本法取得之著作權，其保護僅及於該著作之表達，而不及於其所表達之思想、程序、製程、系統、操作方法、概念、原理、發現。' },
+    { page: 2, text: 'AI 生成物與著作權\n經濟部智慧財產局函釋見解：著作須為人類精神上之創作。完全由人工智慧自動生成、沒有人類創意投入的內容，不是著作，不受著作權法保護。\n若人類對生成結果有實質的選擇、編排、修改等創意投入，該人類貢獻的部分仍可能受保護，須個案判斷。' },
+    { page: 3, text: '合理使用\n著作權法第65條第2項的判斷基準：一、利用之目的及性質，包括係為商業目的或非營利教育目的；二、著作之性質；三、所利用之質量及其在整個著作所占之比例；四、利用結果對著作潛在市場與現在價值之影響。' }
+  ] },
+  { name: '示範｜面試題庫（請換成你自己的）', pages: [{ page: null, text:
+    'Q：請簡單自我介紹\nA：（這是範本，請改成你自己的版本）我是○○○，主修科技法律，研究聚焦在智慧合約與虛擬資產法制。我的強項是把法規轉成可以執行的流程，也會寫程式做自動化工具。\n\n' +
+    'Q：為什麼想加入我們的法遵部門？\nA：（範本）因為我的研究正好處理虛擬資產與洗錢防制，我希望把研究轉成實務；貴公司在這個領域的布局，和我想累積的能力最吻合。\n\n' +
+    'Q：你最大的缺點是什麼？\nA：（範本）我有時太追求細節。現在的做法是先定義完成標準，再決定要做到多細，讓品質和時間取得平衡。' }] }
+];
+async function ensureDefaultKB() {
+  if (KBS.length) { if (!KBS.find(k => k.id === S.kb)) { S.kb = KBS[0].id; saveS(); } return; }
+  const id = uid();
+  for (const s of SAMPLE) {
+    const doc = { id: uid(), kb: id, name: s.name, type: 'sample', added: Date.now(), pages: s.pages, chars: s.pages.reduce((a, p) => a + p.text.length, 0) };
+    try { await dbPut(doc); } catch (e) { memStore = memStore || []; memStore.push(doc); }
+  }
+  // 文件寫完才記錄知識庫，避免中途關掉留下空的示範庫
+  KBS = [{ id, name: '示範知識庫' }]; saveKBs(); S.kb = id; saveS();
+}
+
+function renderKBSelect() {
+  const opts = KBS.map(k => `<option value="${k.id}"${k.id === S.kb ? ' selected' : ''}>📁 ${esc(k.name)}</option>`).join('');
+  $('kb').innerHTML = opts; $('kbSel').innerHTML = opts;
+  const n = INDEX ? INDEX.N : 0;
+  $('docList').innerHTML = DOCS.length
+    ? `<div class="small muted">共 ${DOCS.length} 份文件、${n} 個段落</div>` + DOCS.map(d =>
+      `<div class="doc"><span title="${esc(d.name)}">📄 ${esc(d.name)}</span><span class="small muted" style="flex:none">${d.pages.length > 1 ? d.pages.length + ' 頁・' : ''}${(d.chars || 0).toLocaleString()} 字</span><button class="btn small" data-del="${d.id}">刪除</button></div>`).join('')
+    : '<div class="small muted">這個知識庫還沒有文件。</div>';
+}
+
+/* ---- 檔案解析 ---- */
+function loadScript(src) {
+  return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('載入失敗：' + src)); document.head.appendChild(s); });
+}
+async function parsePDF(buf) {
+  if (!window.pdfjsLib) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const tc = await (await pdf.getPage(i)).getTextContent();
+    pages.push({ page: i, text: C.fixCJK(tc.items.map(it => it.str + (it.hasEOL ? '\n' : '')).join('')) });
+  }
+  return pages;
+}
+async function parseDOCX(buf) {
+  if (!window.mammoth) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+  const r = await mammoth.extractRawText({ arrayBuffer: buf });
+  return [{ page: null, text: r.value }];
+}
+async function addFiles(files) {
+  for (const f of files) {
+    const ext = (f.name.split('.').pop() || '').toLowerCase();
+    toast('讀取中：' + f.name, 60000);
+    try {
+      let pages;
+      if (ext === 'pdf') pages = await parsePDF(await f.arrayBuffer());
+      else if (ext === 'docx') pages = await parseDOCX(await f.arrayBuffer());
+      else if (['txt', 'md', 'markdown', 'csv'].includes(ext)) pages = [{ page: null, text: await f.text() }];
+      else if (['ppt', 'pptx', 'doc'].includes(ext)) { toast('「' + f.name + '」請先另存成 PDF 或 .docx 再匯入', 5000); continue; }
+      else { toast('不支援的格式：' + f.name, 4000); continue; }
+      const chars = pages.reduce((a, p) => a + p.text.replace(/\s/g, '').length, 0);
+      if (chars < 20) { toast('「' + f.name + '」讀不到文字：可能是掃描圖檔 PDF，需要先 OCR', 6000); continue; }
+      const old = DOCS.find(d => d.name === f.name);
+      await dbPut({ id: old ? old.id : uid(), kb: S.kb, name: f.name, type: ext, added: Date.now(), pages, chars });
+      if (ext === 'pdf' && chars / pages.length < 40) toast('「' + f.name + '」部分頁面文字很少，可能有掃描頁', 5000);
+      else toast((old ? '已更新：' : '已加入：') + f.name + '（' + chars.toLocaleString() + ' 字）');
+    } catch (e) { toast('讀取失敗：' + f.name + '（' + e.message + '）', 6000); }
+  }
+  await loadKB();
+}
+
+/* ================= AI（串流，失敗自動換下一個） ================= */
+async function geminiModels(key) {
+  try { const c = JSON.parse(sessionStorage.getItem('prompterGemModels') || 'null'); if (c && c.length) return c; } catch (e) {}
+  let list = [];
+  try {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=' + encodeURIComponent(key));
+    if (r.ok) {
+      const d = await r.json();
+      list = (d.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
+        .map(m => m.name.replace(/^models\//, ''))
+        .filter(n => /^gemini-[\d.]+-flash/.test(n) && !/image|tts|audio|live|embed|thinking|robotics|computer|native|exp/.test(n));
+      const ver = n => parseFloat((n.match(/gemini-([\d.]+)/) || [0, 0])[1]);
+      list.sort((a, b) => (/preview/.test(a) - /preview/.test(b)) || (ver(b) - ver(a)) || (/lite/.test(a) - /lite/.test(b)) || (a.length - b.length));
+    }
+  } catch (e) {}
+  if (!list.length) list = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite'];
+  const good = localStorage.getItem('prompterGemOK');
+  if (good && list.includes(good)) list = [good, ...list.filter(x => x !== good)];
+  list = list.slice(0, 5);
+  try { sessionStorage.setItem('prompterGemModels', JSON.stringify(list)); } catch (e) {}
+  return list;
+}
+async function orModels() {
+  try { const c = JSON.parse(sessionStorage.getItem('prompterORModels') || 'null'); if (c && c.length) return c; } catch (e) {}
+  let ids = [];
+  try {
+    const r = await fetch('https://openrouter.ai/api/v1/models');
+    if (r.ok) ids = ((await r.json()).data || []).map(m => m.id).filter(id => /:free$/.test(id));
+  } catch (e) {}
+  const pref = [/deepseek/, /qwen/, /gemini/, /llama-3\.3-70b|llama-4/, /mistral/];
+  const rank = id => { const i = pref.findIndex(p => p.test(id)); return i < 0 ? 99 : i; };
+  ids.sort((a, b) => rank(a) - rank(b));
+  if (!ids.length) ids = ['deepseek/deepseek-chat-v3-0324:free', 'meta-llama/llama-3.3-70b-instruct:free'];
+  ids = ids.filter(id => rank(id) < 99).slice(0, 4);
+  try { sessionStorage.setItem('prompterORModels', JSON.stringify(ids)); } catch (e) {}
+  return ids;
+}
+
+// 讀 SSE 串流；超過 firstMs 還沒有第一個字就放棄換下一個
+async function readSSE(url, init, provider, onText, signal, firstMs) {
+  const local = new AbortController();
+  const onAbort = () => local.abort();
+  signal.addEventListener('abort', onAbort);
+  let timer = setTimeout(() => local.abort(), firstMs || 15000);
+  try {
+    const r = await fetch(url, Object.assign({}, init, { signal: local.signal }));
+    if (!r.ok) {
+      const t = await r.text();
+      let msg = t;
+      try { const j = JSON.parse(t); const er = Array.isArray(j) ? (j[0] || {}).error : j.error; msg = (er && (er.message || er)) || t; } catch (e) {}
+      const e = new Error(r.status + ' ' + String(msg).slice(0, 160)); e.status = r.status; throw e;
+    }
+    const reader = r.body.getReader(), dec = new TextDecoder();
+    let acc = '', apiErr = '';
+    const feed = C.makeSSEParser(j => {
+      if (j.error) apiErr = (j.error.message || JSON.stringify(j.error)).slice(0, 160);
+      const t = C.deltaText(provider, j);
+      if (t) { if (!acc) { clearTimeout(timer); timer = setTimeout(() => local.abort(), 60000); } acc += t; onText(acc); }
+    });
+    for (;;) { const { done, value } = await reader.read(); if (done) break; feed(dec.decode(value, { stream: true })); }
+    feed('\n');
+    if (!acc) { const e = new Error(apiErr || '空回應'); e.status = 0; throw e; }
+    return acc;
+  } catch (e) {
+    if (signal.aborted) { const a = new Error('aborted'); a.name = 'AbortError'; throw a; }
+    if (e.name === 'AbortError') { const t = new Error('逾時'); t.status = 0; throw t; }
+    throw e;
+  } finally { clearTimeout(timer); signal.removeEventListener('abort', onAbort); }
+}
+
+async function callLLM(prompt, onText, signal) {
+  const errs = [];
+  const gk = getKey('gemini');
+  if (gk) {
+    for (const model of await geminiModels(gk)) {
+      const cfg = { temperature: 0.3, maxOutputTokens: 1400 };
+      if (/2\.5-flash/.test(model)) cfg.thinkingConfig = { thinkingBudget: 0 };
+      try {
+        await readSSE('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':streamGenerateContent?alt=sse&key=' + encodeURIComponent(gk),
+          { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: cfg }) },
+          'gemini', onText, signal);
+        try { localStorage.setItem('prompterGemOK', model); } catch (e) {}
+        return 'Gemini ' + model;
+      } catch (e) {
+        if (e.name === 'AbortError') throw e;
+        errs.push('Gemini ' + model + '：' + e.message);
+        if (/API key not valid|API_KEY_INVALID|PERMISSION_DENIED/.test(e.message)) { errs.push('（Gemini 金鑰無效）'); break; }
+      }
+    }
+  }
+  const ok = getKey('openrouter');
+  if (ok) {
+    for (const model of await orModels()) {
+      try {
+        await readSSE('https://openrouter.ai/api/v1/chat/completions',
+          { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + ok, 'X-Title': 'AI Prompter' },
+            body: JSON.stringify({ model, stream: true, temperature: 0.3, max_tokens: 1400, messages: [{ role: 'user', content: prompt }] }) },
+          'openrouter', onText, signal, 20000);
+        return 'OpenRouter ' + model.replace(/:free$/, '');
+      } catch (e) {
+        if (e.name === 'AbortError') throw e;
+        errs.push('OpenRouter ' + model + '：' + e.message);
+        if (e.status === 401) break;
+      }
+    }
+  }
+  const ck = getKey('claude');
+  if (ck) {
+    try {
+      await readSSE('https://api.anthropic.com/v1/messages',
+        { method: 'POST', headers: { 'content-type': 'application/json', 'x-api-key': ck, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+          body: JSON.stringify({ model: 'claude-haiku-4-5', max_tokens: 1400, stream: true, messages: [{ role: 'user', content: prompt }] }) },
+        'claude', onText, signal);
+      return 'Claude Haiku';
+    } catch (e) { if (e.name === 'AbortError') throw e; errs.push('Claude：' + e.message); }
+  }
+  throw new Error(friendlyErr(errs.join('；')));
+}
+function friendlyErr(all) {
+  if (!all) return '沒有設定 AI 金鑰';
+  if (/API key not valid|API_KEY_INVALID|PERMISSION_DENIED/.test(all)) return 'Gemini 金鑰無效，請到 ⚙ 設定重新貼上';
+  if (/OpenRouter[^；]*401/.test(all)) return 'OpenRouter 金鑰無效，請到 ⚙ 設定檢查';
+  if (/429|quota|RESOURCE_EXHAUSTED|rate/i.test(all)) return '免費額度暫時用完或太頻繁，等 1 分鐘再試（可在 ⚙ 加 OpenRouter 備援金鑰）';
+  if (/Failed to fetch|NetworkError|Load failed/.test(all)) return '連不上 AI，請檢查網路';
+  if (/逾時/.test(all)) return 'AI 回應逾時，請按重試';
+  return all.split('；').slice(-1)[0].slice(0, 120);
+}
+
+/* ================= 問題狀態（邊聽邊想） ================= */
+let Q = null, qSeq = 0, HISTORY = [], frozen = false, silenceTimer = null, retrTimer = null, renderQueued = false;
+
+function qText(q) { q = q || Q; return q ? (q.final + ' ' + q.interim).replace(/\s+/g, ' ').trim() : ''; }
+
+function newQuestion() {
+  if (Q && qText(Q)) archive(Q);
+  if (Q && Q.ctrl) Q.ctrl.abort();
+  clearTimeout(silenceTimer);
+  Q = { id: ++qSeq, final: '', interim: '', tail: '', status: 'listening', hits: [], bank: null,
+    raw: '', phase: '', provText: '', provSent: false, provDone: false, promote: false, ctrl: null,
+    error: '', provider: '', t0: performance.now(), firstMs: 0 };
+  render();
+}
+
+// 收到語音或打字
+function onSpeech(fin, interim) {
+  if (!Q || (Q.status === 'confirmed' && S.after === 'auto')) newQuestion();
+  if (Q.status === 'confirmed') { // 鎖定中：只顯示，不當新問題
+    if (fin) Q.tail = (Q.tail + fin).slice(-160);
+    Q.tailInterim = interim;
+    renderCaption(); return;
+  }
+  if (fin) Q.final += fin;
+  Q.interim = interim || '';
+  renderCaption();
+  const t = qText();
+  if (t.length < 4) return;
+  if (fin) refreshRetrieval();
+  else { clearTimeout(retrTimer); retrTimer = setTimeout(refreshRetrieval, 350); }
+  maybeProvisional();
+  clearTimeout(silenceTimer);
+  silenceTimer = setTimeout(confirmQuestion, S.silence);
+}
+
+function strongBank(q) { return q.bank && q.bank.sim >= 0.6; }
+
+function refreshRetrieval() {
+  if (!Q || !INDEX) return;
+  const t = qText();
+  if (!t) return;
+  Q.hits = C.search(INDEX, t, 6).filter(h => h.coverage >= 0.15);
+  Q.bank = C.bankMatch(INDEX, t);
+  render();
+}
+
+function maybeProvisional() {
+  if (!Q || Q.provSent || Q.status !== 'listening') return;
+  if (qText().length >= 14 && !strongBank(Q)) { Q.provSent = true; runLLM('provisional'); }
+}
+
+function confirmQuestion() {
+  if (!Q || Q.status !== 'listening') return;
+  const t = qText();
+  if (t.length < 4) return;
+  Q.final = t; Q.interim = ''; Q.status = 'confirmed';
+  refreshRetrieval();
+  if (strongBank(Q)) { if (Q.ctrl) Q.ctrl.abort(); Q.ctrl = null; Q.raw = ''; Q.phase = 'bank'; render(); return; }
+  const same = Q.provText && !C.grewEnough(Q.provText, t);
+  if (same && Q.provDone) { Q.phase = 'final'; render(); return; }        // 暫定答案已經對題，不重花錢
+  if (same && Q.ctrl) { Q.promote = true; render(); return; }             // 暫定還在寫，寫完直接升級
+  runLLM('final');
+}
+
+async function runLLM(phase) {
+  const q = Q;
+  if (!q) return;
+  if (!hasAnyKey()) { q.phase = 'nokey'; render(); return; }
+  if (q.ctrl) q.ctrl.abort();
+  const ctrl = new AbortController();
+  q.ctrl = ctrl; q.phase = phase; q.error = ''; q.promote = false;
+  const question = qText(q);
+  if (phase === 'provisional') q.provText = question;
+  const hits = INDEX ? C.search(INDEX, question, 6).filter(h => h.coverage >= 0.15) : [];
+  q.hits = hits; q.usedHits = hits;
+  const prompt = C.buildPrompt({ mode: S.mode, question, hits, strict: S.strict, provisional: phase === 'provisional',
+    history: HISTORY.slice(-2).map(h => ({ q: h.q, one: h.one })) });
+  const t0 = performance.now();
+  render();
+  try {
+    q.provider = await callLLM(prompt, txt => {
+      if (ctrl.signal.aborted) return;
+      if (!q.firstMs) q.firstMs = Math.round(performance.now() - t0);
+      q.raw = txt;
+      if (Q === q) queueRender();
+    }, ctrl.signal);
+    if (ctrl.signal.aborted) return;
+    q.ctrl = null; q.totalMs = Math.round(performance.now() - t0);
+    if (phase === 'provisional') {
+      q.provDone = true;
+      if (q.status === 'confirmed') {
+        if (q.promote || !C.grewEnough(q.provText, qText(q))) q.phase = 'final';
+        else { runLLM('final'); return; }
+      }
+    }
+    if (Q === q) render();
+  } catch (e) {
+    if (e.name === 'AbortError' || ctrl.signal.aborted) return;
+    q.ctrl = null; q.error = e.message;
+    if (Q === q) render();
+  }
+}
+
+function archive(q) {
+  const a = C.parseAnswer(q.raw || '');
+  const bank = strongBank(q) && !q.raw;
+  HISTORY.push({ q: qText(q), one: bank ? q.bank.chunk.text.split('\n')[0] : (a.one || ''), raw: q.raw, bank: bank ? q.bank.chunk.text : '',
+    time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+    srcs: (q.usedHits || q.hits || []).map(h => h.chunk.docName + (h.chunk.page ? ' p.' + h.chunk.page : '')) });
+  renderHistory();
+}
+
+/* ================= 畫面 ================= */
+function queueRender() { if (renderQueued) return; renderQueued = true; requestAnimationFrame(() => { renderQueued = false; render(); }); }
+
+function renderCaption() {
+  if (!Q) return;
+  let h = esc(Q.final) + (Q.interim ? '<span class="interim">' + esc(Q.interim) + '</span>' : '');
+  if (Q.status === 'confirmed' && (Q.tail || Q.tailInterim)) h += '<span class="tail">🔒 答案已鎖定，之後聽到：' + esc(Q.tail + (Q.tailInterim || '')) + '（按空白鍵開始下一題）</span>';
+  setHTML($('caption'), h || '<span class="muted">（聆聽中…）</span>');
+  $('caption').scrollTop = 1e6;
+  setHTML($('qBadge'), Q.status === 'confirmed' ? '<span class="badge ok">問完了</span>' : (qText() ? '<span class="badge prov">還在說</span>' : ''));
+}
+
+function citeHTML(s, n) {
+  return esc(s).replace(/\[(\d+)\]/g, (m, x) => (+x >= 1 && +x <= n) ? `<sup class="cite" data-n="${x}">${x}</sup>` : '')
+    .replace(/（一般知識）/g, '<span class="gk">（一般知識）</span>');
+}
+
+function render() {
+  renderCaption();
+  renderSources();
+  if (!Q) return;
+  // 狀態徽章
+  let badge = '';
+  const q = Q;
+  if (q.error) badge = '<span class="badge err">AI 失敗</span>';
+  else if (q.phase === 'bank' || (strongBank(q) && !q.raw)) badge = '<span class="badge bank">📚 題庫答案</span>';
+  else if (q.phase === 'nokey') badge = '<span class="badge">🔎 僅資料（未設 AI 金鑰）</span>';
+  else if (q.phase === 'provisional') badge = '<span class="badge prov">暫定・對方還在說</span>';
+  else if (q.phase === 'final' && q.ctrl) badge = '<span class="badge prov">整理中…</span>';
+  else if (q.phase === 'final') badge = '<span class="badge ok">已確認</span>';
+  if (frozen) badge += ' <span class="badge" style="color:#7aa7ff;border-color:#7aa7ff">❄ 凍結中</span>';
+  setHTML($('aBadge'), badge);
+  setHTML($('aMeta'), q.provider ? esc(q.provider) + (q.firstMs ? '・首字 ' + (q.firstMs / 1000).toFixed(1) + ' 秒' : '') : '');
+  if (frozen) return;
+
+  const n = (q.usedHits || q.hits || []).length;
+  let core = '', one = '', points = [], script = '', follow = [], caution = '';
+  if ((q.phase === 'bank' || strongBank(q)) && !q.raw) {
+    const c = q.bank.chunk;
+    core = '題庫命中：' + c.q + '（相似度 ' + Math.round(q.bank.sim * 100) + '%）';
+    const lines = c.text.split('\n').filter(Boolean);
+    one = lines[0] || ''; script = lines.slice(1).join('\n');
+    caution = '這是你自己準備的答案（' + c.docName + '）。';
+  } else if (q.raw) {
+    const a = C.parseAnswer(q.raw);
+    core = a.core || ''; one = a.one || ''; points = C.listItems(a.points); script = a.script || '';
+    follow = C.listItems(a.follow); caution = a.caution && !/^無[。.]?$/.test(a.caution) ? '⚠️ ' + a.caution : '';
+    if (!Object.keys(a).length) script = q.raw; // 模型沒照格式時至少把內容顯示出來
+  } else if (q.phase === 'nokey' || (!hasAnyKey() && q.status === 'confirmed')) {
+    const hs = q.hits || [];
+    core = hs.length ? '未設定 AI 金鑰：以下是知識庫最相關的內容（⚙ 設定可加免費 Gemini 金鑰）' : '';
+    one = hs.length ? firstSentence(hs[0].chunk) + ' [1]' : '知識庫裡沒有找到相關資料';
+    points = hs.slice(1, 4).map((h, i) => firstSentence(h.chunk) + ' [' + (i + 2) + ']');
+  }
+  if (q.error) caution = '⚠️ AI 沒有回應：' + q.error + '。右側「資料依據」仍可參考。';
+  const nn = Math.max(n, (q.hits || []).length);
+  $('one').className = 'one' + (one ? '' : ' empty');
+  setHTML($('core'), core ? esc(core) : '');
+  setHTML($('one'), one ? citeHTML(one, nn) : (q.ctrl ? '思考中…' : (qText() ? '聽到問題了，正在等對方說完…' : '答案會出現在這裡')));
+  setHTML($('points'), points.slice(0, 3).map(p => '<li>' + citeHTML(p, nn) + '</li>').join(''));
+  setHTML($('script'), script ? citeHTML(script, nn) : '');
+  $('scriptWrap').style.display = script ? '' : 'none';
+  setHTML($('follow'), follow.slice(0, 3).map(f => '<li>' + esc(f) + '</li>').join(''));
+  $('followWrap').style.display = follow.length ? '' : 'none';
+  setHTML($('caution'), esc(caution));
+  let act = '';
+  if (q.error) act += '<button class="btn" data-act="retry">↻ 重試</button>';
+  if ((q.phase === 'bank' || strongBank(q)) && !q.raw && hasAnyKey()) act += '<button class="btn" data-act="ai">🤖 請 AI 重新整理</button>';
+  if (q.raw && !q.ctrl && q.status === 'confirmed') act += '<button class="btn" data-act="redo">↻ 換個說法</button>';
+  setHTML($('answerActions'), act);
+}
+
+function firstSentence(c) {
+  const t = (c.type === 'qa' ? c.text : c.text).replace(/\s+/g, ' ').trim();
+  const m = t.match(/^.{8,90}?[。！？；]/);
+  return m ? m[0] : t.slice(0, 90);
+}
+
+function markText(text, query) {
+  const qs = new Set();
+  const nq = C.norm(query).replace(/\s/g, '');
+  for (let i = 0; i < nq.length - 1; i++) qs.add(nq.slice(i, i + 2));
+  const nt = C.norm(text);
+  const hit = new Array(text.length).fill(false);
+  for (let i = 0; i < text.length - 1; i++) if (qs.has(nt.slice(i, i + 2)) && /[㐀-鿿\w]/.test(nt[i])) { hit[i] = hit[i + 1] = true; }
+  let out = '', on = false;
+  for (let i = 0; i < text.length; i++) {
+    if (hit[i] && !on) { out += '<mark>'; on = true; }
+    if (!hit[i] && on) { out += '</mark>'; on = false; }
+    out += esc(text[i]);
+  }
+  return out + (on ? '</mark>' : '');
+}
+function snippet(c, query) {
+  const t = (c.type === 'qa' ? '【題】' + c.q + '\n' + c.text : c.text);
+  const nt = C.norm(t), nq = C.norm(query).replace(/\s/g, '');
+  let pos = -1;
+  for (let i = 0; i < nq.length - 1 && pos < 0; i++) { const p = nt.indexOf(nq.slice(i, i + 2)); if (p >= 0 && !/[的是了在有和]/.test(nq[i])) pos = p; }
+  const start = Math.max(0, pos - 30);
+  return { short: (start ? '…' : '') + t.slice(start, start + 150) + (t.length > start + 150 ? '…' : ''), full: t };
+}
+
+function renderSources() {
+  if (!Q) return;
+  const hs = (Q.usedHits && Q.raw) ? Q.usedHits : (Q.hits || []);
+  const t = qText();
+  $('srcCount').textContent = hs.length ? '（' + hs.length + '）' : '';
+  if (!hs.length) { setHTML($('sources'), t ? '<span class="muted">知識庫裡沒有找到明顯相關的段落。</span>' : '<span class="muted">提問後會即時列出相關段落與頁碼。</span>'); return; }
+  setHTML($('sources'), hs.map((h, i) => {
+    const c = h.chunk, sn = snippet(c, t);
+    return `<div class="src" data-i="${i + 1}"><span class="n">${i + 1}</span><span class="where">${esc(c.docName)}${c.page ? '　第 ' + c.page + ' 頁' : ''}${c.heading ? '　' + esc(c.heading) : ''}</span>` +
+      `<div class="snip" data-short="1">${markText(sn.short, t)}</div><div class="snip" data-full="1" style="display:none">${markText(sn.full, t)}</div></div>`;
+  }).join(''));
+}
+
+function renderHistory() {
+  setHTML($('history'), HISTORY.length ? HISTORY.slice().reverse().map(h =>
+    `<div class="hist"><b>${esc(h.time)}　${esc(h.q)}</b>${esc(h.one)}${h.srcs.length ? '<div class="muted">' + esc(h.srcs.slice(0, 3).join('、')) + '</div>' : ''}</div>`).join('') : '還沒有紀錄');
+}
+
+function exportHistory() {
+  const list = HISTORY.slice();
+  if (Q && qText(Q)) { archive(Q); list.push(HISTORY.pop()); }
+  if (!list.length) { toast('還沒有紀錄'); return; }
+  const md = '# AI 提詞機問答紀錄 ' + new Date().toLocaleString('zh-TW') + '\n\n' + list.map(h => {
+    const a = C.parseAnswer(h.raw || '');
+    return '## ' + h.time + '　' + h.q + '\n\n' + (h.bank ? h.bank : ('**' + (a.one || '') + '**\n\n' + (a.points || '') + '\n\n' + (a.script || ''))) +
+      (h.srcs.length ? '\n\n來源：' + h.srcs.join('、') : '') + '\n';
+  }).join('\n');
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '提詞機紀錄-' + new Date().toISOString().slice(0, 10) + '.md'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function showErr(m) { $('errText').textContent = m || ''; }
+function setStatus() {
+  $('dot').className = 'dot' + (listening ? ' live' : '');
+  $('stText').textContent = listening ? (Q && Q.status === 'confirmed' && S.after === 'lock' ? '🔒 聆聽中（答案已鎖定，空白鍵＝下一題）' : '聆聽中') : '未聆聽';
+  $('micBtn').textContent = listening ? '⏹ 停止聆聽' : '🎙 開始聆聽';
+  $('micBtn').className = 'btn ' + (listening ? 'on' : 'primary');
+  $('aiText').textContent = hasAnyKey() ? '' : '｜未設定 AI 金鑰：只顯示資料（⚙ 可加免費 Gemini 金鑰）';
+}
+
+/* ================= 語音辨識 ================= */
+let rec = null, listening = false, restartFails = 0, wakeLock = null;
+function startListen() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showErr('這個瀏覽器不支援語音辨識，請改用 Chrome（電腦版）或 Safari'); return; }
+  if (!window.isSecureContext) { showErr('麥克風需要 https 網址才能使用'); return; }
+  rec = new SR();
+  rec.lang = S.lang; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
+  rec.onresult = e => {
+    restartFails = 0; showErr('');
+    let fin = '', interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) fin += r[0].transcript; else interim += r[0].transcript;
+    }
+    onSpeech(fin, interim);
+  };
+  rec.onerror = e => {
+    if (e.error === 'no-speech' || e.error === 'aborted') return;
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { stopListen(); showErr('麥克風權限被拒絕：請點網址列左邊的圖示，允許使用麥克風後再試'); return; }
+    if (e.error === 'audio-capture') { stopListen(); showErr('找不到麥克風，請確認麥克風已接上'); return; }
+    if (e.error === 'network') { showErr('語音辨識連不上網路，正在重試…'); return; }
+    showErr('語音辨識錯誤：' + e.error);
+  };
+  rec.onend = () => {
+    if (!listening) return;
+    // 有暫定文字卻被切斷：當作說完了一段
+    if (Q && Q.interim) { const t = Q.interim; Q.interim = ''; onSpeech(t, ''); }
+    restartFails++;
+    if (restartFails > 8) { stopListen(); showErr('語音辨識一直中斷，請檢查網路後再按開始'); return; }
+    setTimeout(() => { if (listening) try { rec.start(); } catch (err) {} }, Math.min(300 * restartFails, 2000));
+  };
+  try { rec.start(); } catch (e) { showErr('無法啟動麥克風：' + e.message); return; }
+  listening = true; restartFails = 0;
+  if (!Q) newQuestion();
+  if (navigator.wakeLock) navigator.wakeLock.request('screen').then(w => { wakeLock = w; }).catch(() => {});
+  setStatus();
+}
+function stopListen() {
+  listening = false;
+  if (rec) { try { rec.stop(); } catch (e) {} }
+  if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+  setStatus();
+}
+
+/* ================= 打字提問與示範 ================= */
+function askTyped(text) {
+  text = (text || '').trim();
+  if (!text) return;
+  newQuestion();
+  Q.final = text;
+  refreshRetrieval();
+  confirmQuestion();
+  setStatus();
+}
+let demoTimer = null;
+async function runDemo() {
+  const sample = KBS.find(k => k.name === '示範知識庫');
+  if (sample && S.kb !== sample.id) { S.kb = sample.id; saveS(); await loadKB(); toast('已切到「示範知識庫」'); }
+  clearInterval(demoTimer);
+  newQuestion();
+  const parts = ['我想請教一下，', '現在很多人用 AI 自動生成圖片，', '這些 AI 生成的圖片到底有沒有著作權？', '如果我自己有修改過呢？'];
+  let pi = 0, ci = 0;
+  demoTimer = setInterval(() => {
+    const p = parts[pi];
+    ci += 2;
+    if (ci >= p.length) { onSpeech(p, ''); pi++; ci = 0; if (pi >= parts.length) clearInterval(demoTimer); }
+    else onSpeech('', p.slice(0, ci));
+  }, 110);
+}
+
+/* ================= 事件 ================= */
+function bind() {
+  $('mode').innerHTML = Object.entries(C.MODES).map(([k, m]) => `<option value="${k}"${k === S.mode ? ' selected' : ''}>${m.name}</option>`).join('');
+  $('mode').onchange = e => { S.mode = e.target.value; saveS(); toast('情境：' + C.MODES[S.mode].name); };
+  $('kb').onchange = async e => { S.kb = e.target.value; saveS(); await loadKB(); toast('知識庫：' + KBS.find(k => k.id === S.kb).name); };
+  $('micBtn').onclick = () => listening ? stopListen() : startListen();
+  $('nextBtn').onclick = () => { newQuestion(); setStatus(); };
+  $('freezeBtn').onclick = toggleFreeze;
+  $('fsUp').onclick = () => { S.fs = Math.min(2.2, +(S.fs + 0.1).toFixed(2)); saveS(); applyLook(); };
+  $('fsDown').onclick = () => { S.fs = Math.max(0.7, +(S.fs - 0.1).toFixed(2)); saveS(); applyLook(); };
+  $('scriptToggle').onclick = () => { S.scriptOpen = !S.scriptOpen; saveS(); applyLook(); };
+  $('askBtn').onclick = () => { askTyped($('askInput').value); $('askInput').value = ''; };
+  $('askInput').onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) { askTyped(e.target.value); e.target.value = ''; } };
+  $('demoBtn').onclick = runDemo;
+  $('exportBtn').onclick = exportHistory;
+
+  $('answerActions').onclick = e => {
+    const a = e.target.dataset.act; if (!a || !Q) return;
+    if (a === 'retry' || a === 'redo' || a === 'ai') { Q.phase = 'final'; Q.raw = ''; Q.bank = null; runLLM('final'); }
+  };
+  $('answerCard').addEventListener('click', e => {
+    const n = e.target.dataset && e.target.dataset.n; if (!n) return;
+    const el = document.querySelector('.src[data-i="' + n + '"]'); if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1400);
+  });
+  $('sources').onclick = e => {
+    const el = e.target.closest('.src'); if (!el) return;
+    const open = el.classList.toggle('open');
+    el.querySelector('[data-short]').style.display = open ? 'none' : '';
+    el.querySelector('[data-full]').style.display = open ? '' : 'none';
+  };
+
+  document.addEventListener('keydown', e => {
+    if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) || document.querySelector('dialog[open]')) return;
+    if (e.code === 'Space') { e.preventDefault(); newQuestion(); setStatus(); }
+    else if (e.key === 'f' || e.key === 'F') toggleFreeze();
+    else if (e.key === 'm' || e.key === 'M') listening ? stopListen() : startListen();
+  });
+
+  // 知識庫視窗
+  $('kbBtn').onclick = () => { renderKBSelect(); $('kbDlg').showModal(); };
+  $('kbClose').onclick = () => $('kbDlg').close();
+  $('kbSel').onchange = async e => { S.kb = e.target.value; saveS(); await loadKB(); };
+  $('kbNew').onclick = async () => {
+    const name = prompt('新知識庫名稱（例如：碩論口試、法遵面試、市政質詢）'); if (!name) return;
+    const id = uid(); KBS.push({ id, name: name.trim() }); saveKBs(); S.kb = id; saveS(); await loadKB();
+  };
+  $('kbRename').onclick = () => {
+    const k = KBS.find(k => k.id === S.kb); const name = prompt('改名', k.name); if (!name) return;
+    k.name = name.trim(); saveKBs(); renderKBSelect();
+  };
+  $('kbDel').onclick = async () => {
+    const k = KBS.find(k => k.id === S.kb);
+    if (!confirm('確定刪除知識庫「' + k.name + '」和裡面 ' + DOCS.length + ' 份文件？')) return;
+    for (const d of DOCS) await dbDel(d.id);
+    KBS = KBS.filter(x => x.id !== k.id);
+    if (!KBS.length) KBS.push({ id: uid(), name: '我的知識庫' });
+    saveKBs(); S.kb = KBS[0].id; saveS(); await loadKB();
+  };
+  $('docList').onclick = async e => {
+    const id = e.target.dataset.del; if (!id) return;
+    const d = DOCS.find(x => x.id === id);
+    if (!confirm('刪除「' + d.name + '」？')) return;
+    await dbDel(id); await loadKB();
+  };
+  $('pickFile').onclick = () => $('fileIn').click();
+  $('fileIn').onchange = e => { addFiles([...e.target.files]); e.target.value = ''; };
+  const drop = $('drop');
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave = () => drop.classList.remove('over');
+  drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); addFiles([...e.dataTransfer.files]); };
+  $('pasteAdd').onclick = async () => {
+    const title = $('pasteTitle').value.trim() || ('貼上的文字 ' + new Date().toLocaleString('zh-TW'));
+    const body = $('pasteBody').value;
+    if (body.replace(/\s/g, '').length < 5) { toast('內容太短'); return; }
+    const old = DOCS.find(d => d.name === title);
+    await dbPut({ id: old ? old.id : uid(), kb: S.kb, name: title, type: 'paste', added: Date.now(), pages: [{ page: null, text: body }], chars: body.replace(/\s/g, '').length });
+    $('pasteTitle').value = ''; $('pasteBody').value = '';
+    await loadKB(); toast('已加入：' + title);
+  };
+
+  // 設定視窗
+  $('setBtn').onclick = () => {
+    $('kGemini').value = getKey('gemini'); $('kOR').value = getKey('openrouter'); $('kClaude').value = getKey('claude');
+    $('sLang').value = S.lang; $('sSilence').value = String(S.silence); $('sAfter').value = S.after;
+    $('sStrict').value = S.strict ? '1' : '0'; $('sTheme').value = S.theme; $('kTestOut').textContent = '';
+    $('setDlg').showModal();
+  };
+  const saveKeys = () => {
+    for (const [p, el] of [['gemini', 'kGemini'], ['openrouter', 'kOR'], ['claude', 'kClaude']]) {
+      const v = $(el).value.trim();
+      try { if (v) localStorage.setItem(KEYS[p], v); else localStorage.removeItem(KEYS[p]); } catch (e) {}
+    }
+    try { sessionStorage.removeItem('prompterGemModels'); } catch (e) {}
+  };
+  $('setClose').onclick = () => {
+    saveKeys();
+    const wasLang = S.lang;
+    S.lang = $('sLang').value; S.silence = +$('sSilence').value; S.after = $('sAfter').value;
+    S.strict = $('sStrict').value === '1'; S.theme = $('sTheme').value;
+    saveS(); applyLook(); setStatus(); $('setDlg').close();
+    if (listening && wasLang !== S.lang) { stopListen(); setTimeout(startListen, 400); }
+  };
+  $('kTest').onclick = async () => {
+    saveKeys(); $('kTestOut').textContent = '測試中…';
+    const ctrl = new AbortController();
+    try { const p = await callLLM('只回答「OK」兩個字母。', () => {}, ctrl.signal); $('kTestOut').textContent = '✅ 可以用：' + p; }
+    catch (e) { $('kTestOut').textContent = '❌ ' + e.message; }
+    setStatus();
+  };
+}
+
+function toggleFreeze() {
+  frozen = !frozen;
+  $('freezeBtn').className = 'btn' + (frozen ? ' frozen' : '');
+  $('freezeBtn').textContent = frozen ? '❄ 解凍' : '❄ 凍結';
+  render();
+}
+
+(async function init() {
+  applyLook(); bind();
+  try { await ensureDefaultKB(); } catch (e) {}
+  await loadKB();
+  setStatus();
+  // 自我測試：?selftest=1（不打 AI，模擬整條流程）
+  if (/selftest=1/.test(location.search)) selfTest();
+})();
+
+async function selfTest() {
+  const out = [];
+  const okk = (c, n) => out.push((c ? 'PASS ' : 'FAIL ') + n);
+  // 模擬 AI 串流
+  window.__fakeLLM = true;
+  const realCall = callLLM;
+  callLLM = async (prompt, onText, signal) => {
+    const txt = prompt.includes('尚未講完')
+      ? '【核心問題】AI生成圖是否受保護\n【一句話】暫定：純AI生成不受保護 [1]\n【重點】\n1. 須人類創作 [1]'
+      : '【核心問題】AI生成圖的著作權\n【一句話】純由AI生成的圖不受著作權保護，但人類實質修改的部分可能受保護。[1]\n【重點】\n1. 著作須為人類精神創作 [1]\n2. 人類修改部分個案判斷 [1]\n3. 思想不保護、表達才保護 [2]\n【口語稿】我的看法是…[1]\n【可能追問】\n- 下提示詞算創作嗎？\n- 要怎麼證明有人類參與？\n【注意】無';
+    for (let i = 0; i < txt.length; i += 12) { if (signal.aborted) { const e = new Error('a'); e.name = 'AbortError'; throw e; } onText(txt.slice(0, i + 12)); await new Promise(r => setTimeout(r, 5)); }
+    return '模擬AI';
+  };
+  try { localStorage.setItem('readingGeminiKey', localStorage.getItem('readingGeminiKey') || 'selftest'); } catch (e) {}
+  okk(INDEX && INDEX.N >= 4, '示範知識庫已載入（' + (INDEX ? INDEX.N : 0) + ' 段）');
+  S.silence = 300;
+  newQuestion();
+  onSpeech('', '現在很多人用 AI 自動生成圖片');
+  onSpeech('現在很多人用 AI 自動生成圖片，這些 AI 生成的圖片', '');
+  await new Promise(r => setTimeout(r, 120));
+  okk(Q.provSent, '對方還沒講完就先開始想（暫定）');
+  okk(Q.hits.length && Q.hits[0].chunk.page === 2, '即時找到第 2 頁「AI 生成物」');
+  onSpeech('到底有沒有著作權？如果我自己有修改過呢？', '');
+  await new Promise(r => setTimeout(r, 900));
+  okk(Q.status === 'confirmed', '停頓後判定問完');
+  okk(Q.phase === 'final' && !Q.ctrl, '完整答案完成：' + Q.phase);
+  okk($('one').textContent.includes('不受著作權保護'), '一句話顯示正確');
+  okk($('points').children.length === 3, '三重點顯示');
+  okk(document.querySelectorAll('#one sup.cite').length === 1, '引用標記可點');
+  const oldQ = Q;
+  onSpeech('這是我自己的回答', '');
+  okk(Q === oldQ && Q.status === 'confirmed', '鎖定模式：自己的回答不會變成新問題');
+  newQuestion();
+  okk(HISTORY.length === 1, '上一題存進紀錄');
+  askTyped('請簡單自我介紹');
+  okk(Q.phase === 'bank' && $('one').textContent.includes('範本'), '題庫命中直接秀自己準備的答案');
+  // 舊答案晚到不能覆蓋新問題
+  newQuestion(); Q.final = '合理使用的判斷基準是什麼'; const q1 = Q; runLLM('final');
+  newQuestion(); Q.final = '請簡單自我介紹'; refreshRetrieval(); confirmQuestion();
+  await new Promise(r => setTimeout(r, 600));
+  okk(Q !== q1 && Q.phase === 'bank' && !$('one').textContent.includes('判斷基準'), '舊問題的答案不會蓋掉新問題');
+  callLLM = realCall;
+  if (localStorage.getItem('readingGeminiKey') === 'selftest') localStorage.removeItem('readingGeminiKey');
+  const pre = document.createElement('pre'); pre.id = 'selftest'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}
+</script>
+</body>
+</html>
