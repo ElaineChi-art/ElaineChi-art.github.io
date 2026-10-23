@@ -63,6 +63,10 @@ ok(C.listItems(messy.points).length === 3, '重點拆回三點');
 ok(C.listItems(messy.follow).length === 2 && messy.script === '我承認…', '追問從口語稿拆出');
 ok(C.parseAnswer('<think>想一下</think>【一句話】好').one === '好', '思考過程不顯示');
 
+// 一題多問法
+const multi = C.chunkDoc({ id: 'm', name: 'm.md', pages: [{ page: null, text: 'Q：你的論文核心結論是什麼？\nQ：一句話講你的結論\nQ：所以你到底主張什麼\nA：智慧合約是執行工具，不是權利本身。\n\nQ：研究限制？\nA：法域與時效。' }] });
+ok(multi.length === 4 && multi.filter(c => c.text.startsWith('智慧合約')).length === 3, '三種問法共用同一個擬答');
+
 // 事實查核
 const vc = C.verifyClaims('最高法院113年度台上字第4521號判決認為…依著作權法第37條，執行率68%，2023年', ['著作權法第37條規定…執行率為68%，2023年Impact Theory案'], '113年度台上字第4521號判決結論');
 ok(vc.find(x => /4521/.test(x.text)).found === false, '捏造的判決字號被抓出來');

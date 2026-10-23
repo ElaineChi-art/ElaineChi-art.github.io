@@ -70,6 +70,9 @@ mark{background:var(--mark);color:inherit;border-radius:2px}
 .ask input{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:16px}
 .hist{font-size:14px;border-top:1px solid var(--line);padding:8px 0}
 .hist b{display:block}
+.alt{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;cursor:pointer;font-size:calc(15px*var(--fs));line-height:1.55}
+.alt:hover{border-color:var(--accent)}
+.alt .aq{color:var(--faint);font-size:.82em}
 dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(640px,calc(100vw - 32px));max-height:85vh}
 dialog::backdrop{background:rgba(0,0,0,.55)}
 dialog h3{margin:0 0 12px}
@@ -129,6 +132,10 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
         <ul class="follow" id="follow"></ul>
       </div>
       <div class="caution" id="caution" style="margin-top:8px"></div>
+      <div id="altsWrap" style="margin-top:10px;display:none">
+        <div class="label">候選擬答（點一下換成主答案）</div>
+        <div id="alts"></div>
+      </div>
       <div class="row" id="answerActions"></div>
     </div>
   </section>
@@ -290,13 +297,17 @@ async function loadVectors() {
     const check = INDEX.chunks.reduce((a, c) => a + c.text.length, 0);
     if (meta.n !== INDEX.N || meta.check !== check) return; // 段落對不上 → 寧可不用，也不用錯位的向量
     const buf = await (await fetch('kb-vectors.bin', { cache: 'no-store' })).arrayBuffer();
-    VEC = { meta, data: new Int8Array(buf) };
+    VEC = { meta, data: new Int8Array(buf), q: null, qaIdx: [] };
+    if (meta.nq) { // 題庫「題目」向量：問題對問題比對
+      const qa = INDEX.chunks.map((c, i) => c.type === 'qa' ? i : -1).filter(i => i >= 0);
+      if (qa.length === meta.nq) { VEC.q = new Int8Array(await (await fetch('kb-qvec.bin', { cache: 'no-store' })).arrayBuffer()); VEC.qaIdx = qa; }
+    }
   } catch (e) { VEC = null; }
 }
-async function embedQuery(q) {
+async function embedQuery(q, raw) {
   const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 2500);
   const r = await fetch(OLLAMA + '/api/embed', { method: 'POST', signal: ctrl.signal,
-    body: JSON.stringify({ model: VEC.meta.model, input: [VEC.meta.instruct + q], keep_alive: '60m', truncate: true }) });
+    body: JSON.stringify({ model: VEC.meta.model, input: [(raw ? '' : VEC.meta.instruct) + q], keep_alive: '60m', truncate: true }) });
   const v = (await r.json()).embeddings[0].slice(0, VEC.meta.dim);
   let n = 0; for (const x of v) n += x * x; n = Math.sqrt(n) || 1;
   return v.map(x => x / n);
@@ -649,30 +660,59 @@ function onSpeech(fin, interim) {
   silenceTimer = setTimeout(confirmQuestion, S.silence);
 }
 
-function strongBank(q) { return q.bank && q.bank.sim >= 0.6; }
+// 題庫命中分級：≥0.86 視為同題；0.80–0.86 為「相近題目」須由使用者確認；以下只列候選、由 AI 依資料作答
+const BANK_SAME = 0.86, BANK_NEAR = 0.80;
+function strongBank(q) { return q.bank && q.bank.sim >= (q.bank.sem ? BANK_SAME : 0.6); }
+function nearBank(q) { return q.bank && q.bank.sem && !strongBank(q) && q.bank.sim >= BANK_NEAR; }
+// 擷取真正的問句（去掉開場白），多個片段一起比對，回傳前 3 個「不同擬答」
+async function semanticBank(t) {
+  if (!VEC || !VEC.q) return null;
+  const segs = C.questionSegments(t);
+  const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 2500);
+  const r = await fetch(OLLAMA + '/api/embed', { method: 'POST', signal: ctrl.signal,
+    body: JSON.stringify({ model: VEC.meta.model, input: segs, keep_alive: '60m', truncate: true }) });
+  const D = VEC.meta.dim;
+  const vs = (await r.json()).embeddings.map(v => { v = v.slice(0, D); let n = 0; for (const x of v) n += x * x; n = Math.sqrt(n) || 1; return v.map(x => x / n); });
+  const best = new Map();
+  for (const v of vs) for (let j = 0; j < VEC.qaIdx.length; j++) {
+    let s = 0; const o = j * D;
+    for (let d = 0; d < D; d++) s += VEC.q[o + d] * v[d];
+    const c = INDEX.chunks[VEC.qaIdx[j]], cur = best.get(c.text);
+    if (!cur || cur.sim < s) best.set(c.text, { chunk: c, sim: s });
+  }
+  const top = [...best.values()].sort((a, b) => b.sim - a.sim).slice(0, 3).map(x => ({ chunk: x.chunk, sim: x.sim / 127, sem: true }));
+  if (!top.length) return null;
+  top[0].alts = top.slice(1);
+  return top[0];
+}
 
 function refreshRetrieval() {
   if (!Q || !INDEX) return;
   const q = Q, t = qText();
   if (!t) return;
   q.hits = C.search(INDEX, t, 6).filter(h => h.coverage >= 0.15); // 先秀關鍵字結果（立即）
-  q.bank = C.bankMatch(INDEX, t);
+  if (!q.bank || !q.bank.sem) q.bank = C.bankMatch(INDEX, t);
   render();
   if (VEC) retrieve(t, 6).then(h => { if (Q === q && qText() === t && !q.usedHits) { q.hits = h; render(); } });
+  if (VEC && VEC.q) semanticBank(t).then(b => { if (b && Q === q && qText() === t) { q.bank = b; render(); } }).catch(() => {});
 }
 
 function maybeProvisional() {
   if (!Q || Q.provSent || Q.status !== 'listening') return;
+  if (useLocal() || (S.engine === 'groq' && !getKey('groq'))) return; // 本機模型太慢，不做暫定答案，避免搶資源
   if (qText().length >= 14 && !strongBank(Q)) { Q.provSent = true; runLLM('provisional'); }
 }
 
-function confirmQuestion() {
+async function confirmQuestion() {
   if (!Q || Q.status !== 'listening') return;
   const t = qText();
   if (t.length < 4) return;
   Q.final = t; Q.interim = ''; Q.status = 'confirmed';
+  const q = Q;
   refreshRetrieval();
+  if (VEC && VEC.q) { try { const b = await semanticBank(t); if (b) q.bank = b; } catch (e) {} if (Q !== q) return; }
   if (strongBank(Q)) { if (Q.ctrl) Q.ctrl.abort(); Q.ctrl = null; Q.raw = ''; Q.phase = 'bank'; render(); return; }
+  if (nearBank(Q) && (useLocal() || !getKey('groq'))) { Q.phase = 'near'; render(); return; } // 本機：先秀相近擬答，按鈕才讓 AI 重答
   const same = Q.provText && !C.grewEnough(Q.provText, t);
   if (same && Q.provDone) { Q.phase = 'final'; render(); return; }        // 暫定答案已經對題，不重花錢
   if (same && Q.ctrl) { Q.promote = true; render(); return; }             // 暫定還在寫，寫完直接升級
@@ -754,10 +794,12 @@ function render() {
   let badge = '';
   const q = Q;
   if (q.error) badge = '<span class="badge err">AI 失敗</span>';
-  else if (q.phase === 'bank' || (strongBank(q) && !q.raw)) badge = '<span class="badge bank">📚 題庫答案</span>';
+  else if (q.phase === 'bank' || (strongBank(q) && !q.raw)) badge = '<span class="badge bank">📚 題庫答案（同題）</span>';
+  else if (q.phase === 'near' && !q.raw) badge = '<span class="badge prov">📚 相近題目・請確認是不是同一題</span>';
   else if (q.phase === 'nokey') badge = '<span class="badge">🔎 僅資料（未設 AI 金鑰）</span>';
   else if (q.phase === 'provisional') badge = '<span class="badge prov">暫定・對方還在說</span>';
   else if (q.phase === 'final' && q.ctrl) badge = '<span class="badge prov">整理中…</span>';
+  else if (q.phase === 'final' && /本機/.test(q.provider || '')) badge = '<span class="badge prov">⚠️ 本機 AI 草稿・可能有誤，請以候選擬答與右側原文為準</span>';
   else if (q.phase === 'final') badge = '<span class="badge ok">已確認</span>';
   if (frozen) badge += ' <span class="badge" style="color:#7aa7ff;border-color:#7aa7ff">❄ 凍結中</span>';
   setHTML($('aBadge'), badge);
@@ -766,12 +808,17 @@ function render() {
 
   const n = (q.usedHits || q.hits || []).length;
   let core = '', one = '', points = [], script = '', follow = [], caution = '';
-  if ((q.phase === 'bank' || strongBank(q)) && !q.raw) {
+  if ((q.phase === 'bank' || q.phase === 'near' || strongBank(q)) && !q.raw && q.bank) {
     const c = q.bank.chunk;
-    core = '題庫命中：' + c.q + '（相似度 ' + Math.round(q.bank.sim * 100) + '%）';
-    const lines = c.text.split('\n').filter(Boolean);
-    one = lines[0] || ''; script = lines.slice(1).join('\n');
-    caution = '這是你自己準備的答案（' + c.docName + '）。';
+    core = (q.phase === 'near' ? '相近題目：' : '題庫命中：') + c.q + '（相似度 ' + Math.round(q.bank.sim * 100) + '%）';
+    const lines = c.text.split('\n').map(x => x.trim()).filter(Boolean);
+    const basis = lines.filter(x => /^（(依據|出處)/.test(x) || /^（出處：/.test(x));
+    const warn = lines.filter(x => /^⚠️/.test(x));
+    const body = lines.filter(x => !basis.includes(x) && !warn.includes(x));
+    one = body[0] || '';
+    points = body.slice(1).filter(x => /^[•·]\s*|^\d+[.、]\s*/.test(x)).map(x => x.replace(/^[•·]\s*|^\d+[.、]\s*/, ''));
+    script = body.slice(1).filter(x => !/^[•·]\s*|^\d+[.、]\s*/.test(x)).join('\n');
+    caution = [...warn, (basis.join(' ') || '（' + c.docName + '）') + (q.phase === 'near' ? '　⚠️ 這是相近題目的擬答，請先確認對方問的是同一件事' : '')].join('\n');
   } else if (q.raw) {
     const a = C.parseAnswer(q.raw);
     core = a.core || ''; one = a.one || ''; points = C.listItems(a.points); script = a.script || '';
@@ -799,9 +846,14 @@ function render() {
   setHTML($('follow'), follow.slice(0, 3).map(f => '<li>' + esc(f) + '</li>').join(''));
   $('followWrap').style.display = follow.length ? '' : 'none';
   setHTML($('caution'), esc(caution));
+  const bankShown = q.bank && q.bank.sem && !q.raw && (q.phase === 'bank' || q.phase === 'near' || strongBank(q));
+  // 主畫面是題庫擬答 → 列其餘 2 個；主畫面是 AI 生成 → 3 個候選全列，方便對照
+  const alts = !q.bank || !q.bank.sem ? [] : bankShown ? (q.bank.alts || []) : [q.bank, ...(q.bank.alts || [])];
+  $('altsWrap').style.display = alts.length ? '' : 'none';
+  setHTML($('alts'), alts.map((a, i) => `<div class="alt" data-alt="${i}"><div class="aq">原題：${esc(a.chunk.q.slice(0, 60))}（${Math.round(a.sim * 100)}%）</div>${esc((a.chunk.text.split('\n').find(x => x.trim() && !/^（/.test(x)) || '').slice(0, 90))}</div>`).join(''));
   let act = '';
   if (q.error) act += '<button class="btn" data-act="retry">↻ 重試</button>';
-  if ((q.phase === 'bank' || strongBank(q)) && !q.raw && hasAnyKey()) act += '<button class="btn" data-act="ai">🤖 請 AI 重新整理</button>';
+  if ((q.phase === 'bank' || q.phase === 'near' || strongBank(q)) && !q.raw && hasAnyKey()) act += '<button class="btn" data-act="ai">' + (q.phase === 'near' ? '🤖 不是同一題，請 AI 依資料作答' : '🤖 請 AI 重新整理') + '</button>';
   if (q.raw && !q.ctrl && q.status === 'confirmed') act += '<button class="btn" data-act="redo">↻ 換個說法</button>';
   setHTML($('answerActions'), act);
 }
@@ -977,6 +1029,16 @@ function bind() {
     const el = document.querySelector('.src[data-i="' + n + '"]'); if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1400);
   });
+  $('alts').onclick = e => {
+    const el = e.target.closest('.alt'); if (!el || !Q || !Q.bank) return;
+    const all = [Q.bank, ...(Q.bank.alts || [])];
+    const shownIsBank = !Q.raw && (Q.phase === 'bank' || Q.phase === 'near' || strongBank(Q));
+    const i = +el.dataset.alt + (shownIsBank ? 1 : 0), pick = all[i];
+    const rest = all.filter((_, j) => j !== i).map(x => ({ chunk: x.chunk, sim: x.sim, sem: true }));
+    Q.bank = Object.assign({}, pick, { alts: rest });
+    if (Q.ctrl) Q.ctrl.abort(); Q.ctrl = null;
+    Q.phase = strongBank(Q) ? 'bank' : 'near'; Q.raw = ''; render();
+  };
   $('sources').onclick = e => {
     const el = e.target.closest('.src'); if (!el) return;
     const open = el.classList.toggle('open');

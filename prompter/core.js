@@ -106,8 +106,11 @@
     let cur = null;
     for (const l of lines) {
       if (isQLine(l.text)) {
+        const q = l.text.replace(Q_RE, '').trim();
+        // 連續好幾行 Q：＝同一題的不同問法，共用下面的答案
+        if (cur && !cur.a.length && !cur.inA) { cur.alts.push(q); continue; }
         if (cur) units.push(cur);
-        cur = { page: l.page, q: l.text.replace(Q_RE, '').trim(), a: [], inA: false };
+        cur = { page: l.page, q, alts: [], a: [], inA: false };
         continue;
       }
       if (!cur) continue;
@@ -118,10 +121,11 @@
       else cur.a.push(s);
     }
     if (cur) units.push(cur);
-    return units.filter(u => u.q).map(u => ({
-      docId: doc.id, docName: doc.name, page: u.page, heading: '', type: 'qa',
-      q: u.q, text: u.a.join('\n').trim()
-    }));
+    const out = [];
+    units.filter(u => u.q && u.a.length).forEach(u => [u.q, ...u.alts].forEach(q => out.push({
+      docId: doc.id, docName: doc.name, page: u.page, heading: '', type: 'qa', q, text: u.a.join('\n').trim()
+    })));
+    return out;
   }
 
   /* ---------- 檢索 ---------- */
@@ -298,6 +302,22 @@
     return [...new Set((String(s || '').match(/\[(\d+)\]/g) || []).map(x => +x.slice(1, -1)))].filter(x => x >= 1 && x <= n);
   }
 
+  /* ---------- 抓出真正的問句：去掉「不好意思我想問一下」這類開場，取整句、最後的問句與最後兩個子句 ---------- */
+  const PREAMBLE = /^(?:不好意思|抱歉|老師好|委員好|謝謝|你好|您好|我想(?:請)?問(?:一下)?|請問(?:一下)?|我(?:比較)?好奇(?:的是)?|我想確認(?:一下)?|我聽完(?:覺得)?|我覺得|我做[^，,]{0,10}很多年了|我不是學[^，,]{0,6}的|聽起來|那個|嗯+|呃+)[，,、\s]*/;
+  function questionSegments(text) {
+    const t = String(text || '').replace(/\s+/g, ' ').trim();
+    const parts = t.split(/[。！？?!；;]/).map(s => s.trim()).filter(Boolean);
+    const clauses = t.split(/[，,。！？?!；;]/).map(s => s.trim()).filter(s => s.length >= 4);
+    let core = t;
+    for (let i = 0; i < 4; i++) core = core.replace(PREAMBLE, '');
+    const out = [t, core];
+    const qSent = parts.filter(p => p.length >= 6).slice(-1)[0];
+    if (qSent) out.push(qSent);
+    if (clauses.length >= 2) out.push(clauses.slice(-2).join('，'));
+    if (clauses.length >= 3) out.push(clauses.slice(-3).join('，'));
+    return [...new Set(out.filter(s => s && s.length >= 6))].slice(0, 5);
+  }
+
   /* ---------- 事實查核：答案裡的判決字號、條號、數字，必須在資料裡找得到 ---------- */
   const CLAIM_RES = [
     /\d{2,3}\s*年度?\s*[一-鿿]{1,6}字第\s*\d+\s*號/g,                  // 判決字號
@@ -307,7 +327,7 @@
   ];
   const claimKey = s => norm(s).replace(/[\s,，]/g, '').replace(/^第/, '').replace(/^§/, '');
   function verifyClaims(answer, sources, question) {
-    const src = claimKey((sources || []).join('\n'));
+    const src = claimKey((sources || []).join('\n').replace(/§\s*(\d+)(?:\s*-\s*(\d+))?/g, (m, a, b) => a + '條' + (b ? '之' + b : '')));
     const q = claimKey(question || '');
     const out = [], seen = new Set();
     for (const re of CLAIM_RES) {
@@ -369,7 +389,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, verifyClaims, makeSSEParser, makeNDJSONParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);
