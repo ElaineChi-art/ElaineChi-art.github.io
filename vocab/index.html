@@ -1505,8 +1505,15 @@ function populateShelfFilter(){
   // 計算「目前選的日期」裡每個書庫有幾個字（不是總量）
   const dayCnt={}; currentEntries.forEach(e=>(e.rec.shelves||[]).forEach(s=>{dayCnt[s]=(dayCnt[s]||0)+1;}));
   const total=currentEntries.length;
-  sel.innerHTML=`<option value="all">全部書庫（${total}）</option>`+
-    allShelves().map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}（${dayCnt[s]||0}）</option>`).join('');
+  const SEP=' ▸ ';
+  const flat=[], groups={};
+  allShelves().forEach(s=>{ const i=s.indexOf(SEP);
+    if(i>0){ const g=s.slice(0,i); (groups[g]=groups[g]||[]).push(s); } else flat.push(s); });
+  const opt=s=>`<option value="${escapeHtml(s)}">${escapeHtml(s.split(SEP).pop())}（${dayCnt[s]||0}）</option>`;
+  sel.innerHTML=`<option value="all">全部書庫（${total}）</option>`
+    + flat.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}（${dayCnt[s]||0}）</option>`).join('')
+    + Object.keys(groups).map(g=>`<optgroup label="${escapeHtml(g)}（${groups[g].length} 個場景）">`
+        + groups[g].map(opt).join('') + `</optgroup>`).join('');
   if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
 }
 function updateSelCount(){
@@ -2385,6 +2392,7 @@ function openTheme(){
        <span>例句中文翻譯</span>
        <button class="btn ghost sm" id="btnTransToggle"></button>
      </div>
+     ${packPanel()}
      <div class="edsec" style="margin-top:12px">
        <div style="font-weight:600;margin-bottom:6px">資料備份／搬到別的裝置</div>
        <div class="row" style="gap:8px">
@@ -2427,6 +2435,7 @@ function openTheme(){
     try{ await navigator.clipboard.writeText(backupJSON()); msg('備份碼已複製，貼到另一台再匯入。'); }
     catch(e){ prompt('複製這段備份碼：', backupJSON()); }
   };
+  wirePackPanel();
   document.getElementById('btnImportFile').onclick=()=>document.getElementById('importFile').click();
   document.getElementById('importFile').onchange=e=>{
     const f=e.target.files[0]; if(!f)return; const r=new FileReader();
@@ -2552,12 +2561,63 @@ function migrateSentenceSrc(){
   if(changed) save();
 }
 
+/* ============ 多益場景資料包（judicial 多益 60 場景字彙）============ */
+const PACK_FLAG='vocabPackTOEIC_v1', PACK_SRC='toeic-pack.js?v=1';
+function packImported(){ try{ return localStorage.getItem(PACK_FLAG)==='1'; }catch(e){ return false; } }
+function loadPackScript(){
+  return new Promise((res,rej)=>{
+    if(window.TOEIC_PACK) return res(window.TOEIC_PACK);
+    const sc=document.createElement('script'); sc.src=PACK_SRC;
+    sc.onload=()=>res(window.TOEIC_PACK); sc.onerror=()=>rej(new Error('載入失敗'));
+    document.head.appendChild(sc);
+  });
+}
+async function importToeicPack(force){
+  const box=document.getElementById('packMsg');
+  const say=t=>{ if(box)box.textContent=t; };
+  if(packImported()&&!force){ say('已經匯入過了。'); return 0; }
+  say('下載多益場景字庫…（約 2 MB，只會下載這一次）');
+  let pack; try{ pack=await loadPackScript(); }catch(e){ say('載入失敗，請檢查網路後再試。'); return 0; }
+  if(!pack||!pack.db){ say('資料包格式有誤。'); return 0; }
+  (pack.shelves||[]).forEach(addShelf);
+  let n=0;
+  try{ n=mergeImport({db:pack.db}); }
+  catch(e){ say('匯入失敗：'+e.message); return 0; }
+  try{ localStorage.setItem(PACK_FLAG,'1'); }catch(e){}
+  refresh();
+  say('已匯入 '+n+' 個單字，共 '+(pack.plan||[]).length+' 個場景，一天一場景排到 '+
+      ((pack.plan||[]).slice(-1)[0]||{}).date+'。');
+  return n;
+}
+function packPanel(){
+  return `<div class="edsec" style="margin-top:12px">
+     <div style="font-weight:600;margin-bottom:6px">多益場景字庫</div>
+     <div style="font-size:12px;color:var(--mut);margin-bottom:8px">
+       多益 60 個場景、2000 多個單字片語，含課本原文例句與中譯。一天一個場景、由易到難排程，
+       初始熟悉度已依詞頻分好（不熟／普通／熟），之後你自己點。</div>
+     <div class="row" style="gap:8px">
+       <button class="btn ghost sm" id="btnPackImport">${packImported()?'重新匯入':'匯入多益場景字庫'}</button>
+     </div>
+     <div class="msg" id="packMsg" style="min-height:16px"></div>
+   </div>`;
+}
+function wirePackPanel(){
+  const b=document.getElementById('btnPackImport');
+  if(b) b.onclick=()=>importToeicPack(true);
+}
+
 /* ============ init ============ */
 (function init(){
   migrateSentenceSrc();   // 自動把舊資料中你自己打的例句標成「我的」
   const start = DB[today()] ? today() : allDates()[0];
   if(start){ daySel.add(start); calState.ref=start; }
   renderCal(); renderList();
+  if(!packImported()){                         // 第一次開站自動把多益場景字庫裝進來
+    setTimeout(async()=>{ await importToeicPack(false);
+      const s2=DB[today()]?today():allDates()[0];
+      if(s2){ daySel.clear(); daySel.add(s2); calState.ref=s2; refresh(); }
+    }, 600);
+  }
   setTimeout(bgTranslate, 1500); // 載入後背景補翻譯
 })();
 </script>
