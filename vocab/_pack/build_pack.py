@@ -174,7 +174,11 @@ def main():
     for di, sc in enumerate(scenes):
         date = (start + datetime.timedelta(days=di)).isoformat()
         short = re.sub(r"\s*\(.*", "", sc["title"]).strip()
-        shelf = "多益場景 ▸ %s %s" % (sc["code"], short)
+        m = re.match(r"Chapter\s*0?(\d+)\s*(.*)", (sc["ch"] or "").replace("\u3000", " ").strip())
+        chs = ("Ch%02d %s" % (int(m.group(1)), m.group(2).strip())) if m else "其他"
+        chap = "多益場景 ▸ " + chs
+        shelf = "%s ▸ %s %s" % (chap, sc["code"], short)
+        if chap not in shelves: shelves.append(chap)
         shelves.append(shelf)
         own = bycode.get(sc["code"], [])
         words = {}
@@ -225,7 +229,7 @@ def main():
             words[term.lower()] = {
                 "word": term, "phonetic": "", "audio": "", "wordZh": zh_word,
                 "pos": v.get("pos", ""), "meanings": [], "sentences": sents[:3],
-                "note": "\n".join(note), "shelves": ["多益場景", shelf],
+                "note": "\n".join(note), "shelves": ["多益場景", chap, shelf],
                 "stats": {"right": 0, "wrong": 0, "last": None},
                 "level": level_of(term), "addedAt": int(time.time() * 1000)}
         db[date] = {"words": words}
