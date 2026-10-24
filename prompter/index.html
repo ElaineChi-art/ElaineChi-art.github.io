@@ -332,6 +332,7 @@ async function retrieve(q, k) {
   const score = new Map();
   kw.forEach((h, r) => score.set(h.i, (score.get(h.i) || 0) + 1 / (60 + r)));
   sem.slice(0, 40).forEach(([i], r) => score.set(i, (score.get(i) || 0) + 1 / (60 + r)));
+  for (const [i, v] of score) if (/^講義｜/.test(INDEX.chunks[i].docName)) score.set(i, v * 0.85); // 講義是領域背景，排在本人論文之後
   const seen = new Set(); // 題庫的正式問法和白話問法指向同一段擬答 → 只留一次
   return [...score.entries()].sort((a, b) => b[1] - a[1]).map(([i, s]) => ({ i, score: s, coverage: 1, chunk: INDEX.chunks[i] }))
     .filter(h => !seen.has(h.chunk.text) && seen.add(h.chunk.text)).slice(0, k);

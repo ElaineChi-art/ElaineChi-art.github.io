@@ -12,7 +12,9 @@
 
   // PDF 常把「二、行」存成外觀相同的部首／相容字（⼆、⾏），統一換回一般漢字
   function fixCJK(s) {
-    return String(s || '').replace(/[⺀-⿟豈-﫿]/g, c => c.normalize('NFKC'));
+    return String(s || '').replace(/[⺀-⿟豈-﫿]/g, c => c.normalize('NFKC'))
+      // 簡報 PDF 常抽成「風 險 分 類」：中文字之間的空白去掉，否則雙字比對全部失效
+      .replace(/([\u3400-\u9fff\uff08\uff09\u300c\u300d])[ \t\u3000]+(?=[\u3400-\u9fff\uff08\uff09\u300c\u300d])/g, '$1');
   }
   function norm(s) {
     return fixCJK(s)
@@ -320,16 +322,19 @@
     const cands = [];
     (hits || []).forEach((h, rank) => {
       const c = h.chunk;
-      String(c.text || '').replace(/\n+/g, '。').split(/(?<=[。！？；])/).forEach(raw => {
-        const s = raw.replace(/^[。\s•·\-]+|^\d+[.、]\s*/g, '').replace(/[（(](?:依據|出處)[:：][^）)]*[）)]/g, '').trim();
-        if (s.length < 14 || s.length > 170 || /^(Q：|A：|追問)/.test(s)) return;
+      // 簡報講義多是條列，沒有句號：也依條列符號切段
+      String(c.text || '').replace(/([^\n。！？；：])\n(?=[^\n•➢✓◆▪●■\d（(【])/g, '$1').replace(/\n+/g, '。').split(/(?<=[。！？；])|(?=[•➢✓◆▪●■])/).forEach(raw => {
+        const s = raw.replace(/^[。\s•·\-➢✓◆▪●■]+|^\d+[.、]\s*/g, '').replace(/[（(](?:依據|出處)[:：][^）)]*[）)]/g, '').trim();
+        if (s.length < 18 || s.length > 180 || /^(Q：|A：|追問)/.test(s)) return;
+        if (/[、，,]\s*[。]?$/.test(s) || (s.match(/[\u3400-\u9fff]/g) || []).length < 10) return; // 斷在半句或中文太少的碎片不要
         if (/"""|[{};=<>]|\b(function|import|return|def|contract|pragma|require)\b|\/\/|^#|\]\(|https?:/.test(s)) return; // 程式碼、連結不當答案
         const toks = new Set(tokenize(s));
         if (!toks.size) return;
         let hit = 0; for (const t of toks) if (qt.has(t)) hit++;
         let bonus = 0; for (const [re, w] of boosts) if (re.test(s)) bonus += w;
         if (!hit) return; // 必須跟問題共用有意義的詞，題型加分才算數
-        cands.push({ s, ref: rank + 1, chunk: c, score: hit / Math.sqrt(toks.size) + 0.6 / (rank + 1) + bonus * Math.min(1, hit / 2) });
+        const full = Math.min(1, s.length / 40); // 越接近完整句越好
+        cands.push({ s, ref: rank + 1, chunk: c, score: (hit / Math.sqrt(toks.size) + 0.6 / (rank + 1) + bonus * Math.min(1, hit / 2)) * (0.5 + 0.5 * full) });
       });
     });
     cands.sort((a, b) => b.score - a.score);
@@ -373,7 +378,7 @@
 
   /* ---------- 查無警示：對方問具體細節（金額、時間、法條、案例），但答案裡沒有這類內容 → 提醒不要硬答 ---------- */
   const DETAIL_ASK = [
-    ['金額或數字', /多少錢|多少(?:美元|億|萬)|賺了多少|價格|股價|市值|金額是|幾%|百分之幾|比例是多少/, /\d[\d,.]*\s*(?:%|％|億|萬|元|美元|bps)/],
+    ['金額或數字', /多少錢|多少(?:美元|億|萬)|賺了多少|價格|股價|市值|金額是|幾%|百分之幾|比例是多少|(?:上限|罰款|罰鍰|罰金|金額)(?:是|為)?多少/, /\d[\d,.]*\s*(?:%|％|億|萬|元|美元|bps)/],
     ['件數', /幾張|幾件|幾個案|幾次|多少件|多少個案|多少張/, /\d+\s*(?:件|張|個|次|案)|[一二三四五六七八九十兩]+\s*(?:件|張|個案|次)/],
     ['人名', /作者是誰|是誰寫|哪位(?:學者|教授)|誰提出/, /教授|學者|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+|，\d{4}年|（\d{4}）/],
     ['判決字號或出處', /字號|案號|哪一(?:位|篇|本)|誰寫的|作者是|出處是|引用的那/, /字第\s*\d+\s*號|\d{2,3}\s*年度|《[^》]+》|[A-Z][a-z]+\s+v\.?\s/],
