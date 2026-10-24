@@ -378,7 +378,7 @@
 
   /* ---------- 查無警示：對方問具體細節（金額、時間、法條、案例），但答案裡沒有這類內容 → 提醒不要硬答 ---------- */
   const DETAIL_ASK = [
-    ['金額或數字', /多少錢|多少(?:美元|億|萬)|賺了多少|價格|股價|市值|金額是|幾%|百分之幾|比例是多少|(?:上限|罰款|罰鍰|罰金|金額)(?:是|為)?多少/, /\d[\d,.]*\s*(?:%|％|億|萬|元|美元|bps)/],
+    ['金額或數字', /多少錢|多少(?:美元|億|萬)|賺了多少|價格|股價|市值|金額是|幾%|百分之幾|比例是多少|(?:上限|罰款|罰鍰|罰金|金額|營收|賠償)(?:是|為|有)?多少/, /\d[\d,.]*\s*(?:%|％|億|萬|元|美元|bps)/],
     ['件數', /幾張|幾件|幾個案|幾次|多少件|多少個案|多少張/, /\d+\s*(?:件|張|個|次|案)|[一二三四五六七八九十兩]+\s*(?:件|張|個案|次)/],
     ['人名', /作者是誰|是誰寫|哪位(?:學者|教授)|誰提出/, /教授|學者|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+|，\d{4}年|（\d{4}）/],
     ['判決字號或出處', /字號|案號|哪一(?:位|篇|本)|誰寫的|作者是|出處是|引用的那/, /字第\s*\d+\s*號|\d{2,3}\s*年度|《[^》]+》|[A-Z][a-z]+\s+v\.?\s/],
@@ -413,7 +413,17 @@
   function detailGap(question, answerText) {
     const q = normalizeASR(question), a = String(answerText || '');
     const need = DETAIL_ASK.filter(([, ask]) => ask.test(q));
-    return need.filter(([, , has]) => !has.test(a)).map(([label]) => label);
+    if (!need.length) return [];
+    // 數字／日期／字號必須和問題的關鍵詞出現在同一句，才算真的回答到（避免被別處的數字騙過）
+    const qb = new Set([...bigrams(q)].filter(b => !/多少|金額|罰款|罰鍰|是什|什麼|哪一|幾張|幾件|作者|是誰|今天|價格/.test(b)));
+    const sents = a.split(/[。！？；\n]/);
+    const GENERIC_NUM = new Set(['金額或數字', '件數', '日期或時程']); // 通用數字才需要同句佐證；字號、人名本身就很特定
+    return need.filter(([label, , has]) => !sents.some(x => {
+      if (!has.test(x)) return false;
+      if (!GENERIC_NUM.has(label)) return true;
+      let hit = 0; for (const b of bigrams(x)) if (qb.has(b)) hit++;
+      return hit >= 2;
+    })).map(([label]) => label);
   }
 
   /* ---------- 抓出真正的問句：去掉「不好意思我想問一下」這類開場，取整句、最後的問句與最後兩個子句 ---------- */

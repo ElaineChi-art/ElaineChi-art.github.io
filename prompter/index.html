@@ -716,9 +716,12 @@ function scheduleLive() {
   if (liveTimer) return;
   liveTimer = setTimeout(() => { liveTimer = null; liveMatch(); }, 600);
 }
-async function liveMatch() {
+async function liveMatch(final) {
   if (!Q || !INDEX) return;
-  if (liveBusy) { scheduleLive(); return; }
+  if (liveBusy) {
+    if (!final) { scheduleLive(); return; }
+    while (liveBusy) await new Promise(r => setTimeout(r, 30)); // 定案時要等前一輪跑完，再用完整問題重配，不能用舊結果
+  }
   const q = Q, t = qText(q);
   if (t.length < 4) return;
   liveBusy = true;
@@ -759,7 +762,8 @@ async function confirmQuestion() {
   Q.final = t; Q.interim = ''; Q.status = 'confirmed';
   const q = Q;
   if (liveMode()) { // 本機：用最後完整的問題再配對一次，直接定案，不跑慢又會捏造的小模型
-    await liveMatch();
+    clearTimeout(liveTimer); liveTimer = null;
+    await liveMatch(true);
     if (Q === q && !q.raw) { q.phase = strongBank(q) ? 'bank' : 'answer'; q.finalMs = Math.round(performance.now() - q.t0); render(); }
     return;
   }
