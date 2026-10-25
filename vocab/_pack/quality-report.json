@@ -1,0 +1,102 @@
+{
+  "產生時間": "重新分類",
+  "總詞條": 1995,
+  "計入單字量": 1765,
+  "不計入單字量": 230,
+  "各類型": {
+    "複合名詞": 959,
+    "固定搭配": 158,
+    "單字": 451,
+    "片語": 197,
+    "句型表達": 102,
+    "數字金額": 46,
+    "日期": 40,
+    "時間表達": 33,
+    "縮寫": 5,
+    "代碼": 4
+  },
+  "待人工確認": {
+    "複合名詞": 10,
+    "片語": 33,
+    "句型表達": 8
+  },
+  "範例": {
+    "複合名詞": [
+      "Order number",
+      "Wholesale division",
+      "Tracking number",
+      "Purchase order",
+      "Express delivery",
+      "Delivery option"
+    ],
+    "固定搭配": [
+      "Hasn't shipped yet",
+      "Twenty dollar",
+      "Leaves our facility",
+      "Automatically generated",
+      "Rush order",
+      "Browse a bit more"
+    ],
+    "單字": [
+      "Unfortunately",
+      "Delay",
+      "Arrange",
+      "Process",
+      "Update",
+      "Starting"
+    ],
+    "片語": [
+      "By Thursday",
+      "Has been processed",
+      "Within the hour",
+      "As usual",
+      "Looking for",
+      "In stock"
+    ],
+    "句型表達": [
+      "Delay was on our end",
+      "Once your registration is confirmed",
+      "30-day return policy",
+      "30% gap in the market",
+      "Defects affect 20% of our samples",
+      "Submit... by end of day Friday"
+    ],
+    "數字金額": [
+      "Over 500 units",
+      "30 percent off",
+      "Additional 10% off",
+      "Booth number 45",
+      "500 participants",
+      "1,000 customers"
+    ],
+    "日期": [
+      "October 1st",
+      "October 15th",
+      "November 20th",
+      "Pre-orders beginning June 1st",
+      "July 15th",
+      "Minimum 7 years"
+    ],
+    "時間表達": [
+      "6 PM to 2 AM",
+      "November 10th at 2 PM",
+      "April 20th at 10 AM",
+      "Budget meeting tomorrow at 10 AM",
+      "Tomorrow at 2 PM",
+      "Late check-in after 10 PM"
+    ],
+    "縮寫": [
+      "CV",
+      "Ext.",
+      "RSVP",
+      "CFO",
+      "CFO"
+    ],
+    "代碼": [
+      "Gate B12",
+      "Gate C15",
+      "555-0142",
+      "555-0199"
+    ]
+  }
+}
