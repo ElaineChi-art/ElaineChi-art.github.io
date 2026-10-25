@@ -103,6 +103,9 @@ ok(JSON.stringify(C.keywordChain(['授權鏈：詞曲、錄音、表演', '監�
 ok(C.credibility('（依據：RoyaltySplitter.sol 原始碼）', '').includes('合約已實作'), '可信度：合約已實作');
 ok(C.credibility('（依據：講義 專利授權）', '這是類比').includes('含推論或待查證'), '可信度：推論標示');
 
+ok(C.detailGap('anotherblock的2026年營收是多少？', 'anotherblock 2025年仍分配約250萬美元版稅。').length === 1, '問2026、答案是2025 → 警示');
+ok(C.detailGap('anotherblock 2025年分配多少版稅？', 'anotherblock 2025年仍分配約250萬美元版稅。').length === 0, '年份相符 → 不警示');
+
 // 事實查核
 const vc = C.verifyClaims('最高法院113年度台上字第4521號判決認為…依著作權法第37條，執行率68%，2023年', ['著作權法第37條規定…執行率為68%，2023年Impact Theory案'], '113年度台上字第4521號判決結論');
 ok(vc.find(x => /4521/.test(x.text)).found === false, '捏造的判決字號被抓出來');

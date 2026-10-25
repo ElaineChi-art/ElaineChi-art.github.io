@@ -417,10 +417,13 @@
     // 數字／日期／字號必須和問題的關鍵詞出現在同一句，才算真的回答到（避免被別處的數字騙過）
     const qb = new Set([...bigrams(q)].filter(b => !/多少|金額|罰款|罰鍰|是什|什麼|哪一|幾張|幾件|作者|是誰|今天|價格/.test(b)));
     const sents = a.split(/[。！？；\n]/);
+    const years = (q.match(/(?:19|20)\d{2}/g) || []);
     const GENERIC_NUM = new Set(['金額或數字', '件數', '日期或時程']); // 通用數字才需要同句佐證；字號、人名本身就很特定
     return need.filter(([label, , has]) => !sents.some(x => {
       if (!has.test(x)) return false;
       if (!GENERIC_NUM.has(label)) return true;
+      if (years.length && !years.some(y => x.includes(y))) return false; // 問題指定年份，答案的數字必須是同一年
+
       let hit = 0; for (const b of bigrams(x)) if (qb.has(b)) hit++;
       return hit >= 2;
     })).map(([label]) => label);
