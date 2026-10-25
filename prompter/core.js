@@ -426,6 +426,55 @@
     })).map(([label]) => label);
   }
 
+  /* ---------- 專題答辯：提問領域判斷、拆題、關鍵字提詞、可信度 ---------- */
+  const DOMAINS = [
+    ['金融監理', /證券|STO|VASP|洗錢|金管會|監理|投資契約|Howey|沙盒|穩定幣|Travel Rule|KYC|可疑交易|FATF|募資|MiCA|虛擬資產服務法/i],
+    ['人工智慧', /\bAI\b|人工智慧|生成式|模型|訓練資料|演算法|深度合成|GEMA|機器學習/i],
+    ['專利', /專利|新穎性|優惠期|侵害判斷|均等|全要件|FRAND|PTAB|NPE/i],
+    ['智財授權', /授權|著作權|改作|耗盡|集管|MÜST|權利金|人格權|第37條|錄音|詞曲|表演/i],
+    ['區塊鏈技術', /合約|重入|proxy|升級|IPFS|metadata|gas|ERC|oracle|預言機|私鑰|多簽|時間鎖|Sepolia|部署/i],
+    ['刑事與證據', /檢察|犯罪|詐欺|刑事|證據|被告|制裁|凍結|資恐|起訴/i],
+    ['資安與隱私', /資安|隱私|個資|駭客|漏洞|審計|GDPR|被遺忘/i],
+    ['研究方法', /研究方法|樣本|文獻|研究限制|貢獻|原創|實證|研究問題|論文/i],
+    ['商業應用', /市場|商業模式|產業|成本|營運|平台倒/i]
+  ];
+  const CHALLENGE = /不是嗎|憑什麼|會不會只是|根本|是不是.{0,20}吧|偏頗|太(?:理想|保守|簡略|苛刻)|硬套|牽強|說得通嗎|有什麼用|沒有價值|白做|騙人/;
+  function classifyDomain(question) {
+    const q = normalizeASR(question);
+    const hits = DOMAINS.map(([name, re]) => [name, (q.match(new RegExp(re.source, 'gi')) || []).length]).filter(x => x[1]).sort((a, b) => b[1] - a[1]);
+    return { domain: hits.length ? hits[0][0] : '綜合', second: hits[1] ? hits[1][0] : '', challenge: CHALLENGE.test(q) };
+  }
+  // 一次問好幾題：「第一…第二…」「兩個問題…還有…」→ 拆開
+  function splitQuestions(question) {
+    const q = String(question || '').replace(/\s+/g, ' ').trim();
+    let parts = q.split(/(?:^|[，。？?；;、\s])(?=第[一二三四五]|其[一二三]|另外|還有一個|再來|最後)/).map(x => x.replace(/^(?:第[一二三四五](?:個問題|點)?|其[一二三]|另外|還有一個|再來|最後)[，、:：\s]*/, '').trim()).filter(x => x.length >= 6 && !/^(?:謝謝.{0,10})?(?:我|那我)?(?:有|想問|想請教|請教)?(?:兩|三|幾)個(?:小)?問題|^(?:我)?(?:有)?兩件事/.test(x));
+    if (parts.length < 2 && /兩個問題|幾個問題|兩件事/.test(q)) parts = q.split(/[？?]/).map(x => x.trim()).filter(x => x.length >= 6);
+    return parts.length >= 2 ? parts.slice(0, 4) : [q];
+  }
+  // 關鍵字提詞：取每個重點的開頭短語，串成論述順序
+  function keywordChain(lines) {
+    const out = [];
+    for (const l of lines || []) {
+      let t = String(l).replace(/\[\d+\]/g, '').replace(/^[•·\-\d.、\s]+/, '').trim();
+      const m = t.match(/^(.{2,12}?)[：:（(，,、；]/);
+      t = m ? m[1] : t.replace(/[，。；].*$/, '').slice(0, 10);
+      t = t.replace(/^(?:講義|論文|我的|依|對|在)/, '').trim();
+      if (t.length >= 2 && !out.includes(t)) out.push(t);
+      if (out.length >= 5) break;
+    }
+    return out;
+  }
+  // 可信度：依資料依據判斷這段話的性質
+  function credibility(basisText, answerText) {
+    const b = String(basisText || ''), a = String(answerText || '');
+    const tags = [];
+    if (/原始碼|\.sol|README|合約設定/.test(b)) tags.push('合約已實作');
+    if (/論文|期刊日更|口試雷達|驗屍報告|研究報告|精簡版/.test(b)) tags.push('本人論文與研究');
+    if (/講義/.test(b)) tags.push('課程講義');
+    if (/類比|推論|前瞻|待查補|延伸看法|尚未查證|未查證/.test(a + b)) tags.push('含推論或待查證');
+    return tags;
+  }
+
   /* ---------- 抓出真正的問句：去掉「不好意思我想問一下」這類開場，取整句、最後的問句與最後兩個子句 ---------- */
   const PREAMBLE = /^(?:不好意思|抱歉|老師好|委員好|謝謝|你好|您好|我想(?:請)?問(?:一下)?|請問(?:一下)?|我(?:比較)?好奇(?:的是)?|我想確認(?:一下)?|我聽完(?:覺得)?|我覺得|我做[^，,]{0,10}很多年了|我不是學[^，,]{0,6}的|聽起來|那個|嗯+|呃+)[，,、\s]*/;
   function questionSegments(text) {
@@ -513,7 +562,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, isFollowUp, detailGap, rareTermGap, makeSSEParser, makeNDJSONParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

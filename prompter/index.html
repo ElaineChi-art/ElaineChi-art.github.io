@@ -70,6 +70,16 @@ mark{background:var(--mark);color:inherit;border-radius:2px}
 .ask input{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:16px}
 .hist{font-size:14px;border-top:1px solid var(--line);padding:8px 0}
 .hist b{display:block}
+.seg{display:inline-flex;gap:0}.seg .btn{border-radius:0}.seg .btn:first-child{border-radius:8px 0 0 8px}.seg .btn:last-child{border-radius:0 8px 8px 0}.seg .btn.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+.kw{font-size:calc(19px*var(--fs));font-weight:700;color:var(--accent2);line-height:1.6}
+.kw .arr{color:var(--faint);font-weight:400;margin:0 6px}
+.one b{color:var(--accent2)}
+.dom{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.tag{font-size:11.5px;padding:1px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted);margin-right:4px}
+.tag.warn{color:var(--warn);border-color:var(--warn)}
+.standby{font-size:calc(20px*var(--fs));color:var(--ok);font-weight:700}
+#answerCard.vm-one .layer, #answerCard.vm-one .layer-full, #answerCard.vm-one .layer-short, #answerCard.vm-one #core{display:none!important}
+#answerCard.vm-short .layer-full{display:none!important}
 .alt{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;cursor:pointer;font-size:calc(15px*var(--fs));line-height:1.55}
 .alt:hover{border-color:var(--accent)}
 .alt .aq{color:var(--faint);font-size:.82em}
@@ -97,7 +107,9 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <select id="kb" title="知識庫"></select>
   <button class="btn" id="kbBtn">📚 資料</button>
   <span class="spacer"></span>
-  <button class="btn primary" id="micBtn">🎙 開始聆聽</button>
+  <button class="btn primary" id="qaBtn" title="Q 鍵">🎤 進入專家問答</button>
+  <span class="seg"><button class="btn" id="vm1" title="鍵盤 1">一句話</button><button class="btn" id="vm2" title="鍵盤 2">簡答</button><button class="btn" id="vm3" title="鍵盤 3">完整</button></span>
+  <button class="btn" id="micBtn">🎙 開始聆聽</button>
   <button class="btn" id="nextBtn" title="空白鍵">⏭ 下一題</button>
   <button class="btn" id="freezeBtn" title="F 鍵">❄ 凍結</button>
   <button class="btn" id="fsDown" title="字縮小">A−</button>
@@ -109,7 +121,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <span id="aiText" class="muted"></span>
   <span id="errText" class="err"></span>
   <span class="spacer"></span>
-  <span class="kbd">空白鍵＝下一題　F＝凍結　M＝麥克風</span>
+  <span class="kbd">Q＝專家問答　空白鍵＝下一題　1/2/3＝一句話/簡答/完整　F＝凍結</span>
 </div>
 
 <main>
@@ -119,24 +131,28 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <div class="caption" id="caption"><span class="muted">按「🎙 開始聆聽」，或在下方打字提問。第一次用可以先按「▶ 示範」。</span></div>
     </div>
     <div class="card" id="answerCard">
-      <div class="label">回答<span id="aBadge"></span><span class="spacer"></span><span id="aMeta" class="small muted"></span></div>
+      <div class="label">立即開口｜簡答<span id="aBadge"></span><span id="domBadge"></span><span class="spacer"></span><span id="aMeta" class="small muted"></span></div>
+      <div id="splitWrap" class="layer" style="display:none"><div class="label">拆題簡答（一次問了多題）</div><ol class="points" id="split"></ol></div>
       <div class="core" id="core"></div>
       <div class="one empty" id="one">答案會出現在這裡</div>
-      <ol class="points" id="points"></ol>
-      <div id="scriptWrap" style="margin-top:12px">
+      <div id="kwWrap" class="layer" style="display:none"><div class="label">關鍵字提詞（論述順序）</div><div class="kw" id="kw"></div></div>
+      <div class="label layer-full" id="fullLabel" style="margin-top:12px">完整申論</div>
+      <ol class="points layer-full" id="points"></ol>
+      <div id="scriptWrap" class="layer-full" style="margin-top:12px">
         <div class="label">完整口語稿 <button class="btn small" id="scriptToggle" style="padding:1px 8px">收合</button></div>
         <div class="script" id="script"></div>
       </div>
-      <div id="followWrap" style="margin-top:10px">
-        <div class="label">可能追問</div>
+      <div id="followWrap" class="layer-full" style="margin-top:10px">
+        <div class="label">追問預判</div>
         <ul class="follow" id="follow"></ul>
       </div>
-      <div class="caution" id="caution" style="margin-top:8px"></div>
-      <div id="extWrap" style="margin-top:10px;display:none">
+      <div class="label" style="margin-top:10px">可信度與資料依據 <span id="credTags"></span></div>
+      <div class="caution" id="caution"></div>
+      <div id="extWrap" class="layer-full" style="margin-top:10px;display:none">
         <div class="label">論文原文要點（直接取自你的資料）</div>
         <ul class="follow" id="ext" style="color:var(--text)"></ul>
       </div>
-      <div id="altsWrap" style="margin-top:10px;display:none">
+      <div id="altsWrap" class="layer-short" style="margin-top:10px;display:none">
         <div class="label">候選擬答（點一下換成主答案）</div>
         <div id="alts"></div>
       </div>
@@ -215,7 +231,7 @@ const $ = id => document.getElementById(id);
 const C = window.PCore;
 
 /* ================= 設定 ================= */
-const DEF = { engine: 'local', mode: 'law', kb: '', lang: 'zh-TW', silence: 1700, after: 'lock', strict: false, theme: 'dark', fs: 1, scriptOpen: true };
+const DEF = { view: 'full', engine: 'local', mode: 'law', kb: '', lang: 'zh-TW', silence: 1700, after: 'lock', strict: false, theme: 'dark', fs: 1, scriptOpen: true };
 let S = Object.assign({}, DEF);
 try { Object.assign(S, JSON.parse(localStorage.getItem('prompterSettings') || '{}')); } catch (e) {}
 function saveS() { try { localStorage.setItem('prompterSettings', JSON.stringify(S)); } catch (e) {} }
@@ -741,6 +757,7 @@ async function liveMatch(final) {
     if (Q === q) {
       if (b) q.bank = b;
       q.hits = h; q.ext = C.extractAnswer(rt, h, 3); q.liveText = t;
+      q.dom = C.classifyDomain(t);
       if (!q.firstShownMs && (b || (q.ext && q.ext.length))) q.firstShownMs = Math.round(performance.now() - q.t0);
       if (!q.raw && q.phase !== 'bank') q.phase = q.status === 'confirmed' ? 'answer' : 'live';
       render();
@@ -764,6 +781,18 @@ async function confirmQuestion() {
   if (liveMode()) { // 本機：用最後完整的問題再配對一次，直接定案，不跑慢又會捏造的小模型
     clearTimeout(liveTimer); liveTimer = null;
     await liveMatch(true);
+    // 一次問了多題 → 每題各配一個最短答案
+    const parts = C.splitQuestions(t);
+    if (parts.length > 1 && Q === q) {
+      q.split = [];
+      for (const part of parts) {
+        const b = await semanticBank(part).catch(() => null);
+        const hh = await retrieve(part, 5).catch(() => []);
+        const ex = C.extractAnswer(part, hh, 1);
+        const line = b && b.sim >= BANK_MAIN ? (b.chunk.text.split('\n').find(x => x.trim() && !/^[（•]/.test(x)) || '') : (ex[0] ? ex[0].s : '（資料中沒有直接答案）');
+        q.split.push({ q: part, a: line });
+      }
+    }
     if (Q === q && !q.raw) { q.phase = strongBank(q) ? 'bank' : 'answer'; q.finalMs = Math.round(performance.now() - q.t0); render(); }
     return;
   }
@@ -866,6 +895,7 @@ function render() {
   else if (q.phase === 'final') badge = '<span class="badge ok">已確認</span>';
   if (frozen) badge += ' <span class="badge" style="color:#7aa7ff;border-color:#7aa7ff">❄ 凍結中</span>';
   setHTML($('aBadge'), badge);
+  setHTML($('domBadge'), q.dom && qText() ? ' <span class="dom">提問領域：' + esc(q.dom.domain) + (q.dom.second ? '・' + esc(q.dom.second) : '') + (q.dom.challenge ? '｜質疑型：先承認合理處，再說理由' : '') + '</span>' : '');
   setHTML($('aMeta'), q.provider ? esc(q.provider) + (q.firstMs ? '・首字 ' + (q.firstMs / 1000).toFixed(1) + ' 秒' : '') : '');
   if (frozen) return;
 
@@ -882,8 +912,8 @@ function render() {
     const lines = c.text.split('\n').map(x => x.trim()).filter(Boolean);
     const basis = lines.filter(x => /^（(依據|出處)/.test(x) || /^（出處：/.test(x));
     const warn = lines.filter(x => /^⚠️/.test(x));
-    const body = lines.filter(x => !basis.includes(x) && !warn.includes(x));
-    one = body[0] || '';
+    const body = lines.filter(x => !basis.includes(x) && !warn.includes(x) && !/^追問[:：]/.test(x)); // 追問放到「追問預判」區
+    one = (body[0] || '').replace(/^\d+[.、]\s*/, '');
     points = body.slice(1).filter(x => /^[•·]\s*|^\d+[.、]\s*/.test(x)).map(x => x.replace(/^[•·]\s*|^\d+[.、]\s*/, ''));
     script = body.slice(1).filter(x => !/^[•·]\s*|^\d+[.、]\s*/.test(x)).join('\n');
     caution = [...warn, (basis.join(' ') || '（' + c.docName + '）') + (!strongBank(q) ? '　⚠️ 相近題目的擬答，請先確認對方問的是同一件事' : '')].join('\n');
@@ -922,6 +952,22 @@ function render() {
   setHTML($('follow'), follow.slice(0, 3).map(f => '<li>' + esc(f) + '</li>').join(''));
   $('followWrap').style.display = follow.length ? '' : 'none';
   setHTML($('caution'), esc(caution));
+  // 關鍵字提詞與粗體
+  const kws = C.keywordChain(points.length ? points : (q.ext || []).map(x => x.s));
+  $('kwWrap').style.display = kws.length && (one || points.length) ? '' : 'none';
+  setHTML($('kw'), kws.map(k => esc(k)).join('<span class="arr">→</span>'));
+  if (kws.length && one) { let h = $('one').innerHTML; for (const k of kws) if (k.length >= 2) h = h.split(esc(k)).join('<b>' + esc(k) + '</b>'); if (h !== $('one').innerHTML) { $('one').innerHTML = h; $('one')._h = h; } }
+  // 追問預判：題庫擬答裡的「追問：」
+  if (useBankMain && !follow.length) {
+    const fl = q.bank.chunk.text.split('\n').filter(x => /^追問[:：]/.test(x.trim())).map(x => x.replace(/^\s*追問[:：]\s*/, ''));
+    if (fl.length) { setHTML($('follow'), fl.slice(0, 3).map(f => '<li>' + esc(f) + '</li>').join('')); $('followWrap').style.display = ''; }
+  }
+  // 可信度
+  const credT = C.credibility(caution, [one, script].join('\n'));
+  setHTML($('credTags'), (useBankMain ? '' : '<span class="tag">原文直出</span>') + credT.map(t => '<span class="tag' + (/推論/.test(t) ? ' warn' : '') + '">' + esc(t) + '</span>').join(''));
+  // 拆題
+  $('splitWrap').style.display = q.split && q.split.length > 1 ? '' : 'none';
+  setHTML($('split'), (q.split || []).map(x => '<li><span class="muted">' + esc(x.q.slice(0, 28)) + '</span><br>' + esc(x.a.slice(0, 90)) + '</li>').join(''));
   const extList = useBankMain && q.ext && q.ext.length ? q.ext : [];
   $('extWrap').style.display = extList.length ? '' : 'none';
   setHTML($('ext'), extList.map(x => '<li>' + citeHTML(x.s + ' [' + x.ref + ']', nn) + '</li>').join(''));
@@ -1089,6 +1135,8 @@ function bind() {
   $('mode').onchange = e => { S.mode = e.target.value; saveS(); toast('情境：' + C.MODES[S.mode].name); };
   $('kb').onchange = async e => { S.kb = e.target.value; saveS(); await loadKB(); toast('知識庫：' + KBS.find(k => k.id === S.kb).name); };
   $('micBtn').onclick = () => listening ? stopListen() : startListen();
+  $('qaBtn').onclick = toggleQA;
+  $('vm1').onclick = () => setView('one'); $('vm2').onclick = () => setView('short'); $('vm3').onclick = () => setView('full');
   $('nextBtn').onclick = () => { newQuestion(); setStatus(); };
   $('freezeBtn').onclick = toggleFreeze;
   $('fsUp').onclick = () => { S.fs = Math.min(2.2, +(S.fs + 0.1).toFixed(2)); saveS(); applyLook(); };
@@ -1130,6 +1178,8 @@ function bind() {
     if (e.code === 'Space') { e.preventDefault(); newQuestion(); setStatus(); }
     else if (e.key === 'f' || e.key === 'F') toggleFreeze();
     else if (e.key === 'm' || e.key === 'M') listening ? stopListen() : startListen();
+    else if (e.key === 'q' || e.key === 'Q') toggleQA();
+    else if (e.key === '1') setView('one'); else if (e.key === '2') setView('short'); else if (e.key === '3') setView('full');
   });
 
   // 知識庫視窗
@@ -1207,6 +1257,20 @@ function bind() {
   };
 }
 
+function setView(v) {
+  S.view = v; saveS();
+  $('answerCard').className = 'card' + (v === 'one' ? ' vm-one' : v === 'short' ? ' vm-short' : '');
+  ['vm1', 'vm2', 'vm3'].forEach((id, i) => $(id).classList.toggle('sel', ['one', 'short', 'full'][i] === v));
+}
+let qaMode = false;
+function toggleQA() {
+  qaMode = !qaMode;
+  if (qaMode) { if (!listening) startListen(); newQuestion(); setHTML($('caption'), '<span class="standby">【專家問答模式已啟動】</span><br><span class="muted">狀態：待命中｜回答語言：繁體中文｜模式：即時簡答優先</span>'); }
+  else stopListen();
+  $('qaBtn').textContent = qaMode ? '⏹ 結束問答' : '🎤 進入專家問答';
+  $('qaBtn').className = 'btn ' + (qaMode ? 'on' : 'primary');
+}
+
 function toggleFreeze() {
   frozen = !frozen;
   $('freezeBtn').className = 'btn' + (frozen ? ' frozen' : '');
@@ -1215,7 +1279,7 @@ function toggleFreeze() {
 }
 
 (async function init() {
-  applyLook(); bind();
+  applyLook(); bind(); setView(S.view || 'full');
   try { await ensureDefaultKB(); } catch (e) {}
   await detectLocal();
   try { await autoPack(); } catch (e) { showErr('知識包載入失敗：' + e.message); }

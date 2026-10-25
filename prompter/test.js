@@ -92,6 +92,17 @@ ok(C.fixCJK('ERC 2981 標準') === 'ERC 2981 標準', '英數字間的空白保�
 ok(C.detailGap('韓國AI基本法對違規企業的罰款金額是多少？', '中國對違規可處人民幣罰款。執行率為68%。').length === 1, '數字不在相關句 → 仍警示');
 ok(C.detailGap('大額交易申報的門檻是多少？', '大額交易申報針對現金50萬元以上。').length === 0, '數字和關鍵詞同句 → 不警示');
 
+// 專題答辯：領域、拆題、關鍵字、可信度
+ok(C.classifyDomain('收益型NFT會不會被金管會當成證券？').domain === '金融監理', '領域：金融監理');
+ok(C.classifyDomain('你的合約怎麼防重入攻擊？').domain === '區塊鏈技術', '領域：區塊鏈技術');
+ok(C.classifyDomain('這根本是硬套吧，憑什麼這樣說？').challenge === true, '辨識質疑語氣');
+const sp = C.splitQuestions('我有兩個問題，第一，你的合約怎麼防重入攻擊？第二，如果合約有漏洞被駭，誰要負責？');
+ok(sp.length === 2 && /重入/.test(sp[0]) && /負責/.test(sp[1]), '一次兩個問題自動拆開');
+ok(C.splitQuestions('收益型NFT是不是證券？').length === 1, '單一問題不拆');
+ok(JSON.stringify(C.keywordChain(['授權鏈：詞曲、錄音、表演', '監理定性：是否承諾收益', '技術治理：審計'])) === '["授權鏈","監理定性","技術治理"]', '關鍵字提詞');
+ok(C.credibility('（依據：RoyaltySplitter.sol 原始碼）', '').includes('合約已實作'), '可信度：合約已實作');
+ok(C.credibility('（依據：講義 專利授權）', '這是類比').includes('含推論或待查證'), '可信度：推論標示');
+
 // 事實查核
 const vc = C.verifyClaims('最高法院113年度台上字第4521號判決認為…依著作權法第37條，執行率68%，2023年', ['著作權法第37條規定…執行率為68%，2023年Impact Theory案'], '113年度台上字第4521號判決結論');
 ok(vc.find(x => /4521/.test(x.text)).found === false, '捏造的判決字號被抓出來');
