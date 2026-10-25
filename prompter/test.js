@@ -105,6 +105,7 @@ ok(C.credibility('（依據：講義 專利授權）', '這是類比').includes(
 
 ok(C.detailGap('anotherblock的2026年營收是多少？', 'anotherblock 2025年仍分配約250萬美元版稅。').length === 1, '問2026、答案是2025 → 警示');
 ok(C.detailGap('anotherblock 2025年分配多少版稅？', 'anotherblock 2025年仍分配約250萬美元版稅。').length === 0, '年份相符 → 不警示');
+ok(C.detailGap('台灣去年音樂NFT的市場規模是多少億？', '台灣音樂NFT市場規模在2021年約3億元。').length === 1, '問去年、答案是別年 → 警示');
 
 // 事實查核
 const vc = C.verifyClaims('最高法院113年度台上字第4521號判決認為…依著作權法第37條，執行率68%，2023年', ['著作權法第37條規定…執行率為68%，2023年Impact Theory案'], '113年度台上字第4521號判決結論');
