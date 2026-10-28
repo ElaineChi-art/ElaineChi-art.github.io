@@ -376,11 +376,20 @@
     return t.length > 0 && (t.length <= 14 || /^(?:那(?:如果|麼|這|你)?|所以|剛剛|你剛剛|這個|這樣|延續|接著|再追問|那假設)/.test(t));
   }
 
+  // 「那日本呢？」「如果是歐盟呢」→ 把焦點換進上一題，改寫成完整問題：「日本的情況：收益型NFT算不算證券？」
+  function followUpRewrite(text, prev) {
+    const t = String(text || '').trim().replace(/[？?。！!]+$/, '');
+    const m = t.match(/^(?:那如果是|那如果|如果換成|那換成|如果是|換成|那在|如果|那|在)?\s*(.{1,12}?)\s*(?:的話|的部分|方面|那邊)?呢$/);
+    if (!m || !prev) return null;
+    const focus = m[1].replace(/^(?:是|說)/, '').trim();
+    if (focus.length < 1 || /^(?:這個|那個|這樣|然後|所以)$/.test(focus)) return null;
+    return { focus, text: focus + '的情況：' + String(prev).trim() };
+  }
   /* ---------- 查無警示：對方問具體細節（金額、時間、法條、案例），但答案裡沒有這類內容 → 提醒不要硬答 ---------- */
   const DETAIL_ASK = [
     ['金額或數字', /多少錢|多少(?:美元|億|萬)|賺了多少|價格|股價|市值|金額是|幾%|百分之幾|比例是多少|(?:上限|罰款|罰鍰|罰金|金額|營收|賠償)(?:是|為|有)?多少/, /\d[\d,.]*\s*(?:%|％|億|萬|元|美元|bps)/],
     ['件數', /幾張|幾件|幾個案|幾次|多少件|多少個案|多少張/, /\d+\s*(?:件|張|個|次|案)|[一二三四五六七八九十兩]+\s*(?:件|張|個案|次)/],
-    ['人名', /作者是誰|是誰寫|哪位(?:學者|教授)|誰提出/, /教授|學者|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+|，\d{4}年|（\d{4}）/],
+    ['人名', /作者是誰|是誰寫|哪位(?:學者|教授)|誰提出|(?:他們|她們|那[幾三兩二]位|這[幾三兩二]位|分別)是誰|是哪幾位|有哪些人/, /教授|學者|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+|，\d{4}年|（\d{4}）/],
     ['判決字號或出處', /字號|案號|哪一(?:位|篇|本)|誰寫的|作者是|出處是|引用的那/, /字第\s*\d+\s*號|\d{2,3}\s*年度|《[^》]+》|[A-Z][a-z]+\s+v\.?\s/],
     ['日期或時程', /哪一年|幾月幾|什麼時候(?:通過|施行|生效|判決|成立)|今天|現在的價/, /\d{4}\s*年|\d{2,3}\s*年\s*\d+\s*月|\d+\s*月\s*\d+\s*日/]
   ];
@@ -429,6 +438,61 @@
       let hit = 0; for (const b of bigrams(x)) if (qb.has(b)) hit++;
       return hit >= 2;
     })).map(([label]) => label);
+  }
+
+  /* ---------- 同音比對：語音聽錯多半是同音、近音字（智慧→制會、版稅→板睡），轉成拼音再比 ---------- */
+  // 台灣口音常混的音併成同一類：zh/z、ch/c、sh/s、n/l、in/ing、en/eng、hu/fu
+  const pyNorm = y => y.replace(/^zh/, 'z').replace(/^ch/, 'c').replace(/^sh/, 's').replace(/^l/, 'n').replace(/ing$/, 'in').replace(/eng$/, 'en').replace(/^hu/, 'fu').replace(/^h(?=[aeo])/, 'f');
+  function syllables(text, PY) {
+    const out = [];
+    for (const m of String(text || '').toLowerCase().matchAll(/[\u3400-\u9fff]|[a-z0-9]+/g)) {
+      const w = m[0];
+      if (/[a-z0-9]/.test(w)) { out.push(w); continue; }
+      const y = PY[w]; if (y) out.push(pyNorm(y));
+    }
+    return out;
+  }
+  const PY_STOP = new Set(['si|bu', 'bu|si', 'sen|me', 'ze|me', 'ni|de', 'wo|de', 'ni|ze', 'ni|zu', 'you|mei', 'mei|you', 'de|fua', 'ke|yi', 'ge|ni']);
+  function pyGrams(text, PY) {
+    const s = syllables(text, PY), g = new Set();
+    for (let i = 0; i < s.length - 1; i++) { const b = s[i] + '|' + s[i + 1]; if (!PY_STOP.has(b)) g.add(b); }
+    return g;
+  }
+  function gramIndex(gramList) {
+    const df = new Map();
+    for (const g of gramList) for (const b of g) df.set(b, (df.get(b) || 0) + 1);
+    const N = gramList.length, idf = b => Math.log(1 + N / (df.get(b) || 1));
+    return { grams: gramList, idf, wsum: gramList.map(g => { let w = 0; for (const b of g) w += idf(b); return w; }) };
+  }
+  function gramScores(qg, gi) {
+    let qw = 0; for (const b of qg) qw += gi.idf(b);
+    const out = new Float32Array(gi.grams.length);
+    if (!qw) return out;
+    gi.grams.forEach((g, j) => {
+      let hit = 0; for (const b of qg) if (g.has(b)) hit += gi.idf(b);
+      if (hit) out[j] = 2 * hit / (qw + gi.wsum[j]);
+    });
+    return out;
+  }
+  function phoneticIndex(questions, PY) {
+    return { py: gramIndex(questions.map(q => pyGrams(q, PY))), PY };
+  }
+  // 每一題的讀音相似度（0~1，加權 Dice）：同時補上語意向量容易忽略的字面重疊
+  function phoneticScores(text, pidx) { return gramScores(pyGrams(text, pidx.PY), pidx.py); }
+
+  /* ---------- 先拆前提：「既然／你說／難道／不就是」把可疑前提包進問題，先處理前提再回答 ---------- */
+  const PREMISE = [
+    [/(?:^|[，,。？?])\s*既然([^，,。？?]{4,40})[，,]/, '承認事實，但說明它推不出對方的結論'],
+    [/(?:^|[，,。？?])\s*(?:你|妳)(?:剛剛|剛才|論文|文章|簡報)?(?:裡)?(?:說|主張|認為|提到)([^，,。？?]{4,40})[，,]\s*(?:那|可是|但是|但|然而|照理說)/, '先確認對方引用的是不是你的原話，再補上你原本的限定條件'],
+    [/照理說([^，,。？?]{4,40})[，,]?/, '指出「照理說」的假設在這裡不成立'],
+    [/難道([^，,。？?]{4,40}?)(?:嗎|[，,？?]|$)/, '直接回答「不是／不一定」，再給理由'],
+    [/(?:不就是|不就只是|只不過是|根本就是|根本只是)([^，,。？?]{2,30}?)(?:而已|嗎|[，,？?]|$)/, '不接受這個簡化：先說它和你的研究差在哪'],
+    [/根本((?:沒有|不)[^，,。？?]{2,30})/, '先回應「根本沒有」的說法：承認現況，說明你的研究為何仍成立']
+  ];
+  function premiseCue(question) {
+    const q = normalizeASR(String(question || ''));
+    for (const [re, move] of PREMISE) { const m = q.match(re); if (m) return { premise: m[1].trim(), move }; }
+    return null;
   }
 
   /* ---------- 專題答辯：提問領域判斷、拆題、關鍵字提詞、可信度 ---------- */
@@ -567,7 +631,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, followUpRewrite, premiseCue, syllables, phoneticIndex, phoneticScores, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

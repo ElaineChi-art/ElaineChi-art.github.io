@@ -46,8 +46,10 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;padding:14p
 .badge.ok{color:var(--ok);border-color:var(--ok)}
 .badge.bank{color:var(--accent2);border-color:var(--accent2)}
 .badge.err{color:var(--bad);border-color:var(--bad)}
-.core{font-size:calc(15px*var(--fs));color:var(--muted)}
+.core{font-size:calc(15px*var(--fs));color:var(--muted);white-space:pre-line}
 .one{font-size:calc(30px*var(--fs));line-height:1.45;font-weight:700;margin:6px 0 10px;word-break:break-word}
+.one .open{display:block;font-size:calc(34px*var(--fs));color:var(--accent2)}
+.one .rest{display:block;font-size:calc(21px*var(--fs));font-weight:500;line-height:1.55;margin-top:4px}
 .one.empty{color:var(--faint);font-weight:400;font-size:calc(18px*var(--fs))}
 .points{margin:0;padding-left:1.4em;font-size:calc(21px*var(--fs));line-height:1.6}
 .points li{margin:4px 0}
@@ -274,6 +276,7 @@ let KBS = [];
 try { KBS = JSON.parse(localStorage.getItem('prompterKBs') || '[]'); } catch (e) {}
 function saveKBs() { try { localStorage.setItem('prompterKBs', JSON.stringify(KBS)); } catch (e) {} }
 let DOCS = [];      // 目前知識庫的文件
+let PIDX = null;   // 題庫題目的拼音索引（同音比對）
 let INDEX = null;   // 目前知識庫的索引
 let memStore = null; // IndexedDB 不能用時的備援
 
@@ -322,6 +325,10 @@ async function loadVectors() {
       const qa = INDEX.chunks.map((c, i) => c.type === 'qa' ? i : -1).filter(i => i >= 0);
       if (qa.length === meta.nq) { next.q = new Int8Array(await (await fetch('kb-qvec.bin', { cache: 'no-store' })).arrayBuffer()); next.qaIdx = qa; }
     }
+    if (next.q) try { // 同音比對用的拼音表（本機檔案）
+      const PY = PIDX ? PIDX.p.PY : await (await fetch('kb-pinyin.json')).json();
+      PIDX = { n: next.qaIdx.length, p: C.phoneticIndex(next.qaIdx.map(i => C.normalizeASR(INDEX.chunks[i].q)), PY) };
+    } catch (e) { PIDX = null; }
     VEC = next; // 新向量完整載入後才替換，配對不中斷
   } catch (e) { VEC = null; }
 }
@@ -691,24 +698,36 @@ const BANK_SAME = 0.86, BANK_NEAR = 0.80, BANK_MAIN = 0.75; // 主答案門檻�
 function strongBank(q) { return q.bank && q.bank.sim >= (q.bank.sem ? BANK_SAME : 0.6); }
 function nearBank(q) { return q.bank && q.bank.sem && !strongBank(q) && q.bank.sim >= BANK_NEAR; }
 // 擷取真正的問句（去掉開場白），多個片段一起比對，回傳前 3 個「不同擬答」
-async function semanticBank(t) {
+async function semanticBank(t, focus) {
   const vec = VEC; // 記住當下這份，載入新版時不受影響
   if (!vec || !vec.q) return null;
-  const segs = C.questionSegments(t);
+  const segs = C.questionSegments(C.normalizeASR(t));
   const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 2500);
   const r = await fetch(OLLAMA + '/api/embed', { method: 'POST', signal: ctrl.signal,
     body: JSON.stringify({ model: vec.meta.model, input: segs, keep_alive: '60m', truncate: true }) });
   const D = vec.meta.dim;
   const vs = (await r.json()).embeddings.map(v => { v = v.slice(0, D); let n = 0; for (const x of v) n += x * x; n = Math.sqrt(n) || 1; return v.map(x => x / n); });
-  const best = new Map();
+  const sem = new Float32Array(vec.qaIdx.length).fill(-1e9);
   for (const v of vs) for (let j = 0; j < vec.qaIdx.length; j++) {
     let s = 0; const o = j * D;
     for (let d = 0; d < D; d++) s += vec.q[o + d] * v[d];
-    const c = INDEX.chunks[vec.qaIdx[j]], cur = best.get(c.text);
-    if (/^自動擴充/.test(c.docName)) s -= 4; // 自動擴充（原文作答）略低於人工查核擬答
-    if (!cur || cur.sim < s) best.set(c.text, { chunk: c, sim: s });
+    if (s > sem[j]) sem[j] = s;
   }
-  const top = [...best.values()].sort((a, b) => b.sim - a.sim).slice(0, 3).map(x => ({ chunk: x.chunk, sim: x.sim / 127, sem: true }));
+  // 同音比對：語音聽錯（智慧→制會）時語意分數會掉，用拼音補回來；語意有把握就不用，越沒把握拼音佔比越高（盲測＋A/B 調出 0／0.25／1.0）
+  const ps = PIDX && PIDX.n === vec.qaIdx.length ? C.phoneticScores(C.normalizeASR(t), PIDX.p) : null;
+  let topSem = -1; for (let j = 0; j < sem.length; j++) { sem[j] = (sem[j] - (/^自動擴充/.test(INDEX.chunks[vec.qaIdx[j]].docName) ? 4 : 0)) / 127; if (sem[j] > topSem) topSem = sem[j]; }
+  const alpha = !ps || window.NO_PHON || topSem >= 0.80 ? 0 : topSem >= 0.75 ? 0.25 : 1.0;
+  const best = new Map();
+  for (let j = 0; j < sem.length; j++) {
+    const c = INDEX.chunks[vec.qaIdx[j]], p = ps ? ps[j] : 0, cur = best.get(c.text);
+    const rank = sem[j] + alpha * p + (focus && (c.q.includes(focus) || c.text.includes(focus)) ? 0.06 : 0); // 追問的焦點（日本）要出現在答案裡
+    if (!cur || cur.rank < rank) best.set(c.text, { chunk: c, sim: sem[j], ps: p, rank });
+  }
+  const top = [...best.values()].sort((a, b) => b.rank - a.rank).slice(0, 3).map(x => {
+    // 語意不夠高、但讀音幾乎一樣 → 多半是聽錯字，列為「相近題目・請確認」，不當成同題
+    const heard = x.sim < BANK_NEAR && x.ps >= 0.6;
+    return { chunk: x.chunk, sim: heard ? BANK_NEAR : x.sim, ps: x.ps, heard, sem: true };
+  });
   if (!top.length) return null;
   top[0].alts = top.slice(1);
   return top[0];
@@ -746,13 +765,18 @@ async function liveMatch(final) {
   let mt = t;
   try {
     // 可能是追問：「單獨理解」與「接上一題理解」都配一次，取分數高的（避免把獨立問題誤當追問）
-    let b = await semanticBank(t).catch(() => null);
-    if (C.isFollowUp(t) && prev) {
-      const ctx = prev + '；追問：' + t, b2 = await semanticBank(ctx).catch(() => null);
-      if (b2 && (!b || b2.sim > b.sim + 0.02)) { b = b2; mt = ctx; }
+    const rw = prev && C.isFollowUp(t) ? C.followUpRewrite(t, prev) : null;
+    let b;
+    if (rw) { b = await semanticBank(rw.text, rw.focus).catch(() => null); mt = rw.text; } // 「那日本呢」單獨沒有意義，直接用改寫後的完整問題
+    else {
+      b = await semanticBank(t).catch(() => null);
+      if (C.isFollowUp(t) && prev) {
+        const ctx = prev + '；追問：' + t, b2 = await semanticBank(ctx).catch(() => null);
+        if (b2 && (!b || b2.sim > b.sim + 0.02)) { b = b2; mt = ctx; }
+      }
     }
-    q.followUp = mt !== t;
-    const rt = t.length <= 10 ? mt : t; // 原文搜尋：只有很短的追問才併入上一題，避免稀釋重點
+    q.followUp = mt !== t; q.rewrite = rw ? rw.text : '';
+    const rt = rw ? rw.focus + ' ' + prev : t.length <= 10 ? mt : t; // 原文搜尋：只有很短的追問才併入上一題，避免稀釋重點
     const h = await retrieve(rt, 8).catch(() => C.search(INDEX, rt, 8)); // 多拿幾段，原文要點挑得更準
     if (Q === q) {
       if (b) q.bank = b;
@@ -876,6 +900,11 @@ function citeHTML(s, n) {
     .replace(/（一般知識）/g, '<span class="gk">（一般知識）</span>');
 }
 
+function openerCut(t) {
+  if (t.length <= 36) return 0;
+  const m = t.slice(0, 44).match(/^.{4,40}?[。；：！？]/) || t.slice(0, 32).match(/^.{6,30}[，,]/);
+  return m && m[0].length < t.length - 6 ? m[0].length : 0;
+}
 function render() {
   renderCaption();
   renderSources();
@@ -909,6 +938,8 @@ function render() {
   } else if (useBankMain) {
     const c = q.bank.chunk;
     core = (strongBank(q) ? '題庫命中：' : '相近題目：') + c.q + '（相似度 ' + Math.round(q.bank.sim * 100) + '%）';
+    // 沒把握是同一題（可能聽錯）→ 先用一句話複述確認，同時爭取思考時間
+    if (!strongBank(q)) core = '🔁 先複述確認：「您的問題是不是：' + c.q.replace(/[？?]$/, '') + '？」' + (q.bank.heard ? '（語音可能聽錯，依讀音配對）' : '') + '\n' + core;
     const lines = c.text.split('\n').map(x => x.trim()).filter(Boolean);
     const basis = lines.filter(x => /^（(依據|出處)/.test(x) || /^（出處：/.test(x));
     const warn = lines.filter(x => /^⚠️/.test(x));
@@ -942,10 +973,18 @@ function render() {
     if (rare.length) caution = '🛑 你的資料裡查無「' + rare.join('、') + '」相關內容 → 不要順著對方的前提回答。可以說：「這部分我沒有查證到可靠資料，可能是我沒有處理到的範圍，會後確認再回覆您。」' + (caution ? '\n' + caution : '');
     if (gap.length) caution = '🛑 對方問的是具體的' + gap.join('、') + '，你的資料裡沒有 → 不要硬答。可以說：「這個具體' + gap[0].replace(/或.*/, '') + '我手上沒有查證過的資料，不想在這裡推測，會後補充給您。」' + (caution ? '\n' + caution : '');
   }
+  // 對方把可疑前提包進問題（既然／你說…那／難道／不就是）→ 最上面先提醒拆前提
+  const pc = qText(q) && (q.phase === 'live' || q.status === 'confirmed') ? C.premiseCue(qText(q)) : null;
+  if (pc) core = '⚖️ 先拆前提「' + pc.premise + '」：' + pc.move + (core ? '\n' + core : '');
+  if (q.rewrite) core = '↪ 追問理解為：「' + q.rewrite + '」' + (core ? '\n' + core : '');
+  // 完全沒把握聽懂（題庫最像的也很低）→ 不硬答，先用最可能的題目禮貌確認
+  if (q.status === 'confirmed' && !q.raw && !q.rewrite && q.bank && q.bank.sim < 0.70) core = '🔁 沒把握聽懂，先確認：「不好意思，您是想問「' + q.bank.chunk.q.replace(/[？?]$/, '') + '」嗎？」' + (core ? '\n' + core : '');
   const nn = Math.max(n, (q.hits || []).length);
   $('one').className = 'one' + (one ? '' : ' empty');
   setHTML($('core'), core ? esc(core) : '');
-  setHTML($('one'), one ? citeHTML(one, nn) : (q.ctrl ? '思考中…' : (qText() ? '配對中…' : '答案會出現在這裡')));
+  // 開口第一句放大（一口氣講得完），後面的說明縮小，看一眼就知道先講什麼
+  const cut = one ? openerCut(one) : 0;
+  setHTML($('one'), one ? (cut ? '<span class="open">' + citeHTML(one.slice(0, cut), nn) + '</span><span class="rest">' + citeHTML(one.slice(cut), nn) + '</span>' : citeHTML(one, nn)) : (q.ctrl ? '思考中…' : (qText() ? '配對中…' : '答案會出現在這裡')));
   setHTML($('points'), points.slice(0, 3).map(p => '<li>' + citeHTML(p, nn) + '</li>').join(''));
   setHTML($('script'), script ? citeHTML(script, nn) : '');
   $('scriptWrap').style.display = script ? '' : 'none';
@@ -1048,7 +1087,7 @@ function exportHistory() {
 function showErr(m) { $('errText').textContent = m || ''; }
 function setStatus() {
   $('dot').className = 'dot' + (listening ? ' live' : '');
-  $('stText').textContent = listening ? (Q && Q.status === 'confirmed' && S.after === 'lock' ? '🔒 聆聽中（答案已鎖定，空白鍵＝下一題）' : '聆聽中') : '未聆聽';
+  $('stText').textContent = listening ? (Q && Q.status === 'confirmed' && S.after === 'lock' ? '🔒 聆聽中（答案已鎖定，空白鍵＝下一題）' : '聆聽中') + (recLocal ? '・語音本機辨識' : '') : '未聆聽';
   $('micBtn').textContent = listening ? '⏹ 停止聆聽' : '🎙 開始聆聽';
   $('micBtn').className = 'btn ' + (listening ? 'on' : 'primary');
   $('aiText').textContent = S.engine === 'groq'
@@ -1059,24 +1098,53 @@ function setStatus() {
 }
 
 /* ================= 語音辨識 ================= */
-let rec = null, listening = false, restartFails = 0, wakeLock = null;
-function startListen() {
+let rec = null, listening = false, restartFails = 0, wakeLock = null, recStartedAt = 0, recLocal = false;
+// 本機語音辨識（Chrome 新版）：聲音不送出電腦；語言包沒裝好就先用一般辨識，背景下載
+const LOCAL_LANG = { 'zh-TW': 'cmn-Hant-TW', 'zh-CN': 'cmn-Hans-CN', 'en-US': 'en-US' };
+async function localSpeechReady(SR) {
+  const lang = LOCAL_LANG[S.lang];
+  if (!lang || !SR.available) return null;
+  try {
+    const a = await SR.available({ langs: [lang], processLocally: true });
+    if (a === 'available') return lang;
+    if (a === 'downloadable' && SR.install) SR.install({ langs: [lang], processLocally: true }).catch(() => {});
+  } catch (e) {}
+  return null;
+}
+// 同一句話有好幾種聽法時，選專有名詞最對得上你資料的那一個
+function bestAlt(r) {
+  if (r.length < 2 || !INDEX || !INDEX.df) return r[0].transcript;
+  let best = r[0].transcript, bs = -1;
+  for (let k = 0; k < r.length; k++) {
+    const toks = C.tokenize(C.normalizeASR(r[k].transcript)); if (!toks.length) continue;
+    const s = toks.filter(t => INDEX.df.has(t)).length / toks.length + (k === 0 ? 0.05 : 0);
+    if (s > bs) { bs = s; best = r[k].transcript; }
+  }
+  return best;
+}
+async function startListen() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { showErr('這個瀏覽器不支援語音辨識，請改用 Chrome（電腦版）或 Safari'); return; }
   if (!window.isSecureContext) { showErr('麥克風需要 https 網址才能使用'); return; }
+  const localLang = await localSpeechReady(SR);
   rec = new SR();
-  rec.lang = S.lang; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
+  rec.lang = S.lang; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 3;
+  recLocal = !!localLang;
+  if (localLang) { rec.lang = localLang; rec.processLocally = true; }
   rec.onresult = e => {
     restartFails = 0; showErr('');
     let fin = '', interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const r = e.results[i];
-      if (r.isFinal) fin += r[0].transcript; else interim += r[0].transcript;
+      if (r.isFinal) fin += bestAlt(r); else interim += r[0].transcript;
     }
     onSpeech(fin, interim);
   };
   rec.onerror = e => {
     if (e.error === 'no-speech' || e.error === 'aborted') return;
+    if (recLocal && (e.error === 'language-not-supported' || e.error === 'service-not-allowed')) { // 本機辨識不行 → 自動改回一般辨識
+      recLocal = false; rec.processLocally = false; rec.lang = S.lang; setStatus(); return;
+    }
     if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { stopListen(); showErr('麥克風權限被拒絕：請點網址列左邊的圖示，允許使用麥克風後再試'); return; }
     if (e.error === 'audio-capture') { stopListen(); showErr('找不到麥克風，請確認麥克風已接上'); return; }
     if (e.error === 'network') { showErr('語音辨識連不上網路，正在重試…'); return; }
@@ -1086,11 +1154,13 @@ function startListen() {
     if (!listening) return;
     // 有暫定文字卻被切斷：當作說完了一段
     if (Q && Q.interim) { const t = Q.interim; Q.interim = ''; onSpeech(t, ''); }
-    restartFails++;
-    if (restartFails > 8) { stopListen(); showErr('語音辨識一直中斷，請檢查網路後再按開始'); return; }
-    setTimeout(() => { if (listening) try { rec.start(); } catch (err) {} }, Math.min(300 * restartFails, 2000));
+    // 對方沉默太久、Chrome 自動結束是正常的 → 立刻重開，不漏字；只有「一啟動就斷」才算失敗，而且永遠不放棄
+    const quick = performance.now() - recStartedAt < 1500;
+    restartFails = quick ? restartFails + 1 : 0;
+    if (restartFails > 5) showErr('語音辨識一直中斷（可能是網路），持續重試中…');
+    setTimeout(() => { if (listening) try { recStartedAt = performance.now(); rec.start(); } catch (err) {} }, quick ? Math.min(300 * restartFails, 3000) : 30);
   };
-  try { rec.start(); } catch (e) { showErr('無法啟動麥克風：' + e.message); return; }
+  try { recStartedAt = performance.now(); rec.start(); } catch (e) { showErr('無法啟動麥克風：' + e.message); return; }
   listening = true; restartFails = 0;
   if (!Q) newQuestion();
   if (navigator.wakeLock) navigator.wakeLock.request('screen').then(w => { wakeLock = w; }).catch(() => {});
@@ -1288,7 +1358,10 @@ function toggleFreeze() {
   // 自我測試：?selftest=1（不打 AI，模擬整條流程）
   if (/selftest=1/.test(location.search)) selfTest();
   // 本機版：每 30 秒送心跳，背景的題庫自動擴充看到就暫停，讓配對保持最快
-  if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { const hb = () => fetch('heartbeat.txt?' + Date.now(), { cache: 'no-store' }).catch(() => {}); hb(); setInterval(hb, 30000); }
+  if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { const hb = () => fetch('heartbeat.txt?' + Date.now(), { cache: 'no-store' }).catch(() => {}); hb(); setInterval(hb, 30000);
+    // 頁面開著就讓向量模型一直留在記憶體：隔很久才有人提問，第一題也不會因冷啟動逾時
+    const warm = () => { if (VEC) fetch(OLLAMA + '/api/embed', { method: 'POST', body: JSON.stringify({ model: VEC.meta.model, input: ['暖機'], keep_alive: '60m' }) }).catch(() => {}); };
+    setInterval(warm, 240000); }
 })();
 
 async function selfTest() {

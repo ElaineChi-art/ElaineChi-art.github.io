@@ -134,5 +134,17 @@ const feed3 = C.makeSSEParser(j => { got += C.deltaText('claude', j); });
 feed3('event: content_block_delta\ndata: {"type":"content_block_delta","delta":{"type":"text_delta","text":"丙"}}\n\n');
 ok(got === '丙', 'Claude SSE');
 
+{ const PY = { 智: 'zhi', 慧: 'hui', 制: 'zhi', 會: 'hui', 合: 'he', 約: 'yue', 版: 'ban', 稅: 'shui', 板: 'ban', 睡: 'shui', 的: 'de', 是: 'shi', 什: 'shen', 麼: 'me', 專: 'zhuan', 利: 'li' };
+  const P = C.phoneticIndex(['智慧合約的版稅是什麼', '專利是什麼'], PY);
+  const s = C.phoneticScores('制會合約的板睡是什麼', P);
+  ok(s[0] > 0.9 && s[1] < 0.2, '同音字（制會合約的板睡）→ 配到智慧合約的版稅'); }
+ok(C.premiseCue('既然台灣沒有任何音樂NFT平台，你的研究對台灣有什麼實際意義？').premise === '台灣沒有任何音樂NFT平台', '拆前提：既然…');
+ok(C.premiseCue('這不就是把舊的授權契約搬到鏈上而已嗎？').premise === '把舊的授權契約搬到鏈上', '拆前提：不就是…而已');
+ok(C.premiseCue('智慧合約的版稅怎麼算？') === null, '一般問題不拆前提');
+ok(C.followUpRewrite('那日本呢？', '收益型NFT算不算證券？').text === '日本的情況：收益型NFT算不算證券？', '追問改寫：那日本呢');
+ok(C.followUpRewrite('那如果是收藏型的話呢？', '收益型NFT算不算證券？').focus === '收藏型', '追問改寫：如果是…的話呢');
+ok(C.followUpRewrite('可以再說清楚嗎', '收益型NFT算不算證券？') === null, '非焦點追問不改寫');
+ok(C.detailGap('你論文裡訪談的那三位音樂人，他們分別是誰？', '以文獻分析、比較法分析與理論推導為主。').length === 1, '問「他們分別是誰」答案沒有人名 → 警示');
+ok(C.detailGap('分潤寫錯了是誰的責任？', '發行人應負債務不履行責任。').length === 0, '「是誰的責任」不是問人名');
 console.log(`\n${pass} 通過 / ${fail} 失敗`);
 process.exit(fail ? 1 : 0);
