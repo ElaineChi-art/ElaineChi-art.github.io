@@ -1,7 +1,20 @@
 {
- "updated": "2026-10-27 06:02 UTC",
+ "updated": "2026-10-28 06:41 UTC",
  "count": 10,
  "jobs": [
+  {
+   "title": "CRM 技術顧問實習生(應屆畢業）",
+   "company": "伊原力科技",
+   "salary": "面議（經常性薪資達4萬元）",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/may4s/jobs/32773",
+   "tags": [
+    "實習",
+    "全端工程師",
+    "CRM",
+    "Salesforce"
+   ]
+  },
   {
    "title": "Web3 Internship- Software Engineering Intern, OneSavieLab",
    "company": "AIFT",
@@ -15,28 +28,16 @@
    ]
   },
   {
-   "title": "Web3 Product Management Intern, OneSavie Lab",
-   "company": "AIFT",
-   "salary": "NT$ 200 - 200 (時薪)",
+   "title": "【Taiwan Mobile 科技大神培育實習計劃】IT實習生",
+   "company": "台灣大哥大",
+   "salary": "NT$ 200 - 300 (時薪)",
    "location": "臺北市",
-   "url": "https://www.yourator.co/companies/aift/jobs/32817",
+   "url": "https://www.yourator.co/companies/taiwanmobile/jobs/26757",
    "tags": [
-    "Internship",
-    "web3",
-    "Business"
-   ]
-  },
-  {
-   "title": "CRM 技術顧問實習生(應屆畢業）",
-   "company": "伊原力科技",
-   "salary": "面議（經常性薪資達4萬元）",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/may4s/jobs/32773",
-   "tags": [
-    "實習",
-    "全端工程師",
-    "CRM",
-    "Salesforce"
+    "Python",
+    "AI",
+    "Java",
+    "docker"
    ]
   },
   {
@@ -79,6 +80,18 @@
    ]
   },
   {
+   "title": "Web3 Product Management Intern, OneSavie Lab",
+   "company": "AIFT",
+   "salary": "NT$ 200 - 200 (時薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/aift/jobs/32817",
+   "tags": [
+    "Internship",
+    "web3",
+    "Business"
+   ]
+  },
+  {
    "title": "Quantitative Research Intern 量化研究實習生 ",
    "company": "SuDo Research Labs（蘇度科技有限公司）",
    "salary": "NT$ 300 - 700 (時薪)",
@@ -89,19 +102,6 @@
     "crypto",
     "web3",
     "DeFi"
-   ]
-  },
-  {
-   "title": "【Taiwan Mobile 科技大神培育實習計劃】IT實習生",
-   "company": "台灣大哥大",
-   "salary": "NT$ 200 - 300 (時薪)",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/taiwanmobile/jobs/26757",
-   "tags": [
-    "Python",
-    "AI",
-    "Java",
-    "docker"
    ]
   },
   {
