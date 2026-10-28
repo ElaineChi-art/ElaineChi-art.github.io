@@ -82,6 +82,21 @@ mark{background:var(--mark);color:inherit;border-radius:2px}
 .standby{font-size:calc(20px*var(--fs));color:var(--ok);font-weight:700}
 #answerCard.vm-one .layer, #answerCard.vm-one .layer-full, #answerCard.vm-one .layer-short, #answerCard.vm-one #core{display:none!important}
 #answerCard.vm-short .layer-full{display:none!important}
+main.collect #answerCard .layer-full,main.collect #answerCard .layer-short,main.collect #answerActions{display:none!important}
+.sq{border:1px solid var(--line);border-left:4px solid var(--accent2);border-radius:10px;padding:8px 12px;margin:8px 0;cursor:pointer}
+.sq.done{opacity:.45;border-left-color:var(--line)}
+.sq .qq{font-size:calc(15px*var(--fs));color:var(--muted);display:flex;gap:8px;align-items:baseline}
+.sq .qq .no{color:var(--accent2);font-weight:800;white-space:nowrap}
+.sq .qq .tx{flex:1;min-width:0}
+.sq .ok{border:1px solid var(--line);border-radius:99px;padding:0 9px;font-size:13px;color:var(--muted);background:none;cursor:pointer}
+.sq.done .ok{color:var(--ok);border-color:var(--ok)}
+.sq .cue{font-size:calc(14px*var(--fs));color:var(--warn);font-weight:600;margin-top:3px;white-space:pre-line}
+.sq .op{font-size:calc(23px*var(--fs));font-weight:700;color:var(--accent2);line-height:1.45;margin-top:4px}
+.sq .rs{font-size:calc(17px*var(--fs));line-height:1.55}
+.sq .more{display:none;margin-top:6px}
+.sq.open .more{display:block}
+.sq .more .points{font-size:calc(17px*var(--fs))}
+.sq .wait{color:var(--faint);font-size:calc(15px*var(--fs))}
 .alt{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;cursor:pointer;font-size:calc(15px*var(--fs));line-height:1.55}
 .alt:hover{border-color:var(--accent)}
 .alt .aq{color:var(--faint);font-size:.82em}
@@ -113,6 +128,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <span class="seg"><button class="btn" id="vm1" title="鍵盤 1">一句話</button><button class="btn" id="vm2" title="鍵盤 2">簡答</button><button class="btn" id="vm3" title="鍵盤 3">完整</button></span>
   <button class="btn" id="micBtn">🎙 開始聆聽</button>
   <button class="btn" id="nextBtn" title="空白鍵">⏭ 下一題</button>
+  <button class="btn" id="collectBtn" title="C 鍵：對方連問好幾題、你最後一起回答時用">📋 收題模式</button>
   <button class="btn" id="freezeBtn" title="F 鍵">❄ 凍結</button>
   <button class="btn" id="fsDown" title="字縮小">A−</button>
   <button class="btn" id="fsUp" title="字放大">A＋</button>
@@ -123,7 +139,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <span id="aiText" class="muted"></span>
   <span id="errText" class="err"></span>
   <span class="spacer"></span>
-  <span class="kbd">Q＝專家問答　空白鍵＝下一題　1/2/3＝一句話/簡答/完整　F＝凍結</span>
+  <span class="kbd">Q＝專家問答　空白鍵＝下一題　1/2/3＝一句話/簡答/完整　F＝凍結　C＝收題模式</span>
 </div>
 
 <main>
@@ -159,6 +175,10 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
         <div id="alts"></div>
       </div>
       <div class="row" id="answerActions"></div>
+    </div>
+    <div class="card" id="stackCard" style="display:none">
+      <div class="label">📋 已收的問題<span id="stackCount"></span>｜最新在上・點題目看完整答案・✓＝答完了<span class="spacer"></span><button class="btn small" id="stackClear" style="padding:1px 8px">清空</button></div>
+      <div id="stack"></div>
     </div>
   </section>
   <aside>
@@ -216,7 +236,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <label>對方停頓多久算「問完」</label>
   <select id="sSilence"><option value="1200">1.2 秒（快）</option><option value="1700">1.7 秒（建議）</option><option value="2500">2.5 秒（對方講話常停頓）</option><option value="3500">3.5 秒</option></select>
   <label>答案出來之後</label>
-  <select id="sAfter"><option value="lock">鎖定答案，按空白鍵才聽下一題（建議：避免把自己的回答當成新問題）</option><option value="auto">自動聽下一題（適合上課聽講）</option></select>
+  <select id="sAfter"><option value="lock">鎖定答案，按空白鍵才聽下一題（建議：避免把自己的回答當成新問題）</option><option value="auto">自動聽下一題（適合上課聽講）</option><option value="collect">收題模式：對方連問好幾題，每題留一張卡片（最新在上），你最後一起回答</option></select>
   <label>回答依據</label>
   <select id="sStrict"><option value="0">以知識庫為主，不足時用一般知識補充（會標示）</option><option value="1">嚴格：只用知識庫，沒有就說沒有</option></select>
   <label>外觀</label>
@@ -655,23 +675,32 @@ function friendlyErr(all) {
 }
 
 /* ================= 問題狀態（邊聽邊想） ================= */
-let Q = null, qSeq = 0, HISTORY = [], frozen = false, silenceTimer = null, retrTimer = null, renderQueued = false;
+let Q = null, qSeq = 0, HISTORY = [], STACK = [], frozen = false, silenceTimer = null, retrTimer = null, renderQueued = false;
 
 function qText(q) { q = q || Q; return q ? (q.final + ' ' + q.interim).replace(/\s+/g, ' ').trim() : ''; }
 
 function newQuestion() {
-  if (Q && qText(Q)) archive(Q);
-  if (Q && Q.ctrl) Q.ctrl.abort();
+  if (Q && qText(Q)) { archive(Q); if (S.after === 'collect' && !STACK.includes(Q)) STACK.push(Q); }
+  if (Q && Q.ctrl && S.after !== 'collect') Q.ctrl.abort(); // 收題模式：上一題在背景繼續把答案配完
+  if (Q && Q.status === 'listening' && S.after === 'collect' && qText(Q).length >= 4) { const old = Q; old.final = qText(old); old.interim = ''; Q = null; confirmQuestion(old); }
   clearTimeout(silenceTimer);
-  Q = { id: ++qSeq, final: '', interim: '', tail: '', status: 'listening', hits: [], bank: null,
+  Q = blankQ();
+  render();
+}
+function blankQ() {
+  return { id: ++qSeq, final: '', interim: '', tail: '', status: 'listening', hits: [], bank: null,
     raw: '', phase: '', provText: '', provSent: false, provDone: false, promote: false, ctrl: null,
     error: '', provider: '', t0: performance.now(), firstMs: 0 };
-  render();
 }
 
 // 收到語音或打字
 function onSpeech(fin, interim) {
   fin = C.normalizeASR(fin || ''); interim = C.normalizeASR(interim || ''); // 聽錯的專有名詞先校正
+  if (Q && Q.status === 'confirmed' && S.after === 'collect' && (fin || interim)) {
+    // 收題模式：上一題講到一半停頓（還不像問句）→ 接回同一題；已經是完整問句 → 留成卡片，開新的一題
+    if (performance.now() - (Q.confirmedAt || 0) < 6000 && !C.looksComplete(Q.final)) { Q.status = 'listening'; Q.split = null; Q.finalMs = 0; }
+    else newQuestion();
+  }
   if (!Q || (Q.status === 'confirmed' && S.after === 'auto')) newQuestion();
   if (Q.status === 'confirmed') { // 鎖定中：只顯示，不當新問題
     if (fin) Q.tail = (Q.tail + fin).slice(-160);
@@ -751,17 +780,17 @@ function scheduleLive() {
   if (liveTimer) return;
   liveTimer = setTimeout(() => { liveTimer = null; liveMatch(); }, 600);
 }
-async function liveMatch(final) {
-  if (!Q || !INDEX) return;
+async function liveMatch(final, which) {
+  if (!(which || Q) || !INDEX) return;
   if (liveBusy) {
     if (!final) { scheduleLive(); return; }
     while (liveBusy) await new Promise(r => setTimeout(r, 30)); // 定案時要等前一輪跑完，再用完整問題重配，不能用舊結果
   }
-  const q = Q, t = qText(q);
+  const q = which || Q, t = qText(q);
   if (t.length < 4) return;
   liveBusy = true;
   // 追問（「那如果…呢」）接上上一題一起理解
-  const prev = HISTORY.length ? HISTORY[HISTORY.length - 1].q : '';
+  const ph = HISTORY.filter(h => h.ref !== q), prev = ph.length ? ph[ph.length - 1].q : '';
   let mt = t;
   try {
     // 可能是追問：「單獨理解」與「接上一題理解」都配一次，取分數高的（避免把獨立問題誤當追問）
@@ -770,7 +799,7 @@ async function liveMatch(final) {
     if (rw) { b = await semanticBank(rw.text, rw.focus).catch(() => null); mt = rw.text; } // 「那日本呢」單獨沒有意義，直接用改寫後的完整問題
     else {
       b = await semanticBank(t).catch(() => null);
-      if (C.isFollowUp(t) && prev) {
+      if (prev && (C.isFollowUp(t) || (!C.looksComplete(prev) && t.length <= 30))) { // 上一句只講一半（「我想問你的智慧合約」）→ 這句是它的後半
         const ctx = prev + '；追問：' + t, b2 = await semanticBank(ctx).catch(() => null);
         if (b2 && (!b || b2.sim > b.sim + 0.02)) { b = b2; mt = ctx; }
       }
@@ -778,13 +807,13 @@ async function liveMatch(final) {
     q.followUp = mt !== t; q.rewrite = rw ? rw.text : '';
     const rt = rw ? rw.focus + ' ' + prev : t.length <= 10 ? mt : t; // 原文搜尋：只有很短的追問才併入上一題，避免稀釋重點
     const h = await retrieve(rt, 8).catch(() => C.search(INDEX, rt, 8)); // 多拿幾段，原文要點挑得更準
-    if (Q === q) {
+    { // 結果寫回它自己那一題（收題模式下，上一題的答案在背景配完也不會丟）
       if (b) q.bank = b;
       q.hits = h; q.ext = C.extractAnswer(rt, h, 3); q.liveText = t;
       q.dom = C.classifyDomain(t);
       if (!q.firstShownMs && (b || (q.ext && q.ext.length))) q.firstShownMs = Math.round(performance.now() - q.t0);
       if (!q.raw && q.phase !== 'bank') q.phase = q.status === 'confirmed' ? 'answer' : 'live';
-      render();
+      if (Q === q) render(); else renderStack();
     }
   } finally { liveBusy = false; }
   if (Q === q && qText(q) !== t) scheduleLive();
@@ -796,18 +825,35 @@ function maybeProvisional() {
   if (qText().length >= 14 && !strongBank(Q)) { Q.provSent = true; runLLM('provisional'); }
 }
 
-async function confirmQuestion() {
-  if (!Q || Q.status !== 'listening') return;
-  const t = qText();
+async function confirmQuestion(old) {
+  const q = old || Q;
+  if (!q || (q.status !== 'listening' && !old)) return;
+  const t = qText(q);
   if (t.length < 4) return;
-  Q.final = t; Q.interim = ''; Q.status = 'confirmed';
-  const q = Q;
+  q.final = t; q.interim = ''; q.status = 'confirmed'; q.confirmedAt = performance.now();
+  q.chatter = S.after === 'collect' && C.isChatter(t);
   if (liveMode()) { // 本機：用最後完整的問題再配對一次，直接定案，不跑慢又會捏造的小模型
-    clearTimeout(liveTimer); liveTimer = null;
-    await liveMatch(true);
+    if (q === Q) { clearTimeout(liveTimer); liveTimer = null; }
+    await liveMatch(true, q);
+    if (q.status !== 'confirmed') return; // 收題模式：對方停頓後又接著講，同一題重新聽
     // 一次問了多題 → 每題各配一個最短答案
-    const parts = C.splitQuestions(t);
-    if (parts.length > 1 && Q === q) {
+    const parts = S.after === 'collect' ? C.collectSplit(t) : C.splitQuestions(t);
+    if (parts.length > 1 && S.after === 'collect') { // 收題模式：一口氣問好幾題 → 拆成好幾張卡片，每題各自配答案
+      const subs = [], hi = HISTORY.findIndex(h => h.ref === q);
+      if (hi >= 0) HISTORY.splice(hi, 1);
+      for (const part of parts) {
+        const s = blankQ(); s.final = part; s.status = 'confirmed'; s.confirmedAt = q.confirmedAt; s.t0 = q.t0;
+        await liveMatch(true, s);
+        s.phase = strongBank(s) ? 'bank' : 'answer'; s.finalMs = Math.round(performance.now() - q.t0); subs.push(s);
+        archive(s); // 先記下來，下一小題如果是「那…呢」追問才接得上這一題
+      }
+      if (q.status !== 'confirmed') { HISTORY = HISTORY.filter(h => !subs.includes(h.ref)); return; }
+      const at = STACK.indexOf(q);
+      if (Q === q) { STACK.push(...subs.slice(0, -1)); Q = subs[subs.length - 1]; }
+      else STACK.splice(at < 0 ? STACK.length : at, at < 0 ? 0 : 1, ...subs);
+      render(); renderStack(); return;
+    }
+    if (parts.length > 1) {
       q.split = [];
       for (const part of parts) {
         const b = await semanticBank(part).catch(() => null);
@@ -817,7 +863,7 @@ async function confirmQuestion() {
         q.split.push({ q: part, a: line });
       }
     }
-    if (Q === q && !q.raw) { q.phase = strongBank(q) ? 'bank' : 'answer'; q.finalMs = Math.round(performance.now() - q.t0); render(); }
+    if (!q.raw && q.status === 'confirmed') { q.phase = strongBank(q) ? 'bank' : 'answer'; q.finalMs = Math.round(performance.now() - q.t0); if (Q === q) render(); else { archive(q); renderStack(); } }
     return;
   }
   refreshRetrieval();
@@ -852,7 +898,7 @@ async function runLLM(phase) {
       if (ctrl.signal.aborted) return;
       if (!q.firstMs) q.firstMs = Math.round(performance.now() - t0);
       q.raw = txt;
-      if (Q === q) queueRender();
+      if (Q === q) queueRender(); else renderStack();
     }, ctrl.signal);
     if (ctrl.signal.aborted) return;
     q.ctrl = null; q.totalMs = Math.round(performance.now() - t0);
@@ -863,7 +909,7 @@ async function runLLM(phase) {
         else { runLLM('final'); return; }
       }
     }
-    if (Q === q) render();
+    if (Q === q) render(); else renderStack();
   } catch (e) {
     if (e.name === 'AbortError' || ctrl.signal.aborted) return;
     q.ctrl = null; q.error = e.message;
@@ -875,11 +921,13 @@ function archive(q) {
   const a = C.parseAnswer(q.raw || '');
   const bank = !q.raw && q.bank && (strongBank(q) || q.bank.sim >= BANK_MAIN); // 畫面顯示什麼就匯出什麼
   const extText = !q.raw && !bank && q.ext && q.ext.length ? q.ext.map(x => '• ' + x.s).join('\n') : '';
-  HISTORY.push({ q: qText(q), one: bank ? q.bank.chunk.text.split('\n')[0] : (a.one || ''), raw: q.raw, bank: bank ? q.bank.chunk.text : extText,
-    time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+  const old = HISTORY.findIndex(h => h.ref === q);
+  const entry = ({ ref: q, q: qText(q), one: bank ? q.bank.chunk.text.split('\n')[0] : (a.one || ''), raw: q.raw, bank: bank ? q.bank.chunk.text : extText,
+    time: old >= 0 ? HISTORY[old].time : new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
     srcs: (q.usedHits || q.hits || []).map(h => h.chunk.docName + (h.chunk.page ? ' p.' + h.chunk.page : '')),
     tier: q.raw ? 'AI' : strongBank(q) ? '同題' : q.bank && q.bank.sim >= BANK_NEAR ? '相近' : q.bank && q.bank.sim >= BANK_MAIN ? '最接近' : '原文要點',
     sim: q.bank ? Math.round(q.bank.sim * 100) : 0, matched: q.bank ? q.bank.chunk.q : '', firstMs: q.firstShownMs || 0, followUp: !!q.followUp });
+  if (old >= 0) HISTORY[old] = entry; else HISTORY.push(entry); // 同一題答案後來配完 → 原地更新，不重複
   renderHistory();
 }
 
@@ -905,31 +953,10 @@ function openerCut(t) {
   const m = t.slice(0, 44).match(/^.{4,40}?[。；：！？]/) || t.slice(0, 32).match(/^.{6,30}[，,]/);
   return m && m[0].length < t.length - 6 ? m[0].length : 0;
 }
-function render() {
-  renderCaption();
-  renderSources();
-  if (!Q) return;
-  // 狀態徽章
-  let badge = '';
-  const q = Q;
-  if (q.error) badge = '<span class="badge err">AI 失敗</span>';
-  else if (q.phase === 'bank' || (strongBank(q) && !q.raw)) badge = '<span class="badge bank">📚 題庫答案（同題）</span>';
-  else if (q.phase === 'near' && !q.raw) badge = '<span class="badge prov">📚 相近題目・請確認是不是同一題</span>';
-  else if (q.phase === 'live' && !q.raw) badge = '<span class="badge prov">🎙 對方還在說・即時配對中' + (q.followUp ? '（追問，已接上一題）' : '') + '</span>';
-  else if (q.phase === 'answer' && !q.raw) badge = q.bank && q.bank.sim >= BANK_NEAR ? '<span class="badge prov">📚 相近題目・請確認</span>' : q.bank && q.bank.sim >= BANK_MAIN ? '<span class="badge prov">📚 最接近的擬答＋原文要點</span>' : '<span class="badge ok">📖 論文原文要點</span>';
-  else if (q.phase === 'nokey') badge = '<span class="badge">🔎 僅資料（未設 AI 金鑰）</span>';
-  else if (q.phase === 'provisional') badge = '<span class="badge prov">暫定・對方還在說</span>';
-  else if (q.phase === 'final' && q.ctrl) badge = '<span class="badge prov">整理中…</span>';
-  else if (q.phase === 'final' && /本機/.test(q.provider || '')) badge = '<span class="badge prov">⚠️ 本機 AI 草稿・可能有誤，請以候選擬答與右側原文為準</span>';
-  else if (q.phase === 'final') badge = '<span class="badge ok">已確認</span>';
-  if (frozen) badge += ' <span class="badge" style="color:#7aa7ff;border-color:#7aa7ff">❄ 凍結中</span>';
-  setHTML($('aBadge'), badge);
-  setHTML($('domBadge'), q.dom && qText() ? ' <span class="dom">提問領域：' + esc(q.dom.domain) + (q.dom.second ? '・' + esc(q.dom.second) : '') + (q.dom.challenge ? '｜質疑型：先承認合理處，再說理由' : '') + '</span>' : '');
-  setHTML($('aMeta'), q.provider ? esc(q.provider) + (q.firstMs ? '・首字 ' + (q.firstMs / 1000).toFixed(1) + ' 秒' : '') : '');
-  if (frozen) return;
-
+// 一題的答案畫面內容（主畫面與「已收的問題」卡片共用）
+function answerView(q) {
   const n = (q.usedHits || q.hits || []).length;
-  let core = '', one = '', points = [], script = '', follow = [], caution = '';
+  let safe = '', core = '', one = '', points = [], script = '', follow = [], caution = '';
   const useBankMain = q.bank && !q.raw && (q.phase === 'bank' || q.phase === 'near' || strongBank(q) || ((q.phase === 'live' || q.phase === 'answer') && q.bank.sim >= BANK_MAIN));
   if (!useBankMain && !q.raw && (q.phase === 'live' || q.phase === 'answer') && q.ext && q.ext.length) {
     core = '論文原文要點（題庫沒有同題，以下直接取自你的資料）';
@@ -970,6 +997,9 @@ function render() {
     const shown = [one, points.join('\n'), script, (q.ext || []).map(x => x.s).join('\n')].join('\n');
     const gap = C.detailGap(qText(q), shown);
     const rare = C.rareTermGap(qText(q), shown, INDEX);
+    // 陌生名詞：可能是對方捏造，也可能是語音聽錯 → 兩種情況都先請對方再講一次最安全
+    if (rare.length) safe = '不好意思，您剛剛提到的「' + rare[0] + '」可以再說一次是指哪一個嗎？我想確認清楚再回答。（若確定是我沒處理到的：這部分我沒有查證過，會後確認再回覆您。）';
+    if (gap.length) safe = '這個具體' + gap[0].replace(/或.*/, '') + '我手上沒有查證過的資料，不想在這裡推測，會後補充給您。';
     if (rare.length) caution = '🛑 你的資料裡查無「' + rare.join('、') + '」相關內容 → 不要順著對方的前提回答。可以說：「這部分我沒有查證到可靠資料，可能是我沒有處理到的範圍，會後確認再回覆您。」' + (caution ? '\n' + caution : '');
     if (gap.length) caution = '🛑 對方問的是具體的' + gap.join('、') + '，你的資料裡沒有 → 不要硬答。可以說：「這個具體' + gap[0].replace(/或.*/, '') + '我手上沒有查證過的資料，不想在這裡推測，會後補充給您。」' + (caution ? '\n' + caution : '');
   }
@@ -978,7 +1008,36 @@ function render() {
   if (pc) core = '⚖️ 先拆前提「' + pc.premise + '」：' + pc.move + (core ? '\n' + core : '');
   if (q.rewrite) core = '↪ 追問理解為：「' + q.rewrite + '」' + (core ? '\n' + core : '');
   // 完全沒把握聽懂（題庫最像的也很低）→ 不硬答，先用最可能的題目禮貌確認
-  if (q.status === 'confirmed' && !q.raw && !q.rewrite && q.bank && q.bank.sim < 0.70) core = '🔁 沒把握聽懂，先確認：「不好意思，您是想問「' + q.bank.chunk.q.replace(/[？?]$/, '') + '」嗎？」' + (core ? '\n' + core : '');
+  // 陷阱題：大字直接給安全說法，原本的答案降為背景（避免照念出錯的東西）
+  if (safe) { if (one) points = ['（相關背景，可接著講）' + one, ...points]; one = safe; core = '🛑 陷阱題：對方要的細節你的資料裡沒有，先講下面這句' + (core ? '\n' + core : ''); }
+  else if (q.status === 'confirmed' && !q.raw && !q.rewrite && q.bank && q.bank.sim < 0.70) core = '🔁 沒把握聽懂，先確認：「不好意思，您是想問「' + q.bank.chunk.q.replace(/[？?]$/, '') + '」嗎？」' + (core ? '\n' + core : '');
+  return { n, core, one, points, script, follow, caution, useBankMain };
+}
+function render() {
+  renderCaption();
+  renderSources();
+  if (STACK.length || $('answerCard').style.display) renderStack();
+  if (!Q) return;
+  // 狀態徽章
+  let badge = '';
+  const q = Q;
+  if (q.error) badge = '<span class="badge err">AI 失敗</span>';
+  else if (q.phase === 'bank' || (strongBank(q) && !q.raw)) badge = '<span class="badge bank">📚 題庫答案（同題）</span>';
+  else if (q.phase === 'near' && !q.raw) badge = '<span class="badge prov">📚 相近題目・請確認是不是同一題</span>';
+  else if (q.phase === 'live' && !q.raw) badge = '<span class="badge prov">🎙 對方還在說・即時配對中' + (q.followUp ? '（追問，已接上一題）' : '') + '</span>';
+  else if (q.phase === 'answer' && !q.raw) badge = q.bank && q.bank.sim >= BANK_NEAR ? '<span class="badge prov">📚 相近題目・請確認</span>' : q.bank && q.bank.sim >= BANK_MAIN ? '<span class="badge prov">📚 最接近的擬答＋原文要點</span>' : '<span class="badge ok">📖 論文原文要點</span>';
+  else if (q.phase === 'nokey') badge = '<span class="badge">🔎 僅資料（未設 AI 金鑰）</span>';
+  else if (q.phase === 'provisional') badge = '<span class="badge prov">暫定・對方還在說</span>';
+  else if (q.phase === 'final' && q.ctrl) badge = '<span class="badge prov">整理中…</span>';
+  else if (q.phase === 'final' && /本機/.test(q.provider || '')) badge = '<span class="badge prov">⚠️ 本機 AI 草稿・可能有誤，請以候選擬答與右側原文為準</span>';
+  else if (q.phase === 'final') badge = '<span class="badge ok">已確認</span>';
+  if (frozen) badge += ' <span class="badge" style="color:#7aa7ff;border-color:#7aa7ff">❄ 凍結中</span>';
+  setHTML($('aBadge'), badge);
+  setHTML($('domBadge'), q.dom && qText() ? ' <span class="dom">提問領域：' + esc(q.dom.domain) + (q.dom.second ? '・' + esc(q.dom.second) : '') + (q.dom.challenge ? '｜質疑型：先承認合理處，再說理由' : '') + '</span>' : '');
+  setHTML($('aMeta'), q.provider ? esc(q.provider) + (q.firstMs ? '・首字 ' + (q.firstMs / 1000).toFixed(1) + ' 秒' : '') : '');
+  if (frozen) return;
+
+  const { n, core, one, points, script, follow, caution, useBankMain } = answerView(q);
   const nn = Math.max(n, (q.hits || []).length);
   $('one').className = 'one' + (one ? '' : ' empty');
   setHTML($('core'), core ? esc(core) : '');
@@ -1020,6 +1079,48 @@ function render() {
   if (!q.raw && !q.ctrl && q.status === 'confirmed' && hasAnyKey()) act += '<button class="btn" data-act="ai">🤖 請 AI 整理成口語稿' + (liveMode() ? '（本機，約30秒）' : '') + '</button>';
   if (q.raw && !q.ctrl && q.status === 'confirmed') act += '<button class="btn" data-act="redo">↻ 換個說法</button>';
   setHTML($('answerActions'), act);
+}
+
+// 收題模式：每題一張卡片，最新的在最上面；上一題的答案在背景配完會自動補上
+let stackQueued = false;
+function renderStack() {
+  if (stackQueued) return; stackQueued = true;
+  requestAnimationFrame(() => {
+    stackQueued = false;
+    // 收題中：主畫面是最新一題、卡片是之前的；收完回到答題：最後一題也收進卡片，全部題目一起排在最上面
+    const answering = S.after !== 'collect' && STACK.includes(Q);
+    $('answerCard').style.display = answering ? 'none' : '';
+    const list = STACK.filter(q => (answering || q !== Q) && qText(q) && !q.chatter);
+    const real = STACK.filter(q => qText(q) && !q.chatter);
+    $('stackCard').style.display = list.length ? '' : 'none';
+    $('stackCount').textContent = list.length ? '（' + list.length + ' 題，' + list.filter(q => !q.done).length + ' 題還沒答）' : '';
+    setHTML($('stack'), list.map(q => {
+      const no = real.indexOf(q) + 1;
+      if (q.status !== 'confirmed') return `<div class="sq" data-q="${q.id}"><div class="qq"><span class="no">第${no}題</span><span class="tx">${esc(qText(q))}</span></div><div class="wait">配對中…</div></div>`;
+      const v = answerView(q), cut = v.one ? openerCut(v.one) : 0;
+      const cues = v.core.split('\n').filter(l => /^(⚖️|↪|🔁)/.test(l)).map(l => l.replace(/（相似度.*$/, ''));
+      const trap = v.caution.split('\n').filter(l => /^🛑/.test(l));
+      const split = q.split && q.split.length > 1 ? '<ol class="points">' + q.split.map(x => '<li><span class="muted">' + esc(x.q.slice(0, 28)) + '</span><br>' + esc(x.a.slice(0, 90)) + '</li>').join('') + '</ol>' : '';
+      return `<div class="sq${q.done ? ' done' : ''}${q.open ? ' open' : ''}" data-q="${q.id}">` +
+        `<div class="qq"><span class="no">第${no}題</span><span class="tx">${esc(qText(q))}</span><button class="ok" data-done="${q.id}">${q.done ? '✓ 答完' : '✓'}</button></div>` +
+        (cues.length || trap.length ? `<div class="cue">${esc([...trap.map(l => l.split('→')[0] + '→ 不要硬答'), ...cues].join('\n'))}</div>` : '') +
+        split +
+        (v.one ? (cut ? `<div class="op">${esc(v.one.slice(0, cut).replace(/\s*\[\d+\]/g, ''))}</div><div class="rs">${esc(v.one.slice(cut).replace(/\s*\[\d+\]/g, ''))}</div>` : `<div class="op">${esc(v.one.replace(/\s*\[\d+\]/g, ''))}</div>`) : '<div class="wait">資料中沒有直接答案 → 先複述問題、說會後補充</div>') +
+        `<div class="more">${v.points.length ? '<ol class="points">' + v.points.slice(0, 4).map(p => '<li>' + esc(p.replace(/\s*\[\d+\]/g, '')) + '</li>').join('') + '</ol>' : ''}${v.script ? '<div class="script">' + esc(v.script) + '</div>' : ''}${v.caution ? '<div class="caution">' + esc(v.caution) + '</div>' : ''}</div></div>`;
+    }).reverse().join(''));
+  });
+}
+function setCollect(on) {
+  if (on && S.after !== 'collect') { S.afterPrev = S.after; S.after = 'collect'; }
+  else if (!on && S.after === 'collect') { S.after = S.afterPrev && S.afterPrev !== 'collect' ? S.afterPrev : 'lock'; if (Q && qText(Q) && !STACK.includes(Q)) STACK.push(Q); }
+  saveS(); applyCollect(); setStatus(); render(); renderStack();
+  toast(on ? '📋 收題模式：對方每問一題就留一張卡片，最新在上；問完按 C 回到答題' : '🔒 答題模式：卡片都留著，你講話不會再變成新題目');
+}
+function applyCollect() {
+  const on = S.after === 'collect';
+  document.querySelector('main').classList.toggle('collect', on);
+  $('collectBtn').textContent = on ? '📋 收題中（C 結束）' : '📋 收題模式';
+  $('collectBtn').className = 'btn' + (on ? ' on' : '');
 }
 
 function firstSentence(c) {
@@ -1087,7 +1188,7 @@ function exportHistory() {
 function showErr(m) { $('errText').textContent = m || ''; }
 function setStatus() {
   $('dot').className = 'dot' + (listening ? ' live' : '');
-  $('stText').textContent = listening ? (Q && Q.status === 'confirmed' && S.after === 'lock' ? '🔒 聆聽中（答案已鎖定，空白鍵＝下一題）' : '聆聽中') + (recLocal ? '・語音本機辨識' : '') : '未聆聽';
+  $('stText').textContent = listening ? (S.after === 'collect' ? '📋 收題中：每題留卡片，繼續聽下一題' : Q && Q.status === 'confirmed' && S.after === 'lock' ? '🔒 聆聽中（答案已鎖定，空白鍵＝下一題）' : '聆聽中') + (recLocal ? '・語音本機辨識' : '') : '未聆聽';
   $('micBtn').textContent = listening ? '⏹ 停止聆聽' : '🎙 開始聆聽';
   $('micBtn').className = 'btn ' + (listening ? 'on' : 'primary');
   $('aiText').textContent = S.engine === 'groq'
@@ -1130,7 +1231,9 @@ async function startListen() {
   rec = new SR();
   rec.lang = S.lang; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 3;
   recLocal = !!localLang;
-  if (localLang) { rec.lang = localLang; rec.processLocally = true; }
+  if (localLang) { rec.lang = localLang; rec.processLocally = true;
+    // 本機辨識支援加權詞：論文的專有名詞（智慧合約、版稅、Howey…）優先聽成對的字
+    if (window.SpeechRecognitionPhrase) try { rec.phrases = C.BIAS_TERMS.map(w => new SpeechRecognitionPhrase(w, 3)); } catch (e) {} }
   rec.onresult = e => {
     restartFails = 0; showErr('');
     let fin = '', interim = '';
@@ -1142,6 +1245,7 @@ async function startListen() {
   };
   rec.onerror = e => {
     if (e.error === 'no-speech' || e.error === 'aborted') return;
+    if (e.error === 'phrases-not-supported') { try { rec.phrases = []; } catch (er) {} return; } // 不支援加權詞 → 拿掉，自動重開
     if (recLocal && (e.error === 'language-not-supported' || e.error === 'service-not-allowed')) { // 本機辨識不行 → 自動改回一般辨識
       recLocal = false; rec.processLocally = false; rec.lang = S.lang; setStatus(); return;
     }
@@ -1209,6 +1313,14 @@ function bind() {
   $('vm1').onclick = () => setView('one'); $('vm2').onclick = () => setView('short'); $('vm3').onclick = () => setView('full');
   $('nextBtn').onclick = () => { newQuestion(); setStatus(); };
   $('freezeBtn').onclick = toggleFreeze;
+  $('collectBtn').onclick = () => setCollect(S.after !== 'collect');
+  $('stackClear').onclick = () => { if (!STACK.length || !confirm('清空已收的 ' + STACK.length + ' 題？（問答紀錄還在）')) return; STACK = []; renderStack(); };
+  $('stack').onclick = e => {
+    const d = e.target.dataset.done, el = e.target.closest('.sq'); if (!el) return;
+    const q = STACK.find(x => x.id === +(d || el.dataset.q)); if (!q) return;
+    if (d) q.done = !q.done; else q.open = !q.open;
+    renderStack();
+  };
   $('fsUp').onclick = () => { S.fs = Math.min(2.2, +(S.fs + 0.1).toFixed(2)); saveS(); applyLook(); };
   $('fsDown').onclick = () => { S.fs = Math.max(0.7, +(S.fs - 0.1).toFixed(2)); saveS(); applyLook(); };
   $('scriptToggle').onclick = () => { S.scriptOpen = !S.scriptOpen; saveS(); applyLook(); };
@@ -1249,6 +1361,7 @@ function bind() {
     else if (e.key === 'f' || e.key === 'F') toggleFreeze();
     else if (e.key === 'm' || e.key === 'M') listening ? stopListen() : startListen();
     else if (e.key === 'q' || e.key === 'Q') toggleQA();
+    else if (e.key === 'c' || e.key === 'C') setCollect(S.after !== 'collect');
     else if (e.key === '1') setView('one'); else if (e.key === '2') setView('short'); else if (e.key === '3') setView('full');
   });
 
@@ -1315,7 +1428,7 @@ function bind() {
     const wasLang = S.lang;
     S.lang = $('sLang').value; S.silence = +$('sSilence').value; S.after = $('sAfter').value;
     S.strict = $('sStrict').value === '1'; S.theme = $('sTheme').value; S.engine = $('sEngine').value;
-    saveS(); applyLook(); setStatus(); $('setDlg').close();
+    saveS(); applyLook(); applyCollect(); setStatus(); $('setDlg').close();
     if (listening && wasLang !== S.lang) { stopListen(); setTimeout(startListen, 400); }
   };
   $('kTest').onclick = async () => {
@@ -1349,7 +1462,7 @@ function toggleFreeze() {
 }
 
 (async function init() {
-  applyLook(); bind(); setView(S.view || 'full');
+  applyLook(); bind(); setView(S.view || 'full'); applyCollect();
   try { await ensureDefaultKB(); } catch (e) {}
   await detectLocal();
   try { await autoPack(); } catch (e) { showErr('知識包載入失敗：' + e.message); }

@@ -146,5 +146,16 @@ ok(C.followUpRewrite('那如果是收藏型的話呢？', '收益型NFT算不算
 ok(C.followUpRewrite('可以再說清楚嗎', '收益型NFT算不算證券？') === null, '非焦點追問不改寫');
 ok(C.detailGap('你論文裡訪談的那三位音樂人，他們分別是誰？', '以文獻分析、比較法分析與理論推導為主。').length === 1, '問「他們分別是誰」答案沒有人名 → 警示');
 ok(C.detailGap('分潤寫錯了是誰的責任？', '發行人應負債務不履行責任。').length === 0, '「是誰的責任」不是問人名');
+ok(!C.looksComplete('我想請問你的智慧合約') && C.looksComplete('收益型NFT算不算證券') && C.looksComplete('那日本呢'), '收題：講到一半 vs 已經問完');
+ok(!C.looksComplete('我有三個問題') && !C.looksComplete('我覺得你的論文整體架構很完整'), '收題：開場白、評論還沒問完');
+ok(C.collectSplit('收益型NFT算不算證券呢 你的合約怎麼防重入攻擊').length === 2, '收題：沒說第一第二也能拆兩題');
+ok(C.collectSplit('我有三個問題，第一，買NFT有沒有買到著作權？第二，你的合約怎麼防重入？第三，收益型NFT會不會是證券？').length === 3, '收題：第一第二第三拆三題');
+ok(C.collectSplit('你覺得收益型NFT算不算證券').length === 1, '收題：單一問題不拆');
+ok(C.isChatter('謝謝主席') && C.isChatter('好那換下一位') && !C.isChatter('收益型NFT算不算證券') && !C.isChatter('那日本呢'), '收題：客套串場不留卡片');
+ok(C.detailGap('NFT交易的契約是在什麼時候成立的？', '').length === 0 && C.detailGap('如果今天一個音樂NFT平台來申請，金管會應該優先看哪些東西？', '').length === 0, '契約什麼時候成立、如果今天… 不是問日期');
+ok(C.detailGap('虛擬資產服務法什麼時候通過的？', '').length === 1, '法律什麼時候通過 → 問日期');
+ok(C.detailGap('韓國Musicow是哪一年在台灣正式上市的？', 'Musicow是2016年在韓國成立的音樂版權投資平台。').length === 1, '問哪一年上市，答案只有成立年份 → 警示');
+ok(C.detailGap('虛擬資產服務法是什麼時候通過的？', '虛擬資產服務法於2026年6月30日三讀通過。').length === 0, '有同一個動作的年份 → 不警示');
+ok(C.detailGap('你論文引用的2025年金管會第三號函令，內容是什麼？', '金管銀法字第11201234號函說明…').length === 1, '問第三號函令，答案是別的文號 → 警示');
 console.log(`\n${pass} 通過 / ${fail} 失敗`);
 process.exit(fail ? 1 : 0);

@@ -349,6 +349,12 @@
   }
 
   /* ---------- 語音辨識校正：把常見聽錯的專有名詞改回來（比對前使用） ---------- */
+  // 語音辨識加權詞（Chrome 本機辨識支援時，讓這些專有名詞更容易被聽對）
+  const BIAS_TERMS = ['NFT', '智慧合約', '版稅', '著作權', '鄰接權', '著作權法第37條', '授權', '專屬授權', '善意受讓', '虛擬資產服務法', '虛擬資產', '金管會',
+    '證券型代幣', '收益型', 'Howey測試', 'MiCA', 'ERC-721', 'ERC-2981', '重入攻擊', 'ReentrancyGuard', 'pull payment', 'Sepolia', '測試網', '主網',
+    '鏈上', '鏈下', 'metadata', 'IPFS', 'oracle', '集管團體', '區塊鏈', '分潤', '去中心化', 'VASP', '洗錢防制', 'KYC', 'Travel Rule',
+    'Royal.io', 'Opulous', 'Sound.xyz', 'anotherblock', 'Musicow', 'Foundry', '三層次模型', '私法效力', '監管要求', '技術治理', '比較法',
+    '穩定幣', '鑄造', '二級市場', '錢包', '存證', '電子簽章法', '民法', '詐欺', '投資人保護', '代幣化', '音樂產業', '唱片公司', '詞曲作者'];
   const ASR_FIX = [
     [/(?:\b[nｎ]\s*[fｆ]\s*[tｔ]\b|恩欸夫踢|恩愛夫踢)/gi, 'NFT'],
     [/\be\s*r\s*c\s*-?\s*(\d{3,4})/gi, 'ERC-$1'], [/\b(?:erc|ERC)\s*(\d{3,4})/g, 'ERC-$1'],
@@ -371,9 +377,41 @@
     return t;
   }
   // 追問：很短、或以「那／所以／剛剛／這個」開頭，要接上上一題一起理解
+  // 這段話聽起來是不是已經問完了（用來判斷停頓後接著講的是同一題的後半，還是下一題）
+  const Q_DONE = /(嗎|呢|吧|嘛|麼|什麼|甚麼|怎麼|如何|為什麼|為何|哪[裡些個種一位]|多少|幾[個年種次位]|是否|有沒有|會不會|能不能|可不可以|是不是|要不要|對不對|好不好|怎樣|誰|說明|解釋|介紹|談談|看法|意見|回應|差別|差異|區別|關係|影響|問題在哪)/;
+  const LEAD_IN = /(請教|請問|想問|問一下|問你|問您|一個問題|幾個問題|兩個問題|三個問題|我想|就是|那個|然後|所以|但是|不過|而且|如果)$/;
+  function looksComplete(text) {
+    const t = String(text || '').replace(/[\s，,。、…]+$/, '');
+    if (/[？?嗎呢]$/.test(t)) return true;
+    if (t.length < 6 || LEAD_IN.test(t)) return false;
+    const end = t.slice(-12);
+    return Q_DONE.test(end) || /([\u4e00-\u9fff])[不沒]\1/.test(end); // 算不算、能不能、有沒有
+  }
+  // 收題模式：沒有「第一、第二」也要拆——在明確問句結尾（嗎／呢／？）後面接著另一個問題，就拆開
+  function collectSplit(text) {
+    const marked = splitQuestions(text);
+    const out = [];
+    for (const m of marked) {
+      const bits = String(m).split(/(?<=[？?]|[嗎呢吧](?=[\s，,。]))[\s，,。]*/).map(x => x.trim()).filter(Boolean);
+      const merged = [];
+      for (const b of bits) { if (merged.length && (b.length < 6 || merged[merged.length - 1].length < 6)) merged[merged.length - 1] += b; else merged.push(b); }
+      out.push(...merged);
+    }
+    return out.length >= 2 ? out.slice(0, 6) : [String(text || '').trim()];
+  }
+  // 委員之間的客套與串場（謝謝、好、下一位…）不算問題，收題模式不留卡片
+  function isChatter(text) {
+    const t = String(text || '').replace(/[\s，,。.！!、…]+/g, '');
+    if (!t || looksComplete(t) || t.length > 14) return false;
+    return /^(好|好的|嗯|謝謝|感謝|那|OK|ok|對|是|沒問題|下一位|換|我先|主席|老師|委員|請|同學|大家|麥克風|聽得到)/.test(t) || t.length < 4;
+  }
   function isFollowUp(text) {
     const t = String(text || '').trim();
-    return t.length > 0 && (t.length <= 14 || /^(?:那(?:如果|麼|這|你)?|所以|剛剛|你剛剛|這個|這樣|延續|接著|再追問|那假設)/.test(t));
+    if (!t) return false;
+    if (/^(?:那(?:如果|麼|這|你)?|所以|剛剛|你剛剛|這個|這樣|延續|接著|再追問|那假設)/.test(t)) return true;
+    // 短句才可能是追問；但自己有主題（NFT、收益型…）就是獨立的新問題，不能被上一題拉走
+    const own = t.replace(/[？?。，,！!\s]/g, '').replace(/嗎|呢|吧|啊|什麼|怎麼|多少|可以|是不是|算不算|有沒有|會不會|能不能|如果|這個|那個|為什麼|請問|你|我|的|是|會|要|能|有|在|再|一下|例子|舉個|說明|解釋|清楚/g, '');
+    return t.length <= 14 && !(/[A-Za-z]{2,}/.test(t) || own.length >= 5);
   }
 
   // 「那日本呢？」「如果是歐盟呢」→ 把焦點換進上一題，改寫成完整問題：「日本的情況：收益型NFT算不算證券？」
@@ -391,14 +429,18 @@
     ['件數', /幾張|幾件|幾個案|幾次|多少件|多少個案|多少張/, /\d+\s*(?:件|張|個|次|案)|[一二三四五六七八九十兩]+\s*(?:件|張|個案|次)/],
     ['人名', /作者是誰|是誰寫|哪位(?:學者|教授)|誰提出|(?:他們|她們|那[幾三兩二]位|這[幾三兩二]位|分別)是誰|是哪幾位|有哪些人/, /教授|學者|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+|，\d{4}年|（\d{4}）/],
     ['判決字號或出處', /字號|案號|哪一(?:位|篇|本)|誰寫的|作者是|出處是|引用的那/, /字第\s*\d+\s*號|\d{2,3}\s*年度|《[^》]+》|[A-Z][a-z]+\s+v\.?\s/],
-    ['日期或時程', /哪一年|幾月幾|什麼時候(?:通過|施行|生效|判決|成立)|今天|現在的價/, /\d{4}\s*年|\d{2,3}\s*年\s*\d+\s*月|\d+\s*月\s*\d+\s*日/]
+    ['函令文號', /第[一二三四五六七八九十百\d]+號(?:函|令|解釋|釋字|函釋)/, /第[一二三四五六七八九十百\d]+號/],
+    ['日期或時程', /哪一年|幾月幾|什麼時候(?:通過|施行|上路|判決)|(?:法|條例|草案|子法|規則)\S{0,4}什麼時候(?:生效|成立)|今天(?:的價|價格|是幾)|現在的價/, /\d{4}\s*年|\d{2,3}\s*年\s*\d+\s*月|\d+\s*月\s*\d+\s*日/]
   ];
   // 問到「特定對象」（你引用的那個…／哪一間…），但那個名字在資料中罕見、答案也沒提到 → 視為查無
   const REF_CUE = /引用的|提到的那|那個|那位|那篇|那間|哪一間|哪一家|哪家|案子|判決|發行案/;
   function rareTermGap(question, answerText, idx) {
     if (!idx || !idx.df) return [];
-    const q = norm(normalizeASR(question));
-    if (!REF_CUE.test(q)) return [];
+    const q0 = norm(normalizeASR(question)).replace(/[呃嗯喔欸哦]/g, ''); // 口頭贅詞不算專有名詞
+    if (!REF_CUE.test(q0)) return [];
+    // 只看「那篇／那個／判決」這類指稱詞前後的字（對方指名的東西就在那附近），長篇發言的其他句子不算
+    let q = '';
+    for (const m of q0.matchAll(new RegExp(REF_CUE.source, 'g'))) q += ' ' + q0.slice(Math.max(0, m.index - 20), m.index + m[0].length + 22);
     const a = norm(answerText || ''), out = [];
     for (const w of q.match(/[a-z][a-z0-9.\-]{2,}/g) || []) if ((idx.df.get(w) || 0) <= 2 && !a.includes(w)) out.push(w);
     for (const run of q.match(/[\u3400-\u9fff]+/g) || []) {
@@ -417,7 +459,7 @@
     }
     return [...new Set(out)].slice(0, 2);
   }
-  const COMMON_UNK = new Set(['請問', '一下', '老師', '委員', '同學', '大家', '剛剛', '覺得', '是不', '什麼', '怎麼', '為什', '麼樣', '有沒', '沒有', '到底', '好奇', '奇的', '多久', '久才', '後賺', '賺了']);
+  const COMMON_UNK = new Set(['請問', '請教', '想請', '教一', '一下', '老師', '委員', '同學', '大家', '剛剛', '覺得', '是不', '什麼', '怎麼', '為什', '麼樣', '有沒', '沒有', '到底', '好奇', '奇的', '多久', '久才', '後賺', '賺了']);
 
   function detailGap(question, answerText) {
     const q = normalizeASR(question), a = String(answerText || '');
@@ -429,13 +471,19 @@
     const years = (q.match(/(?:19|20)\d{2}/g) || []);
     const Y = new Date().getFullYear(), REL = { 前年: Y - 2, 去年: Y - 1, 今年: Y, 明年: Y + 1 }; // 「去年多少」也是指定年份
     for (const [w, y] of Object.entries(REL)) if (q.includes(w)) years.push(String(y));
-    const GENERIC_NUM = new Set(['金額或數字', '件數', '日期或時程']); // 通用數字才需要同句佐證；字號、人名本身就很特定
+    const GENERIC_NUM = new Set(['金額或數字', '件數', '日期或時程']);
+    const doc = (q.match(/第[一二三四五六七八九十百\d]+號/) || [''])[0]; // 問「第三號函令」→ 答案要有同一個「第三號」
+    // 問「哪一年在台灣上市」→ 有年份的那句話也要講到「上市」這個動作，不能拿別的年份充數
+    const act = (q.replace(/[的了呢嗎吧？?。！!\s]+$/, '').match(/([\u3400-\u9fff]{2})$/) || [, ''])[1];
+    const actKey = /什麼|時候|哪年|一年|幾月|幾號/.test(act) ? '' : act; // 通用數字才需要同句佐證；字號、人名本身就很特定
     return need.filter(([label, , has]) => !sents.some(x => {
       if (!has.test(x)) return false;
+      if (label === '函令文號') return !!doc && x.includes(doc);
       if (!GENERIC_NUM.has(label)) return true;
+      if (label === '日期或時程' && actKey && !x.includes(actKey)) return false;
       if (years.length && !years.some(y => x.includes(y))) return false; // 問題指定年份，答案的數字必須是同一年
 
-      let hit = 0; for (const b of bigrams(x)) if (qb.has(b)) hit++;
+      let hit = 0; for (const b of bigrams(x)) if (qb.has(b) && (label !== '日期或時程' || /^[\u3400-\u9fff]{2}$/.test(b))) hit++; // 日期題：英文名稱的字母不算（Musicow 不能代表「在台灣上市」）
       return hit >= 2;
     })).map(([label]) => label);
   }
@@ -631,7 +679,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, followUpRewrite, premiseCue, syllables, phoneticIndex, phoneticScores, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, followUpRewrite, premiseCue, looksComplete, collectSplit, isChatter, BIAS_TERMS, syllables, phoneticIndex, phoneticScores, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);
