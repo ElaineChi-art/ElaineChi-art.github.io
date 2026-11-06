@@ -1,31 +1,7 @@
 {
- "updated": "2026-11-05 07:45 UTC",
+ "updated": "2026-11-06 07:44 UTC",
  "count": 12,
  "jobs": [
-  {
-   "title": "Web3 Internship- Software Engineering Intern, OneSavieLab",
-   "company": "AIFT",
-   "salary": "NT$ 200 - 200 (時薪)",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/aift/jobs/32816",
-   "tags": [
-    "intern",
-    "web3",
-    "developer"
-   ]
-  },
-  {
-   "title": "Web3 Product Management Intern, OneSavie Lab",
-   "company": "AIFT",
-   "salary": "NT$ 200 - 200 (時薪)",
-   "location": "臺北市",
-   "url": "https://www.yourator.co/companies/aift/jobs/32817",
-   "tags": [
-    "Internship",
-    "web3",
-    "Business"
-   ]
-  },
   {
    "title": "CRM 技術顧問實習生(應屆畢業）",
    "company": "伊原力科技",
@@ -97,6 +73,30 @@
     "intern",
     "實習生",
     "實習生／工讀生"
+   ]
+  },
+  {
+   "title": "Web3 Product Management Intern, OneSavie Lab",
+   "company": "AIFT",
+   "salary": "NT$ 200 - 200 (時薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/aift/jobs/32817",
+   "tags": [
+    "Internship",
+    "web3",
+    "Business"
+   ]
+  },
+  {
+   "title": "Web3 Internship- Software Engineering Intern, OneSavieLab",
+   "company": "AIFT",
+   "salary": "NT$ 200 - 200 (時薪)",
+   "location": "臺北市",
+   "url": "https://www.yourator.co/companies/aift/jobs/32816",
+   "tags": [
+    "intern",
+    "web3",
+    "developer"
    ]
   },
   {
