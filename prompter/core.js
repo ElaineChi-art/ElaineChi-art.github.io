@@ -354,7 +354,10 @@
     '證券型代幣', '收益型', 'Howey測試', 'MiCA', 'ERC-721', 'ERC-2981', '重入攻擊', 'ReentrancyGuard', 'pull payment', 'Sepolia', '測試網', '主網',
     '鏈上', '鏈下', 'metadata', 'IPFS', 'oracle', '集管團體', '區塊鏈', '分潤', '去中心化', 'VASP', '洗錢防制', 'KYC', 'Travel Rule',
     'Royal.io', 'Opulous', 'Sound.xyz', 'anotherblock', 'Musicow', 'Foundry', '三層次模型', '私法效力', '監管要求', '技術治理', '比較法',
-    '穩定幣', '鑄造', '二級市場', '錢包', '存證', '電子簽章法', '民法', '詐欺', '投資人保護', '代幣化', '音樂產業', '唱片公司', '詞曲作者'];
+    '穩定幣', '鑄造', '二級市場', '錢包', '存證', '電子簽章法', '民法', '詐欺', '投資人保護', '代幣化', '音樂產業', '唱片公司', '詞曲作者',
+    'Story Protocol', 'PIL', 'ERC-6551', 'ERC-721C', 'Splits', 'Grimes', 'Elf.Tech', 'Content ID', 'EVEN', 'Luminate', 'SPV', 'Songview', '李嘉圖合約', '預言機', 'Chainlink', 'USDC',
+    '零知識證明', 'ZKP', 'DID', 'CLARITY Act', 'GENIUS Act', 'UCC', '可控制電子紀錄', 'Thomson Reuters', 'Ross', 'Ooki DAO', 'Impact Theory', 'Stoner Cats', 'Kings of Leon',
+    'MetaBirkins', 'StockX', 'RWA', 'SCSP', '無主版稅', '雙軌審查', '代理合約', '法遵元資料', '條件性執行', '混合式契約', '授權鏈', '物權法定', '目的性限縮', '電子簽章法'];
   const ASR_FIX = [
     [/(?:\b[nｎ]\s*[fｆ]\s*[tｔ]\b|恩欸夫踢|恩愛夫踢)/gi, 'NFT'],
     [/\be\s*r\s*c\s*-?\s*(\d{3,4})/gi, 'ERC-$1'], [/\b(?:erc|ERC)\s*(\d{3,4})/g, 'ERC-$1'],
@@ -369,6 +372,11 @@
     [/(?:旅行規則|travel\s*rule)/gi, 'Travel Rule'], [/(?:給媽|格瑪|GEMA|gema)/g, 'GEMA'],
     [/(?:龍捲風現金|tornado\s*cash)/gi, 'Tornado Cash'], [/(?:重入攻擊|重新進入攻擊|reentrancy)/gi, '重入攻擊'],
     [/(?:元數據|metadata|meta\s*data)/gi, 'metadata'], [/(?:昆丁|昆汀|塔倫提諾)/g, 'Tarantino'],
+    [/(?:皮爾|屁爾|P\s*I\s*L)(?=授權|機制|條款|呢|嗎|$|\s)/g, 'PIL'], [/(?:葛萊姆斯|格萊姆斯|格林斯|葛萊姆絲|Grimes)/gi, 'Grimes'], [/(?:艾爾夫|愛爾夫|精靈)\s*(?:tech|泰克|科技)/gi, 'Elf.Tech'],
+    [/(?:史都瑞|史多瑞|斯托瑞|故事協議|story\s*protocol)/gi, 'Story Protocol'], [/(?:content\s*id|內容\s*ID|康田\s*ID)/gi, 'Content ID'], [/(?:李家圖|李佳圖|里嘉圖|ricardian)/gi, '李嘉圖'],
+    [/(?:預言雞|預言基|語言機)(?=問題|網路|節點)/g, '預言機'], [/(?:chain\s*link|鏈結點)/gi, 'Chainlink'], [/(?:歐基|奧基|ooki)\s*(?:DAO|刀|道)/gi, 'Ooki DAO'], [/(?:史東納|斯通納|stoner)\s*(?:cats?|凱茲|貓)/gi, 'Stoner Cats'],
+    [/(?:柏金包案|meta\s*birkins?|梅塔柏金)/gi, 'MetaBirkins'], [/(?:史塔克x|stock\s*x)/gi, 'StockX'], [/(?:克萊瑞提|克拉瑞提|clarity)\s*(?:法案|act)/gi, 'CLARITY Act'], [/(?:吉尼斯|天才|genius)\s*(?:法案|act)/gi, 'GENIUS Act'],
+    [/\bu\s*c\s*c\b/gi, 'UCC'], [/\bs\s*p\s*v\b/gi, 'SPV'], [/\bz\s*k\s*p\b/gi, 'ZKP'], [/\bd\s*i\s*d\b/g, 'DID'], [/\br\s*w\s*a\b/gi, 'RWA'], [/(?:s\s*c\s*s\s*p)/gi, 'SCSP'], [/\bpill\b/gi, 'PIL'],
     [/區塊練|區塊連/g, '區塊鏈'], [/鏈上鏈下|練上練下/g, '鏈上鏈下'], [/著作全/g, '著作權'], [/版權稅/g, '版稅']
   ];
   function normalizeASR(text) {
@@ -377,6 +385,31 @@
     return t;
   }
   // 追問：很短、或以「那／所以／剛剛／這個」開頭，要接上上一題一起理解
+  // 對方指名簡報頁（「第14頁」「圖3」「表1」）→ 回傳頁碼；擬答（依據）裡的頁碼 → 回傳清單
+  const FIG = { 1: 5, 2: 7, 3: 11, 4: 12, 5: 13 }, TBL = { 1: 33 };
+  function zhNum(s) {
+    if (/^\d+$/.test(s)) return +s;
+    const d = '零一二三四五六七八九'; let n = 0;
+    if (s.includes('十')) { const [a, b] = s.split('十'); n = (a ? d.indexOf(a) : 1) * 10 + (b ? d.indexOf(b) : 0); return n; }
+    return d.indexOf(s);
+  }
+  function pageRef(text) {
+    const t = String(text || '');
+    let m = t.match(/第\s*([\d一二三四五六七八九十]{1,3})\s*(?:頁|張投影片|張簡報)/);
+    if (m) return zhNum(m[1]);
+    if ((m = t.match(/圖\s*([1-5一二三四五])(?![\d])/))) return FIG[zhNum(m[1])] || 0;
+    if ((m = t.match(/表\s*([1一])(?![\d])/))) return TBL[1];
+    return 0;
+  }
+  function slidePages(text) {
+    const out = [];
+    for (const m of String(text || '').matchAll(/簡報第([\d、，,到至及和頁第]+)/g)) {
+      const r = m[1].match(/^(\d+)(?:頁)?到(?:第)?(\d+)/);
+      if (r) for (let i = +r[1]; i <= +r[2]; i++) out.push(i);
+      else for (const n of m[1].match(/\d+/g) || []) out.push(+n);
+    }
+    return [...new Set(out)].filter(n => n >= 1 && n <= 42);
+  }
   // 這段話聽起來是不是已經問完了（用來判斷停頓後接著講的是同一題的後半，還是下一題）
   const Q_DONE = /(嗎|呢|吧|嘛|麼|什麼|甚麼|怎麼|如何|為什麼|為何|哪[裡些個種一位]|多少|幾[個年種次位]|是否|有沒有|會不會|能不能|可不可以|是不是|要不要|對不對|好不好|怎樣|誰|說明|解釋|介紹|談談|看法|意見|回應|差別|差異|區別|關係|影響|問題在哪)/;
   const LEAD_IN = /(請教|請問|想問|問一下|問你|問您|一個問題|幾個問題|兩個問題|三個問題|我想|就是|那個|然後|所以|但是|不過|而且|如果)$/;
@@ -429,7 +462,7 @@
     ['件數', /幾張|幾件|幾個案|幾次|多少件|多少個案|多少張/, /\d+\s*(?:件|張|個|次|案)|[一二三四五六七八九十兩]+\s*(?:件|張|個案|次)/],
     ['人名', /作者是誰|是誰寫|哪位(?:學者|教授)|誰提出|(?:他們|她們|那[幾三兩二]位|這[幾三兩二]位|分別)是誰|是哪幾位|有哪些人/, /教授|學者|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+|，\d{4}年|（\d{4}）/],
     ['判決字號或出處', /字號|案號|哪一(?:位|篇|本)|誰寫的|作者是|出處是|引用的那/, /字第\s*\d+\s*號|\d{2,3}\s*年度|《[^》]+》|[A-Z][a-z]+\s+v\.?\s/],
-    ['函令文號', /第[一二三四五六七八九十百\d]+號(?:函|令|解釋|釋字|函釋)/, /第[一二三四五六七八九十百\d]+號/],
+    ['函令文號', /第[一二三四五六七八九十百\d]+號[A-Za-z\u4e00-\u9fff]{0,6}(?:函|令|解釋|釋字)/, /第[一二三四五六七八九十百\d]+號/],
     ['日期或時程', /哪一年|幾月幾|什麼時候(?:通過|施行|上路|判決)|(?:法|條例|草案|子法|規則)\S{0,4}什麼時候(?:生效|成立)|今天(?:的價|價格|是幾)|現在的價/, /\d{4}\s*年|\d{2,3}\s*年\s*\d+\s*月|\d+\s*月\s*\d+\s*日/]
   ];
   // 問到「特定對象」（你引用的那個…／哪一間…），但那個名字在資料中罕見、答案也沒提到 → 視為查無
@@ -463,6 +496,9 @@
 
   function detailGap(question, answerText) {
     const q = normalizeASR(question), a = String(answerText || '');
+    // 「你引用的那篇哈佛法學評論文章」→ 對方指名的刊物或作品，答案裡要真的出現，不能拿別的教授充數
+    const named = q.match(/(?:那篇|那本|那份)([^，。？?]{3,14}?)(?:的)?(?:文章|論文|報告|專書|著作)/);
+    if (named && !a.includes(named[1])) return ['判決字號或出處'];
     const need = DETAIL_ASK.filter(([, ask]) => ask.test(q));
     if (!need.length) return [];
     // 數字／日期／字號必須和問題的關鍵詞出現在同一句，才算真的回答到（避免被別處的數字騙過）
@@ -679,7 +715,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, followUpRewrite, premiseCue, looksComplete, collectSplit, isChatter, BIAS_TERMS, syllables, phoneticIndex, phoneticScores, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, followUpRewrite, premiseCue, looksComplete, collectSplit, isChatter, pageRef, slidePages, BIAS_TERMS, syllables, phoneticIndex, phoneticScores, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

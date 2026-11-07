@@ -84,6 +84,8 @@ mark{background:var(--mark);color:inherit;border-radius:2px}
 #answerCard.vm-short .layer-full{display:none!important}
 main.collect #answerCard .layer-full,main.collect #answerCard .layer-short,main.collect #answerActions{display:none!important}
 .sq{border:1px solid var(--line);border-left:4px solid var(--accent2);border-radius:10px;padding:8px 12px;margin:8px 0;cursor:pointer}
+.sq.sel{outline:2px solid var(--accent)}
+.sq .pg{font-size:12px;color:var(--faint);white-space:nowrap}
 .sq.done{opacity:.45;border-left-color:var(--line)}
 .sq .qq{font-size:calc(15px*var(--fs));color:var(--muted);display:flex;gap:8px;align-items:baseline}
 .sq .qq .no{color:var(--accent2);font-weight:800;white-space:nowrap}
@@ -139,7 +141,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
   <span id="aiText" class="muted"></span>
   <span id="errText" class="err"></span>
   <span class="spacer"></span>
-  <span class="kbd">Q＝專家問答　空白鍵＝下一題　1/2/3＝一句話/簡答/完整　F＝凍結　C＝收題模式</span>
+  <span class="kbd">Q＝專家問答　空白鍵＝下一題　1/2/3＝一句話/簡答/完整　F＝凍結　C＝收題模式　↑↓＝選卡片　Enter＝展開　D＝答完</span>
 </div>
 
 <main>
@@ -182,6 +184,10 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
     </div>
   </section>
   <aside>
+    <div class="card" id="slideCard" style="display:none">
+      <div class="label">📑 對應簡報頁<span id="slideChips"></span></div>
+      <img id="slideImg" alt="" style="width:100%;border-radius:8px;display:block;cursor:zoom-in">
+    </div>
     <div class="card">
       <div class="label">資料依據<span id="srcCount" class="muted"></span></div>
       <div id="sources" class="small muted">提問後會即時列出知識庫裡最相關的段落與頁碼。</div>
@@ -683,7 +689,7 @@ function newQuestion() {
   if (Q && qText(Q)) { archive(Q); if (S.after === 'collect' && !STACK.includes(Q)) STACK.push(Q); }
   if (Q && Q.ctrl && S.after !== 'collect') Q.ctrl.abort(); // 收題模式：上一題在背景繼續把答案配完
   if (Q && Q.status === 'listening' && S.after === 'collect' && qText(Q).length >= 4) { const old = Q; old.final = qText(old); old.interim = ''; Q = null; confirmQuestion(old); }
-  clearTimeout(silenceTimer);
+  clearTimeout(silenceTimer); silenceAt = 0;
   Q = blankQ();
   render();
 }
@@ -719,7 +725,7 @@ function onSpeech(fin, interim) {
     maybeProvisional();
   }
   clearTimeout(silenceTimer);
-  silenceTimer = setTimeout(confirmQuestion, S.silence);
+  silenceTimer = setTimeout(confirmQuestion, S.silence); silenceAt = performance.now() + S.silence;
 }
 
 // 題庫命中分級：≥0.86 視為同題；0.80–0.86 為「相近題目」須由使用者確認；以下只列候選、由 AI 依資料作答
@@ -727,6 +733,7 @@ const BANK_SAME = 0.86, BANK_NEAR = 0.80, BANK_MAIN = 0.75; // 主答案門檻�
 function strongBank(q) { return q.bank && q.bank.sim >= (q.bank.sem ? BANK_SAME : 0.6); }
 function nearBank(q) { return q.bank && q.bank.sem && !strongBank(q) && q.bank.sim >= BANK_NEAR; }
 // 擷取真正的問句（去掉開場白），多個片段一起比對，回傳前 3 個「不同擬答」
+function pagesOf(c) { return c._pg || (c._pg = C.slidePages(c.text)); }
 async function semanticBank(t, focus) {
   const vec = VEC; // 記住當下這份，載入新版時不受影響
   if (!vec || !vec.q) return null;
@@ -746,10 +753,10 @@ async function semanticBank(t, focus) {
   const ps = PIDX && PIDX.n === vec.qaIdx.length ? C.phoneticScores(C.normalizeASR(t), PIDX.p) : null;
   let topSem = -1; for (let j = 0; j < sem.length; j++) { sem[j] = (sem[j] - (/^自動擴充/.test(INDEX.chunks[vec.qaIdx[j]].docName) ? 4 : 0)) / 127; if (sem[j] > topSem) topSem = sem[j]; }
   const alpha = !ps || window.NO_PHON || topSem >= 0.80 ? 0 : topSem >= 0.75 ? 0.25 : 1.0;
-  const best = new Map();
+  const best = new Map(), pg = C.pageRef(t); // 對方指名第幾頁 → 講該頁的擬答優先
   for (let j = 0; j < sem.length; j++) {
     const c = INDEX.chunks[vec.qaIdx[j]], p = ps ? ps[j] : 0, cur = best.get(c.text);
-    const rank = sem[j] + alpha * p + (focus && (c.q.includes(focus) || c.text.includes(focus)) ? 0.06 : 0); // 追問的焦點（日本）要出現在答案裡
+    const rank = sem[j] + alpha * p + (focus && (c.q.includes(focus) || c.text.includes(focus)) ? 0.06 : 0) + (pg && pagesOf(c).includes(pg) ? 0.08 : 0); // 追問的焦點（日本）要出現在答案裡
     if (!cur || cur.rank < rank) best.set(c.text, { chunk: c, sim: sem[j], ps: p, rank });
   }
   const top = [...best.values()].sort((a, b) => b.rank - a.rank).slice(0, 3).map(x => {
@@ -775,10 +782,23 @@ function refreshRetrieval() {
 
 /* 邊聽邊配對：對方還在說就持續比對題庫與原文，講完時答案已在畫面上（全在本機，不經AI生成） */
 function liveMode() { return useLocal() || (S.engine === 'groq' && !getKey('groq')); }
-let liveTimer = null, liveBusy = false;
+let liveTimer = null, liveBusy = false, liveDue = 0, silenceAt = 0;
+// 視窗被全螢幕簡報蓋住時 Chrome 會凍結頁面計時器：用 Web Lock 擋住凍結，再用背景執行緒打拍子，「講完了」的判斷才不會延遲
+function keepAwake() {
+  if (navigator.locks) navigator.locks.request('prompter-awake', () => new Promise(() => {})).catch(() => {});
+  try {
+    const w = new Worker(URL.createObjectURL(new Blob(['setInterval(()=>postMessage(0),150)'], { type: 'text/javascript' })));
+    w.onmessage = () => {
+      const now = performance.now();
+      if (liveDue && now >= liveDue + 80) { clearTimeout(liveTimer); liveTimer = null; liveDue = 0; liveMatch(); }
+      if (silenceAt && now >= silenceAt + 80) { silenceAt = 0; if (Q && Q.status === 'listening') { clearTimeout(silenceTimer); confirmQuestion(); } }
+    };
+  } catch (e) {}
+}
 function scheduleLive() {
   if (liveTimer) return;
-  liveTimer = setTimeout(() => { liveTimer = null; liveMatch(); }, 600);
+  liveDue = performance.now() + 300; // 配對一輪約數十毫秒，縮短間隔讓答案更早出現
+  liveTimer = setTimeout(() => { liveTimer = null; liveDue = 0; liveMatch(); }, 300);
 }
 async function liveMatch(final, which) {
   if (!(which || Q) || !INDEX) return;
@@ -830,10 +850,11 @@ async function confirmQuestion(old) {
   if (!q || (q.status !== 'listening' && !old)) return;
   const t = qText(q);
   if (t.length < 4) return;
+  if (q === Q) silenceAt = 0;
   q.final = t; q.interim = ''; q.status = 'confirmed'; q.confirmedAt = performance.now();
   q.chatter = S.after === 'collect' && C.isChatter(t);
   if (liveMode()) { // 本機：用最後完整的問題再配對一次，直接定案，不跑慢又會捏造的小模型
-    if (q === Q) { clearTimeout(liveTimer); liveTimer = null; }
+    if (q === Q) { clearTimeout(liveTimer); liveTimer = null; liveDue = 0; }
     await liveMatch(true, q);
     if (q.status !== 'confirmed') return; // 收題模式：對方停頓後又接著講，同一題重新聽
     // 一次問了多題 → 每題各配一個最短答案
@@ -1079,10 +1100,27 @@ function render() {
   if (!q.raw && !q.ctrl && q.status === 'confirmed' && hasAnyKey()) act += '<button class="btn" data-act="ai">🤖 請 AI 整理成口語稿' + (liveMode() ? '（本機，約30秒）' : '') + '</button>';
   if (q.raw && !q.ctrl && q.status === 'confirmed') act += '<button class="btn" data-act="redo">↻ 換個說法</button>';
   setHTML($('answerActions'), act);
+  showSlides(q, useBankMain);
 }
+// 擬答對應的簡報頁（對方指名的頁優先）；線上版沒有投影片圖檔就不顯示
+let slideNow = 0, noSlides = false;
+function showSlides(q, bankShown) {
+  if (noSlides) return;
+  const named = C.pageRef(qText(q)), pages = [...new Set([...(named ? [named] : []), ...(bankShown && q.bank ? pagesOf(q.bank.chunk) : [])])].slice(0, 6);
+  $('slideCard').style.display = pages.length ? '' : 'none';
+  if (!pages.length) return;
+  setHTML($('slideChips'), pages.map(n => `<button class="btn small" data-pg="${n}" style="padding:0 7px;margin-left:4px">${n}</button>`).join(''));
+  if (!pages.includes(slideNow)) setSlide(pages[0]);
+}
+function setSlide(n) { slideNow = n; $('slideImg').src = 'slides/' + String(n).padStart(2, '0') + '.png'; }
 
 // 收題模式：每題一張卡片，最新的在最上面；上一題的答案在背景配完會自動補上
-let stackQueued = false;
+let stackQueued = false, stackSel = 0;
+function moveStack(d) {
+  const ids = [...document.querySelectorAll('#stack .sq')].map(e => +e.dataset.q); if (!ids.length) return;
+  const i = ids.indexOf(stackSel); stackSel = ids[Math.max(0, Math.min(ids.length - 1, i < 0 ? 0 : i + d))];
+  renderStack(); requestAnimationFrame(() => { const el = document.querySelector('#stack .sq.sel'); if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+}
 function renderStack() {
   if (stackQueued) return; stackQueued = true;
   requestAnimationFrame(() => {
@@ -1101,8 +1139,9 @@ function renderStack() {
       const cues = v.core.split('\n').filter(l => /^(⚖️|↪|🔁)/.test(l)).map(l => l.replace(/（相似度.*$/, ''));
       const trap = v.caution.split('\n').filter(l => /^🛑/.test(l));
       const split = q.split && q.split.length > 1 ? '<ol class="points">' + q.split.map(x => '<li><span class="muted">' + esc(x.q.slice(0, 28)) + '</span><br>' + esc(x.a.slice(0, 90)) + '</li>').join('') + '</ol>' : '';
-      return `<div class="sq${q.done ? ' done' : ''}${q.open ? ' open' : ''}" data-q="${q.id}">` +
-        `<div class="qq"><span class="no">第${no}題</span><span class="tx">${esc(qText(q))}</span><button class="ok" data-done="${q.id}">${q.done ? '✓ 答完' : '✓'}</button></div>` +
+      const pgs = !noSlides && q.bank ? pagesOf(q.bank.chunk).slice(0, 3) : [];
+      return `<div class="sq${q.done ? ' done' : ''}${q.open ? ' open' : ''}${q.id === stackSel ? ' sel' : ''}" data-q="${q.id}">` +
+        `<div class="qq"><span class="no">第${no}題</span><span class="tx">${esc(qText(q))}</span>${pgs.length ? `<span class="pg">📑${pgs.join('、')}</span>` : ''}<button class="ok" data-done="${q.id}">${q.done ? '✓ 答完' : '✓'}</button></div>` +
         (cues.length || trap.length ? `<div class="cue">${esc([...trap.map(l => l.split('→')[0] + '→ 不要硬答'), ...cues].join('\n'))}</div>` : '') +
         split +
         (v.one ? (cut ? `<div class="op">${esc(v.one.slice(0, cut).replace(/\s*\[\d+\]/g, ''))}</div><div class="rs">${esc(v.one.slice(cut).replace(/\s*\[\d+\]/g, ''))}</div>` : `<div class="op">${esc(v.one.replace(/\s*\[\d+\]/g, ''))}</div>`) : '<div class="wait">資料中沒有直接答案 → 先複述問題、說會後補充</div>') +
@@ -1313,6 +1352,9 @@ function bind() {
   $('vm1').onclick = () => setView('one'); $('vm2').onclick = () => setView('short'); $('vm3').onclick = () => setView('full');
   $('nextBtn').onclick = () => { newQuestion(); setStatus(); };
   $('freezeBtn').onclick = toggleFreeze;
+  $('slideChips').onclick = e => { const n = +e.target.dataset.pg; if (n) setSlide(n); };
+  $('slideImg').onerror = () => { noSlides = true; $('slideCard').style.display = 'none'; };
+  $('slideImg').onclick = () => window.open($('slideImg').src, '_blank');
   $('collectBtn').onclick = () => setCollect(S.after !== 'collect');
   $('stackClear').onclick = () => { if (!STACK.length || !confirm('清空已收的 ' + STACK.length + ' 題？（問答紀錄還在）')) return; STACK = []; renderStack(); };
   $('stack').onclick = e => {
@@ -1362,6 +1404,9 @@ function bind() {
     else if (e.key === 'm' || e.key === 'M') listening ? stopListen() : startListen();
     else if (e.key === 'q' || e.key === 'Q') toggleQA();
     else if (e.key === 'c' || e.key === 'C') setCollect(S.after !== 'collect');
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); moveStack(e.key === 'ArrowDown' ? 1 : -1); }
+    else if (e.key === 'Enter' || e.key === 'd' || e.key === 'D') { // 選中的卡片：Enter 展開，D 標答完
+      const q = STACK.find(x => x.id === stackSel); if (q) { if (e.key === 'Enter') q.open = !q.open; else q.done = !q.done; renderStack(); } }
     else if (e.key === '1') setView('one'); else if (e.key === '2') setView('short'); else if (e.key === '3') setView('full');
   });
 
@@ -1462,7 +1507,7 @@ function toggleFreeze() {
 }
 
 (async function init() {
-  applyLook(); bind(); setView(S.view || 'full'); applyCollect();
+  applyLook(); bind(); setView(S.view || 'full'); applyCollect(); keepAwake();
   try { await ensureDefaultKB(); } catch (e) {}
   await detectLocal();
   try { await autoPack(); } catch (e) { showErr('知識包載入失敗：' + e.message); }
