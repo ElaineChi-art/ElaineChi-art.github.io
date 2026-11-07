@@ -161,5 +161,8 @@ ok(C.pageRef('你第14頁那個數字哪來的') === 14 && C.pageRef('第十四�
 ok(C.slidePages('（依據：簡報第4頁、第13頁、第34頁）').join() === '4,13,34' && C.slidePages('（依據：簡報第33到36頁）').join() === '33,34,35,36' && C.slidePages('（依據：簡報第5、7、11頁）').join() === '5,7,11', '擬答依據抽出簡報頁碼');
 ok(C.normalizeASR('李家圖合約跟皮爾授權').includes('李嘉圖') && C.normalizeASR('皮爾授權').includes('PIL'), '新專有名詞聽錯校正');
 ok(C.detailGap('你引用的那篇哈佛法學評論文章，作者是誰？', '哈佛法學院I. Glenn Cohen教授發表於法律與當代問題期刊。').length === 1, '指名的刊物沒出現在答案 → 警示');
+ok(C.detailGap('AI基本法第三十二條對NFT平台的罰則是多少？', '研討會上討論的高風險集中在醫療。').length === 1 && C.detailGap('著作權法第37條規定什麼？', '第37條規定約定不明推定未授權。').length === 0, '問特定條號：答案要有同一條');
+ok(C.normalizeASR('人工智慧基本法').includes('AI基本法'), '人工智慧基本法＝AI基本法');
+ok(C.collectSplit('好，謝謝報告人，那我們開放提問謝謝主席，我先問兩個問題，第一，你第14頁那個十三億美元有出處嗎？第二，你說ERC-2981沒有強制力，第28頁卻寫自動回流，這要怎麼解釋？').length === 2, '收題：開場客套不變成一張卡');
 console.log(`\n${pass} 通過 / ${fail} 失敗`);
 process.exit(fail ? 1 : 0);

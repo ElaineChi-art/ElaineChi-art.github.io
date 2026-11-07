@@ -824,7 +824,7 @@ async function liveMatch(final, which) {
         if (b2 && (!b || b2.sim > b.sim + 0.02)) { b = b2; mt = ctx; }
       }
     }
-    q.followUp = mt !== t; q.rewrite = rw ? rw.text : '';
+    q.followUp = mt !== t; q.rewrite = rw ? rw.text : ''; q.focus = rw ? rw.focus : '';
     const rt = rw ? rw.focus + ' ' + prev : t.length <= 10 ? mt : t; // 原文搜尋：只有很短的追問才併入上一題，避免稀釋重點
     const h = await retrieve(rt, 8).catch(() => C.search(INDEX, rt, 8)); // 多拿幾段，原文要點挑得更準
     { // 結果寫回它自己那一題（收題模式下，上一題的答案在背景配完也不會丟）
@@ -1028,6 +1028,11 @@ function answerView(q) {
   const pc = qText(q) && (q.phase === 'live' || q.status === 'confirmed') ? C.premiseCue(qText(q)) : null;
   if (pc) core = '⚖️ 先拆前提「' + pc.premise + '」：' + pc.move + (core ? '\n' + core : '');
   if (q.rewrite) core = '↪ 追問理解為：「' + q.rewrite + '」' + (core ? '\n' + core : '');
+  // 「那韓國呢」但答案沒講到韓國 → 提醒先說明只能講一般原則，不要假裝知道該國規定
+  if (q.focus && one && ![one, points.join(''), script].join('').includes(q.focus)) {
+    core = '⚠️ 答案沒有「' + q.focus + '」的具體資料：先說「' + q.focus + '的具體規定我沒有深入研究，就原則來說…」再講下面' + (core ? '\n' + core : '');
+    caution = '⚠️ 資料裡沒有「' + q.focus + '」的部分，不要編該國條文' + (caution ? '\n' + caution : '');
+  }
   // 完全沒把握聽懂（題庫最像的也很低）→ 不硬答，先用最可能的題目禮貌確認
   // 陷阱題：大字直接給安全說法，原本的答案降為背景（避免照念出錯的東西）
   if (safe) { if (one) points = ['（相關背景，可接著講）' + one, ...points]; one = safe; core = '🛑 陷阱題：對方要的細節你的資料裡沒有，先講下面這句' + (core ? '\n' + core : ''); }

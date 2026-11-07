@@ -377,7 +377,7 @@
     [/(?:預言雞|預言基|語言機)(?=問題|網路|節點)/g, '預言機'], [/(?:chain\s*link|鏈結點)/gi, 'Chainlink'], [/(?:歐基|奧基|ooki)\s*(?:DAO|刀|道)/gi, 'Ooki DAO'], [/(?:史東納|斯通納|stoner)\s*(?:cats?|凱茲|貓)/gi, 'Stoner Cats'],
     [/(?:柏金包案|meta\s*birkins?|梅塔柏金)/gi, 'MetaBirkins'], [/(?:史塔克x|stock\s*x)/gi, 'StockX'], [/(?:克萊瑞提|克拉瑞提|clarity)\s*(?:法案|act)/gi, 'CLARITY Act'], [/(?:吉尼斯|天才|genius)\s*(?:法案|act)/gi, 'GENIUS Act'],
     [/\bu\s*c\s*c\b/gi, 'UCC'], [/\bs\s*p\s*v\b/gi, 'SPV'], [/\bz\s*k\s*p\b/gi, 'ZKP'], [/\bd\s*i\s*d\b/g, 'DID'], [/\br\s*w\s*a\b/gi, 'RWA'], [/(?:s\s*c\s*s\s*p)/gi, 'SCSP'], [/\bpill\b/gi, 'PIL'],
-    [/區塊練|區塊連/g, '區塊鏈'], [/鏈上鏈下|練上練下/g, '鏈上鏈下'], [/著作全/g, '著作權'], [/版權稅/g, '版稅']
+    [/人工智[慧能]基本法/g, 'AI基本法'], [/區塊練|區塊連/g, '區塊鏈'], [/鏈上鏈下|練上練下/g, '鏈上鏈下'], [/著作全/g, '著作權'], [/版權稅/g, '版稅']
   ];
   function normalizeASR(text) {
     let t = String(text || '');
@@ -428,7 +428,7 @@
       const bits = String(m).split(/(?<=[？?]|[嗎呢吧](?=[\s，,。]))[\s，,。]*/).map(x => x.trim()).filter(Boolean);
       const merged = [];
       for (const b of bits) { if (merged.length && (b.length < 6 || merged[merged.length - 1].length < 6)) merged[merged.length - 1] += b; else merged.push(b); }
-      out.push(...merged);
+      out.push(...merged.filter(x => looksComplete(x) || !(isChatter(x) || LEAD_IN.test(x.replace(/[\s，,。]+$/, '')) || /開放提問|個問題$|請教一下$/.test(x))));
     }
     return out.length >= 2 ? out.slice(0, 6) : [String(text || '').trim()];
   }
@@ -498,7 +498,10 @@
     const q = normalizeASR(question), a = String(answerText || '');
     // 「你引用的那篇哈佛法學評論文章」→ 對方指名的刊物或作品，答案裡要真的出現，不能拿別的教授充數
     const named = q.match(/(?:那篇|那本|那份)([^，。？?]{3,14}?)(?:的)?(?:文章|論文|報告|專書|著作)/);
-    if (named && !a.includes(named[1])) return ['判決字號或出處'];
+    if (named && !a.includes(named[1])) return ['文章出處'];
+    // 問「第三十二條」→ 答案要講到同一條，否則可能是對方捏造的條號
+    const art = q.match(/第\s*([一二三四五六七八九十\d]{1,4})\s*條/);
+    if (art && /罰|規定|內容|多少|是什麼|怎麼/.test(q)) { const n = zhNum(art[1]); if (n && !new RegExp('第\\s*(' + n + '|' + art[1] + ')\\s*條').test(a)) return ['條文']; }
     const need = DETAIL_ASK.filter(([, ask]) => ask.test(q));
     if (!need.length) return [];
     // 數字／日期／字號必須和問題的關鍵詞出現在同一句，才算真的回答到（避免被別處的數字騙過）
