@@ -82,6 +82,7 @@ mark{background:var(--mark);color:inherit;border-radius:2px}
 .frame .fk{flex:0 0 auto;min-width:6.6em;font-size:calc(14px*var(--fs));color:var(--faint);font-weight:700}
 .frame .fa .ft{font-size:calc(27px*var(--fs));font-weight:800;color:var(--accent2)}
 .frame .fc .ft{font-weight:700}
+.frame .ft b,.script b{color:var(--accent2);font-weight:800}
 #answerCard.framed:not(.vm-one) #one, #answerCard.framed:not(.vm-one) #points, #answerCard.framed:not(.vm-one) #fullLabel{display:none!important}
 #answerCard.vm-one #frame{display:none!important}
 .dom{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
@@ -168,7 +169,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <div class="label layer-full" id="fullLabel" style="margin-top:12px">完整申論</div>
       <ol class="points layer-full" id="points"></ol>
       <div id="scriptWrap" class="layer-full" style="margin-top:12px">
-        <div class="label">完整口語稿 <button class="btn small" id="scriptToggle" style="padding:1px 8px">收合</button></div>
+        <div class="label">🎤 照念口語稿 <button class="btn small" id="scriptToggle" style="padding:1px 8px">收合</button></div>
         <div class="script" id="script"></div>
       </div>
       <div id="followWrap" class="layer-full" style="margin-top:10px">
@@ -367,13 +368,57 @@ async function loadVectors() {
     VEC = next; // 新向量完整載入後才替換，配對不中斷
   } catch (e) { VEC = null; }
 }
+const qvCache = new Map();
 async function embedQuery(q, raw) {
+  const key = (raw ? 'r|' : 'i|') + q;
+  if (qvCache.has(key)) return qvCache.get(key);
+  const v = await embedQueryRaw(q, raw);
+  qvCache.set(key, v); if (qvCache.size > 60) qvCache.delete(qvCache.keys().next().value);
+  return v;
+}
+async function embedQueryRaw(q, raw) {
   const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 2500);
   const r = await fetch(OLLAMA + '/api/embed', { method: 'POST', signal: ctrl.signal,
     body: JSON.stringify({ model: VEC.meta.model, input: [(raw ? '' : VEC.meta.instruct) + q], keep_alive: '60m', truncate: true }) });
   const v = (await r.json()).embeddings[0].slice(0, VEC.meta.dim);
   let n = 0; for (const x of v) n += x * x; n = Math.sqrt(n) || 1;
   return v.map(x => x / n);
+}
+// 論點零件庫：題庫沒有同一題時，從各題的背景／論證／回扣／回答／結論零件即時重組六段式答案
+let UNITS = null;
+async function loadUnits() {
+  if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return;
+  try {
+    const meta = await (await fetch('kb-units.json', { cache: 'no-store' })).json();
+    const data = new Int8Array(await (await fetch('kb-units.bin', { cache: 'no-store' })).arrayBuffer());
+    if (data.length === meta.units.length * meta.dim) {
+      const byQ = new Map(); meta.entries.forEach((e, i) => e.qs.forEach(q => byQ.set(q, i)));
+      UNITS = Object.assign(meta, { data, byQ });
+    }
+  } catch (e) { UNITS = null; }
+}
+function bigramSim(a, b) { const A = new Set(), B = new Set(); for (let i = 0; i < a.length - 1; i++) A.add(a.slice(i, i + 2)); for (let i = 0; i < b.length - 1; i++) B.add(b.slice(i, i + 2)); let n = 0; for (const x of A) if (B.has(x)) n++; return n / Math.max(1, Math.min(A.size, B.size)); }
+async function composeFrame(question, entSem) {
+  if (!UNITS || !VEC) return null;
+  const qv = await embedQuery(question), D = UNITS.dim, U = UNITS.units, data = UNITS.data, E = UNITS.entries;
+  const sc = new Float32Array(U.length), um = new Float32Array(E.length).fill(-1);
+  for (let i = 0; i < U.length; i++) { let s = 0; const o = i * D; for (let d = 0; d < D; d++) s += data[o + d] * qv[d]; sc[i] = s / 127; if (sc[i] > um[U[i].e]) um[U[i].e] = sc[i]; }
+  // 主幹：題目相似度＋零件相似度＋意圖（建議／利弊／展望…）與對象（創作者／平台／主管機關／買家）加權
+  const it = C.intentOf(question);
+  const score = E.map((e, i) => (entSem ? 0.6 * Math.max(0, entSem[i]) + 0.4 * um[i] : um[i])
+    + (it.kind && e.type && e.type.includes(it.kind) ? 0.06 : 0) + (it.actor && e.type && e.type.includes(it.actor) ? 0.05 : 0));
+  let e0 = 0; for (let i = 1; i < E.length; i++) if (score[i] > score[e0]) e0 = i;
+  if (score[e0] < 0.5) return null;
+  const main = E[e0], args = main.args.slice(0, 3);
+  // 補充：第二相關的題若有分數接近、且不重複的論點，加一條
+  let e1 = -1; for (let i = 0; i < E.length; i++) if (i !== e0 && (e1 < 0 || score[i] > score[e1])) e1 = i;
+  const used = [e0];
+  if (e1 >= 0 && score[e1] > score[e0] - 0.04) {
+    let bi = -1; for (let i = 0; i < U.length; i++) if (U[i].e === e1 && U[i].t === 'arg' && (bi < 0 || sc[i] > sc[bi])) bi = i;
+    if (bi >= 0 && !args.some(x => bigramSim(x, U[bi].x) > 0.5)) { args.push(U[bi].x); used.push(e1); }
+  }
+  return { ans: main.ans, bg: main.bg, args: args.slice(0, 4), mine: main.mine, concl: main.concl,
+    from: used.map(e => E[e].qs[0]), pages: [...new Set(used.flatMap(e => E[e].pages))].slice(0, 6), score: score[e0], intent: it };
 }
 async function retrieve(q, k) {
   const kw = C.search(INDEX, q, VEC ? 40 : k).filter(h => h.coverage >= 0.15);
@@ -404,7 +449,7 @@ async function loadKB() {
   const chunks = [];
   for (const d of DOCS) chunks.push(...C.chunkDoc(d));
   INDEX = C.buildIndex(chunks);
-  await loadVectors();
+  await loadVectors(); await loadUnits();
   renderKBSelect();
   if (Q) { refreshRetrieval(); }
 }
@@ -777,6 +822,11 @@ async function semanticBank(t, focus) {
   });
   if (!top.length) return null;
   top[0].alts = top.slice(1);
+  if (UNITS) { // 每一題（含所有問法）的題目相似度，給重組答案選主幹
+    const es = new Float32Array(UNITS.entries.length).fill(-1);
+    for (let j = 0; j < sem.length; j++) { const e = UNITS.byQ.get(INDEX.chunks[vec.qaIdx[j]].q); if (e !== undefined && sem[j] > es[e]) es[e] = sem[j]; }
+    top[0].entSem = es;
+  }
   return top[0];
 }
 
@@ -838,7 +888,10 @@ async function liveMatch(final, which) {
     q.followUp = mt !== t; q.rewrite = rw ? rw.text : ''; q.focus = rw ? rw.focus : '';
     const rt = rw ? rw.focus + ' ' + prev : t.length <= 10 ? mt : t; // 原文搜尋：只有很短的追問才併入上一題，避免稀釋重點
     const h = await retrieve(rt, 8).catch(() => C.search(INDEX, rt, 8)); // 多拿幾段，原文要點挑得更準
-    { // 結果寫回它自己那一題（收題模式下，上一題的答案在背景配完也不會丟）
+    // 題庫沒有同一題 → 從論點零件重組答案（向量已在上一步算好，這步只要幾毫秒）
+    const comp = !(b && b.sim >= BANK_SAME) ? await composeFrame(rw ? rw.text : rt, b && b.entSem).catch(() => null) : null;
+    {
+      q.composed = comp; // 結果寫回它自己那一題（收題模式下，上一題的答案在背景配完也不會丟）
       if (b) q.bank = b;
       q.hits = h; q.ext = C.extractAnswer(rt, h, 3); q.liveText = t;
       q.dom = C.classifyDomain(t);
@@ -1009,7 +1062,7 @@ function answerView(q) {
     const warn = lines.filter(x => /^⚠️/.test(x));
     const tag = k => (lines.find(x => x.startsWith(k + '：')) || '').slice(k.length + 1).trim();
     frame = { bg: tag('背景'), mine: tag('回扣'), concl: tag('結論') };
-    const body = lines.filter(x => !basis.includes(x) && !warn.includes(x) && !/^追問[:：]/.test(x) && !/^(背景|回扣|結論)：/.test(x)); // 追問放到「追問預判」區
+    const body = lines.filter(x => !basis.includes(x) && !warn.includes(x) && !/^追問[:：]/.test(x) && !/^(背景|回扣|結論|類型)：/.test(x)); // 追問放到「追問預判」區
     one = (body[0] || '').replace(/^\d+[.、]\s*/, '');
     points = body.slice(1).filter(x => /^[•·]\s*|^\d+[.、]\s*/.test(x)).map(x => x.replace(/^[•·]\s*|^\d+[.、]\s*/, ''));
     script = body.slice(1).filter(x => !/^[•·]\s*|^\d+[.、]\s*/.test(x)).join('\n');
@@ -1032,6 +1085,12 @@ function answerView(q) {
   }
   if (q.error) caution = '⚠️ AI 沒有回應：' + q.error + '。右側「資料依據」仍可參考。';
   // 配不到明確答案時也要有話講：用最接近的擬答，再不行用核心論點
+  // 重組答案：題庫沒有同一題時，用各題零件組成六段式（比單一相近題更貼近對方真正問的）
+  if (q.composed && !q.raw && !strongBank(q) && !safe && (q.status === 'confirmed' || q.phase === 'live')) {
+    const cf = q.composed; one = cf.ans; points = cf.args; script = '';
+    frame = { bg: cf.bg, mine: cf.mine || (cf.pages.length ? '簡報第' + cf.pages.join('、') + '頁' : ''), concl: cf.concl };
+    core = '🧩 重組答案（整合：' + cf.from.slice(0, 3).map(x => '「' + x.slice(0, 18) + '」').join('') + '）' + (core && /^(⚖️|↪|🔁|🛑)/.test(core) ? '\n' + core.split('\n').filter(l => /^(⚖️|↪|🛑)/.test(l)).join('\n') : '');
+  }
   if (q.status === 'confirmed' && !q.raw && !one) one = (q.bank && q.bank.chunk ? (q.bank.chunk.text.split('\n').find(x => x.trim() && !/^[（•⚠]/.test(x)) || '') : '') || (q.hits && q.hits[0] ? firstSentence(q.hits[0].chunk) : '') || CORE_LINE;
   // 對方問具體數字／字號／日期，但畫面答案裡沒有 → 提醒不要硬答，給安全說法
   if (q.status === 'confirmed' && !q.raw) {
@@ -1108,14 +1167,15 @@ function render() {
   setHTML($('one'), one ? (cut ? '<span class="open">' + citeHTML(one.slice(0, cut), nn) + '</span><span class="rest">' + citeHTML(one.slice(cut), nn) + '</span>' : citeHTML(one, nn)) : (q.ctrl ? '思考中…' : (qText() ? '配對中…' : '答案會出現在這裡')));
   setHTML($('points'), points.slice(0, 3).map(p => '<li>' + citeHTML(p, nn) + '</li>').join(''));
   // 答題架構
-  const fr = frame, step = (k, label, t, cls) => t ? `<li class="${cls || ''}"><span class="fk">${k} ${label}</span><span class="ft">${citeHTML(t, nn)}</span></li>` : '';
+  const fr = frame, step = (k, label, t, cls) => t ? `<li class="${cls || ''}"><span class="fk">${k} ${label}</span><span class="ft">${C.keyMark(citeHTML(t, nn))}</span></li>` : '';
   $('frame').style.display = fr ? '' : 'none';
   $('answerCard').classList.toggle('framed', !!fr);
   if (fr) setHTML($('frame'), step('①', '複述', fr.restate) + step('②', '背景', fr.bg) +
-    (fr.args.length ? `<li><span class="fk">③ 論證</span><span class="ft">${fr.args.map((a, i) => (fr.args.length > 1 ? '(' + (i + 1) + ') ' : '') + citeHTML(a, nn)).join('<br>')}</span></li>` : '') +
+    (fr.args.length ? `<li><span class="fk">③ 論證</span><span class="ft">${fr.args.map((a, i) => (fr.args.length > 1 ? '(' + (i + 1) + ') ' : '') + C.keyMark(citeHTML(a, nn))).join('<br>')}</span></li>` : '') +
     step('④', '回扣我的研究', fr.mine) + step('⑤', '推論回答', fr.ans, 'fa') + step('⑥', '結論', fr.concl, 'fc'));
-  setHTML($('script'), script ? citeHTML(script, nn) : '');
-  $('scriptWrap').style.display = script ? '' : 'none';
+  const spoken = script || (fr ? C.speakScript(fr) : ''); // 沒有現成口語稿 → 由六段架構串成照念講稿
+  setHTML($('script'), spoken ? C.keyMark(citeHTML(spoken, nn)) : '');
+  $('scriptWrap').style.display = spoken ? '' : 'none';
   setHTML($('follow'), follow.slice(0, 3).map(f => '<li>' + esc(f) + '</li>').join(''));
   $('followWrap').style.display = follow.length ? '' : 'none';
   setHTML($('caution'), esc(caution));
@@ -1154,7 +1214,7 @@ function render() {
 let slideNow = 0, noSlides = false;
 function showSlides(q, bankShown) {
   if (noSlides) return;
-  const named = C.pageRef(qText(q)), pages = [...new Set([...(named ? [named] : []), ...(bankShown && q.bank ? pagesOf(q.bank.chunk) : [])])].slice(0, 6);
+  const named = C.pageRef(qText(q)), pages = [...new Set([...(named ? [named] : []), ...(q.composed && !strongBank(q) ? q.composed.pages : bankShown && q.bank ? pagesOf(q.bank.chunk) : [])])].slice(0, 6);
   $('slideCard').style.display = pages.length ? '' : 'none';
   if (!pages.length) return;
   setHTML($('slideChips'), pages.map(n => `<button class="btn small" data-pg="${n}" style="padding:0 7px;margin-left:4px">${n}</button>`).join(''));

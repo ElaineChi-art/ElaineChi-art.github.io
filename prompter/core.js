@@ -386,6 +386,45 @@
     return t;
   }
   // 追問：很短、或以「那／所以／剛剛／這個」開頭，要接上上一題一起理解
+  // 速讀：關鍵詞（條號、法名、數字、案名、英文專名、核心概念）加粗，台上一眼抓到重點
+  const KEY_TERMS = ['雙軌審查', '授權鏈', '代幣所有權', '著作財產權', '債之相對性', '不當得利', '意思表示', '要約', '承諾', '投資契約', '證券型代幣',
+    '虛擬資產服務法', '著作權法', '電子簽章法', '證券交易法', '民法', '金管會', '央行', '資產控制力', '分級監理', '條件性執行', '混合式契約', '李嘉圖合約',
+    '法遵元資料', '權利登錄', '可程式化授權', '預言機', '穩定幣', '準物權', '物權法定', '類推適用', '合理使用', '權利保留', '人類原創來源憑證',
+    '不可代替性', '被動收益', '守門人', '沖銷式更正', '暫停機制', '代理合約', '多簽', '零知識證明', '旅行規則', '實質受益人', '三層次', '私法效力', '監管要求', '技術治理'];
+  const KEY_RE = new RegExp('(第[\\d一二三四五六七八九十百]+條(?:之[\\d一二三四五六七八九十]+)?(?:第[\\d一二三四五六七八九十]+項)?(?:第[\\d一二三四五六七八九十]+款)?|《[^》]{2,20}》|「[^」]{2,16}」|\\d[\\d,.]*\\s*(?:%|％|億|萬|美元|歐元|元|bps|個|件|州|年|月\\d+日)|[一二三四五六七八九十百千兩]+(?:年(?:以下|以上)?有期徒刑|億元|萬元|億|萬)|(?:ERC|EWHC|EWCA)[-\\s]?\\d+|[A-Z][A-Za-z0-9.&\\-]+(?:\\s(?:v\\.?|[A-Z][A-Za-z0-9.&\\-]*))*|' + KEY_TERMS.join('|') + ')', 'g');
+  function keyMark(html) { return String(html || '').replace(KEY_RE, '<b>$1</b>'); }
+  // 口語稿：把六段架構串成專家式的照念講稿（訊號詞：先說、分幾點、回到我的研究、所以、結論）
+  function speakScript(f, q) {
+    if (!f || !f.ans) return '';
+    const end = t => { t = String(t || '').replace(/\s*\[\d+\]/g, '').trim(); return t && !/[。！？]$/.test(t) ? t + '。' : t; };
+    const args = (f.args || []).filter(Boolean).slice(0, 3).map(a => a.replace(/^([^：:]{1,14})[：:]\s*/, '$1，'));
+    const nums = ['第一', '第二', '第三'];
+    const out = [];
+    out.push('謝謝老師。' + (f.restate ? f.restate.replace(/^老師的問題是：/, '老師的問題是：') + '。' : ''));
+    if (f.bg) out.push('我先說背景：' + end(f.bg));
+    if (args.length) out.push(args.length === 1 ? '關鍵在於' + end(args[0]) : '我分' + ['', '', '兩', '三'][args.length] + '點來看：' + args.map((a, i) => nums[i] + '，' + a.replace(/[。；]$/, '')).join('；') + '。');
+    if (f.mine) {
+      let m = f.mine.replace(/^這一點在我的研究中處理過：/, '').split('；')[0].replace(/[。]$/, '');
+      m = /^簡報/.test(m) ? '我在報告' + m.slice(2) + '談過這一點' : /^我/.test(m) ? m : '這呼應' + m;
+      out.push('回到我的研究，' + end(m));
+    }
+    out.push('所以我的回答是：' + end(f.ans.replace(/^([^：:，。]{1,8})[：:]/, '$1，')));
+    if (f.concl) out.push('結論是，' + end(f.concl));
+    return out.join('\n');
+  }
+  // 問題的意圖與對象：開放式問題（給建議、比利弊、談展望、問責任）要先抓對答題模組
+  function intentOf(text) {
+    const t = String(text || '');
+    const kind = /建議|怎麼做|該做|要注意|注意什麼|先做什麼|怎麼規劃|怎麼設計|怎麼排|檢查什麼|準備什麼|如果你是|如果要你|如果讓你/.test(t) ? '建議'
+      : /好處|優點|壞處|缺點|利弊|好在哪|利多|利空|優缺|利大於弊|弊大於利|值不值得|划不划算|有比較好嗎/.test(t) ? '利弊'
+      : /比起來|比較|差在哪|差別|不同|跟.{1,12}比/.test(t) ? '比較'
+      : /未來|十年|五年|前景|趨勢|會怎麼走|下一步|後續/.test(t) ? '展望'
+      : /誰(要|該|來)?負責|責任(要)?怎麼分|歸責/.test(t) ? '責任'
+      : /評價|一句話|貢獻|創新|說服|革命|泡沫/.test(t) ? '評價' : '';
+    const actor = /樂團|歌手|創作者|音樂人|藝人|作者|發行人/.test(t) ? '創作者' : /平台|業者|交易所|法務長/.test(t) ? '平台'
+      : /主管機關|金管會|監理|立法者|政府|審查/.test(t) ? '主管機關' : /粉絲|買家|投資人|一般人|消費者/.test(t) ? '買家' : '';
+    return { kind, actor };
+  }
   // 對方指名簡報頁（「第14頁」「圖3」「表1」）→ 回傳頁碼；擬答（依據）裡的頁碼 → 回傳清單
   const FIG = { 1: 5, 2: 7, 3: 11, 4: 12, 5: 13 }, TBL = { 1: 33 };
   function zhNum(s) {
@@ -722,7 +761,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, followUpRewrite, premiseCue, looksComplete, collectSplit, isChatter, HEDGE, stripHedge, pageRef, slidePages, BIAS_TERMS, syllables, phoneticIndex, phoneticScores, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, followUpRewrite, premiseCue, looksComplete, collectSplit, isChatter, HEDGE, stripHedge, keyMark, speakScript, intentOf, pageRef, slidePages, BIAS_TERMS, syllables, phoneticIndex, phoneticScores, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);
