@@ -328,6 +328,7 @@
         if (s.length < 18 || s.length > 180 || /^(Q：|A：|追問)/.test(s)) return;
         if (/[、，,]\s*[。]?$/.test(s) || (s.match(/[\u3400-\u9fff]/g) || []).length < 10) return; // 斷在半句或中文太少的碎片不要
         if (/"""|[{};=<>]|\b(function|import|return|def|contract|pragma|require)\b|\/\/|^#|\]\(|https?:/.test(s)) return; // 程式碼、連結不當答案
+        if (HEDGE.test(s)) return; // 含糊或自我設限的句子不當答案
         const toks = new Set(tokenize(s));
         if (!toks.size) return;
         let hit = 0; for (const t of toks) if (qt.has(t)) hit++;
@@ -410,6 +411,9 @@
     }
     return [...new Set(out)].filter(n => n >= 1 && n <= 42);
   }
+  // 含糊、自我設限的說法（資格考不能這樣答）：配對時降權、顯示時刪句
+  const HEDGE = /沒有資料|會後(補充|確認|查證|回覆)|沒有查證|查不到|查無|未查證|待查|不下結論|不想(在這裡)?推測|不確定(?!性)|還沒查到|老實說|誠實說|不在我的研究範圍|我沒有.{0,6}(管道|資料|研究)/;
+  function stripHedge(t) { return String(t || '').split(/(?<=[。！？；])/).filter(x => !HEDGE.test(x)).join(''); }
   // 這段話聽起來是不是已經問完了（用來判斷停頓後接著講的是同一題的後半，還是下一題）
   const Q_DONE = /(嗎|呢|吧|嘛|麼|什麼|甚麼|怎麼|如何|為什麼|為何|哪[裡些個種一位]|多少|幾[個年種次位]|是否|有沒有|會不會|能不能|可不可以|是不是|要不要|對不對|好不好|怎樣|誰|說明|解釋|介紹|談談|看法|意見|回應|差別|差異|區別|關係|影響|問題在哪)/;
   const LEAD_IN = /(請教|請問|想問|問一下|問你|問您|一個問題|幾個問題|兩個問題|三個問題|我想|就是|那個|然後|所以|但是|不過|而且|如果)$/;
@@ -718,7 +722,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, followUpRewrite, premiseCue, looksComplete, collectSplit, isChatter, pageRef, slidePages, BIAS_TERMS, syllables, phoneticIndex, phoneticScores, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, followUpRewrite, premiseCue, looksComplete, collectSplit, isChatter, HEDGE, stripHedge, pageRef, slidePages, BIAS_TERMS, syllables, phoneticIndex, phoneticScores, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

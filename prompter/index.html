@@ -76,6 +76,14 @@ mark{background:var(--mark);color:inherit;border-radius:2px}
 .kw{font-size:calc(19px*var(--fs));font-weight:700;color:var(--accent2);line-height:1.6}
 .kw .arr{color:var(--faint);font-weight:400;margin:0 6px}
 .one b{color:var(--accent2)}
+.frame{list-style:none;margin:6px 0 10px;padding:0}
+.frame li{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:calc(19px*var(--fs));line-height:1.6}
+.frame li:first-child{border-top:0}
+.frame .fk{flex:0 0 auto;min-width:6.6em;font-size:calc(14px*var(--fs));color:var(--faint);font-weight:700}
+.frame .fa .ft{font-size:calc(27px*var(--fs));font-weight:800;color:var(--accent2)}
+.frame .fc .ft{font-weight:700}
+#answerCard.framed:not(.vm-one) #one, #answerCard.framed:not(.vm-one) #points, #answerCard.framed:not(.vm-one) #fullLabel{display:none!important}
+#answerCard.vm-one #frame{display:none!important}
 .dom{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
 .tag{font-size:11.5px;padding:1px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted);margin-right:4px}
 .tag.warn{color:var(--warn);border-color:var(--warn)}
@@ -155,6 +163,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px}
       <div id="splitWrap" class="layer" style="display:none"><div class="label">拆題簡答（一次問了多題）</div><ol class="points" id="split"></ol></div>
       <div class="core" id="core"></div>
       <div class="one empty" id="one">答案會出現在這裡</div>
+      <ol class="frame" id="frame" style="display:none"></ol>
       <div id="kwWrap" class="layer" style="display:none"><div class="label">關鍵字提詞（論述順序）</div><div class="kw" id="kw"></div></div>
       <div class="label layer-full" id="fullLabel" style="margin-top:12px">完整申論</div>
       <ol class="points layer-full" id="points"></ol>
@@ -707,6 +716,8 @@ function onSpeech(fin, interim) {
     if (performance.now() - (Q.confirmedAt || 0) < 6000 && !C.looksComplete(Q.final)) { Q.status = 'listening'; Q.split = null; Q.finalMs = 0; }
     else newQuestion();
   }
+  // 任何模式：剛判定講完、但那句還不像問完（辨識延遲或對方換氣）→ 4 秒內接著講的，接回同一題
+  if (Q && Q.status === 'confirmed' && S.after !== 'collect' && (fin || interim) && performance.now() - (Q.confirmedAt || 0) < 4000 && !C.looksComplete(Q.final) && !Q.tail) { Q.status = 'listening'; Q.split = null; Q.finalMs = 0; }
   if (!Q || (Q.status === 'confirmed' && S.after === 'auto')) newQuestion();
   if (Q.status === 'confirmed') { // 鎖定中：只顯示，不當新問題
     if (fin) Q.tail = (Q.tail + fin).slice(-160);
@@ -756,7 +767,7 @@ async function semanticBank(t, focus) {
   const best = new Map(), pg = C.pageRef(t); // 對方指名第幾頁 → 講該頁的擬答優先
   for (let j = 0; j < sem.length; j++) {
     const c = INDEX.chunks[vec.qaIdx[j]], p = ps ? ps[j] : 0, cur = best.get(c.text);
-    const rank = sem[j] + alpha * p + (focus && (c.q.includes(focus) || c.text.includes(focus)) ? 0.06 : 0) + (pg && pagesOf(c).includes(pg) ? 0.08 : 0); // 追問的焦點（日本）要出現在答案裡
+    const rank = sem[j] - ((c._h ??= C.HEDGE.test(c.text)) ? 0.08 : 0) + alpha * p + (focus && (c.q.includes(focus) || c.text.includes(focus)) ? 0.06 : 0) + (pg && pagesOf(c).includes(pg) ? 0.08 : 0); // 追問的焦點（日本）要出現在答案裡
     if (!cur || cur.rank < rank) best.set(c.text, { chunk: c, sim: sem[j], ps: p, rank });
   }
   const top = [...best.values()].sort((a, b) => b.rank - a.rank).slice(0, 3).map(x => {
@@ -846,6 +857,9 @@ function maybeProvisional() {
 }
 
 async function confirmQuestion(old) {
+  if (!old && voiceRecent() && Q && Q.status === 'listening' && performance.now() - Q.t0 < 60000) { // 麥克風還有人聲 → 還沒講完，晚點再判
+    clearTimeout(silenceTimer); silenceAt = performance.now() + 600; silenceTimer = setTimeout(confirmQuestion, 600); return;
+  }
   const q = old || Q;
   if (!q || (q.status !== 'listening' && !old)) return;
   const t = qText(q);
@@ -880,7 +894,7 @@ async function confirmQuestion(old) {
         const b = await semanticBank(part).catch(() => null);
         const hh = await retrieve(part, 5).catch(() => []);
         const ex = C.extractAnswer(part, hh, 1);
-        const line = b && b.sim >= BANK_MAIN ? (b.chunk.text.split('\n').find(x => x.trim() && !/^[（•]/.test(x)) || '') : (ex[0] ? ex[0].s : '（資料中沒有直接答案）');
+        const line = b && (b.sim >= BANK_MAIN || !ex[0]) ? (b.chunk.text.split('\n').find(x => x.trim() && !/^[（•]/.test(x)) || '') : (ex[0] ? ex[0].s : CORE_LINE);
         q.split.push({ q: part, a: line });
       }
     }
@@ -975,9 +989,11 @@ function openerCut(t) {
   return m && m[0].length < t.length - 6 ? m[0].length : 0;
 }
 // 一題的答案畫面內容（主畫面與「已收的問題」卡片共用）
+// 任何情況都要有話可講：配不到答案時，用核心論點接住
+const CORE_LINE = '我從研究的核心判準回答：音樂NFT的風險不在代幣技術，而在收益設計是否脫離授權基礎，所以要同時看授權鏈和投資性質。';
 function answerView(q) {
   const n = (q.usedHits || q.hits || []).length;
-  let safe = '', core = '', one = '', points = [], script = '', follow = [], caution = '';
+  let frame = null, safe = '', core = '', one = '', points = [], script = '', follow = [], caution = '';
   const useBankMain = q.bank && !q.raw && (q.phase === 'bank' || q.phase === 'near' || strongBank(q) || ((q.phase === 'live' || q.phase === 'answer') && q.bank.sim >= BANK_MAIN));
   if (!useBankMain && !q.raw && (q.phase === 'live' || q.phase === 'answer') && q.ext && q.ext.length) {
     core = '論文原文要點（題庫沒有同題，以下直接取自你的資料）';
@@ -988,10 +1004,12 @@ function answerView(q) {
     core = (strongBank(q) ? '題庫命中：' : '相近題目：') + c.q + '（相似度 ' + Math.round(q.bank.sim * 100) + '%）';
     // 沒把握是同一題（可能聽錯）→ 先用一句話複述確認，同時爭取思考時間
     if (!strongBank(q)) core = '🔁 先複述確認：「您的問題是不是：' + c.q.replace(/[？?]$/, '') + '？」' + (q.bank.heard ? '（語音可能聽錯，依讀音配對）' : '') + '\n' + core;
-    const lines = c.text.split('\n').map(x => x.trim()).filter(Boolean);
+    const lines = c.text.split('\n').map(x => C.stripHedge(x.trim())).filter(Boolean);
     const basis = lines.filter(x => /^（(依據|出處)/.test(x) || /^（出處：/.test(x));
     const warn = lines.filter(x => /^⚠️/.test(x));
-    const body = lines.filter(x => !basis.includes(x) && !warn.includes(x) && !/^追問[:：]/.test(x)); // 追問放到「追問預判」區
+    const tag = k => (lines.find(x => x.startsWith(k + '：')) || '').slice(k.length + 1).trim();
+    frame = { bg: tag('背景'), mine: tag('回扣'), concl: tag('結論') };
+    const body = lines.filter(x => !basis.includes(x) && !warn.includes(x) && !/^追問[:：]/.test(x) && !/^(背景|回扣|結論)：/.test(x)); // 追問放到「追問預判」區
     one = (body[0] || '').replace(/^\d+[.、]\s*/, '');
     points = body.slice(1).filter(x => /^[•·]\s*|^\d+[.、]\s*/.test(x)).map(x => x.replace(/^[•·]\s*|^\d+[.、]\s*/, ''));
     script = body.slice(1).filter(x => !/^[•·]\s*|^\d+[.、]\s*/.test(x)).join('\n');
@@ -1004,7 +1022,7 @@ function answerView(q) {
   } else if (q.phase === 'nokey' || (!hasAnyKey() && q.status === 'confirmed')) {
     const hs = q.hits || [];
     core = hs.length ? (useLocal() ? '本機 AI 未啟動' : '未設定 AI 金鑰') + '：以下是知識庫最相關的內容' : '';
-    one = hs.length ? firstSentence(hs[0].chunk) + ' [1]' : '知識庫裡沒有找到相關資料';
+    one = hs.length ? firstSentence(hs[0].chunk) + ' [1]' : CORE_LINE;
     points = hs.slice(1, 4).map((h, i) => firstSentence(h.chunk) + ' [' + (i + 2) + ']');
   }
   if (q.raw && !q.ctrl) {
@@ -1013,16 +1031,18 @@ function answerView(q) {
     if (bad.length) caution = '🚫 資料中查無：' + bad.map(x => x.text).join('、') + '（可能是 AI 捏造，請勿照念）' + (caution ? '\n' + caution : '');
   }
   if (q.error) caution = '⚠️ AI 沒有回應：' + q.error + '。右側「資料依據」仍可參考。';
+  // 配不到明確答案時也要有話講：用最接近的擬答，再不行用核心論點
+  if (q.status === 'confirmed' && !q.raw && !one) one = (q.bank && q.bank.chunk ? (q.bank.chunk.text.split('\n').find(x => x.trim() && !/^[（•⚠]/.test(x)) || '') : '') || (q.hits && q.hits[0] ? firstSentence(q.hits[0].chunk) : '') || CORE_LINE;
   // 對方問具體數字／字號／日期，但畫面答案裡沒有 → 提醒不要硬答，給安全說法
   if (q.status === 'confirmed' && !q.raw) {
     const shown = [one, points.join('\n'), script, (q.ext || []).map(x => x.s).join('\n')].join('\n');
     const gap = C.detailGap(qText(q), shown);
     const rare = C.rareTermGap(qText(q), shown, INDEX);
-    // 陌生名詞：可能是對方捏造，也可能是語音聽錯 → 兩種情況都先請對方再講一次最安全
-    if (rare.length) safe = '不好意思，您剛剛提到的「' + rare[0] + '」可以再說一次是指哪一個嗎？我想確認清楚再回答。（若確定是我沒處理到的：這部分我沒有查證過，會後確認再回覆您。）';
-    if (gap.length) safe = '這個具體' + gap[0].replace(/或.*/, '') + '我手上沒有查證過的資料，不想在這裡推測，會後補充給您。';
-    if (rare.length) caution = '🛑 你的資料裡查無「' + rare.join('、') + '」相關內容 → 不要順著對方的前提回答。可以說：「這部分我沒有查證到可靠資料，可能是我沒有處理到的範圍，會後確認再回覆您。」' + (caution ? '\n' + caution : '');
-    if (gap.length) caution = '🛑 對方問的是具體的' + gap.join('、') + '，你的資料裡沒有 → 不要硬答。可以說：「這個具體' + gap[0].replace(/或.*/, '') + '我手上沒有查證過的資料，不想在這裡推測，會後補充給您。」' + (caution ? '\n' + caution : '');
+    // 陷阱（對方給了你資料裡沒有的名詞、條號、數字）：不說「沒資料」，改成「轉到你真正的依據」再給實質內容
+    if (rare.length) safe = '您提到的「' + rare[0] + '」不是我這次引用的資料；我這部分的依據是：';
+    if (gap.length) safe = /人名|出處|字號|文號|條文/.test(gap[0]) ? '我這次引用的不是這份，我實際依據的是：' : '具體' + gap[0].replace(/或.*/, '') + '我不憑印象報，就重點來說：';
+    if (rare.length) caution = '🛑 「' + rare.join('、') + '」在你的資料裡找不到 → 不要順著對方的前提講細節，直接轉到你的依據';
+    if (gap.length) caution = '🛑 對方要的具體' + gap.join('、') + '不在你的資料裡 → 不要報數字或字號，直接轉到你的依據' + (caution ? '\n' + caution : '');
   }
   // 對方把可疑前提包進問題（既然／你說…那／難道／不就是）→ 最上面先提醒拆前提
   const pc = qText(q) && (q.phase === 'live' || q.status === 'confirmed') ? C.premiseCue(qText(q)) : null;
@@ -1030,14 +1050,30 @@ function answerView(q) {
   if (q.rewrite) core = '↪ 追問理解為：「' + q.rewrite + '」' + (core ? '\n' + core : '');
   // 「那韓國呢」但答案沒講到韓國 → 提醒先說明只能講一般原則，不要假裝知道該國規定
   if (q.focus && one && ![one, points.join(''), script].join('').includes(q.focus)) {
-    core = '⚠️ 答案沒有「' + q.focus + '」的具體資料：先說「' + q.focus + '的具體規定我沒有深入研究，就原則來說…」再講下面' + (core ? '\n' + core : '');
-    caution = '⚠️ 資料裡沒有「' + q.focus + '」的部分，不要編該國條文' + (caution ? '\n' + caution : '');
+    one = '就' + q.focus + '而言，我從同一個判準來看：' + one; // 不說「沒研究」，用同一判準延伸回答
+    caution = '⚠️ 下面是一般原則，不要編' + q.focus + '的具體條文' + (caution ? '\n' + caution : '');
   }
   // 完全沒把握聽懂（題庫最像的也很低）→ 不硬答，先用最可能的題目禮貌確認
   // 陷阱題：大字直接給安全說法，原本的答案降為背景（避免照念出錯的東西）
-  if (safe) { if (one) points = ['（相關背景，可接著講）' + one, ...points]; one = safe; core = '🛑 陷阱題：對方要的細節你的資料裡沒有，先講下面這句' + (core ? '\n' + core : ''); }
+  if (safe) { // 大字：轉向句＋實質答案，永遠有內容可講
+    const sub = one || ((q.ext && q.ext[0]) ? q.ext[0].s : '') || (q.hits && q.hits[0] ? firstSentence(q.hits[0].chunk) : '') || CORE_LINE;
+    one = safe + sub.replace(/\s*\[\d+\]/g, '');
+    core = '🛑 陷阱：不跟著對方的細節走，直接講你的依據' + (core ? '\n' + core : ''); }
   else if (q.status === 'confirmed' && !q.raw && !q.rewrite && q.bank && q.bank.sim < 0.70) core = '🔁 沒把握聽懂，先確認：「不好意思，您是想問「' + q.bank.chunk.q.replace(/[？?]$/, '') + '」嗎？」' + (core ? '\n' + core : '');
-  return { n, core, one, points, script, follow, caution, useBankMain };
+  // 答題架構：複述 → 背景 → 論證 → 回扣我的研究 → 推論回答 → 結論（像資格考一樣有層次）
+  if (one && q.status === 'confirmed' || one && q.phase === 'live') {
+    const f = frame || {}, src = useBankMain ? (caution.match(/（(?:依據|出處)[：:]([^）]*)）/) || [])[1] || '' : (q.ext || []).map(x => x.ref).slice(0, 2).join('、');
+    const heard = qText(q).replace(/^(?:呃|嗯|那個|就是|我想請教一下|我想問|請問|老師|謝謝主席|謝謝)[，,、\s]*/g, '').slice(0, 60);
+    frame = {
+      restate: '老師的問題是：「' + (useBankMain && strongBank(q) ? q.bank.chunk.q.replace(/[？?]$/, '') : heard.replace(/[？?]$/, '')) + '」',
+      bg: f.bg || '',
+      args: points.slice(0, 3),
+      mine: f.mine || (src ? '這一點在我的研究中處理過：' + src.replace(/專家題庫[^；]*；?/g, '').replace(/；$/, '') : ''),
+      ans: one,
+      concl: f.concl || ''
+    };
+  } else frame = null;
+  return { n, core, one, points, script, follow, caution, useBankMain, frame };
 }
 function render() {
   renderCaption();
@@ -1063,7 +1099,7 @@ function render() {
   setHTML($('aMeta'), q.provider ? esc(q.provider) + (q.firstMs ? '・首字 ' + (q.firstMs / 1000).toFixed(1) + ' 秒' : '') : '');
   if (frozen) return;
 
-  const { n, core, one, points, script, follow, caution, useBankMain } = answerView(q);
+  const { n, core, one, points, script, follow, caution, useBankMain, frame } = answerView(q);
   const nn = Math.max(n, (q.hits || []).length);
   $('one').className = 'one' + (one ? '' : ' empty');
   setHTML($('core'), core ? esc(core) : '');
@@ -1071,6 +1107,13 @@ function render() {
   const cut = one ? openerCut(one) : 0;
   setHTML($('one'), one ? (cut ? '<span class="open">' + citeHTML(one.slice(0, cut), nn) + '</span><span class="rest">' + citeHTML(one.slice(cut), nn) + '</span>' : citeHTML(one, nn)) : (q.ctrl ? '思考中…' : (qText() ? '配對中…' : '答案會出現在這裡')));
   setHTML($('points'), points.slice(0, 3).map(p => '<li>' + citeHTML(p, nn) + '</li>').join(''));
+  // 答題架構
+  const fr = frame, step = (k, label, t, cls) => t ? `<li class="${cls || ''}"><span class="fk">${k} ${label}</span><span class="ft">${citeHTML(t, nn)}</span></li>` : '';
+  $('frame').style.display = fr ? '' : 'none';
+  $('answerCard').classList.toggle('framed', !!fr);
+  if (fr) setHTML($('frame'), step('①', '複述', fr.restate) + step('②', '背景', fr.bg) +
+    (fr.args.length ? `<li><span class="fk">③ 論證</span><span class="ft">${fr.args.map((a, i) => (fr.args.length > 1 ? '(' + (i + 1) + ') ' : '') + citeHTML(a, nn)).join('<br>')}</span></li>` : '') +
+    step('④', '回扣我的研究', fr.mine) + step('⑤', '推論回答', fr.ans, 'fa') + step('⑥', '結論', fr.concl, 'fc'));
   setHTML($('script'), script ? citeHTML(script, nn) : '');
   $('scriptWrap').style.display = script ? '' : 'none';
   setHTML($('follow'), follow.slice(0, 3).map(f => '<li>' + esc(f) + '</li>').join(''));
@@ -1097,7 +1140,7 @@ function render() {
   setHTML($('ext'), extList.map(x => '<li>' + citeHTML(x.s + ' [' + x.ref + ']', nn) + '</li>').join(''));
   const bankShown = useBankMain;
   // 主畫面是題庫擬答 → 列其餘 2 個；主畫面是 AI 生成 → 3 個候選全列，方便對照
-  const alts = !q.bank || !q.bank.sem ? [] : bankShown ? (q.bank.alts || []) : [q.bank, ...(q.bank.alts || [])];
+  const alts = (!q.bank || !q.bank.sem ? [] : bankShown ? (q.bank.alts || []) : [q.bank, ...(q.bank.alts || [])]).filter(a => !C.HEDGE.test(a.chunk.text.split('\n')[0]) && !C.HEDGE.test(a.chunk.q));
   $('altsWrap').style.display = alts.length ? '' : 'none';
   setHTML($('alts'), alts.map((a, i) => `<div class="alt" data-alt="${i}"><div class="aq">原題：${esc(a.chunk.q.slice(0, 60))}（${Math.round(a.sim * 100)}%）</div>${esc((a.chunk.text.split('\n').find(x => x.trim() && !/^（/.test(x)) || '').slice(0, 90))}</div>`).join(''));
   let act = '';
@@ -1149,8 +1192,8 @@ function renderStack() {
         `<div class="qq"><span class="no">第${no}題</span><span class="tx">${esc(qText(q))}</span>${pgs.length ? `<span class="pg">📑${pgs.join('、')}</span>` : ''}<button class="ok" data-done="${q.id}">${q.done ? '✓ 答完' : '✓'}</button></div>` +
         (cues.length || trap.length ? `<div class="cue">${esc([...trap.map(l => l.split('→')[0] + '→ 不要硬答'), ...cues].join('\n'))}</div>` : '') +
         split +
-        (v.one ? (cut ? `<div class="op">${esc(v.one.slice(0, cut).replace(/\s*\[\d+\]/g, ''))}</div><div class="rs">${esc(v.one.slice(cut).replace(/\s*\[\d+\]/g, ''))}</div>` : `<div class="op">${esc(v.one.replace(/\s*\[\d+\]/g, ''))}</div>`) : '<div class="wait">資料中沒有直接答案 → 先複述問題、說會後補充</div>') +
-        `<div class="more">${v.points.length ? '<ol class="points">' + v.points.slice(0, 4).map(p => '<li>' + esc(p.replace(/\s*\[\d+\]/g, '')) + '</li>').join('') + '</ol>' : ''}${v.script ? '<div class="script">' + esc(v.script) + '</div>' : ''}${v.caution ? '<div class="caution">' + esc(v.caution) + '</div>' : ''}</div></div>`;
+        (v.one ? (cut ? `<div class="op">${esc(v.one.slice(0, cut).replace(/\s*\[\d+\]/g, ''))}</div><div class="rs">${esc(v.one.slice(cut).replace(/\s*\[\d+\]/g, ''))}</div>` : `<div class="op">${esc(v.one.replace(/\s*\[\d+\]/g, ''))}</div>`) : `<div class="op">${esc(CORE_LINE)}</div>`) +
+        `<div class="more">${v.frame ? '<ol class="frame">' + [['① 複述', v.frame.restate], ['② 背景', v.frame.bg], ['③ 論證', v.frame.args.join('；')], ['④ 回扣', v.frame.mine], ['⑤ 回答', v.frame.ans], ['⑥ 結論', v.frame.concl]].filter(x => x[1]).map(([k, t]) => `<li><span class="fk">${k}</span><span class="ft">${esc(t.replace(/\s*\[\d+\]/g, ''))}</span></li>`).join('') + '</ol>' : v.points.length ? '<ol class="points">' + v.points.slice(0, 4).map(p => '<li>' + esc(p.replace(/\s*\[\d+\]/g, '')) + '</li>').join('') + '</ol>' : ''}${v.script ? '<div class="script">' + esc(v.script) + '</div>' : ''}${v.caution ? '<div class="caution">' + esc(v.caution) + '</div>' : ''}</div></div>`;
     }).reverse().join(''));
   });
 }
@@ -1243,6 +1286,28 @@ function setStatus() {
 }
 
 /* ================= 語音辨識 ================= */
+// 自己量麥克風音量：(1) 還有人聲就不判定講完；(2) 有人在講、辨識卻幾秒沒回字 → Chrome 卡住了，立刻重開
+let needFresh = false, meter = null, voiceAt = 0, voiceSince = 0, lastResultAt = 0, lastKick = 0;
+async function startMeter() {
+  if (meter) return;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    const ctx = new AudioContext(), src = ctx.createMediaStreamSource(stream), an = ctx.createAnalyser(); an.fftSize = 1024; src.connect(an);
+    const buf = new Float32Array(an.fftSize); let floor = 0.01;
+    meter = { stream, ctx, timer: setInterval(() => {
+      an.getFloatTimeDomainData(buf); let e = 0; for (const x of buf) e += x * x; const rms = Math.sqrt(e / buf.length), now = performance.now();
+      floor = rms < floor ? floor * 0.9 + rms * 0.1 : floor * 0.995 + rms * 0.005; // 背景噪音慢慢學
+      window.__rms = rms; window.__floor = floor;
+      if (rms > Math.max(0.006, floor * 2.5)) { if (now - voiceAt > 600) voiceSince = now; voiceAt = now; }
+      // Chrome 雲端辨識在定稿後常卡住不再回字 → 定稿後等到一個安靜空檔就重開，下一句從乾淨的狀態開始
+      if (window.ENABLE_FRESH && listening && rec && needFresh && now - voiceAt > 350) { needFresh = false; lastKick = now; try { rec.stop(); } catch (e) {} }
+      // 有人聲持續 2.5 秒以上、辨識 2.5 秒沒有任何回應 → 重開辨識（最多 4 秒一次）
+      if (window.ENABLE_KICK && listening && rec && now - voiceAt < 300 && now - voiceSince > 1500 && now - lastResultAt > 1800 && now - lastKick > 3000) { lastKick = now; lastResultAt = now; try { rec.abort(); } catch (e) {} }
+    }, 100) };
+  } catch (e) { meter = null; }
+}
+function stopMeter() { if (!meter) return; clearInterval(meter.timer); meter.stream.getTracks().forEach(t => t.stop()); meter.ctx.close().catch(() => {}); meter = null; }
+function voiceRecent() { return meter && performance.now() - voiceAt < 500; }
 let rec = null, listening = false, restartFails = 0, wakeLock = null, recStartedAt = 0, recLocal = false;
 // 本機語音辨識（Chrome 新版）：聲音不送出電腦；語言包沒裝好就先用一般辨識，背景下載
 const LOCAL_LANG = { 'zh-TW': 'cmn-Hant-TW', 'zh-CN': 'cmn-Hans-CN', 'en-US': 'en-US' };
@@ -1278,12 +1343,17 @@ async function startListen() {
   if (localLang) { rec.lang = localLang; rec.processLocally = true;
     // 本機辨識支援加權詞：論文的專有名詞（智慧合約、版稅、Howey…）優先聽成對的字
     if (window.SpeechRecognitionPhrase) try { rec.phrases = C.BIAS_TERMS.map(w => new SpeechRecognitionPhrase(w, 3)); } catch (e) {} }
+  const interimAt = {}; // 同一段話的最後暫定文字：Chrome 定稿時偶爾把句尾吃掉，定稿比暫定短就用暫定的
   rec.onresult = e => {
-    restartFails = 0; showErr('');
+    restartFails = 0; showErr(''); lastResultAt = performance.now();
     let fin = '', interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const r = e.results[i];
-      if (r.isFinal) fin += bestAlt(r); else interim += r[0].transcript;
+      if (r.isFinal) {
+        let f = bestAlt(r); const pre = interimAt[i] || '', bare = x => x.replace(/[\s，。？?！!、]/g, '');
+        if (bare(pre).length > bare(f).length + 1 && bare(pre).startsWith(bare(f).slice(0, Math.max(2, bare(f).length - 2)))) f = pre;
+        fin += f; delete interimAt[i]; needFresh = true;
+      } else { interim += r[0].transcript; interimAt[i] = r[0].transcript; }
     }
     onSpeech(fin, interim);
   };
@@ -1299,6 +1369,7 @@ async function startListen() {
     showErr('語音辨識錯誤：' + e.error);
   };
   rec.onend = () => {
+    for (const k in interimAt) delete interimAt[k];
     if (!listening) return;
     // 有暫定文字卻被切斷：當作說完了一段
     if (Q && Q.interim) { const t = Q.interim; Q.interim = ''; onSpeech(t, ''); }
@@ -1309,13 +1380,14 @@ async function startListen() {
     setTimeout(() => { if (listening) try { recStartedAt = performance.now(); rec.start(); } catch (err) {} }, quick ? Math.min(300 * restartFails, 3000) : 30);
   };
   try { recStartedAt = performance.now(); rec.start(); } catch (e) { showErr('無法啟動麥克風：' + e.message); return; }
-  listening = true; restartFails = 0;
+  listening = true; restartFails = 0; lastResultAt = performance.now();
+  startMeter();
   if (!Q) newQuestion();
   if (navigator.wakeLock) navigator.wakeLock.request('screen').then(w => { wakeLock = w; }).catch(() => {});
   setStatus();
 }
 function stopListen() {
-  listening = false;
+  listening = false; stopMeter();
   if (rec) { try { rec.stop(); } catch (e) {} }
   if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
   setStatus();
