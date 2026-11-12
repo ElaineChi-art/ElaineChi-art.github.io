@@ -394,24 +394,31 @@
   const KEY_RE = new RegExp('(第[\\d一二三四五六七八九十百]+條(?:之[\\d一二三四五六七八九十]+)?(?:第[\\d一二三四五六七八九十]+項)?(?:第[\\d一二三四五六七八九十]+款)?|《[^》]{2,20}》|「[^」]{2,16}」|\\d[\\d,.]*\\s*(?:%|％|億|萬|美元|歐元|元|bps|個|件|州|年|月\\d+日)|[一二三四五六七八九十百千兩]+(?:年(?:以下|以上)?有期徒刑|億元|萬元|億|萬)|(?:ERC|EWHC|EWCA)[-\\s]?\\d+|[A-Z][A-Za-z0-9.&\\-]+(?:\\s(?:v\\.?|[A-Z][A-Za-z0-9.&\\-]*))*|' + KEY_TERMS.join('|') + ')', 'g');
   function keyMark(html) { return String(html || '').replace(KEY_RE, '<b>$1</b>'); }
   // 口語稿：把六段架構串成專家式的照念講稿（訊號詞：先說、分幾點、回到我的研究、所以、結論）
-  function speakScript(f, q) {
-    if (!f || !f.ans) return '';
-    const end = t => { t = String(t || '').replace(/\s*\[\d+\]/g, '').trim(); return t && !/[。！？]$/.test(t) ? t + '。' : t; };
-    const args = (f.args || []).filter(Boolean).slice(0, 3).map(a => a.replace(/^([^：:]{1,14})[：:]\s*/, '$1，'));
-    const nums = ['第一', '第二', '第三'];
+  // 照念口語稿：仿台上專家答問（先謝謝＋複述確認 → 背景 → 理由分點 → 連回自己的研究 → 直接回答 → 一句收尾），
+  // 口吻依她的講稿（「我認為」「從這張投影片可以看到」「我分三點」），每段一行，一口氣唸得完
+  function speakLines(f) {
+    if (!f || !f.ans) return [];
+    const clean = t => String(t || '').replace(/\s*\[\d+\]/g, '').replace(/（依據[：:][^）]*）/g, '').trim();
+    const end = t => { t = clean(t).replace(/[；，、]$/, ''); return t && !/[。！？]$/.test(t) ? t + '。' : t; };
     const out = [];
-    out.push('謝謝老師。' + (f.restate ? f.restate.replace(/^老師的問題是：/, '老師的問題是：') + '。' : ''));
-    if (f.bg) out.push('我先說背景：' + end(f.bg));
-    if (args.length) out.push(args.length === 1 ? '關鍵在於' + end(args[0]) : '我分' + ['', '', '兩', '三'][args.length] + '點來看：' + args.map((a, i) => nums[i] + '，' + a.replace(/[。；]$/, '')).join('；') + '。');
+    const q = clean(f.restate).replace(/^老師的問題是：/, '').replace(/^「|」$/g, '').replace(/[？?。]$/, '');
+    out.push(['複述', '謝謝老師的提問。' + (q ? '老師想問的是：' + q + '。' : '') + '這個問題我分幾個層次來回答。']);
+    if (f.bg) out.push(['背景', '首先從背景來看，' + end(f.bg)]);
+    const args = (f.args || []).filter(Boolean).slice(0, 3).map(a => clean(a).replace(/^([^：:，。]{1,14})[：:]\s*/, '$1，').replace(/[。；]$/, ''));
+    const zh = ['', '一', '兩', '三'], nth = ['第一', '第二', '第三'];
+    if (args.length === 1) out.push(['論證', '我認為關鍵在於，' + end(args[0])]);
+    else if (args.length) out.push(['論證', '我的理由有' + zh[args.length] + '點：' + args.map((x, i) => nth[i] + '，' + x).join('；') + '。']);
     if (f.mine) {
-      let m = f.mine.replace(/^這一點在我的研究中處理過：/, '').split('；')[0].replace(/[。]$/, '');
-      m = /^簡報/.test(m) ? '我在報告' + m.slice(2) + '談過這一點' : /^我/.test(m) ? m : '這呼應' + m;
-      out.push('回到我的研究，' + end(m));
+      let m = clean(f.mine).replace(/^這一點在我的研究中處理過：/, '').split('；')[0].replace(/[。]$/, '');
+      const pg = m.match(/^簡報(第[\d、–\-到]+頁)(.*)$/);
+      m = pg ? '這也就是我在簡報' + pg[1] + (pg[2] ? '「' + pg[2].replace(/^[，、的]/, '') + '」' : '') + '談到的重點' : /^我/.test(m) ? m : '這也呼應我研究中的' + m;
+      out.push(['回扣', '回到我的研究，' + end(m)]);
     }
-    out.push('所以我的回答是：' + end(f.ans.replace(/^([^：:，。]{1,8})[：:]/, '$1，')));
-    if (f.concl) out.push('結論是，' + end(f.concl));
-    return out.join('\n');
+    out.push(['回答', '所以回到老師的問題，我的回答是：' + end(clean(f.ans).replace(/^([^：:，。]{1,8})[：:]/, '$1，'))]);
+    out.push(['結論', (f.concl ? '總結來說，' + end(f.concl) : '') + '以上是我的回答，謝謝老師。']);
+    return out;
   }
+  function speakScript(f) { return speakLines(f).map(x => x[1]).join('\n'); }
   // 問題的意圖與對象：開放式問題（給建議、比利弊、談展望、問責任）要先抓對答題模組
   function intentOf(text) {
     const t = String(text || '');
@@ -426,7 +433,7 @@
     return { kind, actor };
   }
   // 對方指名簡報頁（「第14頁」「圖3」「表1」）→ 回傳頁碼；擬答（依據）裡的頁碼 → 回傳清單
-  const FIG = { 1: 5, 2: 7, 3: 11, 4: 12, 5: 13 }, TBL = { 1: 33 };
+  const FIG = { 1: 3, 2: 7, 3: 8, 4: 9, 5: 11, 6: 14, 7: 17, 8: 21, 9: 23, 10: 26 }, TBL = {}; // 最終發表版27頁的圖號
   function zhNum(s) {
     if (/^\d+$/.test(s)) return +s;
     const d = '零一二三四五六七八九'; let n = 0;
@@ -437,14 +444,14 @@
     const t = String(text || '');
     let m = t.match(/第\s*([\d一二三四五六七八九十]{1,3})\s*(?:頁|張投影片|張簡報)/);
     if (m) return zhNum(m[1]);
-    if ((m = t.match(/圖\s*([1-5一二三四五])(?![\d])/))) return FIG[zhNum(m[1])] || 0;
-    if ((m = t.match(/表\s*([1一])(?![\d])/))) return TBL[1];
+    if ((m = t.match(/圖\s*(10|十|[1-9一二三四五六七八九])(?![\d])/))) return FIG[zhNum(m[1])] || 0;
+    if ((m = t.match(/表\s*([1一])(?![\d])/))) return TBL[1] || 0;
     return 0;
   }
   function slidePages(text) {
     const out = [];
-    for (const m of String(text || '').matchAll(/簡報第([\d、，,到至及和頁第]+)/g)) {
-      const r = m[1].match(/^(\d+)(?:頁)?到(?:第)?(\d+)/);
+    for (const m of String(text || '').matchAll(/簡報第([\d、，,到至及和頁第–-]+)/g)) {
+      const r = m[1].match(/^(\d+)(?:頁)?[到至–-](?:第)?(\d+)/);
       if (r) for (let i = +r[1]; i <= +r[2]; i++) out.push(i);
       else for (const n of m[1].match(/\d+/g) || []) out.push(+n);
     }
@@ -761,7 +768,7 @@
   }
 
   const api = { fixCJK, norm, tokenize, chunkDoc, buildIndex, search, qaSimilarity, bankMatch, MODES, buildPrompt,
-    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, followUpRewrite, premiseCue, looksComplete, collectSplit, isChatter, HEDGE, stripHedge, keyMark, speakScript, intentOf, pageRef, slidePages, BIAS_TERMS, syllables, phoneticIndex, phoneticScores, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
+    parseAnswer, listItems, citations, grewEnough, verifyClaims, questionSegments, extractAnswer, normalizeASR, followUpRewrite, premiseCue, looksComplete, collectSplit, isChatter, HEDGE, stripHedge, keyMark, speakScript, speakLines, intentOf, pageRef, slidePages, BIAS_TERMS, syllables, phoneticIndex, phoneticScores, isFollowUp, detailGap, rareTermGap, classifyDomain, splitQuestions, keywordChain, credibility, makeSSEParser, makeNDJSONParser, deltaText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

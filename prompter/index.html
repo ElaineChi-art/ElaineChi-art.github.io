@@ -812,7 +812,7 @@ async function semanticBank(t, focus) {
   const best = new Map(), pg = C.pageRef(t); // 對方指名第幾頁 → 講該頁的擬答優先
   for (let j = 0; j < sem.length; j++) {
     const c = INDEX.chunks[vec.qaIdx[j]], p = ps ? ps[j] : 0, cur = best.get(c.text);
-    const rank = sem[j] - ((c._h ??= C.HEDGE.test(c.text)) ? 0.08 : 0) + alpha * p + (focus && (c.q.includes(focus) || c.text.includes(focus)) ? 0.06 : 0) + (pg && pagesOf(c).includes(pg) ? 0.08 : 0); // 追問的焦點（日本）要出現在答案裡
+    const rank = sem[j] - ((c._h ??= C.HEDGE.test(c.text.replace(/^\s*Q：.*$/gm, ''))) ? 0.08 : 0) + alpha * p + (focus && (c.q.includes(focus) || c.text.includes(focus)) ? 0.06 : 0) + (pg && pagesOf(c).includes(pg) ? 0.08 : 0); // 追問的焦點（日本）要出現在答案裡
     if (!cur || cur.rank < rank) best.set(c.text, { chunk: c, sim: sem[j], ps: p, rank });
   }
   const top = [...best.values()].sort((a, b) => b.rank - a.rank).slice(0, 3).map(x => {
@@ -1170,10 +1170,11 @@ function render() {
   const fr = frame, step = (k, label, t, cls) => t ? `<li class="${cls || ''}"><span class="fk">${k} ${label}</span><span class="ft">${C.keyMark(citeHTML(t, nn))}</span></li>` : '';
   $('frame').style.display = fr ? '' : 'none';
   $('answerCard').classList.toggle('framed', !!fr);
-  if (fr) setHTML($('frame'), step('①', '複述', fr.restate) + step('②', '背景', fr.bg) +
-    (fr.args.length ? `<li><span class="fk">③ 論證</span><span class="ft">${fr.args.map((a, i) => (fr.args.length > 1 ? '(' + (i + 1) + ') ' : '') + C.keyMark(citeHTML(a, nn))).join('<br>')}</span></li>` : '') +
-    step('④', '回扣我的研究', fr.mine) + step('⑤', '推論回答', fr.ans, 'fa') + step('⑥', '結論', fr.concl, 'fc'));
-  const spoken = script || (fr ? C.speakScript(fr) : ''); // 沒有現成口語稿 → 由六段架構串成照念講稿
+  const NUM = { 複述: '①', 背景: '②', 論證: '③', 回扣: '④', 回答: '⑤', 結論: '⑥' };
+  const lines = fr ? C.speakLines(fr) : [];
+  // 六段＝照念口語稿：每一行就是要講出口的話，由上往下唸（⑤ 回答放大）
+  if (fr) setHTML($('frame'), lines.map(([k, t]) => step(NUM[k], k, t, k === '回答' ? 'fa' : k === '結論' ? 'fc' : '')).join(''));
+  const spoken = fr ? '' : script; // 有六段時口語稿已在上面，不重複
   setHTML($('script'), spoken ? C.keyMark(citeHTML(spoken, nn)) : '');
   $('scriptWrap').style.display = spoken ? '' : 'none';
   setHTML($('follow'), follow.slice(0, 3).map(f => '<li>' + esc(f) + '</li>').join(''));
@@ -1253,7 +1254,7 @@ function renderStack() {
         (cues.length || trap.length ? `<div class="cue">${esc([...trap.map(l => l.split('→')[0] + '→ 不要硬答'), ...cues].join('\n'))}</div>` : '') +
         split +
         (v.one ? (cut ? `<div class="op">${esc(v.one.slice(0, cut).replace(/\s*\[\d+\]/g, ''))}</div><div class="rs">${esc(v.one.slice(cut).replace(/\s*\[\d+\]/g, ''))}</div>` : `<div class="op">${esc(v.one.replace(/\s*\[\d+\]/g, ''))}</div>`) : `<div class="op">${esc(CORE_LINE)}</div>`) +
-        `<div class="more">${v.frame ? '<ol class="frame">' + [['① 複述', v.frame.restate], ['② 背景', v.frame.bg], ['③ 論證', v.frame.args.join('；')], ['④ 回扣', v.frame.mine], ['⑤ 回答', v.frame.ans], ['⑥ 結論', v.frame.concl]].filter(x => x[1]).map(([k, t]) => `<li><span class="fk">${k}</span><span class="ft">${esc(t.replace(/\s*\[\d+\]/g, ''))}</span></li>`).join('') + '</ol>' : v.points.length ? '<ol class="points">' + v.points.slice(0, 4).map(p => '<li>' + esc(p.replace(/\s*\[\d+\]/g, '')) + '</li>').join('') + '</ol>' : ''}${v.script ? '<div class="script">' + esc(v.script) + '</div>' : ''}${v.caution ? '<div class="caution">' + esc(v.caution) + '</div>' : ''}</div></div>`;
+        `<div class="more">${v.frame ? '<ol class="frame">' + C.speakLines(v.frame).map(([k, t]) => [({ 複述: '①', 背景: '②', 論證: '③', 回扣: '④', 回答: '⑤', 結論: '⑥' })[k] + ' ' + k, t]).map(([k, t]) => `<li><span class="fk">${k}</span><span class="ft">${esc(t.replace(/\s*\[\d+\]/g, ''))}</span></li>`).join('') + '</ol>' : v.points.length ? '<ol class="points">' + v.points.slice(0, 4).map(p => '<li>' + esc(p.replace(/\s*\[\d+\]/g, '')) + '</li>').join('') + '</ol>' : ''}${!v.frame && v.script ? '<div class="script">' + esc(v.script) + '</div>' : ''}${v.caution ? '<div class="caution">' + esc(v.caution) + '</div>' : ''}</div></div>`;
     }).reverse().join(''));
   });
 }
