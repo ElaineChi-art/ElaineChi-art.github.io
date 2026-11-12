@@ -807,7 +807,7 @@ async function semanticBank(t, focus) {
   }
   // 同音比對：語音聽錯（智慧→制會）時語意分數會掉，用拼音補回來；語意有把握就不用，越沒把握拼音佔比越高（盲測＋A/B 調出 0／0.25／1.0）
   const ps = PIDX && PIDX.n === vec.qaIdx.length ? C.phoneticScores(C.normalizeASR(t), PIDX.p) : null;
-  let topSem = -1; for (let j = 0; j < sem.length; j++) { sem[j] = (sem[j] - (/^自動擴充/.test(INDEX.chunks[vec.qaIdx[j]].docName) ? 4 : 0)) / 127; if (sem[j] > topSem) topSem = sem[j]; }
+  let topSem = -1; for (let j = 0; j < sem.length; j++) { sem[j] = (sem[j] - (/^自動擴充/.test(INDEX.chunks[vec.qaIdx[j]].docName) ? 10 : 0)) / 127; if (sem[j] > topSem) topSem = sem[j]; } // 自動擴充題的答案只是原文開頭，不一定對題：人工擬答優先
   const alpha = !ps || window.NO_PHON || topSem >= 0.80 ? 0 : topSem >= 0.75 ? 0.25 : 1.0;
   const best = new Map(), pg = C.pageRef(t); // 對方指名第幾頁 → 講該頁的擬答優先
   for (let j = 0; j < sem.length; j++) {
@@ -875,9 +875,13 @@ async function liveMatch(final, which) {
   let mt = t;
   try {
     // 可能是追問：「單獨理解」與「接上一題理解」都配一次，取分數高的（避免把獨立問題誤當追問）
-    const rw = prev && C.isFollowUp(t) ? C.followUpRewrite(t, prev) : null;
+    let rw = prev && C.isFollowUp(t) ? C.followUpRewrite(t, prev) : null;
     let b;
     if (rw) { b = await semanticBank(rw.text, rw.focus).catch(() => null); mt = rw.text; } // 「那日本呢」單獨沒有意義，直接用改寫後的完整問題
+    if (rw) { // 但「那如果契約完全沒寫呢」本身就是題庫裡的題目 → 直接用它，不硬接上一題
+      const b0 = await semanticBank(t).catch(() => null);
+      if (b0 && b0.sim >= 0.90 && (!b || b0.sim > b.sim)) { b = b0; mt = t; rw = null; }
+    }
     else {
       b = await semanticBank(t).catch(() => null);
       if (prev && (C.isFollowUp(t) || (!C.looksComplete(prev) && t.length <= 30))) { // 上一句只講一半（「我想問你的智慧合約」）→ 這句是它的後半
