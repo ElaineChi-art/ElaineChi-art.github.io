@@ -164,5 +164,7 @@ ok(C.detailGap('你引用的那篇哈佛法學評論文章，作者是誰？', '
 ok(C.detailGap('AI基本法第三十二條對NFT平台的罰則是多少？', '研討會上討論的高風險集中在醫療。').length === 1 && C.detailGap('著作權法第37條規定什麼？', '第37條規定約定不明推定未授權。').length === 0, '問特定條號：答案要有同一條');
 ok(C.normalizeASR('人工智慧基本法').includes('AI基本法'), '人工智慧基本法＝AI基本法');
 ok(C.collectSplit('好，謝謝報告人，那我們開放提問謝謝主席，我先問兩個問題，第一，你第14頁那個十三億美元有出處嗎？第二，你說ERC-2981沒有強制力，第28頁卻寫自動回流，這要怎麼解釋？').length === 2, '收題：開場客套不變成一張卡');
+ok(C.normalizeASR('金管會在代壁畫這件事上做到哪裡了').includes('代幣化') && C.normalizeASR('林繼續證明放在哪').includes('零知識證明') && C.normalizeASR('越眼鏡的節點').includes('預言機') && C.normalizeASR('音樂按FT').includes('NFT') && C.normalizeASR('德國幾款團體').includes('集管團體'), '最終版真實辨識聽錯校正');
+ok(!C.extractAnswer('分歌曲版稅的NFT要注意什麼', [{ chunk: { text: '（依據：論文（投稿稿風險管理））\n追問：如果樂團只想做收藏型，要注意什麼收益型版稅NFT的授權與證券風險？', docName: 'x' } }], 3).some(x => /追問|）/.test(x.s)), '原文要點不出現題庫標記殘片');
 console.log(`\n${pass} 通過 / ${fail} 失敗`);
 process.exit(fail ? 1 : 0);

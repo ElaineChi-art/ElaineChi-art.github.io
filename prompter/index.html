@@ -756,6 +756,9 @@ function blankQ() {
 // 收到語音或打字
 function onSpeech(fin, interim) {
   fin = C.normalizeASR(fin || ''); interim = C.normalizeASR(interim || ''); // 聽錯的專有名詞先校正
+  const nowS = performance.now();
+  // 任何模式：停頓 1 秒以上才接著講 → 在文字裡留一個句號，之後拆題才有依據
+  if (Q && Q.status === 'listening' && fin && Q.final && Q.lastAt && nowS - Q.lastAt > 1000 && !/[。？?！!，,]$/.test(Q.final)) Q.final += '。';
   if (Q && Q.status === 'confirmed' && S.after === 'collect' && (fin || interim)) {
     // 收題模式：上一題講到一半停頓（還不像問句）→ 接回同一題；已經是完整問句 → 留成卡片，開新的一題
     if (performance.now() - (Q.confirmedAt || 0) < 6000 && !C.looksComplete(Q.final)) { Q.status = 'listening'; Q.split = null; Q.finalMs = 0; }
@@ -769,8 +772,17 @@ function onSpeech(fin, interim) {
     Q.tailInterim = interim;
     renderCaption(); return;
   }
-  if (fin) Q.final += fin;
+  if (fin) { // 去重：辨識重開時，同一段話可能以「補上的暫定文字」和「定稿」各來一次
+    const bare = x => x.replace(/[\s，。？?！!、]/g, ''), bf = bare(fin), bq = bare(Q.final);
+    if (bf.length >= 4 && bq.endsWith(bf)) {} // 已經有了（短的口頭重複如「對，對」照留）
+    else if (bq && bf.startsWith(bq)) Q.final = fin; // 新的定稿涵蓋舊的
+    else Q.final += fin;
+  }
   Q.interim = interim || '';
+  if (fin || interim) Q.lastAt = nowS;
+  if (fin && !interim) Q.endedAt = nowS; else if (interim) Q.endedAt = 0; // 這一句定稿了（Chrome 判斷對方停了）
+  // 收題模式：Chrome 定稿一句（對方停了約 1 秒）而且已經是完整問句 → 立刻收成卡片，下一位開口就是新的一題（不等靜音計時，雲端文字本來就慢）
+  if (S.after === 'collect' && fin && !interim && Q.status === 'listening' && C.looksComplete(qText(Q))) { confirmQuestion(Q); return; }
   renderCaption();
   const t = qText();
   if (t.length < 4) return;
@@ -914,7 +926,7 @@ function maybeProvisional() {
 }
 
 async function confirmQuestion(old) {
-  if (!old && voiceRecent() && Q && Q.status === 'listening' && performance.now() - Q.t0 < 60000) { // 麥克風還有人聲 → 還沒講完，晚點再判
+  if (!old && voiceRecent() && Q && Q.status === 'listening' && performance.now() - Q.t0 < 60000 && !(S.after === 'collect' && burstAt > (Q.lastAt || 0) && C.looksComplete(qText(Q)))) { // 收題模式：現在的人聲是下一位的（安靜後新的一段）就不等 // 麥克風還有人聲 → 還沒講完，晚點再判
     clearTimeout(silenceTimer); silenceAt = performance.now() + 600; silenceTimer = setTimeout(confirmQuestion, 600); return;
   }
   const q = old || Q;
@@ -922,7 +934,7 @@ async function confirmQuestion(old) {
   const t = qText(q);
   if (t.length < 4) return;
   if (q === Q) silenceAt = 0;
-  q.final = t; q.interim = ''; q.status = 'confirmed'; q.confirmedAt = performance.now();
+  q.final = t; q.interim = ''; q.status = 'confirmed'; q.confirmedAt = performance.now(); needFresh = true; // 一題講完 → 等安靜空檔重開辨識（Chrome 雲端辨識講完一題常卡住）
   q.chatter = S.after === 'collect' && C.isChatter(t);
   if (liveMode()) { // 本機：用最後完整的問題再配對一次，直接定案，不跑慢又會捏造的小模型
     if (q === Q) { clearTimeout(liveTimer); liveTimer = null; liveDue = 0; }
@@ -1352,7 +1364,7 @@ function setStatus() {
 
 /* ================= 語音辨識 ================= */
 // 自己量麥克風音量：(1) 還有人聲就不判定講完；(2) 有人在講、辨識卻幾秒沒回字 → Chrome 卡住了，立刻重開
-let needFresh = false, meter = null, voiceAt = 0, voiceSince = 0, lastResultAt = 0, lastKick = 0;
+let needFresh = false, burstAt = 0, meter = null, voiceAt = 0, voiceSince = 0, lastResultAt = 0, lastKick = 0;
 async function startMeter() {
   if (meter) return;
   try {
@@ -1363,9 +1375,9 @@ async function startMeter() {
       an.getFloatTimeDomainData(buf); let e = 0; for (const x of buf) e += x * x; const rms = Math.sqrt(e / buf.length), now = performance.now();
       floor = rms < floor ? floor * 0.9 + rms * 0.1 : floor * 0.995 + rms * 0.005; // 背景噪音慢慢學
       window.__rms = rms; window.__floor = floor;
-      if (rms > Math.max(0.006, floor * 2.5)) { if (now - voiceAt > 600) voiceSince = now; voiceAt = now; }
-      // Chrome 雲端辨識在定稿後常卡住不再回字 → 定稿後等到一個安靜空檔就重開，下一句從乾淨的狀態開始
-      if (window.ENABLE_FRESH && listening && rec && needFresh && now - voiceAt > 350) { needFresh = false; lastKick = now; try { rec.stop(); } catch (e) {} }
+      if (rms > Math.max(0.006, floor * 2.5)) { if (now - voiceAt > 1200) burstAt = now; if (now - voiceAt > 600) voiceSince = now; voiceAt = now; } // burstAt：安靜後新的一段人聲（多半是下一位委員）
+      // Chrome 雲端辨識講完一題後會卡住不再回字（2026-11-16 實測：不重開第4題後全滅 4/8，重開 8/8）→ 每題講完等安靜空檔就重開
+      if (!window.NO_FRESH && listening && rec && needFresh && now - voiceAt > 300) { needFresh = false; lastKick = now; try { rec.stop(); } catch (e) {} }
       // 有人聲持續 2.5 秒以上、辨識 2.5 秒沒有任何回應 → 重開辨識（最多 4 秒一次）
       if (window.ENABLE_KICK && listening && rec && now - voiceAt < 300 && now - voiceSince > 1500 && now - lastResultAt > 1800 && now - lastKick > 3000) { lastKick = now; lastResultAt = now; try { rec.abort(); } catch (e) {} }
     }, 100) };

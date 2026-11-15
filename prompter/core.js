@@ -326,6 +326,7 @@
       String(c.text || '').replace(/([^\n。！？；：])\n(?=[^\n•➢✓◆▪●■\d（(【])/g, '$1').replace(/\n+/g, '。').split(/(?<=[。！？；])|(?=[•➢✓◆▪●■])/).forEach(raw => {
         const s = raw.replace(/^[。\s•·\-➢✓◆▪●■]+|^\d+[.、]\s*/g, '').replace(/[（(](?:依據|出處)[:：][^）)]*[）)]/g, '').trim();
         if (s.length < 18 || s.length > 180 || /^(Q：|A：|追問)/.test(s)) return;
+        if (/(?:追問|依據|回扣|類型|出處)[:：]|^[）)]/.test(s)) return; // 題庫標記殘片（巢狀括號沒清乾淨）不當答案
         if (/[、，,]\s*[。]?$/.test(s) || (s.match(/[\u3400-\u9fff]/g) || []).length < 10) return; // 斷在半句或中文太少的碎片不要
         if (/"""|[{};=<>]|\b(function|import|return|def|contract|pragma|require)\b|\/\/|^#|\]\(|https?:/.test(s)) return; // 程式碼、連結不當答案
         if (HEDGE.test(s)) return; // 含糊或自我設限的句子不當答案
@@ -378,7 +379,10 @@
     [/(?:預言雞|預言基|語言機)(?=問題|網路|節點)/g, '預言機'], [/(?:chain\s*link|鏈結點)/gi, 'Chainlink'], [/(?:歐基|奧基|ooki)\s*(?:DAO|刀|道)/gi, 'Ooki DAO'], [/(?:史東納|斯通納|stoner)\s*(?:cats?|凱茲|貓)/gi, 'Stoner Cats'],
     [/(?:柏金包案|meta\s*birkins?|梅塔柏金)/gi, 'MetaBirkins'], [/(?:史塔克x|stock\s*x)/gi, 'StockX'], [/(?:克萊瑞提|克拉瑞提|clarity)\s*(?:法案|act)/gi, 'CLARITY Act'], [/(?:吉尼斯|天才|genius)\s*(?:法案|act)/gi, 'GENIUS Act'],
     [/\bu\s*c\s*c\b/gi, 'UCC'], [/\bs\s*p\s*v\b/gi, 'SPV'], [/\bz\s*k\s*p\b/gi, 'ZKP'], [/\bd\s*i\s*d\b/g, 'DID'], [/\br\s*w\s*a\b/gi, 'RWA'], [/(?:s\s*c\s*s\s*p)/gi, 'SCSP'], [/\bpill\b/gi, 'PIL'],
-    [/人工智[慧能]基本法/g, 'AI基本法'], [/區塊練|區塊連/g, '區塊鏈'], [/鏈上鏈下|練上練下/g, '鏈上鏈下'], [/著作全/g, '著作權'], [/版權稅/g, '版稅']
+    [/人工智[慧能]基本法/g, 'AI基本法'], [/區塊練|區塊連/g, '區塊鏈'], [/鏈上鏈下|練上練下/g, '鏈上鏈下'], [/著作全/g, '著作權'], [/版權稅/g, '版稅'],
+    // 2026-11-16 真實雲端辨識聽錯（最終版題目）
+    [/代壁畫|代幣話|帶幣化|代必化|代閉化/g, '代幣化'], [/(?:林繼續|零繼續|零知是|零之時|林知識|鈴知識)證明/g, '零知識證明'], [/(?:越眼鏡|預言鏡|預眼機|玉言機)/g, '預言機'],
+    [/(?:按|安|恩)\s*F\s*T/gi, 'NFT'], [/story\s*(?:park|of|pro\w*)(?![a-z])/gi, 'Story Protocol'], [/(?:幾款|集款|機管|及管)團體/g, '集管團體'], [/警報(?=裡|中|上)/g, '簡報'], [/(?:取|曲|歌)百歲/g, '曲版稅'], [/版歲|班稅|扮稅/g, '版稅'], [/分割(?=曲版稅)/g, '分歌']
   ];
   function normalizeASR(text) {
     let t = String(text || '');
@@ -461,21 +465,24 @@
   const HEDGE = /沒有資料|會後(補充|確認|查證|回覆)|沒有查證|查不到|查無|未查證|待查|不下結論|不想(在這裡)?推測|不確定(?!性)|還沒查到|老實說|誠實說|不在我的研究範圍|我沒有.{0,6}(管道|資料|研究)/;
   function stripHedge(t) { return String(t || '').split(/(?<=[。！？；])/).filter(x => !HEDGE.test(x)).join(''); }
   // 這段話聽起來是不是已經問完了（用來判斷停頓後接著講的是同一題的後半，還是下一題）
-  const Q_DONE = /(嗎|呢|吧|嘛|麼|什麼|甚麼|怎麼|如何|為什麼|為何|哪[裡些個種一位]|多少|幾[個年種次位]|是否|有沒有|會不會|能不能|可不可以|是不是|要不要|對不對|好不好|怎樣|誰|說明|解釋|介紹|談談|看法|意見|回應|差別|差異|區別|關係|影響|問題在哪)/;
+  const Q_DONE = /(嗎|呢|吧|嘛|麼|什麼|甚麼|怎麼|如何|為什麼|為何|哪[裡些個種一位篇本間家年條國天項邊樣場件]|多少|多大|多久|多長|多高|多快|多遠|多嚴重|幾[個年種次位]|是否|有沒有|會不會|能不能|可不可以|是不是|要不要|對不對|好不好|怎樣|誰|說明|解釋|介紹|談談|看法|意見|回應|差別|差異|區別|關係|影響|問題在哪)/;
   const LEAD_IN = /(請教|請問|想問|問一下|問你|問您|一個問題|幾個問題|兩個問題|三個問題|我想|就是|那個|然後|所以|但是|不過|而且|如果)$/;
   function looksComplete(text) {
     const t = String(text || '').replace(/[\s，,。、…]+$/, '');
     if (/[？?嗎呢]$/.test(t)) return true;
     if (t.length < 6 || LEAD_IN.test(t)) return false;
     const end = t.slice(-12);
-    return Q_DONE.test(end) || /([\u4e00-\u9fff])[不沒]\1/.test(end); // 算不算、能不能、有沒有
+    if (Q_DONE.test(end) || /([\u4e00-\u9fff])[不沒]\1/.test(end)) return true; // 算不算、能不能、有沒有
+    // 問詞在前面、後半是補充說明（「提案一為什麼選歐盟的MiCA，不參考美國」）：夠長、有問詞、不是停在連接詞上 → 也算問完
+    return t.length >= 12 && (Q_DONE.test(t) || /([\u4e00-\u9fff])[不沒]\1/.test(t)) && !/[的跟和與及在對把被將是從向給或而]$/.test(t);
   }
   // 收題模式：沒有「第一、第二」也要拆——在明確問句結尾（嗎／呢／？）後面接著另一個問題，就拆開
   function collectSplit(text) {
     const marked = splitQuestions(text);
     const out = [];
     for (const m of marked) {
-      const bits = String(m).split(/(?<=[？?]|[嗎呢吧](?=[\s，,。]))[\s，,。]*/).map(x => x.trim()).filter(Boolean);
+      // 問號、句尾語助詞後面切；語音停頓留下的「。」前面若已是完整問句也切（雲端辨識沒有標點）
+      const bits = String(m).split(/(?<=[？?]|[嗎呢吧](?=[\s，,。]))[\s，,。]*/).flatMap(x => { const out = []; let cur = ''; for (const seg of x.split('。')) { cur += (cur ? '。' : '') + seg; if (looksComplete(cur)) { out.push(cur); cur = ''; } } if (cur) out.push(cur); return out; }).map(x => x.trim()).filter(Boolean);
       const merged = [];
       for (const b of bits) { if (merged.length && (b.length < 6 || merged[merged.length - 1].length < 6)) merged[merged.length - 1] += b; else merged.push(b); }
       out.push(...merged.filter(x => looksComplete(x) || !(isChatter(x) || LEAD_IN.test(x.replace(/[\s，,。]+$/, '')) || /開放提問|個問題$|請教一下$/.test(x))));
