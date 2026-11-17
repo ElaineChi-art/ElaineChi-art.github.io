@@ -27,10 +27,10 @@ Selected Work
   Approach: Mapped the fraud industry chain (6 roles with criminal exposure), the 7-hop money trail from victim's wire to offshore USDT, and pinned every compliance checkpoint (teller care calls, watch-listed accounts, SAR/CTR, VASP registration, travel rule) to its legal basis. Built as an interactive single-page explainer: clickable flow diagram, red-flag checklists for bank / VASP / individual, and an 8-question compliance judgment quiz.
   Impact: A working demo of legal-tech craft: turning a fragmented regulatory landscape into an interface a bank teller, a VASP analyst, or a retiree can actually use.
   https://elainechi-art.github.io/scamlab/
-• Taiwan Quant Trading System  [All 5 chapters re-run · Runs every trading day · Re-tested with fees & taxes]
-  Problem: I wanted to see whether the strategies in a quant-trading textbook still work once real trading costs and newer data are added.
-  Approach: I worked through all five chapters of a Python quant-trading textbook: stock selection from financial statements, price-volume factors, TAIEX futures, machine learning and broker orders. I re-ran each example with fees, taxes and next-day execution added. Then I scheduled the book's stock-selection system in Airflow so it runs every trading day at 9 a.m., and wrote a small paper-trading ledger to track daily positions.
-  Impact: The system now produces positions and orders by itself each day, and I have a much clearer sense of which methods still hold up once costs are included.
+• Taiwan Quant Trading System  [5 chapters fully reproduced · Daily Airflow scheduling · Cost & out-of-sample validation]
+  Problem: Assess whether textbook quant-trading strategies remain effective after accounting for transaction costs and out-of-sample data.
+  Approach: Reproduced all examples across five chapters of a Python quant-trading textbook (fundamental stock selection, price-volume factors, TAIEX futures, machine learning and broker execution), re-running each backtest with commissions, securities transaction tax and next-day execution. Scheduled the stock-selection system in Airflow to run every trading day at 09:00 and built a SQLite paper-trading ledger to record daily positions and orders.
+  Impact: Established an automated daily workflow for position and order generation, and evaluated each strategy against consistent cost and out-of-sample criteria to inform strategy selection.
   
 • RoyaltySplit — Music Royalty dApp  [Deployed & verified on Sepolia · Wallet connect + live tx history · Solidity · Foundry · ethers.js]
   Problem: Music royalty splits are opaque and manual — no transparent, automatic way to pay everyone their share.
