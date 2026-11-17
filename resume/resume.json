@@ -233,8 +233,8 @@
         "zh": "逐章做完一本五章的 Python 量化交易教材——財報因子（FinLab）、WorldQuant 101 價量因子、台指期、機器學習／LSTM／強化學習、券商下單——每個範例都加上延後一日成交與完整交易成本重跑。之後把書末的完整系統架成 Airflow 排程（每個交易日 09:00 自動產生持倉與訂單），並自建模擬交易帳本（SQLite、隔日開盤撮合、重複執行不重複下單、緊急停止開關）。"
       },
       "impact": {
-        "en": "Documented where the results hold and where they break: ML models collapsed to “always predict up”, price-forecast errors were 2.6–4.2× worse than “tomorrow = today”, optimized futures parameters failed out of sample, and the live-run strategy is at −9.6% since Jan 2025 while 0050 buy-and-hold gained ~122%. Rule: no real money until a setup beats buy-and-hold.",
-        "zh": "把結果「哪裡成立、哪裡失靈」寫成紀錄：機器學習模型退化成「每天猜漲」、價格預測誤差是「明天＝今天」笨方法的 2.6–4.2 倍、最佳化的期貨參數樣本外失靈；系統自 2025 年 1 月上線至今 −9.6%，同期 0050 買進持有約 +122%。原則：在找到贏過買進持有的設定之前，不投入真錢。"
+        "en": "An end-to-end system that runs on its own every trading day — from factor research and backtesting to position sizing, order generation and a paper-trading ledger. Every textbook result was re-tested under realistic costs and out-of-sample data, separating methods that hold up from ones that only look good in a backtest.",
+        "zh": "一套每個交易日自動運作的完整系統——從因子研究、回測，到持倉計算、訂單產生與模擬交易帳本。教材中的每個結果都以實際交易成本與樣本外資料重新驗證，分辨出哪些方法真正站得住、哪些只是回測好看。"
       },
       "metrics": [
         {
@@ -246,8 +246,8 @@
           "zh": "Airflow 每日自動排程"
         },
         {
-          "en": "Honest benchmark vs. 0050",
-          "zh": "誠實對照 0050 基準"
+          "en": "Cost & out-of-sample validated",
+          "zh": "交易成本＋樣本外驗證"
         }
       ],
       "stack": [
